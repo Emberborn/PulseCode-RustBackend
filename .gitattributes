@@ -1,0 +1,31 @@
+* text=auto
+
+# Keep source and docs normalized as LF in git
+*.rs text eol=lf
+*.toml text eol=lf
+*.md text eol=lf
+*.pulse text eol=lf
+*.ps1 text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.asm text eol=lf
+*.txt text eol=lf
+
+# Windows-native artifacts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary outputs
+*.exe binary
+*.dll binary
+*.lib binary
+*.obj binary
+*.pdb binary
+*.msi binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary

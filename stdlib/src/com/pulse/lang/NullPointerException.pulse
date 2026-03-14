@@ -1,0 +1,30 @@
+package com.pulse.lang;
+
+/**
+ * Signals that null was used where a value was required.
+ */
+public class NullPointerException extends RuntimeException {
+    /**
+     * Creates a null-pointer exception with no message text.
+     * Use this for generic null-dereference failures.
+     */
+    public NullPointerException() {
+        this.initThrowableState("NullPointerException", null, null);
+    }
+
+    /**
+     * Creates a null-pointer exception with the supplied message text.
+     * Use this when reporting which null rule failed.
+     */
+    public NullPointerException(String message) {
+        this.initThrowableState("NullPointerException", message, null);
+    }
+
+    /**
+     * Creates a null-pointer exception with both a message and a cause.
+     * Use this when preserving a lower-level cause with added null-related context.
+     */
+    public NullPointerException(String message, Throwable cause) {
+        this.initThrowableState("NullPointerException", message, cause);
+    }
+}

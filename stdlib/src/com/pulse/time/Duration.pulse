@@ -1,0 +1,48 @@
+package com.pulse.time;
+
+/**
+ * Time-span value representing a millisecond duration.
+ */
+class Duration {
+    private int millis;
+
+    /**
+     * Creates a duration with the supplied millisecond count.
+     * Use this when constructing a duration from known millisecond data.
+     */
+    public Duration(int millis) {
+        this.millis = millis;
+    }
+
+    /**
+     * Creates a duration from the supplied millisecond count.
+     * Use this for named factory-style duration construction.
+     */
+    public static Duration ofMillis(int millis) {
+        return new Duration(millis);
+    }
+
+    /**
+     * Returns the stored millisecond count.
+     * Use this when a duration must be converted back to a primitive value.
+     */
+    public int toMillis() {
+        return this.millis;
+    }
+
+    /**
+     * Returns a new duration representing this duration plus the other duration.
+     * Use this when accumulating elapsed time.
+     */
+    public Duration plus(Duration other) {
+        return new Duration(this.millis + other.toMillis());
+    }
+
+    /**
+     * Returns a new duration representing this duration minus the other duration.
+     * Use this when computing remaining or difference time spans.
+     */
+    public Duration minus(Duration other) {
+        return new Duration(this.millis - other.toMillis());
+    }
+}

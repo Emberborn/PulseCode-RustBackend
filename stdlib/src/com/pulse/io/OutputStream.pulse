@@ -1,0 +1,32 @@
+package com.pulse.io;
+
+/**
+ * Sequential text output facade backed by the current file helpers.
+ */
+class OutputStream {
+    private String path;
+
+    /**
+     * Creates an output stream bound to the supplied path.
+     * Use this when file writes should be expressed as a stream object.
+     */
+    public OutputStream(String path) {
+        this.path = path;
+    }
+
+    /**
+     * Replaces the full text payload for the bound path.
+     * Use this for simple stream-style overwrite writes.
+     */
+    public void write(String text) {
+        Files.writeString(this.path, text);
+    }
+
+    /**
+     * Appends text to the payload for the bound path.
+     * Use this for simple stream-style append writes.
+     */
+    public void append(String text) {
+        Files.appendString(this.path, text);
+    }
+}
