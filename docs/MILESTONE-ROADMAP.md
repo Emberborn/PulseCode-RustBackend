@@ -1,0 +1,430 @@
+# Roadmap (High-Level)
+
+For the authoritative detailed plan, use:
+- `docs/STANDALONE_ROADMAP.md`
+- This file tracks milestone-level progress only (not Phase A/B/C sub-task detail).
+
+## Milestone 0: Bootstrap Frontend (Done)
+- Lexer/parser/AST foundation.
+- Semantic/type checks for core class/method model.
+- Body statements and control flow (`if/while/for`, `break/continue`).
+- CLI `check` pipeline.
+
+## Milestone 1: Frontend Completion (Done)
+- Member access typing and static/instance call rules. (Done)
+- `switch`, `do-while`, `++/--`, compound assignment, and `null` rules. (Done)
+- Package path validation (`--strict-package`, `--source-root`, build strict defaults). (Done)
+- Definite return analysis for non-void methods. (Done)
+- Cross-class visibility enforcement (current single-file scope: private/protected/package-default). (Done)
+- Multi-file package/import resolution (file loading + cycle/missing import checks + cross-file visibility tests + wildcard/static imports with unqualified static member usage baseline + duplicate/ambiguous import diagnostics). (Done baseline)
+- Same-package class auto-loading under source-root package directories; cross-package references still require imports. (Done baseline)
+- Core semantics now accepts per-class package/import contexts (groundwork for package-qualified symbol identity). (Done baseline)
+- Duplicate class simple names across different packages now allowed; class lookup precedence baseline implemented (same-package > explicit import > wildcard). (Done baseline)
+- Declaration type canonicalization baseline complete (field/param/return/local) with ambiguity diagnostics for class type references. (Done baseline)
+- Standard library namespace repackaged to `com.pulse.*` with baseline package/class validation and static import support. (Done)
+- Better flow typing of conditionals (baseline null-check narrowing). (Done)
+- Richer diagnostics and stricter semantic checks (baseline overload/constructor diagnostics). (Done)
+- Real fixture project suite added under `crates/pulsec-cli/tests/fixtures` for multi-file behavior validation. (Done)
+- Milestone 1 semantics frozen in `docs/M1_SEMANTICS_FREEZE.md` for backend stability. (Done)
+
+## Milestone 2: Native Backend (Done - Spike Frozen)
+- IR module foundation and AST-to-IR lowering baseline wired in `pulsec-core`. (Done baseline)
+- Block-based method IR + control-flow lowering (`if/while/do-while/for/switch/break/continue/return`) added. (Done baseline)
+- Typed temp/value IR (`IrValueId` graph) and source mapping metadata baseline (`IrSourceLoc`) added. (Done baseline)
+- Backend adapter boundary introduced in CLI (`BackendAdapter` + no-op emitter). (Done baseline)
+- `pulsec build` now performs check + IR lowering and emits IR summary. (Done baseline)
+- `pulsec build` now also emits deterministic IR artifact (`build/pulsec.ir.txt`) as backend handoff output. (Done baseline)
+- Native backend contract baseline documented (`docs/NATIVE_BACKEND_CONTRACT.md`) and deterministic native plan artifact (`build/native.plan.json`) emitted. (Done baseline)
+- Fixture-based snapshot assertions added for build artifacts/schema fields. (Done baseline)
+- Windows COFF object scaffold emission added (`build/main.obj`) with fixture assertion on machine header bytes. (Done baseline)
+- First link step attempt added (`main.obj` -> `main.exe`) with deterministic link report artifact (`build/native.link.txt`). (Done baseline)
+- Native executable output (`.exe`) with deterministic build path (`linked` when linker available, PE stub fallback when unavailable). (Done baseline)
+- Initial runtime-visible executable behavior added: `IO.println(<literal>)` entry calls can emit console output via MASM/`kernel32` bridge path (`entry_codegen=masm-println`). (Done baseline)
+- Multi-file static call bridge baseline added: native `masm-full` mode emits symbols for static methods and links/calls across classes in a project (`Main -> Helper`) with literal `IO.println` output. (Done baseline)
+- Stdlib-call routing baseline added: `IO.println` callsites now target a generated stdlib symbol in native output (`masm-full-stdlib`) instead of only per-callsite inline bridge code. (Done baseline)
+- Build layout now preserves package/object structure in split mode (`build/obj/<package-path>/<Class>.obj`) with dedicated startup object (`build/obj/runtime/Startup.obj`) linked into final exe. (Done baseline)
+- Split native codegen now supports static cross-file calls with up to 4 int/bool args and integer/boolean expression returns in emitted method bodies (baseline, no object/instance dispatch yet). (Done baseline)
+- Split native codegen now supports baseline instance-call syntax (`obj.method()` and `this.method()`) via class-typed local/receiver resolution to emitted method symbols, including `IO.print` + `IO.println` stdlib shim routing. (Done baseline)
+- Receiver-aware calling convention baseline wired for emitted instance methods (hidden `this` in `ecx`, args shifted to Win64 registers), with fixture coverage for `this.method()` dispatch. (Done baseline)
+- Constructor + instance-field bridge baseline added in split native path:
+  - constructor calls (`new ClassName()`) execute emitted constructor symbols
+  - baseline `this.field` read/write lowering wired through generated class field data symbols
+  - fixture coverage validates constructor/method execution path with instance-field mutations on emitted methods
+- Per-instance storage baseline upgraded:
+  - constructors now allocate runtime object ids per class (`counter` symbols)
+  - non-static fields use per-class field arrays indexed by object id (instead of single class-global slot)
+  - receiver calls pass runtime object ids from locals/constructor results into instance methods
+- CFG control-flow lowering baseline wired in split native emitter:
+  - block labels + branch/goto/return terminator emission
+  - loop/conditional execution validated in fixture runtime output
+  - local assignment lowering corrected for loop state updates (`i = i + 1`)
+- Constructor/instance argument baseline and object-id safety expanded:
+  - constructor calls now accept up to 3 args (receiver + Win64 arg register shift)
+  - instance/static call arg limits enforced by calling convention (`3` instance, `4` static)
+  - object id allocation and field indexing now clamp to bounded storage range (0..=1048575) to prevent overflow/OOB in native bridge arrays
+- Split build/link stabilization completed for current spike:
+  - split codegen extern discovery includes constructor/member call symbols
+  - link diagnostics include stdout/stderr details
+  - link path normalization and relocation compatibility flags are applied
+  - successful linked executable generation verified for current multi-file phase-B fixture project
+
+Milestone 2 freeze note:
+- Phase B is frozen as a backend spike baseline for moving into runtime/memory work.
+
+## Milestone 3: Runtime + Memory Model (In Progress)
+- Runtime library (`com.pulse.lang.System`, `com.pulse.lang.IO`, strings, arrays, core collections).
+- Finalized automatic memory management strategy.
+- C1.5 is complete and verified; active execution focus is now C2 via `docs/C2_TASK_BOARD.md`.
+- C2-01 completed and locked:
+  - ARC header/handle contract documented (`pulsec.arc.header.v1`)
+  - `native.plan.json` now emits locked ARC memory-model metadata
+  - lock test added: `cargo test -p pulsec --test stage_locks_c2`
+- C2-02 completed and locked:
+  - ARC retain/release intrinsic surface added (`arcRetain`, `arcRelease`)
+  - runtime fast-path no-op behavior for null/out-of-range handles validated in lock tests
+- C2-03 completed and locked:
+  - ARC release slow-path teardown sequencing implemented (kind-aware slot cleanup + ARC metadata reset)
+  - stale-handle use after final release now panics deterministically (non-zero exit)
+  - executable lock test validates retain/release sequencing with deterministic stale-handle panic behavior
+- C2-04 completed and locked:
+  - deterministic ARC insertion boundaries implemented for assignment/call/return/field write paths in native codegen
+  - call-argument ARC boundary now emits retain/release pairs around calls for ARC-managed arguments
+  - lock test validates retain/release emission in generated asm and runtime output on fixture build
+- C2-05 completed and locked:
+  - cycle-detector intrinsic ABI surface added (`arcCycleYoungPass`, `arcCycleFullPass`, `arcCycleTick`)
+  - deterministic generational cadence implemented in native runtime (young pass window + fixed full-pass interval)
+  - lock test validates cycle-detector native-plan schema/symbols and deterministic runtime output
+- C2-06 completed and locked:
+  - weak-reference intrinsic ABI surface added (`weakNew`, `weakGet`, `weakClear`)
+  - runtime weak handles validate generation/version and target liveness deterministically
+  - lock test validates weak-reference behavior and stale weak-token panic path
+- C2-07 completed and locked:
+  - ARC retain saturation now fails fast with deterministic panic diagnostics (`ARC refcount saturation`)
+  - ARC cycle lag tracking semantics locked (`zero_reclaim_lag_limit=1024`, tracked zero-reclaim streak)
+  - lock test validates runtime lag-tracking behavior and emitted saturation/lag diagnostics
+- C2-08 completed and locked:
+  - fixed-capacity array tables were removed; runtime allocates per-array heap-backed int/string lanes and frees them during ARC teardown
+  - runtime handle-slot capacity now grows dynamically (`initial=63`, doubling) up to ABI v2 slot-mask max `4294967295`
+  - allocator policy/alignment contract is locked in docs and emitted in `native.plan.json` (`pulsec.alloc.policy.v1`)
+  - stage-lock coverage asserts allocator policy fields + heap-backed runtime emission behavior
+- C2-09 completed and locked:
+  - list/map runtime storage now uses dynamic per-instance heap lanes with locked growth policy (`init=16`, `growth=2x`, `max=2147483647`)
+  - runtime growth path uses deterministic allocate-copy-free behavior with stale-handle safety preserved
+  - stage-lock coverage validates >init-capacity list/map growth execution without fallback
+- C2-10 completed and locked:
+  - list/map clear paths now implement shrink with anti-thrashing hysteresis (`trigger_multiplier=4`)
+  - runtime ABI surface extended with `Intrinsics.mapClear(long)` / `pulsec_rt_mapClear`
+  - stage-lock coverage validates repeated grow/clear cycles and stable post-clear container state
+- C2-11 completed and locked:
+  - runtime container ownership hooks now retain/release String/key handles across list/map mutation boundaries
+  - list/map clear + ARC teardown paths now release container-owned handles deterministically before buffer reclamation
+  - stage-lock coverage validates list/map ownership retention/release behavior in executable + asm locks
+- C2-12 completed and locked:
+  - deterministic array allocation failure path emits `Array allocation failed` and exits non-zero
+  - deterministic list/map/string growth/allocation failures emit stable diagnostics and exit non-zero
+  - stage-lock coverage now asserts array/list/map/string deterministic failure behavior in split native mode
+- C2 execution update:
+  - `Workstream C: ABI v2 Transition Hardening (64-bit handles)` is complete and locked in `docs/C2_TASK_BOARD.md`
+  - active workstream is now `Workstream D: Backend Stack-Frame + ABI Call Hardening`
+  - workstream labels were shifted to keep alignment: previous stack-frame hardening moved to Workstream D; reliability/tooling moved to Workstream E
+- C2-17 completed and locked:
+  - per-method frame planner now derives stack sizing from method-local needs (locals/params + dense binary temps + ARC spill lanes)
+  - fixed legacy method scratch offsets are removed from frame planning (`1024` / `3072`)
+  - lock coverage added for bounded method prologues and no fixed scratch-offset references
+- C2-18 completed and locked:
+  - Win64 outgoing stack-arg planning is implemented for calls beyond register-arg limits
+  - callee param decoding now materializes incoming stack-passed args for static/instance call shapes
+  - lock coverage validates static + instance 5-arg call execution and outgoing stack-arg asm emission
+- C2-19 completed and locked:
+  - backend frame-budget lint thresholds are now enforced in build pipeline (`warn=1024B`, `fail=4096B`)
+  - `native.plan.json` now exposes frame-budget metadata under `runtime.memory_model.frame_budget`
+  - lock coverage validates both frame-budget metadata presence and deterministic build failure on threshold breach
+- C2-20 completed and locked:
+  - runtime-mix regression lock now validates bounded `GameLoop.asm` frame prologue sizing (`sub rsp <= 4096`)
+  - runtime-mix executable stability is locked alongside frame bounds (`runtime_mix_ok`)
+  - Workstream D (`C2-17`..`C2-20`) is complete and locked at current C2 scope
+- C2-21 completed and locked:
+  - deterministic debug allocator mode added (`PULSEC_DEBUG_ALLOC`) with `native.plan.json` metadata (`runtime.memory_model.debug_allocator.enabled`)
+  - invalid ARC retain/release paths now fail-fast in debug mode with stable diagnostics (`Debug allocator: invalid ARC retain/release`)
+  - lock tests validate double-release and retain-after-release detection; full `cargo test -q` is green
+- C2-22 completed and locked:
+  - leak/stability soak lock now runs repeated `strict_stress_soak` build+run cycles under split-native mode
+  - lock enforces linked-native status and deterministic output (`soak_ok`, checksum `20313`) across all iterations
+  - post-warmup peak working-set spread/drift thresholds are enforced (CI-tunable via `PULSEC_SOAK_TREND_*` env knobs)
+  - `stage_locks_c2` and full `cargo test -q` are green
+- C2-23 completed and locked:
+  - threading model contract is now locked in ABI docs (`pulsec.runtime.threading.v1`) as `single-threaded` + `non-atomic`
+  - native plan now emits `runtime.memory_model.threading` with fixed runtime/container thread-safety boundaries
+  - lock coverage added for docs/plan/runtime-surface conformance; full `cargo test -q` is green
+- C2-24 completed and locked:
+  - runtime ABI compatibility metadata is now emitted in `native.plan.json` (`runtime.abi_compatibility`, schema `pulsec.runtime.abi.v1`)
+  - runtime init now enforces compiler/runtime ABI match and fails fast on mismatch (`Runtime ABI mismatch`, non-zero exit)
+  - lock coverage added for plan contract + mismatch executable path; full `cargo test -q` is green
+- C2-25 completed and locked:
+  - C2 closure artifact package published (`C2_CLOSURE_CHECKLIST.md`, `C2_MEMORY_ARC.md`, `C2_CYCLE_STRATEGY.md`, `C2_CI_MATRIX.md`, `C2_EVIDENCE_INDEX.md`)
+  - C2 closure evidence revalidated (`stage_locks_c2` + full workspace tests green)
+  - C2 is now fully complete and locked (`C2-01`..`C2-25`, `C2-G1`..`C2-G12`)
+- C3-01 completed and locked:
+  - object layout ABI contract published in `docs/RUNTIME_INTRINSICS_ABI.md` (`pulsec.object.layout.v1`)
+  - native build plan now emits locked object-model metadata under `runtime.object_model`
+  - C3 stage lock added: `cargo test -q -p pulsec --test stage_locks_c3`
+- C3-02 completed and locked:
+  - static-field storage ABI contract published (`pulsec.static.storage.v1`)
+  - native build plan now emits `runtime.object_model.static_storage` with deterministic owner/symbol/init/access rules
+  - C3 stage lock extended with deterministic static-field runtime-flow fixture coverage
+- C3-03 completed and locked:
+  - constructor invocation ABI contract published (`pulsec.constructor.model.v1`)
+  - native plan now emits `runtime.object_model.constructor_model` with receiver/chaining/failure lock fields
+  - C3 stage lock added for constructor contract + fixture build validation
+- C3-04 completed and locked:
+  - class allocation ABI contract published (`pulsec.class.alloc.v1`)
+  - native plan now emits `runtime.object_model.allocation` including deterministic `class_size_table`
+  - variable logical class sizes are lock-validated via differing instance-field-count fixture classes
+- C3-05 completed and locked:
+  - `runtime.object_model.*` plan-emission completeness lock added (instance/static/constructor/allocation sections)
+  - backend unit locks + C3 stage lock verify required object-model plan sub-sections
+- C3-06 completed and locked:
+  - dispatch schema ABI contract published (`pulsec.dispatch.schema.v1`)
+  - native plan now emits deterministic dispatch slot-table metadata under `runtime.object_model.dispatch`
+  - dispatch schema stage lock added (`lock_c3_06_dispatch_schema_is_documented_and_emitted`)
+- C3 metadata scaffolding started for later Workstream B/C tasks:
+  - object-model ABI compatibility metadata (`pulsec.object_model.abi.v1`) emitted/locked at plan level
+- C3-07 completed and locked:
+  - runtime virtual dispatch now resolves non-static class-hierarchy calls by receiver runtime class-id (override targets selected at runtime)
+  - backend call target resolution remains superclass-chain aware with unrelated cross-class fallback removed
+  - stage lock added: `lock_c3_07_virtual_dispatch_runtime_override_resolution_is_locked`
+- C3-08 completed and locked:
+  - runtime interface dispatch bridge now resolves interface-typed calls by receiver runtime class-id to implementing concrete symbols
+  - implementing class coverage includes superclass-inherited interface obligations in bridge resolution metadata
+  - stage lock added: `lock_c3_08_interface_dispatch_bridge_runtime_resolution_is_locked`
+- C3-09 completed and locked:
+  - runtime super dispatch preserves super receiver identity and binds to immediate superclass target (non-virtual super call behavior)
+  - final-override and abstract-instantiation contracts are lock-validated via semantic build-failure fixtures
+  - annotation processor baseline added for `@Override` contract validation
+  - stage locks added:
+    - `lock_c3_09_super_dispatch_runtime_behavior_is_locked`
+    - `lock_c3_09_final_override_is_rejected_semantically`
+    - `lock_c3_09_abstract_instantiation_contract_failure_is_rejected_semantically`
+    - `lock_c3_09_override_annotation_contract_failure_is_rejected_semantically`
+    - `lock_c3_09_override_annotation_interface_contract_is_accepted`
+- C3-10 completed and locked:
+  - safe devirtualization fast paths added for static/super/final/private/final-class callsites with parity-preserving behavior
+  - native plan dispatch metadata now locks devirtualization mode/rules/parity requirement
+  - stage lock added:
+    - `lock_c3_10_safe_devirtualization_fast_paths_preserve_behavioral_parity`
+- C3-11 completed and locked:
+  - `instanceof` type-check operator implemented end-to-end (parser/semantics/IR/runtime lowering)
+  - runtime class-id assignability check now backs `instanceof` boolean result for class/interface targets
+  - checked reference casts now enforce runtime assignability and deterministic fail-fast on mismatch (`Invalid cast`)
+  - cast parser expanded to accept reference cast targets (`(Type) expr`) in addition to primitive numeric casts
+  - stage locks added:
+    - `lock_c3_11_instanceof_runtime_type_check_boundary_is_locked`
+    - `lock_c3_11_checked_reference_cast_success_is_locked`
+    - `lock_c3_11_checked_reference_cast_failure_is_locked`
+- C3-12 completed and locked:
+  - type-id/class-id schema lock remains emitted in native plan metadata (`pulsec.typeid.schema.v1`)
+  - runtime class-id table consumption is now lock-covered in dispatch/type-check codegen paths
+  - stage lock added:
+    - `lock_c3_12_runtime_type_checks_consume_class_id_table`
+- C3-13 completed and locked:
+  - runtime dispatch boundaries now enforce deterministic null/type misuse fail-fast checks for instance receivers
+  - null receiver dispatch now emits `Null dispatch receiver` and exits non-zero
+  - invalid receiver type at dispatch boundary now emits `Invalid dispatch receiver type` and exits non-zero
+  - stage locks added:
+    - `lock_c3_13_null_virtual_dispatch_receiver_panics_deterministically`
+    - `lock_c3_13_null_interface_dispatch_receiver_panics_deterministically`
+- C3-14 completed and locked:
+  - object-model ABI compatibility now includes compiler/runtime object-model ABI version fields in native plan metadata
+  - runtime init now fails fast on object-model ABI mismatch with deterministic diagnostic (`Object model ABI mismatch`)
+  - stage locks added:
+    - `lock_c3_14_object_model_abi_contract_is_documented_and_emitted`
+    - `lock_c3_14_object_model_abi_mismatch_fails_deterministically`
+- C3-15 completed and locked:
+  - semantic fixture matrix added for class-layout/constructor edge cases (legal + deterministic failure paths)
+  - stage lock added:
+    - `lock_c3_15_semantic_constructor_and_layout_edge_matrix_is_locked`
+- C3-16 completed and locked:
+  - executable polymorphism/interface dispatch suite added for hierarchy + interface target resolution coverage
+  - stage lock added:
+    - `lock_c3_16_polymorphism_and_interface_dispatch_fixture_suite_executes`
+- C3-17 completed and locked:
+  - object-model stress regression fixture added (allocation/churn + polymorphic calls)
+  - deterministic repeated-run output lock added
+  - stage lock added:
+    - `lock_c3_17_object_model_stress_alloc_churn_polymorphic_calls_are_stable`
+- C3-18 completed and locked:
+  - dispatch-heavy ABI/frame guard assertions added for Win64 outgoing stack-arg slots and bounded frame invariants
+  - stage lock added:
+    - `lock_c3_18_dispatch_heavy_frame_and_win64_abi_guards_are_locked`
+- C3-19 completed and locked:
+  - C3 closure artifact package published:
+    - `docs/C3_CLOSURE_CHECKLIST.md`
+    - `docs/C3_EVIDENCE_INDEX.md`
+  - C3 board/roadmap/ABI references cross-linked and synchronized
+- C3-20 completed and locked:
+  - closure verification run completed:
+    - `cargo test -q -p pulsec --test stage_locks_c3`
+    - `cargo test -q`
+  - C3 now fully complete and locked (`C3-01`..`C3-20`, `C3-G1`..`C3-G8`)
+- C2-16 completed and locked:
+  - ABI v2 lock fixtures now cover runtime marker/slot-mask invariants, forged generation mismatch stale panic, and growth beyond legacy 65535-slot thresholds
+  - C2-G6 is now locked green on the C2 board
+- Runtime intrinsic ABI boundary baseline started:
+  - `com.pulse.rt.Intrinsics` added to semantic/import surface
+  - native backend symbol mapping routes intrinsic console write calls
+  - ABI baseline documented in `docs/RUNTIME_INTRINSICS_ABI.md`
+- C1 implementation order locked:
+  - console API layering first (public API is `com.pulse.lang.System.out` with `com.pulse.lang.IO` alias, intrinsics remain backend/runtime boundary)
+  - then String runtime/interop
+  - then arrays/collections runtime backing
+  - then panic/exception baseline
+- C1 item 1 complete:
+  - stdlib source facades added at `stdlib/src` for `System`, `IO`, `ConsoleWriter`, and `PrintStream`
+  - CLI/check import loading now resolves `com.pulse.*` from stdlib source root when available
+  - `IO`/`PrintStream` facade method bodies now delegate to `com.pulse.rt.Intrinsics`
+  - `System.out` now uses `ConsoleWriter` interface contract; `PrintStream` implements it
+  - `System.out` initialization model finalized as runtime-owned singleton (backend-managed) and immutable (`public static final` surface; assignment rejected semantically)
+  - legacy `com.pulse.io.Io` compatibility alias removed; canonical console surface is now `System.out` + `IO`
+  - String bridge baseline started: `Intrinsics` surface now includes `stringConcat`, `stringLength`, `intToString`, and `booleanToString`
+  - String bridge backend baseline wired: native call routing now recognizes the new `Intrinsics` String symbols and emits temporary runtime stubs for linkable builds
+  - String class migration baseline completed for C1.2:
+    - builtin class metadata now includes `com.pulse.lang.String` with `length`, `isEmpty`, and `concat`
+    - String-typed receiver member calls now typecheck against class metadata
+    - parser/lexer no longer treat `String` as keyword/builtin primitive; stdlib class source now lives at `stdlib/src/com/pulse/lang/String.pulse`
+    - `String` remains implicitly available through `com.pulse.lang` prelude resolution (import optional), matching Java-style usage
+  - String interop ABI lock completed for C1.2:
+    - String intrinsic symbol set and bridge behavior documented/locked in `docs/RUNTIME_INTRINSICS_ABI.md`
+    - build fixture coverage now asserts String runtime symbols are present in emitted native plan
+    - split-native runtime fixture baseline added for String surface behavior (`length`/`concat`/`valueOf`) via executable check
+  - C1.3 arrays/collections completed for current C1 scope:
+    - stdlib `Array`/`List`/`ArrayList`/`Map` now use intrinsic-backed runtime wrappers
+    - backend native shims implement collection handle operations for array/list/map intrinsics
+    - executable fixture output validates cross-collection runtime behavior
+    - import validation and semantic builtin surface updated for `com.pulse.collections.ArrayList`
+  - C1.4 panic baseline completed:
+    - `com.pulse.rt.Intrinsics.panic(String)` added to stdlib + semantic/import surface
+    - backend runtime symbol `pulsec_rt_panic` wired in split/full native emit paths
+    - executable fixture validates panic output and non-zero process exit in split-native mode
+- Language keyword/inheritance baseline progress:
+  - reserved keywords added: `extends`, `implements`, `abstract`, `final`, `super`, `synchronized`, `native`, `strictfp`, `transient`, `volatile`
+  - parser/semantics baseline implemented for `extends`, `super`, `abstract`, `final`, `implements`
+  - `interface` declarations and interface-conformance checks added (`implements` method coverage, abstract-class deferral support)
+  - inheritance checks added: final-class extension rejection, override validation for final/return-type compatibility, inherited member lookup, abstract-class instantiation rejection
+- C1.5 M2 sprint-1 kickoff progress:
+  - primitive-wrapper semantic map added (`byte/short/int/long/float/double/char/boolean/ubyte/ushort/uint/ulong/void` -> wrapper classes)
+  - wrapper stdlib skeleton classes added under `com.pulse.lang`:
+    - `Byte`, `Short`, `Integer`, `Long`, `Float`, `Double`, `Char`, `Boolean`
+    - `UByte`, `UShort`, `UInteger`, `ULong`
+    - `Void`
+  - semantic/core test coverage and CLI fixture coverage added for wrapper type/import surface
+- C1.5 M2 sprint-2 progress:
+  - call argument matching now supports boxing/unboxing during overload selection
+  - overload resolution precedence locked for primitive vs wrapper candidates (exact-match preferred over conversion)
+  - ambiguous best-match overloads now produce explicit diagnostics
+  - numeric conversion matrix locked in `docs/NUMERIC_CONVERSION_MATRIX.md`
+  - implicit primitive numeric conversion diagnostics now classify signed/unsigned and widening/narrowing mismatches
+  - wrapper API surface completed:
+    - `valueOf`, `parse`, primitive extractors, `equals`, and `compare` implemented on wrapper classes
+    - runtime ABI and native shims added for `Intrinsics.parseInt` and `Intrinsics.parseBoolean`
+    - executable fixture coverage added for wrapper happy-path and deterministic unsupported-parse panic path
+  - core bootstrap lang class set completed:
+    - `Object`, `Class`, `Comparable`, `Iterable`, `Iterator`, and `StringBuilder` added in stdlib source
+    - semantic builtin metadata and CLI import validation updated for the same class surface
+    - semantic + executable fixture tests now use this class set in real build flows
+  - wrapper nullability boundary enforcement completed:
+    - definite-null wrapper->primitive unboxing now errors for assignment, return, and call-argument boundaries
+    - null-flow narrowing preserves valid non-null unboxing paths
+  - wrapper runtime fixture hardening completed:
+    - executable fixtures cover wrapper API happy paths
+    - invalid parse paths now have deterministic panic output and non-zero exit checks
+  - freeze docs updated with boxing/unboxing and numeric conversion tables/examples
+
+- C1.5 M2 status: complete (all M2 tasks and gates done).
+- C1.5 M3 progress:
+  - M3-01 complete:
+    - `Throwable`, `Exception`, and `RuntimeException` added in stdlib source
+    - semantic builtin metadata and CLI import validation aligned to the new hierarchy
+    - semantic + executable fixture tests added for hierarchy compatibility and method flow
+  - M3-02 complete:
+    - stdlib source classes added for `IllegalArgumentException`, `IllegalStateException`, `NullPointerException`, `IndexOutOfBoundsException`, `UnsupportedOperationException`, and `NumberFormatException`
+    - semantic builtin metadata and CLI import validation aligned with constructor and `toString` surface
+    - semantic + executable fixture tests added for subclass assignment compatibility and runtime output flow
+  - M3-03 complete:
+    - collections contracts finalized with `Collection` and `List` interface surfaces in stdlib source
+    - `ArrayList` now serves as the concrete runtime-backed implementation for both contracts
+    - semantic/import metadata and tests updated to validate interface-conformance usage in check/build flows
+  - M3-04 complete:
+    - `ArrayList` behavior finalized for current C1.5 scope with explicit CRUD flow coverage
+    - bounds semantics hardened in `ArrayList` source (`get*` index checks + bounded add-capacity guard) via `Intrinsics.panic`
+    - executable fixture coverage now verifies both happy-path CRUD output and non-zero bounds-failure behavior
+  - M3-05 complete:
+    - `LinkedList` stdlib class added as concrete `Collection`/`List` implementation
+    - semantic builtin metadata and CLI import validation updated for `com.pulse.collections.LinkedList`
+    - semantic + executable fixture tests added for CRUD flow and deterministic bounds-failure behavior
+  - M3-06 complete:
+    - `Set` contract and `HashSet` implementation added to stdlib (`com.pulse.collections`)
+    - semantic/import metadata aligned for set surface (`size`, `clear`, `add`, `contains`)
+    - executable fixture coverage validates uniqueness and membership behavior
+  - M3-07 complete:
+    - `HashMap` implementation added alongside existing `Map` surface
+    - map runtime surface extended with `clear` and covered in semantic/import metadata
+    - executable fixture coverage validates `put/get/putInt/getInt/containsKey` behavior
+  - M3-08 complete:
+    - `Queue` and `Deque` contracts added and implemented by `LinkedList` for current C1.5 scope
+    - semantic/import metadata aligned for queue/deque operations (`offer/poll/isEmpty`, `addFirst/addLast/removeFirst/removeLast`)
+    - executable fixture coverage validates FIFO queue and bidirectional deque behavior
+  - M3-09 complete:
+    - stdlib source `com.pulse.math.Math` added under `stdlib/src` with deterministic int-surface behavior (`abs`, `max`, `min`, `clamp`)
+    - semantic/import metadata + tests aligned for expanded math API usage
+    - executable fixture coverage validates deterministic math edge outputs
+  - M3-10 complete:
+    - stdlib source `com.pulse.math.Random` added with deterministic seeded sequence behavior (`Random(int)`, `nextInt(int)`)
+    - semantic/import metadata + tests aligned for random class surface
+    - executable fixture coverage validates reproducible seeded output sequences across instances
+  - M3-11 complete:
+    - stdlib source `com.pulse.io` contracts added for `File`, `Path`, and `Files`
+    - deterministic in-memory file semantics wired via existing runtime map intrinsics for build/runtime fixtures
+    - semantic/import metadata + executable fixtures validate read/write/append/exists/Path.combine flow
+  - M3-12 complete:
+    - stdlib source `InputStream` and `OutputStream` added and wired on top of `Files`
+    - semantic/import metadata aligned for stream constructor and read/write/append methods
+    - executable fixture coverage validates stream read/write path behavior
+  - M3-13 complete:
+    - stdlib source `com.pulse.time.Instant` and `Duration` added with deterministic behavior for current C1.5 scope
+    - semantic/import metadata aligned (`now`, `plusMillis`, `ofMillis`, `plus`, `minus`, `to*Millis`)
+    - executable fixture coverage validates deterministic time API outputs
+  - M3-14 complete:
+    - intrinsic ABI coverage expanded and locked for all current M3 runtime-backed surfaces
+    - `docs/RUNTIME_INTRINSICS_ABI.md` updated with explicit M3 surface mapping and native symbol inventory
+    - fixture plan assertions now verify required runtime intrinsic symbol presence in `native.plan.json`
+  - M3-15 complete:
+    - added real multi-file fixture projects under `crates/pulsec-cli/tests/fixtures`:
+      - `runtime_mix` (collections + io + time + math + object/interface mix)
+      - `object_interface_mix` (object/interface + array/math/time/file mix)
+    - added integration coverage for both `pulsec check` and executable `pulsec build` flows with deterministic output assertions
+  - M3-16 complete:
+    - added `stress_soak` multi-file fixture for allocation churn, collection churn, bounded string churn, and loop-heavy paths
+    - added repeated build+run integration coverage via `cli_build_executes_stress_soak_repeatedly` (iteration count configurable with `PULSEC_SOAK_ITERS`)
+    - validated stress gate in `cargo test -p pulsec --test fixture_projects`
+  - M3-17 complete:
+    - validated Windows linker path variants across default discovery, explicit `--linker`, and `PULSEC_LINKER` override flows
+    - published matrix report at `docs/WINDOWS_TOOLCHAIN_MATRIX.md` with pass/fail outcomes
+    - verified strict fixture link status and deterministic executable output for each variant
+  - M3-18 complete:
+    - published C1.5 closure docs:
+      - `docs/RUNTIME_INTRINSICS_ABI.md`
+      - `docs/STDLIB_API_INDEX.md`
+      - `docs/C1_5_CLOSURE_CHECKLIST.md`
+      - `docs/STAGE_LOCK_TESTS.md`
+    - added cross-links between closure docs for traceable doc-gate review
+  - C3 planning expanded:
+    - dedicated C3 execution board published at `docs/C3_TASK_BOARD.md`
+    - C3 object-model scope now tracked as tasks `C3-01`..`C3-20` with gates `C3-G1`..`C3-G8`
+
+## Milestone 4: Packaging
+- Installer pipeline and metadata.
+- MSI generation support.
+
+## Milestone 5: Self-Hosting
+- Compiler implemented in PulseCode.
+- Bootstrap chain and compiler equivalence validation.

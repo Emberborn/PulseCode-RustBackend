@@ -1,0 +1,18 @@
+package com.pulse.collections;
+
+/**
+ * Minimal collection contract for sized mutable containers.
+ */
+interface Collection {
+    /**
+     * Returns the number of values currently stored in the collection.
+     * Use this before indexed access or to test for emptiness.
+     */
+    int size();
+
+    /**
+     * Removes all values from the collection.
+     * Use this to reset a mutable container to its empty state.
+     */
+    void clear();
+}

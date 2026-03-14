@@ -1,0 +1,11 @@
+{
+  "schema": "pulsec.build.config.v1",
+  "profile": "release",
+  "target": "native-x64",
+  "packaging_mode": "staged",
+  "output": { "mode": "fat", "entry": "main" },
+  "runtime": { "debug_allocator": "off", "cycle_collector": "on" },
+  "toolchain": { "linker": "", "assembler": "", "wix": "", "signtool": "" },
+  "layout": { "asm": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\asm", "generated": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\generated", "assets": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\assets", "sanity": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\sanity", "tmp": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\tmp", "distro": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build" },
+  "artifacts": { "native_plan": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\native.plan.json", "ir": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\pulsec.ir.txt", "object": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\runtime\Startup.obj" }
+}

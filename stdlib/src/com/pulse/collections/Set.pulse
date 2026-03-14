@@ -1,0 +1,30 @@
+package com.pulse.collections;
+
+/**
+ * Unique-value collection contract.
+ */
+interface Set {
+    /**
+     * Returns the number of unique values currently stored in the set.
+     * Use this before size-sensitive operations or emptiness checks.
+     */
+    int size();
+
+    /**
+     * Removes all values from the set.
+     * Use this to reset a mutable set to its empty state.
+     */
+    void clear();
+
+    /**
+     * Adds a value to the set if it is not already present.
+     * Use this when preserving uniqueness matters.
+     */
+    void add(String value);
+
+    /**
+     * Reports whether the supplied value is present in the set.
+     * Use this for membership checks against string values.
+     */
+    boolean contains(String value);
+}

@@ -1,0 +1,63 @@
+package strict_stress_soak;
+
+import com.pulse.collections.ArrayList;
+import com.pulse.collections.HashMap;
+import com.pulse.collections.HashSet;
+import com.pulse.collections.LinkedList;
+
+class SoakRunner {
+    public int run(int rounds) {
+        ArrayList values = new ArrayList();
+        LinkedList queue = new LinkedList();
+        HashMap stats = new HashMap();
+        HashSet tags = new HashSet();
+
+        String churn = "x";
+        int sum = 0;
+        int i = 0;
+        int parity = 0;
+        int drained = 0;
+
+        while (i < rounds) {
+            Token token = new Token(i + 1);
+            int v = token.value();
+
+            values.add(v);
+            if (values.size() > 48) {
+                values.clear();
+            }
+
+            queue.offer(v);
+            if (queue.size() > 32) {
+                drained = drained + queue.poll();
+            }
+
+            stats.putInt("last", v);
+
+            if (parity == 0) {
+                tags.add("even");
+                parity = 1;
+            } else {
+                tags.add("odd");
+                parity = 0;
+            }
+
+            churn = churn.concat("a");
+            if (churn.length() > 32) {
+                churn = "x";
+            }
+
+            sum = sum + v;
+            i = i + 1;
+        }
+
+        while (queue.size() > 0) {
+            drained = drained + queue.poll();
+        }
+
+        int last = stats.getInt("last");
+        int unique = tags.size();
+        int count = values.size();
+        return sum + drained + last + unique + count + churn.length();
+    }
+}

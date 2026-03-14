@@ -1,0 +1,132 @@
+package com.pulse.lang;
+
+/**
+ * Mutable helper for incremental string construction.
+ */
+public class StringBuilder {
+    private String value;
+
+    /**
+     * Creates an empty builder.
+     * Use this when constructing text from multiple later append calls.
+     */
+    public StringBuilder() {
+        this.value = "";
+    }
+
+    /**
+     * Creates a builder seeded with the supplied initial text.
+     * Use this when construction should begin from an existing string value.
+     */
+    public StringBuilder(String initial) {
+        this.value = initial;
+    }
+
+    /**
+     * Appends a string value and returns this builder.
+     * Use this for chained text-building calls.
+     */
+    public StringBuilder append(String text) {
+        this.value = this.value.concat(text);
+        return this;
+    }
+
+    /**
+     * Appends an integer value after converting it to text.
+     * Use this when mixing numeric output into a builder chain.
+     */
+    public StringBuilder append(int number) {
+        this.value = this.value.concat(String.valueOf(number));
+        return this;
+    }
+
+    /**
+     * Appends a boolean value after converting it to text.
+     * Use this when mixing flag output into a builder chain.
+     */
+    public StringBuilder append(boolean flag) {
+        this.value = this.value.concat(String.valueOf(flag));
+        return this;
+    }
+
+    /**
+     * Appends a character value after converting it to text.
+     * Use this when mixing individual characters into a builder chain.
+     */
+    public StringBuilder append(char value) {
+        this.value = this.value.concat(String.valueOf(value));
+        return this;
+    }
+
+    /**
+     * Appends an object value after converting it to text.
+     * Use this when Java-like builder flows need object formatting or `null` rendering.
+     */
+    public StringBuilder append(Object value) {
+        this.value = this.value.concat(String.valueOf(value));
+        return this;
+    }
+
+    /**
+     * Returns the current builder length.
+     * Use this to inspect how much text has been accumulated so far.
+     */
+    public int length() {
+        return this.value.length();
+    }
+
+    /**
+     * Removes all accumulated text from the builder.
+     * Use this to reuse a builder for a fresh output sequence.
+     */
+    public void clear() {
+        this.value = "";
+    }
+
+    /**
+     * Inserts text at the supplied index.
+     * Use this for practical mid-builder edits without manual substring composition.
+     */
+    public StringBuilder insert(int index, String text) {
+        String prefix = this.value.substring(0, index);
+        String suffix = this.value.substring(index);
+        this.value = prefix.concat(text);
+        this.value = this.value.concat(suffix);
+        return this;
+    }
+
+    /**
+     * Deletes text over the supplied half-open range.
+     * Use this for practical builder edits that remove a contiguous region.
+     */
+    public StringBuilder delete(int beginIndex, int endIndex) {
+        String prefix = this.value.substring(0, beginIndex);
+        String suffix = this.value.substring(endIndex);
+        this.value = prefix.concat(suffix);
+        return this;
+    }
+
+    /**
+     * Resizes the builder to the supplied length.
+     * Use this to truncate or pad with `\0` characters in the current Java-close baseline.
+     */
+    public void setLength(int newLength) {
+        int current = this.value.length();
+        if (newLength <= current) {
+            this.value = this.value.substring(0, newLength);
+            return;
+        }
+        while (current < newLength) {
+            this.value = this.value.concat(String.valueOf('\0'));
+            current = current + 1;
+        }
+    }
+
+    /**
+     * Returns the built string value.
+     * Use this when the accumulated text is ready to be consumed.
+     */
+    public String toString() {
+        return this.value;
+    }
+}

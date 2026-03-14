@@ -1,0 +1,73 @@
+package com.pulse.lang;
+
+import com.pulse.rt.Intrinsics;
+
+/**
+ * Wrapper facade for boolean values.
+ */
+public final class Boolean {
+    /**
+     * Canonical wrapper-like true constant.
+     */
+    public static final Boolean TRUE = true;
+
+    /**
+     * Canonical wrapper-like false constant.
+     */
+    public static final Boolean FALSE = false;
+
+    /**
+     * Boxes a primitive boolean into the wrapper form.
+     * Use this when an API requires the wrapper type instead of the primitive.
+     */
+    public static Boolean valueOf(boolean value) {
+        return value;
+    }
+
+    /**
+     * Parses text into a boolean wrapper.
+     * Use this for string-to-boolean conversion at API boundaries.
+     */
+    public static Boolean parse(String text) {
+        return valueOf(Intrinsics.parseBoolean(text));
+    }
+
+    /**
+     * Unboxes a wrapper value into the primitive form.
+     * Use this when downstream code expects a primitive boolean.
+     */
+    public static boolean booleanValue(Boolean value) {
+        return value;
+    }
+
+    /**
+     * Compares two primitive booleans for equality.
+     * Use this for helper-style equality checks without boxing.
+     */
+    public static boolean equals(boolean left, boolean right) {
+        return left == right;
+    }
+
+    /**
+     * Orders two primitive booleans.
+     * Use this when boolean values need stable comparison semantics.
+     */
+    public static int compare(boolean left, boolean right) {
+        if (left == right) {
+            return 0;
+        }
+        if (left) {
+            return 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Converts a primitive boolean into Java-like text.
+     * Use this when formatting boolean values without manual casts.
+     */
+    public static String toString(boolean value) {
+        return String.valueOf(value);
+    }
+}
+

@@ -1,0 +1,501 @@
+# Codex Handoff: Phase F Continuation
+
+This handoff replaces the older implementation/C3 handoffs. It is intended for the next Codex window and should be treated as the current execution brief.
+
+## Read This First
+
+Before doing any new implementation work, the next agent should:
+
+1. Read the Phase F planning and policy docs:
+   - [F1 Task Board](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md)
+   - [F1 Baseline Audit](/D:/Programming/codex/PulseCode/docs/F1_BASELINE_AUDIT.md)
+   - [F1 Gap Matrix](/D:/Programming/codex/PulseCode/docs/F1_GAP_MATRIX.md)
+   - [F1 Support Policy](/D:/Programming/codex/PulseCode/docs/F1_SUPPORT_POLICY.md)
+   - [F1 Dependency Graph](/D:/Programming/codex/PulseCode/docs/F1_DEPENDENCY_GRAPH.md)
+   - [Standalone Roadmap](/D:/Programming/codex/PulseCode/docs/STANDALONE_ROADMAP.md)
+
+2. Read the language docs structure and workflow docs:
+   - [F2 Task Board](/D:/Programming/codex/PulseCode/docs/F2_TASK_BOARD.md)
+   - [Compiler-Backed Language Docs README](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/README.md)
+   - [Runtime-Backed Language Docs README](/D:/Programming/codex/PulseCode/docs/language/runtime-backed/README.md)
+   - [Stdlib Language Docs README](/D:/Programming/codex/PulseCode/docs/language/stdlib/README.md)
+
+3. Re-examine the relevant code in detail before continuing:
+   - frontend/parser/semantics/IR:
+     - [pulsec-core lib.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/lib.rs)
+     - [pulsec-core parser mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/parser/mod.rs)
+     - [pulsec-core semantics mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/semantics/mod.rs)
+     - [pulsec-core intermediate mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/intermediate/mod.rs)
+     - [pulsec-core tests mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/tests/mod.rs)
+   - CLI/doc locks:
+     - [stage_locks.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/tests/stage_locks.rs)
+   - stdlib source:
+     - [stdlib/src/com/pulse](/D:/Programming/codex/PulseCode/stdlib/src/com/pulse)
+   - stdlib docs generator:
+     - [generate-stdlib-docs.ps1](/D:/Programming/codex/PulseCode/scripts/generate-stdlib-docs.ps1)
+
+The next agent should not rely on stale top-level narrative docs as source of truth when they conflict with the F1 docs and the code. In particular:
+
+- [LANGUAGE_GUIDE.md](/D:/Programming/codex/PulseCode/docs/LANGUAGE_GUIDE.md) is older and not the live execution contract
+- [LANGUAGE_OVERVIEW.md](/D:/Programming/codex/PulseCode/docs/LANGUAGE_OVERVIEW.md) is older and not the live execution contract
+
+The stricter current user rule is now:
+
+- there is no "baseline is good enough" escape hatch anymore; features should be implemented to the fullest Java-like surface that is realistically achievable in the current phase unless the user explicitly approves a difference
+- a task is not truly complete just because an earlier "baseline" subset works
+- `Done (Locked)` means Java-hardened enough for the F1/self-hosting target; if it is still thinner than the required Java-like contract, it must stay `In Progress`
+- if the shipped behavior is not yet Java-hardened enough for the F1/self-hosting target, it should stay `In Progress` with explicit return points on the F1/F2/F-A boards
+- if a feature can move into Pulse stdlib rather than staying compiler/bootstrap-owned, that migration is required before the compiler/runtime rewrite into Pulse unless the ownership genuinely belongs in compiler/runtime/backend
+- compiler/runtime ownership is acceptable only where that ownership genuinely belongs; otherwise the feature should end in Pulse stdlib/library code before self-hosting
+- if a feature is end-to-end real but still bootstrap-owned, incomplete, or not yet Java-hardened, it must be reopened or left `In Progress` instead of being treated as permanently closed
+- if a new feature, runtime surface, stdlib helper, or semantic rule is discovered during implementation to be required for self-hosting, it must be added to the tracking docs/board and implemented instead of being treated as optional future cleanup
+- the target is a self-host-capable Java-like language/runtime/toolchain, not a partial Java-ish subset; deviations from Java should exist only where the user has explicitly chosen them
+- reflection-lite `Class` support is part of the pre-self-host track, while full reflection/invocation and desktop UI are intentionally after self-host unless the user changes that policy later
+- the handoff must be kept current during the work: add new facts/rules when they matter, remove stale details when they stop being useful, and do not let it bloat into an unreadable dump
+
+## Required First Response From The Next Agent
+
+Before continuing implementation, the next agent should:
+
+1. read the docs and code listed in this handoff
+2. examine the current implementation in detail
+3. then give the user a concise review of the programming language and current project state
+
+That review should explicitly answer:
+
+- what PulseCode currently is at a high level
+- what implementation language/toolchain it is currently built in
+- what the current language baseline already supports end-to-end
+- what major parts are still incomplete
+- what Phase F is doing now
+- exactly where work will resume next on the F1 board
+
+The purpose of this review is to prove the new agent is caught up before it starts making more changes.
+
+## Non-Negotiable Workflow Rules
+
+These came directly from the user and must be honored.
+
+### 1. Language docs are part of the product
+
+The docs are currently the primary way to learn PulseCode. They are not cleanup work.
+
+All language-facing docs must live under:
+
+- `docs/language/compiler-backed`
+- `docs/language/runtime-backed`
+- `docs/language/stdlib`
+
+If a doc is about language syntax/semantics/type rules/import rules/modifiers and it is not one stdlib class, it belongs under:
+
+- `docs/language/compiler-backed`
+
+If a doc is about runtime behavior that is not one stdlib class, it belongs under:
+
+- `docs/language/runtime-backed`
+
+If a doc is about a shipped stdlib class, it belongs under:
+
+- `docs/language/stdlib/<package structure>`
+
+### 2. Stdlib `.pulse` files must be PulseDoc’d
+
+Any stdlib `.pulse` file added or modified must have multiline PulseDoc blocks.
+
+The current lock suite already enforces:
+
+- file/type-level PulseDoc
+- PulseDoc before public members
+
+Relevant lock file:
+
+- [stage_locks.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/tests/stage_locks.rs)
+
+### 3. Run the stdlib docs generator whenever stdlib source changes
+
+If any file under:
+
+- `stdlib/src/com/pulse/**`
+
+is added or modified, the next agent must run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/generate-stdlib-docs.ps1
+```
+
+Why:
+
+- the generator rewrites the checked-in stdlib reference docs from current PulseDoc
+- the generated docs under `docs/language/stdlib/com/pulse/**` are supposed to stay current
+- the generator is intentionally destructive for the generated stdlib subtree and should overwrite on every run
+
+This overwrite contract is already documented and locked in:
+
+- [Stdlib README](/D:/Programming/codex/PulseCode/docs/language/stdlib/README.md)
+- [generate-stdlib-docs.ps1](/D:/Programming/codex/PulseCode/scripts/generate-stdlib-docs.ps1)
+- [stage_locks.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/tests/stage_locks.rs)
+
+### 4. Prefer focused tests, not full `pulsec` test runs
+
+The user explicitly asked not to keep running the full `cargo test -p pulsec` suite after every change.
+
+Preferred pattern:
+
+- run targeted `pulsec-core` tests when touching parser/semantics/IR
+- run targeted CLI lock suites when touching docs/contracts/project behavior
+- only run broader/full suites when truly necessary
+
+This was the working pattern at the end of this window:
+
+- `cargo test -q -p pulsec-core`
+- `cargo test -q -p pulsec --test stage_locks`
+
+## Where The Project Actually Is
+
+Phase D is closed.  
+Phase E is closed.  
+Phase F is active.
+
+The active board is:
+
+- [F1 Task Board](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md)
+
+### F1 items already completed and locked
+
+The following are already `Done (Locked)` on the board:
+
+- `F1-00` baseline audit
+- `F1-01` inventory/gap matrix
+- `F1-02` support policy
+- `F1-03` dependency graph
+- `F1-04`..`F1-08` lexer/token/literal surface
+- `F1-09` primitive/literal declaration baseline
+
+### Immediate next work
+
+The current board resume point is the hardening chain after arrays:
+
+- `F1-26` / `F1-28`
+  - `F1-23` native arrays are now locked for the full current primitive and reference element surface
+  - float/double-backed array execution now works through the qword scalar lane
+  - float/double-to-integral casts now use Java-like truncation-toward-zero semantics (`NaN -> 0`, overflow saturates)
+  - the first Java-like signed numeric slice is now real:
+    - implicit widening for assignments / returns / parameter passing / overload applicability
+    - smaller signed integral types promote to `int`
+    - mixed `int` / `long` arithmetic/comparison widens to executable `long`
+  - the current Pulse unsigned numeric slice is now real too:
+    - implicit widening inside the unsigned chain
+    - `ubyte` / `ushort` arithmetic promotes to `uint`
+    - mixed `uint` / `ulong` arithmetic/comparison widens to executable `ulong`
+  - the next work should widen the broader cast/promotion/runtime semantics honestly instead of revisiting the array model itself, especially float/double arithmetic and the fuller mixed conversion lattice
+
+Recent runtime fix that closed the active blocker:
+
+- the remaining heap corruption was not actually a wrapper-object field bug
+- it reduced to runtime-backed map growth when a collection handle lived in a later slot
+- root cause:
+  - `emit_map_new_proc` had two bad reads using `dword ptr [rt_map_cap_ptr+r10*4]`
+  - those indexed the global pointer variable itself instead of the heap table behind `[rt_map_cap_ptr]`
+  - that produced slot-sensitive bogus capacities and heap corruption during later map growth
+- fixed in:
+  - [runtime_emitters.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/runtime_emitters.rs)
+- validated with:
+  - reduced repros under `tmp_runtime_mix_probe/**`
+  - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_strict_stress_soak_with_repeated_fat_shared_parity`
+  - `cargo test -q -p pulsec --test stage_locks lock_m3_16_stress_soak_fixture_check -- --exact --test-threads=1`
+- the temporary `HANDLE_SLOT_INITIAL_CAPACITY = 255` experiment was reverted; it was only a debugging probe, not part of the fix
+
+Recent runtime model hardening after that fix:
+
+- object references now use the same generation-packed handle model as other ARC-managed runtime references
+- `pulsec_rt_objectNew` no longer returns a raw slot; it returns `slot | (generation << 32)`
+- `pulsec_rt_objectClassId` now decodes and validates packed object handles before reading class metadata
+- important split/shared boundary note:
+  - app-emitted class ARC edge helpers must stay free of runtime-private table/data references
+  - the temporary attempt to validate packed object-reference fields inside those app helpers was reverted
+  - they still use the low slot for object edge bookkeeping, while packed-handle validation stays in runtime-private procedures
+- fixed in:
+  - [runtime_emitters.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/runtime_emitters.rs)
+- focused validation:
+  - `cargo test -q -p pulsec --bins --manifest-path "D:\Programming\codex\PulseCode\Cargo.toml"`
+  - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_strict_stress_soak_with_repeated_fat_shared_parity --manifest-path "D:\Programming\codex\PulseCode\Cargo.toml"`
+  - `cargo test -q -p pulsec --test stage_locks lock_m3_16_stress_soak_fixture_check --manifest-path "D:\Programming\codex\PulseCode\Cargo.toml" -- --exact --test-threads=1`
+  - `cargo test -q -p pulsec --test fixture_projects --manifest-path "D:\Programming\codex\PulseCode\Cargo.toml"`
+  - `cargo test -q -p pulsec --test stage_locks --manifest-path "D:\Programming\codex\PulseCode\Cargo.toml"`
+
+The following tasks were reopened as explicit bootstrap-to-Pulse return passes:
+
+- `F1-10` enum baseline
+  - return in `F1-47` / `F1-69` to complete the std-facing `com.pulse.lang.Enum` contract
+- `F1-11` erased-generics bootstrap
+  - return in `F1-31` / `F1-49` / `F1-68` for the Java-hardened generics story needed before self-hosting
+- `F1-12` richer annotation syntax/support policy
+  - return in `F-A` with `F2` docs updates for Pulse-owned annotation processor migration
+- `F1-13` modifier subset/fences
+  - return in `F1-20` / `F1-86` / `F1-89` / `F1-93` for real monitor/memory-model/runtime semantics
+- `F1-14` declaration/import breadth
+  - return in `F1-33` for the broader Java declaration and nested-type story
+- `F1-15` `throw`
+  - return in `F1-16` / `F1-29` / `F1-35` / `F1-46` for the real Java-hardened exception model
+- `F1-16` `try` / `catch` / `finally`
+  - return in `F1-29` / `F1-35` / `F1-46` for cross-method unwind semantics and fuller exception behavior
+- `F1-19` `assert`
+  - return in `F1-26` / `F1-46` for fuller Java-like assertion typing and error behavior
+- `F1-21` ternary
+  - return in `F1-26` / `F1-28` for fuller Java-like promotion and compatibility behavior
+- `F1-22` casts
+  - return in `F1-26` / `F1-28` for fuller Java-like conversion and promotion behavior
+- `F1-30` built-in annotation semantics
+  - return in `F-A` with `F2` docs updates for Pulse-owned annotation processor migration
+
+This is the next recommended continuation point unless the user redirects.
+
+## Detailed Current Language State
+
+### Frontend/semantic features that are real now
+
+These are not just tokenized. They are implemented and locked to the current F1 baseline:
+
+- package/import/static import support
+- classes/interfaces
+- annotation declarations via `@interface` (marker-only for now)
+- built-in annotation semantics:
+  - `@Override`
+  - `@NotNull`
+  - `@Test`
+- `extends`
+- `implements`
+- constructors
+- `this`
+- `super`
+- control flow already in baseline:
+  - `if`
+  - `while`
+  - `do-while`
+  - `for`
+  - `switch`
+  - `break`
+  - `continue`
+  - `return`
+- `instanceof`
+- explicit casts
+- char literals
+- numeric literal breadth:
+  - hex
+  - binary
+  - octal
+  - underscores
+  - suffixes
+- varargs parameter baseline
+- enums:
+  - declaration
+  - constant uniqueness
+  - constant immutability
+  - assignment/comparison usage
+  - ordinal-backed executable lowering
+- erased generics baseline:
+  - class/interface type params
+  - method type params
+  - generic type-use syntax
+  - generic arity validation
+  - primitive generic-argument rejection
+  - erasure to raw owner / `Object`
+
+### Annotation baseline details
+
+Current shipped annotation behavior:
+
+- `@Override`
+  - compiler-owned bootstrap semantics
+  - validates actual override contract
+- `@NotNull`
+  - frontend bootstrap semantic contract
+  - currently rejects obvious `null` misuse on supported targets
+- `@Test`
+  - frontend bootstrap validation for method shape
+
+Annotation declarations in Pulse are now real:
+
+- `public @interface Marker { }`
+
+Current annotation limits:
+
+- marker-style only
+- no annotation members/elements yet
+- no external/codegen processor system yet
+- current built-in semantics are still bootstrap compiler ownership and are expected to be revisited in Phase F-A
+
+Stdlib annotation declarations added:
+
+- [Override.pulse](/D:/Programming/codex/PulseCode/stdlib/src/com/pulse/lang/Override.pulse)
+- [NotNull.pulse](/D:/Programming/codex/PulseCode/stdlib/src/com/pulse/lang/NotNull.pulse)
+- [Test.pulse](/D:/Programming/codex/PulseCode/stdlib/src/com/pulse/lang/Test.pulse)
+
+### Enum baseline details
+
+Current enum baseline is intentionally narrow and honest:
+
+- enum declarations parse and check
+- enum constants are immutable
+- enum constants can be assigned/compared
+- runtime lowering is ordinal-backed
+
+Not yet promised:
+
+- full Java enum object model
+- helper generation like `values()` / `valueOf()`
+- enum methods/constructors/advanced behavior
+
+Reference doc:
+
+- [enums.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/enums.md)
+
+### Generics baseline details
+
+Current generics baseline is intentionally:
+
+- erased Java-like
+
+Meaning:
+
+- generics exist on classes/interfaces/methods
+- generic type-use syntax is accepted and validated
+- runtime lowering erases `Box<String>` to raw `Box`
+- type parameters erase to `Object`
+
+Important limit:
+
+- this is not full Java generics yet
+- bounds, wildcards, inference depth, and broader applicability work remain later under `F1-28` / `F1-31`
+
+Reference doc:
+
+- [generics.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/generics.md)
+
+## Files Most Relevant To Current F1 Work
+
+### Core frontend
+
+- [pulsec-core lib.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/lib.rs)
+  - AST structs
+  - lexer
+  - `check()`
+
+- [pulsec-core parser.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/parser.rs)
+  - declaration parsing
+  - annotation parsing
+  - enum parsing
+  - generic declaration/type-use parsing
+
+- [pulsec-core semantics.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/semantics.rs)
+  - class/type index
+  - annotation semantics
+  - enum semantics
+  - generic validation/erasure-aware canonicalization
+  - mutability/cast/type rules
+
+- [pulsec-core ir.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/ir.rs)
+  - IR lowering
+  - enum ordinal lowering
+  - erased generic runtime type lowering
+
+- [pulsec-core tests.rs](/D:/Programming/codex/PulseCode/crates/pulsec-core/src/tests.rs)
+  - focused parser/semantic/IR unit coverage
+
+### CLI/doc contracts
+
+- [stage_locks.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/tests/stage_locks.rs)
+  - docs-tree contract
+  - stdlib PulseDoc locks
+  - stdlib docs generator locks
+  - F1 doc/CLI lock tests
+
+## What Was Validated At The End Of This Window
+
+Focused validation used, not full-suite:
+
+```powershell
+cargo test -q -p pulsec-core
+cargo test -q -p pulsec --test stage_locks
+```
+
+Both passed after the `F1-11` generics closure work.
+
+## Current Docs Tree Status
+
+The language docs tree now exists and is active:
+
+- [compiler-backed](/D:/Programming/codex/PulseCode/docs/language/compiler-backed)
+- [runtime-backed](/D:/Programming/codex/PulseCode/docs/language/runtime-backed)
+- [stdlib](/D:/Programming/codex/PulseCode/docs/language/stdlib)
+
+Compiler-backed docs added/updated during this window:
+
+- [lexer-and-literals.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/lexer-and-literals.md)
+- [declarations-and-modifiers.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/declarations-and-modifiers.md)
+- [types-and-conversions.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/types-and-conversions.md)
+- [packages-and-imports.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/packages-and-imports.md)
+- [constructors.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/constructors.md)
+- [annotations.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/annotations.md)
+- [enums.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/enums.md)
+- [generics.md](/D:/Programming/codex/PulseCode/docs/language/compiler-backed/generics.md)
+
+Runtime-backed docs already created for current non-stdlib runtime behavior:
+
+- [program-entry-and-execution.md](/D:/Programming/codex/PulseCode/docs/language/runtime-backed/program-entry-and-execution.md)
+- [object-lifetime-and-gc.md](/D:/Programming/codex/PulseCode/docs/language/runtime-backed/object-lifetime-and-gc.md)
+- [runtime-type-and-null-behavior.md](/D:/Programming/codex/PulseCode/docs/language/runtime-backed/runtime-type-and-null-behavior.md)
+- [exceptions-and-failure.md](/D:/Programming/codex/PulseCode/docs/language/runtime-backed/exceptions-and-failure.md)
+
+## Important Scope Policies Already Locked
+
+These policies were explicitly discussed with the user and are reflected in the docs/boards:
+
+- no desktop UI (`awt` / `swing`) in F1
+- full reflection is deferred until after self-hosting
+- `Class` remains reflection-lite only in F1
+- utility/concurrency/networking were made more explicit on the board
+- docs are required during implementation, not at the end
+- testing/conformance infrastructure must exist before self-hosting
+
+Relevant roadmap lines:
+
+- [Standalone Roadmap](/D:/Programming/codex/PulseCode/docs/STANDALONE_ROADMAP.md)
+
+## Library/Binding Direction Already Chosen
+
+This is not current implementation work, but it was locked as future direction and the next agent should not accidentally revert the plan.
+
+Reference docs:
+
+- [Library Artifact Strategy](/D:/Programming/codex/PulseCode/docs/LIBRARY_ARTIFACT_STRATEGY.md)
+- [Standalone Roadmap](/D:/Programming/codex/PulseCode/docs/STANDALONE_ROADMAP.md)
+
+Current future-direction decisions:
+
+- Pulse-authored libraries are intended to compile to native DLLs
+- companion binding artifacts will be normal `.pulse` files, not a separate custom extension
+- planned modifier direction is `external` as a declaration modifier
+- library distro output is intended to be:
+  - `build/distro/<profile>/<library>.dll`
+  - `build/distro/<profile>/bindings/`
+- app/runtime consumption later will use:
+  - `libraries/` for DLLs
+  - `bindings/` for binding `.pulse` files
+
+This is future Phase F-A work, not current F1 execution.
+
+## Recommended Next Step
+
+Resume at:
+
+- [F1 Task Board](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md)
+
+Recommended immediate continuation:
+
+1. Re-read `F1-16` and related exception/runtime rows, plus the reopened bootstrap-to-Pulse notes on `F1-10`, `F1-12`, and `F1-30`.
+2. Examine current parser/semantics/runtime behavior around exceptions and failure paths.
+3. Choose and document the honest exception runtime baseline before implementing too much syntax.
+4. Keep docs current as the work lands.
+
+The next agent should continue from there after reviewing the code and docs in detail.

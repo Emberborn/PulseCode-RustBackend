@@ -1,0 +1,2840 @@
+use super::*;
+
+pub(crate) fn emit_arc_retain_from_eax(out: &mut String) {
+    out.push_str("    mov qword ptr [rsp+32], rax\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_arcRetain\n");
+}
+
+pub(crate) fn emit_arc_release_from_eax(out: &mut String) {
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn emit_call_args_with_arc_boundary(
+    out: &mut String,
+    method: &IrMethod,
+    args: &[IrValueId],
+    arg_reg_base: usize,
+    current_method_is_static: bool,
+    current_package_name: &str,
+    current_class_name: &str,
+    method_symbols: &HashMap<(String, String), String>,
+    method_staticness: &HashMap<(String, String), bool>,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+    method_staticness_by_sig: &HashMap<(String, String, Vec<String>), bool>,
+    stdlib_symbols: &HashMap<(String, String), String>,
+    class_names: &[String],
+    field_symbols: &HashMap<String, String>,
+    field_is_static: &HashMap<String, bool>,
+    field_types: &HashMap<String, String>,
+    class_object_counter_symbol: &str,
+    local_types: &HashMap<String, String>,
+    local_offsets: &HashMap<String, usize>,
+    param_offsets: &HashMap<String, usize>,
+    string_literals: &mut Vec<String>,
+) -> Result<Vec<bool>, String> {
+    let mut arc_flags = Vec::with_capacity(args.len());
+    let mut use_64bit_arg = Vec::with_capacity(args.len());
+    for (idx, arg_id) in args.iter().enumerate() {
+        let arg_ty = value_declared_type(
+            method,
+            *arg_id,
+            local_types,
+            field_types,
+            current_class_name,
+        )
+        .map(|ty| normalize_type_token(&ty));
+        let is_arc_arg = value_is_arc_managed(
+            method,
+            *arg_id,
+            local_types,
+            field_types,
+            current_class_name,
+        );
+        let use_64 = is_arc_arg || matches!(arg_ty.as_deref(), Some("long") | Some("ulong"));
+        emit_value_to_eax_masm(
+            out,
+            method,
+            *arg_id,
+            current_method_is_static,
+            current_package_name,
+            current_class_name,
+            method_symbols,
+            method_staticness,
+            method_symbols_by_sig,
+            method_staticness_by_sig,
+            stdlib_symbols,
+            class_names,
+            field_symbols,
+            field_is_static,
+            field_types,
+            class_object_counter_symbol,
+            local_offsets,
+            param_offsets,
+            string_literals,
+        )?;
+        let spill_offset = arc_arg_spill_offset(method, idx);
+        if use_64 {
+            out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", spill_offset));
+        } else {
+            out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", spill_offset));
+        }
+        if is_arc_arg {
+            emit_arc_retain_from_eax(out);
+            if use_64 {
+                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", spill_offset));
+            } else {
+                out.push_str(&format!("    mov eax, dword ptr [rsp+{}]\n", spill_offset));
+            }
+        }
+        arc_flags.push(is_arc_arg);
+        use_64bit_arg.push(use_64);
+    }
+    let reg_arg_limit = 4usize.saturating_sub(arg_reg_base);
+    for idx in 0..args.len() {
+        let spill_offset = arc_arg_spill_offset(method, idx);
+        if idx < reg_arg_limit {
+            if use_64bit_arg[idx] {
+                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", spill_offset));
+                out.push_str(&format!(
+                    "    mov {}, rax\n",
+                    arg_register64(arg_reg_base + idx)
+                ));
+            } else {
+                out.push_str(&format!("    mov eax, dword ptr [rsp+{}]\n", spill_offset));
+                out.push_str(&format!(
+                    "    mov {}, eax\n",
+                    arg_register32(arg_reg_base + idx)
+                ));
+            }
+        } else {
+            let stack_slot = idx - reg_arg_limit;
+            let stack_offset = masm_outgoing_stack_arg_offset(stack_slot);
+            if use_64bit_arg[idx] {
+                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", spill_offset));
+                out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", stack_offset));
+            } else {
+                out.push_str(&format!("    mov eax, dword ptr [rsp+{}]\n", spill_offset));
+                out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", stack_offset));
+            }
+        }
+    }
+    Ok(arc_flags)
+}
+
+pub(crate) fn emit_call_arg_releases(out: &mut String, method: &IrMethod, arc_flags: &[bool]) {
+    if !arc_flags.iter().any(|flag| *flag) {
+        return;
+    }
+    // Preserve call return value across ARC release calls.
+    let ret_tmp = masm_call_retval_spill_offset(method);
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", ret_tmp));
+    for (idx, is_arc_arg) in arc_flags.iter().enumerate() {
+        if !is_arc_arg {
+            continue;
+        }
+        let spill_offset = arc_arg_spill_offset(method, idx);
+        out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", spill_offset));
+        emit_arc_release_from_eax(out);
+    }
+    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", ret_tmp));
+}
+
+fn native_array_uses_int_lane(element_ty: &str) -> bool {
+    matches!(
+        normalize_type_token(element_ty).as_str(),
+        "boolean" | "byte" | "short" | "int" | "char"
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn emit_array_new_initialized_value(
+    out: &mut String,
+    method: &IrMethod,
+    value: &pulsec_core::intermediate::IrValue,
+    element_ty: &str,
+    values: &[IrValueId],
+    current_method_is_static: bool,
+    current_package_name: &str,
+    current_class_name: &str,
+    method_symbols: &HashMap<(String, String), String>,
+    method_staticness: &HashMap<(String, String), bool>,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+    method_staticness_by_sig: &HashMap<(String, String, Vec<String>), bool>,
+    stdlib_symbols: &HashMap<(String, String), String>,
+    class_names: &[String],
+    field_symbols: &HashMap<String, String>,
+    field_is_static: &HashMap<String, bool>,
+    field_types: &HashMap<String, String>,
+    class_object_counter_symbol: &str,
+    local_offsets: &HashMap<String, usize>,
+    param_offsets: &HashMap<String, usize>,
+    string_literals: &mut Vec<String>,
+) -> Result<(), String> {
+    let tmp_offset = masm_array_init_tmp_offset(method, value.id)
+        .ok_or_else(|| format!("Missing array init temp slot for value id {}", value.id))?;
+    out.push_str(&format!("    mov ecx, {}\n", values.len()));
+    out.push_str("    call pulsec_rt_arrayNew\n");
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp_offset));
+    let set_symbol = if native_array_uses_int_lane(element_ty) {
+        "pulsec_rt_arraySetInt"
+    } else {
+        "pulsec_rt_arraySetString"
+    };
+    for (index, item) in values.iter().enumerate() {
+        out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", tmp_offset));
+        out.push_str(&format!("    mov edx, {}\n", index));
+        emit_value_to_eax_masm(
+            out,
+            method,
+            *item,
+            current_method_is_static,
+            current_package_name,
+            current_class_name,
+            method_symbols,
+            method_staticness,
+            method_symbols_by_sig,
+            method_staticness_by_sig,
+            stdlib_symbols,
+            class_names,
+            field_symbols,
+            field_is_static,
+            field_types,
+            class_object_counter_symbol,
+            local_offsets,
+            param_offsets,
+            string_literals,
+        )?;
+        out.push_str("    mov r8d, eax\n");
+        out.push_str(&format!("    call {}\n", set_symbol));
+    }
+    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp_offset));
+    Ok(())
+}
+
+pub(crate) fn resolve_method_symbol_for_call_exact(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_symbols: &HashMap<(String, String), String>,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+) -> Option<String> {
+    let mut arg_types = Vec::with_capacity(args.len());
+    let mut fully_typed = true;
+    for arg in args {
+        if let Some(t) = value_type_token(method, *arg) {
+            arg_types.push(t);
+        } else {
+            fully_typed = false;
+            break;
+        }
+    }
+    if fully_typed {
+        if let Some(sym) =
+            method_symbols_by_sig.get(&(owner.to_string(), member.to_string(), arg_types.clone()))
+        {
+            return Some(sym.clone());
+        }
+    }
+    let mut arity_matches: Vec<String> = Vec::new();
+    for ((o, m, sig), sym) in method_symbols_by_sig {
+        if o == owner && m == member && sig.len() == args.len() {
+            arity_matches.push(sym.clone());
+        }
+    }
+    arity_matches.sort();
+    arity_matches.dedup();
+    if arity_matches.len() == 1 {
+        return arity_matches.into_iter().next();
+    }
+    method_symbols
+        .get(&(owner.to_string(), member.to_string()))
+        .cloned()
+}
+
+pub(crate) fn resolve_method_symbol_for_call(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_symbols: &HashMap<(String, String), String>,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+) -> Option<String> {
+    let mut current = owner.to_string();
+    loop {
+        if let Some(sym) = resolve_method_symbol_for_call_exact(
+            &current,
+            member,
+            args,
+            method,
+            method_symbols,
+            method_symbols_by_sig,
+        ) {
+            return Some(sym);
+        }
+        let Some(parent) = class_super_of(&current) else {
+            return None;
+        };
+        current = parent;
+    }
+}
+
+pub(crate) fn resolve_method_staticness_for_call_exact(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_staticness: &HashMap<(String, String), bool>,
+    method_staticness_by_sig: &HashMap<(String, String, Vec<String>), bool>,
+) -> Option<bool> {
+    let mut arg_types = Vec::with_capacity(args.len());
+    let mut fully_typed = true;
+    for arg in args {
+        if let Some(t) = value_type_token(method, *arg) {
+            arg_types.push(t);
+        } else {
+            fully_typed = false;
+            break;
+        }
+    }
+    if fully_typed {
+        if let Some(is_static) =
+            method_staticness_by_sig.get(&(owner.to_string(), member.to_string(), arg_types))
+        {
+            return Some(*is_static);
+        }
+    }
+    let mut arity_matches: Vec<bool> = Vec::new();
+    for ((o, m, sig), is_static) in method_staticness_by_sig {
+        if o == owner && m == member && sig.len() == args.len() {
+            arity_matches.push(*is_static);
+        }
+    }
+    arity_matches.sort();
+    arity_matches.dedup();
+    if arity_matches.len() == 1 {
+        return arity_matches.into_iter().next();
+    }
+    method_staticness
+        .get(&(owner.to_string(), member.to_string()))
+        .copied()
+}
+
+pub(crate) fn resolve_method_staticness_for_call(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_staticness: &HashMap<(String, String), bool>,
+    method_staticness_by_sig: &HashMap<(String, String, Vec<String>), bool>,
+) -> Option<bool> {
+    let mut current = owner.to_string();
+    loop {
+        if let Some(is_static) = resolve_method_staticness_for_call_exact(
+            &current,
+            member,
+            args,
+            method,
+            method_staticness,
+            method_staticness_by_sig,
+        ) {
+            return Some(is_static);
+        }
+        let Some(parent) = class_super_of(&current) else {
+            return None;
+        };
+        current = parent;
+    }
+}
+
+pub(crate) fn resolve_method_finality_for_call_exact(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_finality_by_sig: &HashMap<(String, String, Vec<String>), bool>,
+) -> Option<bool> {
+    let mut arg_types = Vec::with_capacity(args.len());
+    let mut fully_typed = true;
+    for arg in args {
+        if let Some(t) = value_type_token(method, *arg) {
+            arg_types.push(t);
+        } else {
+            fully_typed = false;
+            break;
+        }
+    }
+    if fully_typed {
+        if let Some(is_final) =
+            method_finality_by_sig.get(&(owner.to_string(), member.to_string(), arg_types))
+        {
+            return Some(*is_final);
+        }
+    }
+    let mut arity_matches: Vec<bool> = Vec::new();
+    for ((o, m, sig), is_final) in method_finality_by_sig {
+        if o == owner && m == member && sig.len() == args.len() {
+            arity_matches.push(*is_final);
+        }
+    }
+    arity_matches.sort();
+    arity_matches.dedup();
+    if arity_matches.len() == 1 {
+        return arity_matches.into_iter().next();
+    }
+    None
+}
+
+pub(crate) fn resolve_method_finality_for_call(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_finality_by_sig: &HashMap<(String, String, Vec<String>), bool>,
+) -> Option<bool> {
+    let mut current = owner.to_string();
+    loop {
+        if let Some(is_final) = resolve_method_finality_for_call_exact(
+            &current,
+            member,
+            args,
+            method,
+            method_finality_by_sig,
+        ) {
+            return Some(is_final);
+        }
+        let Some(parent) = class_super_of(&current) else {
+            return None;
+        };
+        current = parent;
+    }
+}
+
+pub(crate) fn resolve_method_visibility_for_call_exact(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_visibility_by_sig: &HashMap<(String, String, Vec<String>), IrVisibility>,
+) -> Option<IrVisibility> {
+    let mut arg_types = Vec::with_capacity(args.len());
+    let mut fully_typed = true;
+    for arg in args {
+        if let Some(t) = value_type_token(method, *arg) {
+            arg_types.push(t);
+        } else {
+            fully_typed = false;
+            break;
+        }
+    }
+    if fully_typed {
+        if let Some(visibility) =
+            method_visibility_by_sig.get(&(owner.to_string(), member.to_string(), arg_types))
+        {
+            return Some(*visibility);
+        }
+    }
+    let mut arity_matches: Vec<IrVisibility> = Vec::new();
+    for ((o, m, sig), visibility) in method_visibility_by_sig {
+        if o == owner && m == member && sig.len() == args.len() {
+            arity_matches.push(*visibility);
+        }
+    }
+    arity_matches.sort_by_key(|v| match v {
+        IrVisibility::Public => 0,
+        IrVisibility::Protected => 1,
+        IrVisibility::Package => 2,
+        IrVisibility::Private => 3,
+    });
+    arity_matches.dedup();
+    if arity_matches.len() == 1 {
+        return arity_matches.into_iter().next();
+    }
+    None
+}
+
+pub(crate) fn resolve_method_visibility_for_call(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_visibility_by_sig: &HashMap<(String, String, Vec<String>), IrVisibility>,
+) -> Option<IrVisibility> {
+    let mut current = owner.to_string();
+    loop {
+        if let Some(visibility) = resolve_method_visibility_for_call_exact(
+            &current,
+            member,
+            args,
+            method,
+            method_visibility_by_sig,
+        ) {
+            return Some(visibility);
+        }
+        let Some(parent) = class_super_of(&current) else {
+            return None;
+        };
+        current = parent;
+    }
+}
+
+pub(crate) fn is_devirtualizable_instance_call(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+) -> bool {
+    if class_is_final(owner) {
+        return true;
+    }
+    let method_finality_by_sig = all_method_finality();
+    let method_visibility_by_sig = all_method_visibility();
+    if resolve_method_finality_for_call(
+        owner,
+        member,
+        args,
+        method,
+        &method_finality_by_sig,
+    )
+    .unwrap_or(false)
+    {
+        return true;
+    }
+    matches!(
+        resolve_method_visibility_for_call(
+            owner,
+            member,
+            args,
+            method,
+            &method_visibility_by_sig
+        ),
+        Some(IrVisibility::Private)
+    )
+}
+
+pub(crate) fn is_subclass_of(candidate: &str, ancestor: &str) -> bool {
+    if candidate == ancestor {
+        return true;
+    }
+    let mut current = candidate.to_string();
+    loop {
+        let Some(parent) = class_super_of(&current) else {
+            return false;
+        };
+        if parent == ancestor {
+            return true;
+        }
+        current = parent;
+    }
+}
+
+pub(crate) fn collect_virtual_dispatch_overrides(
+    owner: &str,
+    member: &str,
+    args: &[IrValueId],
+    method: &IrMethod,
+    method_symbols: &HashMap<(String, String), String>,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+) -> Result<(String, Vec<(u32, String)>), String> {
+    let default_target = resolve_method_symbol_for_call(
+        owner,
+        member,
+        args,
+        method,
+        method_symbols,
+        method_symbols_by_sig,
+    )
+    .ok_or_else(|| format!("Unknown call target '{}.{}'", owner, member))?;
+    let mut overrides = Vec::new();
+    let owner_is_interface = is_interface_type(owner);
+    for (class_name, class_id) in all_class_ids() {
+        let candidate = if owner_is_interface {
+            class_implements_interface_runtime(&class_name, owner)
+        } else {
+            is_subclass_of(&class_name, owner)
+        };
+        if !candidate {
+            continue;
+        }
+        if let Some(target) = resolve_method_symbol_for_call(
+            &class_name,
+            member,
+            args,
+            method,
+            method_symbols,
+            method_symbols_by_sig,
+        ) {
+            if target != default_target {
+                overrides.push((class_id, target));
+            }
+        }
+    }
+    overrides.sort_by(|a, b| a.0.cmp(&b.0));
+    overrides.dedup_by(|a, b| a.0 == b.0);
+    Ok((default_target, overrides))
+}
+
+pub(crate) fn emit_virtual_dispatch_call(
+    out: &mut String,
+    label_seed: &str,
+    default_target: &str,
+    assignable_class_ids: &[u32],
+    overrides: &[(u32, String)],
+) {
+    let label_null = format!("{}_null", label_seed);
+    let label_type = format!("{}_type", label_seed);
+    let label_default = format!("{}_default", label_seed);
+    let label_done = format!("{}_done", label_seed);
+    let label_assign_ok = format!("{}_assign_ok", label_seed);
+    if overrides.is_empty() {
+        out.push_str("    cmp ecx, 0\n");
+        out.push_str(&format!("    je {}\n", label_null));
+        out.push_str(&format!("    call {}\n", default_target));
+        out.push_str(&format!("    jmp {}\n", label_done));
+        out.push_str(&format!("{}:\n", label_null));
+        out.push_str(&format!("    call {}\n", DISPATCH_NULL_PANIC_SYMBOL));
+        out.push_str(&format!("{}:\n", label_done));
+        return;
+    }
+    if assignable_class_ids.is_empty() {
+        out.push_str(&format!("    call {}\n", DISPATCH_TYPE_PANIC_SYMBOL));
+        return;
+    }
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    je {}\n", label_null));
+    out.push_str(&format!("    call {}\n", OBJECT_CLASS_ID_SYMBOL));
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", label_type));
+    for class_id in assignable_class_ids {
+        out.push_str(&format!("    cmp eax, {}\n", class_id));
+        out.push_str(&format!("    je {}\n", label_assign_ok));
+    }
+    out.push_str(&format!("    jmp {}\n", label_type));
+    out.push_str(&format!("{}:\n", label_assign_ok));
+    for (idx, (class_id, _)) in overrides.iter().enumerate() {
+        out.push_str(&format!("    cmp eax, {}\n", class_id));
+        out.push_str(&format!("    je {}_ovr{}\n", label_seed, idx));
+    }
+    out.push_str(&format!("    jmp {}\n", label_default));
+    for (idx, (_, target)) in overrides.iter().enumerate() {
+        out.push_str(&format!("{}_ovr{}:\n", label_seed, idx));
+        out.push_str(&format!("    call {}\n", target));
+        out.push_str(&format!("    jmp {}\n", label_done));
+    }
+    out.push_str(&format!("{}:\n", label_default));
+    out.push_str(&format!("    call {}\n", default_target));
+    out.push_str(&format!("    jmp {}\n", label_done));
+    out.push_str(&format!("{}:\n", label_null));
+    out.push_str(&format!("    call {}\n", DISPATCH_NULL_PANIC_SYMBOL));
+    out.push_str(&format!("    jmp {}\n", label_done));
+    out.push_str(&format!("{}:\n", label_type));
+    out.push_str(&format!("    call {}\n", DISPATCH_TYPE_PANIC_SYMBOL));
+    out.push_str(&format!("{}:\n", label_done));
+}
+
+pub(crate) fn collect_instanceof_class_ids(target_type: &str) -> Vec<u32> {
+    let mut ids = Vec::new();
+    let is_iface = is_interface_type(target_type);
+    for (class_name, class_id) in all_class_ids() {
+        let matches = if is_iface {
+            class_implements_interface_runtime(&class_name, target_type)
+        } else {
+            is_subclass_of(&class_name, target_type)
+        };
+        if matches {
+            ids.push(class_id);
+        }
+    }
+    ids.sort();
+    ids.dedup();
+    ids
+}
+
+pub(crate) fn emit_instanceof_check(out: &mut String, label_seed: &str, target_class_ids: &[u32]) {
+    let l_false = format!("{}_false", label_seed);
+    let l_true = format!("{}_true", label_seed);
+    let l_done = format!("{}_done", label_seed);
+
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", l_false));
+    out.push_str("    mov ecx, eax\n");
+    out.push_str(&format!("    call {}\n", OBJECT_CLASS_ID_SYMBOL));
+    out.push_str("    mov edx, eax\n");
+    out.push_str("    test edx, edx\n");
+    out.push_str(&format!("    jz {}\n", l_false));
+    for class_id in target_class_ids {
+        out.push_str(&format!("    cmp edx, {}\n", class_id));
+        out.push_str(&format!("    je {}\n", l_true));
+    }
+    out.push_str(&format!("{}:\n", l_false));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("    jmp {}\n", l_done));
+    out.push_str(&format!("{}:\n", l_true));
+    out.push_str("    mov eax, 1\n");
+    out.push_str(&format!("{}:\n", l_done));
+}
+
+pub(crate) fn emit_checked_reference_cast(
+    out: &mut String,
+    label_seed: &str,
+    target_class_ids: &[u32],
+    panic_msg_label: &str,
+) {
+    let l_ok = format!("{}_ok", label_seed);
+    let l_fail = format!("{}_fail", label_seed);
+    let l_done = format!("{}_done", label_seed);
+
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", l_ok));
+    out.push_str("    mov ecx, eax\n");
+    out.push_str(&format!("    call {}\n", OBJECT_CLASS_ID_SYMBOL));
+    out.push_str("    mov edx, eax\n");
+    out.push_str("    test edx, edx\n");
+    out.push_str(&format!("    jz {}\n", l_fail));
+    for class_id in target_class_ids {
+        out.push_str(&format!("    cmp edx, {}\n", class_id));
+        out.push_str(&format!("    je {}\n", l_ok));
+    }
+    out.push_str(&format!("{}:\n", l_fail));
+    out.push_str(&format!("    lea rcx, {}\n", panic_msg_label));
+    out.push_str(&format!("    mov edx, {}_len\n", panic_msg_label));
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("    jmp {}\n", l_done));
+    out.push_str(&format!("{}:\n", l_ok));
+    out.push_str(&format!("{}:\n", l_done));
+}
+
+pub(crate) fn emit_masm_method_body(
+    out: &mut String,
+    current_package_name: &str,
+    current_class_name: &str,
+    method_symbol: &str,
+    method: &IrMethod,
+    method_symbols: &HashMap<(String, String), String>,
+    method_staticness: &HashMap<(String, String), bool>,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+    method_staticness_by_sig: &HashMap<(String, String, Vec<String>), bool>,
+    stdlib_symbols: &HashMap<(String, String), String>,
+    class_names: &[String],
+    field_symbols: &HashMap<String, String>,
+    field_is_static: &HashMap<String, bool>,
+    field_types: &HashMap<String, String>,
+    class_object_counter_symbol: &str,
+    print_literals: &mut Vec<String>,
+) -> Result<(), String> {
+    let mut local_types: HashMap<String, String> = HashMap::new();
+    let mut local_offsets: HashMap<String, usize> = HashMap::new();
+    let mut next_local_slot = 0usize;
+    for block in &method.blocks {
+        for instr in &block.instructions {
+            if let IrInstr::DeclareLocal { name, ty, .. } = instr {
+                local_types.insert(name.clone(), ty.clone());
+                if !local_offsets.contains_key(name) {
+                    local_offsets.insert(name.clone(), next_local_slot);
+                    next_local_slot += 1;
+                }
+            }
+        }
+    }
+    for param in &method.params {
+        local_types.insert(param.name.clone(), param.ty.clone());
+    }
+    let method_stack_size = masm_method_stack_size(method);
+    let incoming_stack_base = method_stack_size + 40;
+    let local_base = masm_local_base_offset(method);
+    let mut param_offsets: HashMap<String, usize> = HashMap::new();
+    for (idx, param) in method.params.iter().enumerate() {
+        let slot = next_local_slot + idx;
+        let offset = local_base + (slot * 8);
+        param_offsets.insert(param.name.clone(), offset);
+        let incoming_stack_slot = if method.is_static {
+            idx.checked_sub(4)
+        } else {
+            idx.checked_sub(3)
+        };
+        let param_is_handle = is_handle_type_name(&param.ty);
+        if let Some(stack_slot) = incoming_stack_slot {
+            let incoming_offset = incoming_stack_base + (stack_slot * 8);
+            if is_wide_integer_type_name(&param.ty) || param_is_handle {
+                out.push_str(&format!(
+                    "    mov rax, qword ptr [rsp+{}]\n",
+                    incoming_offset
+                ));
+                out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", offset));
+            } else {
+                out.push_str(&format!(
+                    "    mov eax, dword ptr [rsp+{}]\n",
+                    incoming_offset
+                ));
+                out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", offset));
+            }
+            continue;
+        }
+        let reg_idx = if method.is_static { idx } else { idx + 1 };
+        if is_wide_integer_type_name(&param.ty) || param_is_handle {
+            out.push_str(&format!(
+                "    mov qword ptr [rsp+{}], {}\n",
+                offset,
+                arg_register64(reg_idx)
+            ));
+        } else {
+            out.push_str(&format!(
+                "    mov dword ptr [rsp+{}], {}\n",
+                offset,
+                arg_register32(reg_idx)
+            ));
+        }
+    }
+    if !method.is_static {
+        let slot = next_local_slot + method.params.len();
+        let offset = local_base + (slot * 8);
+        param_offsets.insert("__this".to_string(), offset);
+        out.push_str(&format!("    mov qword ptr [rsp+{}], rcx\n", offset));
+    }
+    let mut initialized_arc_locals: HashSet<String> = HashSet::new();
+
+    if method.is_constructor {
+        let class_id = class_id_of(current_class_name).unwrap_or(0);
+        out.push_str(&format!("    mov ecx, {}\n", class_id));
+        out.push_str(&format!("    call {}\n", OBJECT_NEW_SYMBOL));
+        if field_is_static.values().any(|is_static| !*is_static) {
+            let helper_symbol =
+                mangle_class_field_capacity_proc_symbol(current_package_name, current_class_name);
+            let tmp = masm_arc_local_tmp_offset(method);
+            out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
+            out.push_str("    mov ecx, eax\n");
+            out.push_str(&format!("    call {}\n", helper_symbol));
+            out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+        }
+        out.push_str("    mov ecx, eax\n");
+        if let Some(this_offset) = param_offsets.get("__this") {
+            out.push_str(&format!(
+                "    mov qword ptr [rsp+{}], rcx\n",
+                this_offset
+            ));
+        }
+    }
+
+    let epilogue_label = format!("{}_epilogue", method_symbol);
+
+    for block in &method.blocks {
+        let block_label = format!("{}_b{}", method_symbol, block.id);
+        out.push_str(&format!("{}:\n", block_label));
+        let mut i = 0usize;
+        while i < block.instructions.len() {
+            let instr = &block.instructions[i];
+            if let IrInstr::StoreLocal { value, .. } = instr {
+                emit_value_to_eax_masm(
+                    out,
+                    method,
+                    *value,
+                    method.is_static,
+                    current_package_name,
+                    current_class_name,
+                    method_symbols,
+                    method_staticness,
+                    method_symbols_by_sig,
+                    method_staticness_by_sig,
+                    stdlib_symbols,
+                    class_names,
+                    field_symbols,
+                    field_is_static,
+                    field_types,
+                    class_object_counter_symbol,
+                    &local_offsets,
+                    &param_offsets,
+                    print_literals,
+                )?;
+                if let IrInstr::StoreLocal { name, .. } = instr {
+                    let retain_new = value_requires_arc_retain_on_store(method, *value);
+                    let target_ty = local_types
+                        .get(name)
+                        .cloned()
+                        .or_else(|| method.params.iter().find(|p| p.name == *name).map(|p| p.ty.clone()))
+                        .unwrap_or_else(|| "unknown".to_string());
+                    let is_wide_target =
+                        is_wide_integer_type_name(&target_ty) || is_handle_type_name(&target_ty);
+                    let target_is_arc =
+                        is_arc_managed_type_name(&target_ty) && !is_string_type_name(&target_ty);
+                    if let Some(slot) = local_offsets.get(name) {
+                        let offset = local_base + (slot * 8);
+                        if target_is_arc {
+                            let tmp = masm_arc_local_tmp_offset(method);
+                            out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
+                            if initialized_arc_locals.contains(name) {
+                                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", offset));
+                                emit_arc_release_from_eax(out);
+                            }
+                            out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+                            if retain_new {
+                                emit_arc_retain_from_eax(out);
+                            }
+                        }
+                        if is_wide_target {
+                            out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", offset));
+                        } else {
+                            out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", offset));
+                        }
+                        if target_is_arc {
+                            initialized_arc_locals.insert(name.clone());
+                        }
+                    } else if let Some(offset) = param_offsets.get(name) {
+                        if target_is_arc {
+                            let tmp = masm_arc_local_tmp_offset(method);
+                            out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
+                            out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", offset));
+                            emit_arc_release_from_eax(out);
+                            out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+                            if retain_new {
+                                emit_arc_retain_from_eax(out);
+                            }
+                        }
+                        if is_wide_target {
+                            out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", offset));
+                        } else {
+                            out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", offset));
+                        }
+                    }
+                }
+                i += 1;
+                continue;
+            }
+
+            let IrInstr::Eval { value, source } = instr else {
+                i += 1;
+                continue;
+            };
+            let Some(v) = method.values.get(*value as usize) else {
+                i += 1;
+                continue;
+            };
+
+            // Detect lowered assignment shape: Eval(target), Eval(value) with same statement index.
+            if let IrValueKind::LocalRef(target_name) = &v.kind {
+                if let Some(IrInstr::Eval {
+                    value: rhs_value,
+                    source: rhs_source,
+                }) = block.instructions.get(i + 1)
+                {
+                    if rhs_source.statement_index == source.statement_index {
+                        let retain_new = value_requires_arc_retain_on_store(method, *rhs_value);
+                        emit_value_to_eax_masm(
+                            out,
+                            method,
+                            *rhs_value,
+                            method.is_static,
+                            current_package_name,
+                            current_class_name,
+                            method_symbols,
+                            method_staticness,
+                            method_symbols_by_sig,
+                            method_staticness_by_sig,
+                            stdlib_symbols,
+                            class_names,
+                            field_symbols,
+                            field_is_static,
+                            field_types,
+                            class_object_counter_symbol,
+                            &local_offsets,
+                            &param_offsets,
+                            print_literals,
+                        )?;
+                        if let Some(slot) = local_offsets.get(target_name) {
+                            let offset = local_base + (slot * 8);
+                            let target_ty = local_types
+                                .get(target_name)
+                                .cloned()
+                                .unwrap_or_else(|| "unknown".to_string());
+                            let is_wide_target = is_wide_integer_type_name(&target_ty)
+                                || is_handle_type_name(&target_ty);
+                            if is_arc_managed_type_name(&target_ty)
+                                && !is_string_type_name(&target_ty)
+                            {
+                                let tmp = masm_arc_local_tmp_offset(method);
+                                out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
+                                if initialized_arc_locals.contains(target_name) {
+                                    out.push_str(&format!(
+                                        "    mov rax, qword ptr [rsp+{}]\n",
+                                        offset
+                                    ));
+                                    emit_arc_release_from_eax(out);
+                                }
+                                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+                                if retain_new {
+                                    emit_arc_retain_from_eax(out);
+                                }
+                                initialized_arc_locals.insert(target_name.clone());
+                            }
+                            if is_wide_target {
+                                out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", offset));
+                            } else {
+                                out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", offset));
+                            }
+                            i += 2;
+                            continue;
+                        }
+                        if let Some(offset) = param_offsets.get(target_name) {
+                            let target_ty = local_types
+                                .get(target_name)
+                                .cloned()
+                                .unwrap_or_else(|| "unknown".to_string());
+                            let is_wide_target = is_wide_integer_type_name(&target_ty)
+                                || is_handle_type_name(&target_ty);
+                            if is_arc_managed_type_name(&target_ty)
+                                && !is_string_type_name(&target_ty)
+                            {
+                                let tmp = masm_arc_local_tmp_offset(method);
+                                out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
+                                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", offset));
+                                emit_arc_release_from_eax(out);
+                                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+                                if retain_new {
+                                    emit_arc_retain_from_eax(out);
+                                }
+                            }
+                            if is_wide_target {
+                                out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", offset));
+                            } else {
+                                out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", offset));
+                            }
+                            i += 2;
+                            continue;
+                        }
+                        if let Some(field_sym) = field_symbols.get(target_name) {
+                            let is_static_field =
+                                *field_is_static.get(target_name).unwrap_or(&false);
+                            let target_ty = field_types
+                                .get(target_name)
+                                .cloned()
+                                .unwrap_or_else(|| "unknown".to_string());
+                            let target_is_arc = is_arc_managed_type_name(&target_ty);
+                            let target_uses_qword = uses_qword_field_storage(&target_ty);
+                            if target_is_arc {
+                                if is_static_field {
+                                    if target_uses_qword {
+                                        out.push_str(&format!(
+                                            "    mov rax, qword ptr [{}]\n",
+                                            field_sym
+                                        ));
+                                    } else {
+                                        out.push_str(&format!(
+                                            "    mov eax, dword ptr [{}]\n",
+                                            field_sym
+                                        ));
+                                    }
+                                    emit_arc_release_from_eax(out);
+                                } else {
+                                    if let Some(this_offset) = param_offsets.get("__this") {
+                                        out.push_str(&format!(
+                                            "    mov edx, dword ptr [rsp+{}]\n",
+                                            this_offset
+                                        ));
+                                    } else {
+                                        out.push_str("    mov edx, ecx\n");
+                                    }
+                                    out.push_str(&format!(
+                                        "    cmp edx, {}\n",
+                                        OBJECT_SLOT_CAPACITY
+                                    ));
+                                    out.push_str("    jbe @F\n");
+                                    out.push_str(&format!(
+                                        "    mov edx, {}\n",
+                                        OBJECT_SLOT_CAPACITY
+                                    ));
+                                    out.push_str("@@:\n");
+                                    out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+                                    if target_uses_qword {
+                                        out.push_str("    mov rax, qword ptr [r10+rdx*8]\n");
+                                    } else {
+                                        out.push_str("    mov eax, dword ptr [r10+rdx*4]\n");
+                                    }
+                                    emit_arc_release_from_eax(out);
+                                }
+                            }
+                            emit_value_to_eax_masm(
+                                out,
+                                method,
+                                *rhs_value,
+                                method.is_static,
+                                current_package_name,
+                                current_class_name,
+                                method_symbols,
+                                method_staticness,
+                                method_symbols_by_sig,
+                                method_staticness_by_sig,
+                                stdlib_symbols,
+                                class_names,
+                                field_symbols,
+                                field_is_static,
+                                field_types,
+                                class_object_counter_symbol,
+                                &local_offsets,
+                                &param_offsets,
+                                print_literals,
+                            )?;
+                            if target_is_arc && retain_new {
+                                emit_arc_retain_from_eax(out);
+                            }
+                            if is_static_field {
+                                if target_uses_qword {
+                                    out.push_str(&format!("    mov qword ptr [{}], rax\n", field_sym));
+                                } else {
+                                    out.push_str(&format!("    mov dword ptr [{}], eax\n", field_sym));
+                                }
+                            } else {
+                                if let Some(this_offset) = param_offsets.get("__this") {
+                                    out.push_str(&format!(
+                                        "    mov edx, dword ptr [rsp+{}]\n",
+                                        this_offset
+                                    ));
+                                } else {
+                                    out.push_str("    mov edx, ecx\n");
+                                }
+                                out.push_str(&format!(
+                                    "    cmp edx, {}\n",
+                                    OBJECT_SLOT_CAPACITY
+                                ));
+                                out.push_str("    jbe @F\n");
+                                out.push_str(&format!(
+                                    "    mov edx, {}\n",
+                                    OBJECT_SLOT_CAPACITY
+                                ));
+                                out.push_str("@@:\n");
+                                out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+                                if target_uses_qword {
+                                    out.push_str("    mov qword ptr [r10+rdx*8], rax\n");
+                                } else {
+                                    out.push_str("    mov dword ptr [r10+rdx*4], eax\n");
+                                }
+                            }
+                            i += 2;
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            if let IrValueKind::MemberAccess { object, member } = &v.kind {
+                if let Some(IrInstr::Eval {
+                    value: rhs_value,
+                    source: rhs_source,
+                }) = block.instructions.get(i + 1)
+                {
+                    if rhs_source.statement_index == source.statement_index {
+                        if let Some(obj_val) = method.values.get(*object as usize) {
+                            let is_this =
+                                matches!(obj_val.kind, IrValueKind::ThisRef | IrValueKind::SuperRef);
+                            let is_local_same_class = match &obj_val.kind {
+                                IrValueKind::LocalRef(name) => local_types
+                                    .get(name)
+                                    .map(|ty| ty == current_class_name)
+                                    .unwrap_or(false),
+                                _ => false,
+                            };
+                            if is_this || is_local_same_class {
+                                let field_sym = field_symbols.get(member).ok_or_else(|| {
+                                    format!(
+                                        "Unknown field symbol '{}.{}'",
+                                        current_class_name, member
+                                    )
+                                })?;
+                                let is_static_field =
+                                    *field_is_static.get(member).unwrap_or(&false);
+                                let field_ty = field_types
+                                    .get(member)
+                                    .cloned()
+                                    .unwrap_or_else(|| "unknown".to_string());
+                                let field_uses_qword = uses_qword_field_storage(&field_ty);
+                                let field_is_arc = is_arc_managed_type_name(&field_ty)
+                                    && !is_string_type_name(&field_ty);
+                                if field_is_arc {
+                                    if is_static_field {
+                                        if field_uses_qword {
+                                            out.push_str(&format!(
+                                                "    mov rax, qword ptr [{}]\n",
+                                                field_sym
+                                            ));
+                                        } else {
+                                            out.push_str(&format!(
+                                                "    mov eax, dword ptr [{}]\n",
+                                                field_sym
+                                            ));
+                                        }
+                                        emit_arc_release_from_eax(out);
+                                    } else {
+                                        if let Some(this_offset) = param_offsets.get("__this") {
+                                            out.push_str(&format!(
+                                                "    mov edx, dword ptr [rsp+{}]\n",
+                                                this_offset
+                                            ));
+                                        } else {
+                                            out.push_str("    mov edx, ecx\n");
+                                        }
+                                        out.push_str(&format!(
+                                            "    cmp edx, {}\n",
+                                            OBJECT_SLOT_CAPACITY
+                                        ));
+                                        out.push_str("    jbe @F\n");
+                                        out.push_str(&format!(
+                                            "    mov edx, {}\n",
+                                            OBJECT_SLOT_CAPACITY
+                                        ));
+                                        out.push_str("@@:\n");
+                                        out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+                                        if field_uses_qword {
+                                            out.push_str("    mov rax, qword ptr [r10+rdx*8]\n");
+                                        } else {
+                                            out.push_str("    mov eax, dword ptr [r10+rdx*4]\n");
+                                        }
+                                        emit_arc_release_from_eax(out);
+                                    }
+                                }
+                                emit_value_to_eax_masm(
+                                    out,
+                                    method,
+                                    *rhs_value,
+                                    method.is_static,
+                                    current_package_name,
+                                    current_class_name,
+                                    method_symbols,
+                                    method_staticness,
+                                    method_symbols_by_sig,
+                                    method_staticness_by_sig,
+                                    stdlib_symbols,
+                                    class_names,
+                                    field_symbols,
+                                    field_is_static,
+                                    field_types,
+                                    class_object_counter_symbol,
+                                    &local_offsets,
+                                    &param_offsets,
+                                    print_literals,
+                                )?;
+                                if field_is_arc {
+                                    emit_arc_retain_from_eax(out);
+                                }
+                                if is_static_field {
+                                    if field_uses_qword {
+                                        out.push_str(&format!("    mov qword ptr [{}], rax\n", field_sym));
+                                    } else {
+                                        out.push_str(&format!("    mov dword ptr [{}], eax\n", field_sym));
+                                    }
+                                } else {
+                                    if let Some(this_offset) = param_offsets.get("__this") {
+                                        out.push_str(&format!(
+                                            "    mov edx, dword ptr [rsp+{}]\n",
+                                            this_offset
+                                        ));
+                                    } else {
+                                        out.push_str("    mov edx, ecx\n");
+                                    }
+                                    out.push_str(&format!(
+                                        "    cmp edx, {}\n",
+                                        OBJECT_SLOT_CAPACITY
+                                    ));
+                                    out.push_str("    jbe @F\n");
+                                    out.push_str(&format!(
+                                        "    mov edx, {}\n",
+                                        OBJECT_SLOT_CAPACITY
+                                    ));
+                                    out.push_str("@@:\n");
+                                    out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+                                    if field_uses_qword {
+                                        out.push_str("    mov qword ptr [r10+rdx*8], rax\n");
+                                    } else {
+                                        out.push_str("    mov dword ptr [r10+rdx*4], eax\n");
+                                    }
+                                }
+                                i += 2;
+                                continue;
+                            }
+                        }
+                    }
+                }
+            }
+            let IrValueKind::Call { callee, args } = &v.kind else {
+                i += 1;
+                continue;
+            };
+            let Some(callee_v) = method.values.get(*callee as usize) else {
+                i += 1;
+                continue;
+            };
+            if let IrValueKind::LocalRef(member_name) = &callee_v.kind {
+                let owner = current_class_name.to_string();
+                if let Some(is_target_static) = resolve_method_staticness_for_call(
+                    &owner,
+                    member_name,
+                    args,
+                    method,
+                    method_staticness,
+                    method_staticness_by_sig,
+                ) {
+                    let arc_arg_flags = emit_call_args_with_arc_boundary(
+                        out,
+                        method,
+                        args,
+                        if is_target_static { 0 } else { 1 },
+                        method.is_static,
+                        current_package_name,
+                        current_class_name,
+                        method_symbols,
+                        method_staticness,
+                        method_symbols_by_sig,
+                        method_staticness_by_sig,
+                        stdlib_symbols,
+                        class_names,
+                        field_symbols,
+                        field_is_static,
+                        field_types,
+                        class_object_counter_symbol,
+                        &local_types,
+                        &local_offsets,
+                        &param_offsets,
+                        print_literals,
+                    )?;
+                    if !is_target_static {
+                        if let Some(this_offset) = param_offsets.get("__this") {
+                            out.push_str(&format!(
+                                "    mov rcx, qword ptr [rsp+{}]\n",
+                                this_offset
+                            ));
+                        } else {
+                            out.push_str("    mov rcx, 1\n");
+                        }
+                    }
+                    if is_target_static {
+                        let target = resolve_method_symbol_for_call(
+                            &owner,
+                            member_name,
+                            args,
+                            method,
+                            method_symbols,
+                            method_symbols_by_sig,
+                        )
+                        .ok_or_else(|| {
+                            format!("Unknown call target '{}.{}'", owner, member_name)
+                        })?;
+                        out.push_str(&format!("    call {}\n", target));
+                    } else {
+                        if is_devirtualizable_instance_call(
+                            &owner,
+                            member_name,
+                            args,
+                            method,
+                        ) {
+                            let target = resolve_method_symbol_for_call(
+                                &owner,
+                                member_name,
+                                args,
+                                method,
+                                method_symbols,
+                                method_symbols_by_sig,
+                            )
+                            .ok_or_else(|| {
+                                format!("Unknown call target '{}.{}'", owner, member_name)
+                            })?;
+                            out.push_str(&format!("    call {}\n", target));
+                        } else {
+                            let (default_target, overrides) = collect_virtual_dispatch_overrides(
+                                &owner,
+                                member_name,
+                                args,
+                                method,
+                                method_symbols,
+                                method_symbols_by_sig,
+                            )?;
+                            let assignable_class_ids = collect_instanceof_class_ids(&owner);
+                            let label_seed = format!(
+                                "{}_vd_stmt_{}_{}_{}",
+                                method_symbol, block.id, source.statement_index, i
+                            );
+                            emit_virtual_dispatch_call(
+                                out,
+                                &label_seed,
+                                &default_target,
+                                &assignable_class_ids,
+                                &overrides,
+                            );
+                        }
+                    }
+                    emit_call_arg_releases(out, method, &arc_arg_flags);
+                    i += 1;
+                    continue;
+                }
+            }
+            let IrValueKind::MemberAccess { object, member } = &callee_v.kind else {
+                i += 1;
+                continue;
+            };
+            let Some(object_v) = method.values.get(*object as usize) else {
+                i += 1;
+                continue;
+            };
+            let mut is_super_receiver = false;
+            let owner = match &object_v.kind {
+                IrValueKind::LocalRef(owner) => owner.clone(),
+                IrValueKind::NewObject { class_name, .. } => class_name.clone(),
+                IrValueKind::ThisRef => current_class_name.to_string(),
+                IrValueKind::SuperRef => {
+                    is_super_receiver = true;
+                    class_super_of(current_class_name).unwrap_or_else(|| current_class_name.to_string())
+                }
+                IrValueKind::MemberAccess {
+                    object: owner_object,
+                    member: owner_member,
+                } => {
+                    if owner_member == "out" {
+                        let Some(base_v) = method.values.get(*owner_object as usize) else {
+                            i += 1;
+                            continue;
+                        };
+                        if matches!(&base_v.kind, IrValueKind::LocalRef(name) if name == "System") {
+                            "System.out".to_string()
+                        } else {
+                            i += 1;
+                            continue;
+                        }
+                    } else if let Some(normalized) =
+                        normalize_class_owner_name(&object_v.ty, class_names)
+                    {
+                        normalized
+                    } else if let Some(ty) = field_types.get(owner_member) {
+                        normalize_class_owner_name(ty, class_names).unwrap_or_else(|| ty.clone())
+                    } else if let Some(path) = value_dotted_path(method, *object) {
+                        path
+                    } else {
+                        i += 1;
+                        continue;
+                    }
+                }
+                IrValueKind::Call { callee, .. } => {
+                    let Some(callee_value) = method.values.get(*callee as usize) else {
+                        i += 1;
+                        continue;
+                    };
+                    if let IrValueKind::LocalRef(name) = &callee_value.kind {
+                        name.clone()
+                    } else {
+                        i += 1;
+                        continue;
+                    }
+                }
+                _ => {
+                    i += 1;
+                    continue;
+                }
+            };
+
+            if let Some(newline) = console_intrinsic_newline(&owner, member) {
+                if args.len() != 1 {
+                    return Err(format!(
+                        "{}.{} currently supports one argument",
+                        owner, member
+                    ));
+                }
+                emit_value_to_eax_masm(
+                    out,
+                    method,
+                    args[0],
+                    method.is_static,
+                    current_package_name,
+                    current_class_name,
+                    method_symbols,
+                    method_staticness,
+                    method_symbols_by_sig,
+                    method_staticness_by_sig,
+                    stdlib_symbols,
+                    class_names,
+                    field_symbols,
+                    field_is_static,
+                    field_types,
+                    class_object_counter_symbol,
+                    &local_offsets,
+                    &param_offsets,
+                    print_literals,
+                )?;
+                let arg_ty = method
+                    .values
+                    .get(args[0] as usize)
+                    .map(|v| {
+                        if v.ty != "unknown" {
+                            v.ty.clone()
+                        } else if let IrValueKind::LocalRef(name) = &v.kind {
+                            local_types
+                                .get(name)
+                                .cloned()
+                                .unwrap_or_else(|| "unknown".to_string())
+                        } else {
+                            "unknown".to_string()
+                        }
+                    })
+                    .ok_or_else(|| format!("Invalid {}.{} arg", owner, member))?;
+                if !(arg_ty == "String"
+                    || arg_ty.ends_with(".String")
+                    || arg_ty == "com.pulse.lang.String")
+                {
+                    if arg_ty == "int" {
+                        out.push_str("    mov ecx, eax\n");
+                        out.push_str("    call pulsec_rt_intToString\n");
+                    } else if arg_ty == "boolean" {
+                        out.push_str("    mov ecx, eax\n");
+                        out.push_str("    call pulsec_rt_booleanToString\n");
+                    } else {
+                        return Err(format!(
+                            "Unsupported {}.{} argument type '{}' in masm-full",
+                            owner, member, arg_ty
+                        ));
+                    }
+                }
+                let target = if newline {
+                    "pulsec_rt_consoleWriteLine"
+                } else {
+                    "pulsec_rt_consoleWrite"
+                };
+                out.push_str("    mov rcx, rax\n");
+                out.push_str(&format!("    call {}\n", target));
+                i += 1;
+                continue;
+            }
+
+            let std_owner = normalize_stdlib_owner(&owner).to_string();
+            if let Some(std_sym) = stdlib_symbols.get(&(std_owner, member.clone())) {
+                let arc_arg_flags = emit_call_args_with_arc_boundary(
+                    out,
+                    method,
+                    args,
+                    0,
+                    method.is_static,
+                    current_package_name,
+                    current_class_name,
+                    method_symbols,
+                    method_staticness,
+                    method_symbols_by_sig,
+                    method_staticness_by_sig,
+                    stdlib_symbols,
+                    class_names,
+                    field_symbols,
+                    field_is_static,
+                    field_types,
+                    class_object_counter_symbol,
+                    &local_types,
+                    &local_offsets,
+                    &param_offsets,
+                    print_literals,
+                )?;
+                out.push_str(&format!("    call {}\n", std_sym));
+                emit_call_arg_releases(out, method, &arc_arg_flags);
+                i += 1;
+                continue;
+            }
+
+            let resolved_owner = if let Some(normalized) =
+                normalize_class_owner_name(&owner, class_names)
+            {
+                normalized
+            } else if let Some(normalized) = normalize_class_owner_name(&object_v.ty, class_names)
+            {
+                normalized
+            } else if let Some(field_ty) = field_types.get(&owner) {
+                normalize_class_owner_name(field_ty, class_names)
+                    .unwrap_or_else(|| field_ty.clone())
+            } else if let Some(local_ty) = local_types.get(&owner) {
+                normalize_class_owner_name(local_ty, class_names)
+                    .unwrap_or_else(|| local_ty.clone())
+            } else {
+                owner.clone()
+            };
+            if normalize_class_owner_name(&resolved_owner, class_names).is_none() {
+                return Err(format!("Unknown static call owner '{}'", owner));
+            }
+            let is_target_static = resolve_method_staticness_for_call(
+                &resolved_owner,
+                member,
+                args,
+                method,
+                method_staticness,
+                method_staticness_by_sig,
+            )
+            .ok_or_else(|| {
+                format!(
+                    "Unknown staticness for target '{}.{}'",
+                    resolved_owner, member
+                )
+            })?;
+            let arc_arg_flags = emit_call_args_with_arc_boundary(
+                out,
+                method,
+                args,
+                if is_target_static { 0 } else { 1 },
+                method.is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                &local_types,
+                &local_offsets,
+                &param_offsets,
+                print_literals,
+            )?;
+            if !is_target_static {
+                if is_super_receiver || owner == "this" || owner == current_class_name {
+                    if method.is_static {
+                        out.push_str("    mov ecx, 1\n");
+                    } else if let Some(this_offset) = param_offsets.get("__this") {
+                        out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", this_offset));
+                    }
+                } else {
+                    emit_value_to_eax_masm(
+                        out,
+                        method,
+                        *object,
+                        method.is_static,
+                        current_package_name,
+                        current_class_name,
+                        method_symbols,
+                        method_staticness,
+                        method_symbols_by_sig,
+                        method_staticness_by_sig,
+                        stdlib_symbols,
+                        class_names,
+                        field_symbols,
+                        field_is_static,
+                        field_types,
+                        class_object_counter_symbol,
+                        &local_offsets,
+                        &param_offsets,
+                        print_literals,
+                    )?;
+                    out.push_str("    mov rcx, rax\n");
+                }
+            }
+            let devirt = !is_target_static
+                && !is_super_receiver
+                && is_devirtualizable_instance_call(
+                    &resolved_owner,
+                    member,
+                    args,
+                    method,
+                );
+            if is_target_static || is_super_receiver || devirt {
+                let target = resolve_method_symbol_for_call(
+                    &resolved_owner,
+                    member,
+                    args,
+                    method,
+                    method_symbols,
+                    method_symbols_by_sig,
+                )
+                .ok_or_else(|| format!("Unknown static target '{}.{}'", resolved_owner, member))?;
+                out.push_str(&format!("    call {}\n", target));
+            } else {
+                let (default_target, overrides) = collect_virtual_dispatch_overrides(
+                    &resolved_owner,
+                    member,
+                    args,
+                    method,
+                    method_symbols,
+                    method_symbols_by_sig,
+                )?;
+                let assignable_class_ids = collect_instanceof_class_ids(&resolved_owner);
+                let label_seed = format!(
+                    "{}_vd_stmt_{}_{}_{}",
+                    method_symbol, block.id, source.statement_index, i
+                );
+                emit_virtual_dispatch_call(
+                    out,
+                    &label_seed,
+                    &default_target,
+                    &assignable_class_ids,
+                    &overrides,
+                );
+            }
+            emit_call_arg_releases(out, method, &arc_arg_flags);
+            i += 1;
+        }
+
+        match &block.terminator {
+            IrTerminator::Goto { target, .. } => {
+                out.push_str(&format!("    jmp {}_b{}\n", method_symbol, target));
+            }
+            IrTerminator::Branch {
+                condition,
+                then_target,
+                else_target,
+                ..
+            } => {
+                emit_value_to_eax_masm(
+                    out,
+                    method,
+                    *condition,
+                    method.is_static,
+                    current_package_name,
+                    current_class_name,
+                    method_symbols,
+                    method_staticness,
+                    method_symbols_by_sig,
+                    method_staticness_by_sig,
+                    stdlib_symbols,
+                    class_names,
+                    field_symbols,
+                    field_is_static,
+                    field_types,
+                    class_object_counter_symbol,
+                    &local_offsets,
+                    &param_offsets,
+                    print_literals,
+                )?;
+                out.push_str("    test eax, eax\n");
+                out.push_str(&format!("    jne {}_b{}\n", method_symbol, then_target));
+                out.push_str(&format!("    jmp {}_b{}\n", method_symbol, else_target));
+            }
+            IrTerminator::Return { value, .. } => {
+                if let Some(value_id) = value {
+                    emit_value_to_eax_masm(
+                        out,
+                        method,
+                        *value_id,
+                        method.is_static,
+                        current_package_name,
+                        current_class_name,
+                        method_symbols,
+                        method_staticness,
+                        method_symbols_by_sig,
+                        method_staticness_by_sig,
+                        stdlib_symbols,
+                        class_names,
+                        field_symbols,
+                        field_is_static,
+                        field_types,
+                        class_object_counter_symbol,
+                        &local_offsets,
+                        &param_offsets,
+                        print_literals,
+                    )?;
+                } else if method.is_constructor {
+                    if let Some(this_offset) = param_offsets.get("__this") {
+                        out.push_str(&format!(
+                            "    mov eax, dword ptr [rsp+{}]\n",
+                            this_offset
+                        ));
+                    } else {
+                        out.push_str("    mov eax, ecx\n");
+                    }
+                } else {
+                    out.push_str("    xor eax, eax\n");
+                }
+                out.push_str(&format!("    jmp {}\n", epilogue_label));
+            }
+            IrTerminator::Stop => {
+                if method.is_constructor {
+                    if let Some(this_offset) = param_offsets.get("__this") {
+                        out.push_str(&format!(
+                            "    mov eax, dword ptr [rsp+{}]\n",
+                            this_offset
+                        ));
+                    } else {
+                        out.push_str("    mov eax, ecx\n");
+                    }
+                } else {
+                    out.push_str("    xor eax, eax\n");
+                }
+                out.push_str(&format!("    jmp {}\n", epilogue_label));
+            }
+        }
+    }
+
+    out.push_str(&format!("{}:\n", epilogue_label));
+    Ok(())
+}
+
+pub(crate) fn arg_register32(idx: usize) -> &'static str {
+    match idx {
+        0 => "ecx",
+        1 => "edx",
+        2 => "r8d",
+        3 => "r9d",
+        _ => "ecx",
+    }
+}
+
+pub(crate) fn arg_register64(idx: usize) -> &'static str {
+    match idx {
+        0 => "rcx",
+        1 => "rdx",
+        2 => "r8",
+        3 => "r9",
+        _ => "rcx",
+    }
+}
+
+pub(crate) fn emit_value_to_eax_masm(
+    out: &mut String,
+    method: &IrMethod,
+    value_id: IrValueId,
+    current_method_is_static: bool,
+    current_package_name: &str,
+    current_class_name: &str,
+    method_symbols: &HashMap<(String, String), String>,
+    method_staticness: &HashMap<(String, String), bool>,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+    method_staticness_by_sig: &HashMap<(String, String, Vec<String>), bool>,
+    stdlib_symbols: &HashMap<(String, String), String>,
+    class_names: &[String],
+    field_symbols: &HashMap<String, String>,
+    field_is_static: &HashMap<String, bool>,
+    field_types: &HashMap<String, String>,
+    class_object_counter_symbol: &str,
+    local_offsets: &HashMap<String, usize>,
+    param_offsets: &HashMap<String, usize>,
+    string_literals: &mut Vec<String>,
+) -> Result<(), String> {
+    let value = method
+        .values
+        .get(value_id as usize)
+        .ok_or_else(|| format!("Invalid value id {}", value_id))?;
+    let mut local_types: HashMap<String, String> = method
+        .params
+        .iter()
+        .map(|p| (p.name.clone(), p.ty.clone()))
+        .collect();
+    for block in &method.blocks {
+        for instr in &block.instructions {
+            if let IrInstr::DeclareLocal { name, ty, .. } = instr {
+                local_types.insert(name.clone(), ty.clone());
+            }
+        }
+    }
+    match &value.kind {
+        IrValueKind::IntLiteral(i) => {
+            if is_wide_integer_type_name(&value.ty) {
+                out.push_str(&format!("    mov rax, {}\n", *i));
+            } else {
+                out.push_str(&format!("    mov eax, {}\n", *i as i32));
+            }
+            Ok(())
+        }
+        IrValueKind::BoolLiteral(b) => {
+            out.push_str(&format!("    mov eax, {}\n", if *b { 1 } else { 0 }));
+            Ok(())
+        }
+        IrValueKind::StringLiteral(s) => {
+            let idx = string_literals.len();
+            string_literals.push(s.clone());
+            out.push_str(&format!("    lea rcx, msg{}\n", idx));
+            out.push_str(&format!("    mov edx, msg{}_len\n", idx));
+            out.push_str("    call pulsec_rt_stringFromBytes\n");
+            Ok(())
+        }
+        IrValueKind::NullLiteral => {
+            out.push_str("    xor eax, eax\n");
+            Ok(())
+        }
+        IrValueKind::LocalRef(name) => {
+            let is_wide_local = local_types
+                .get(name)
+                .map(|ty| is_wide_integer_type_name(ty) || is_handle_type_name(ty))
+                .unwrap_or(false);
+            if let Some(slot) = local_offsets.get(name) {
+                let offset = masm_local_base_offset(method) + (slot * 8);
+                if is_wide_local {
+                    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", offset));
+                } else {
+                    out.push_str(&format!("    mov eax, dword ptr [rsp+{}]\n", offset));
+                }
+                return Ok(());
+            }
+            if let Some(offset) = param_offsets.get(name) {
+                if is_wide_local {
+                    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", offset));
+                } else {
+                    out.push_str(&format!("    mov eax, dword ptr [rsp+{}]\n", offset));
+                }
+                return Ok(());
+            }
+            if let Some(field_sym) = field_symbols.get(name) {
+                let is_static_field = *field_is_static.get(name).unwrap_or(&false);
+                let field_ty = field_types
+                    .get(name)
+                    .cloned()
+                    .unwrap_or_else(|| "unknown".to_string());
+                let field_uses_qword = uses_qword_field_storage(&field_ty);
+                if is_static_field {
+                    if field_uses_qword {
+                        out.push_str(&format!("    mov rax, qword ptr [{}]\n", field_sym));
+                    } else {
+                        out.push_str(&format!("    mov eax, dword ptr [{}]\n", field_sym));
+                    }
+                } else if let Some(this_offset) = param_offsets.get("__this") {
+                    out.push_str(&format!("    mov edx, dword ptr [rsp+{}]\n", this_offset));
+                    out.push_str(&format!("    cmp edx, {}\n", OBJECT_SLOT_CAPACITY));
+                    out.push_str("    jbe @F\n");
+                    out.push_str(&format!("    mov edx, {}\n", OBJECT_SLOT_CAPACITY));
+                    out.push_str("@@:\n");
+                    out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+                    if field_uses_qword {
+                        out.push_str("    mov rax, qword ptr [r10+rdx*8]\n");
+                    } else {
+                        out.push_str("    mov eax, dword ptr [r10+rdx*4]\n");
+                    }
+                } else {
+                    out.push_str("    mov rax, rcx\n");
+                }
+                return Ok(());
+            }
+            let idx = method
+                .params
+                .iter()
+                .position(|p| p.name == *name)
+                .ok_or_else(|| format!("Unsupported local ref '{}' in masm-full", name))?;
+            let reg_idx = if current_method_is_static { idx } else { idx + 1 };
+            if is_wide_local {
+                out.push_str(&format!("    mov rax, {}\n", arg_register64(reg_idx)));
+            } else {
+                out.push_str(&format!("    mov eax, {}\n", arg_register32(reg_idx)));
+            }
+            Ok(())
+        }
+        IrValueKind::ThisRef => {
+            if let Some(this_offset) = param_offsets.get("__this") {
+                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", this_offset));
+            } else {
+                out.push_str("    mov rax, rcx\n");
+            }
+            Ok(())
+        }
+        IrValueKind::SuperRef => {
+            if let Some(this_offset) = param_offsets.get("__this") {
+                out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", this_offset));
+            } else {
+                out.push_str("    mov rax, rcx\n");
+            }
+            Ok(())
+        }
+        IrValueKind::MemberAccess { object, member } => {
+            let Some(obj) = method.values.get(*object as usize) else {
+                return Err(format!("Invalid member object value id {}", object));
+            };
+            let is_this = matches!(obj.kind, IrValueKind::ThisRef | IrValueKind::SuperRef);
+            if is_this {
+                let field_sym = field_symbols.get(member).ok_or_else(|| {
+                    format!("Unknown field symbol '{}.{}'", current_class_name, member)
+                })?;
+                let is_static_field = *field_is_static.get(member).unwrap_or(&false);
+                let field_ty = field_types
+                    .get(member)
+                    .cloned()
+                    .unwrap_or_else(|| "unknown".to_string());
+                let field_uses_qword = uses_qword_field_storage(&field_ty);
+                if is_static_field {
+                    if field_uses_qword {
+                        out.push_str(&format!("    mov rax, qword ptr [{}]\n", field_sym));
+                    } else {
+                        out.push_str(&format!("    mov eax, dword ptr [{}]\n", field_sym));
+                    }
+                } else {
+                    if let Some(this_offset) = param_offsets.get("__this") {
+                        out.push_str(&format!(
+                            "    mov edx, dword ptr [rsp+{}]\n",
+                            this_offset
+                        ));
+                    } else {
+                        out.push_str("    mov edx, ecx\n");
+                    }
+                    out.push_str(&format!("    cmp edx, {}\n", OBJECT_SLOT_CAPACITY));
+                    out.push_str("    jbe @F\n");
+                    out.push_str(&format!("    mov edx, {}\n", OBJECT_SLOT_CAPACITY));
+                    out.push_str("@@:\n");
+                    out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+                    if field_uses_qword {
+                        out.push_str("    mov rax, qword ptr [r10+rdx*8]\n");
+                    } else {
+                        out.push_str("    mov eax, dword ptr [r10+rdx*4]\n");
+                    }
+                }
+                return Ok(());
+            }
+            Err(format!(
+                "Unsupported member access read in masm-full expression at id {}",
+                value.id
+            ))
+        }
+        IrValueKind::NewObject { class_name, args } => {
+            if class_names.iter().any(|c| c == class_name) {
+                if let Some(ctor) = method_symbols.get(&(class_name.clone(), class_name.clone())) {
+                    let arc_arg_flags = emit_call_args_with_arc_boundary(
+                        out,
+                        method,
+                        args,
+                        1,
+                        current_method_is_static,
+                        current_package_name,
+                        current_class_name,
+                        method_symbols,
+                        method_staticness,
+                        method_symbols_by_sig,
+                        method_staticness_by_sig,
+                        stdlib_symbols,
+                        class_names,
+                        field_symbols,
+                        field_is_static,
+                        field_types,
+                        class_object_counter_symbol,
+                        &local_types,
+                        local_offsets,
+                        param_offsets,
+                        string_literals,
+                    )?;
+                    out.push_str(&format!("    call {}\n", ctor));
+                    emit_call_arg_releases(out, method, &arc_arg_flags);
+                } else {
+                    let class_id = class_id_of(class_name).unwrap_or(0);
+                    out.push_str(&format!("    mov ecx, {}\n", class_id));
+                    out.push_str(&format!("    call {}\n", OBJECT_NEW_SYMBOL));
+                }
+                return Ok(());
+            }
+            Err(format!(
+                "Unknown constructor owner '{}' in masm-full expression at id {}",
+                class_name, value.id
+            ))
+        }
+        IrValueKind::Call { callee, args } => {
+            let Some(callee_v) = method.values.get(*callee as usize) else {
+                return Err(format!("Invalid callee id {}", callee));
+            };
+            if let IrValueKind::LocalRef(class_name) = &callee_v.kind {
+                if class_names.iter().any(|c| c == class_name) {
+                    if let Some(ctor) = method_symbols.get(&(class_name.clone(), class_name.clone())) {
+                        let arc_arg_flags = emit_call_args_with_arc_boundary(
+                            out,
+                            method,
+                            args,
+                            1,
+                            current_method_is_static,
+                            current_package_name,
+                            current_class_name,
+                            method_symbols,
+                            method_staticness,
+                            method_symbols_by_sig,
+                            method_staticness_by_sig,
+                            stdlib_symbols,
+                            class_names,
+                            field_symbols,
+                            field_is_static,
+                            field_types,
+                            class_object_counter_symbol,
+                            &local_types,
+                            local_offsets,
+                            param_offsets,
+                            string_literals,
+                        )?;
+                        out.push_str(&format!("    call {}\n", ctor));
+                        emit_call_arg_releases(out, method, &arc_arg_flags);
+                    } else {
+                        let class_id = class_id_of(class_name).unwrap_or(0);
+                        out.push_str(&format!("    mov ecx, {}\n", class_id));
+                        out.push_str(&format!("    call {}\n", OBJECT_NEW_SYMBOL));
+                    }
+                    return Ok(());
+                }
+
+                // Unqualified in-class call (e.g. `valueOf(...)` inside same class).
+                let owner = current_class_name.to_string();
+                if let Some(is_target_static) = resolve_method_staticness_for_call(
+                    &owner,
+                    class_name,
+                    args,
+                    method,
+                    method_staticness,
+                    method_staticness_by_sig,
+                ) {
+                    let arc_arg_flags = emit_call_args_with_arc_boundary(
+                        out,
+                        method,
+                        args,
+                        if is_target_static { 0 } else { 1 },
+                        current_method_is_static,
+                        current_package_name,
+                        current_class_name,
+                        method_symbols,
+                        method_staticness,
+                        method_symbols_by_sig,
+                        method_staticness_by_sig,
+                        stdlib_symbols,
+                        class_names,
+                        field_symbols,
+                        field_is_static,
+                        field_types,
+                        class_object_counter_symbol,
+                        &local_types,
+                        local_offsets,
+                        param_offsets,
+                        string_literals,
+                    )?;
+                    if !is_target_static {
+                        if let Some(this_offset) = param_offsets.get("__this") {
+                            out.push_str(&format!(
+                                "    mov rcx, qword ptr [rsp+{}]\n",
+                                this_offset
+                            ));
+                        } else {
+                            out.push_str("    mov rcx, 1\n");
+                        }
+                    }
+                    if is_target_static {
+                        let target = resolve_method_symbol_for_call(
+                            &owner,
+                            class_name,
+                            args,
+                            method,
+                            method_symbols,
+                            method_symbols_by_sig,
+                        )
+                        .ok_or_else(|| {
+                            format!("Unknown call target '{}.{}'", owner, class_name)
+                        })?;
+                        out.push_str(&format!("    call {}\n", target));
+                    } else {
+                        if is_devirtualizable_instance_call(
+                            &owner,
+                            class_name,
+                            args,
+                            method,
+                        ) {
+                            let target = resolve_method_symbol_for_call(
+                                &owner,
+                                class_name,
+                                args,
+                                method,
+                                method_symbols,
+                                method_symbols_by_sig,
+                            )
+                            .ok_or_else(|| {
+                                format!("Unknown call target '{}.{}'", owner, class_name)
+                            })?;
+                            out.push_str(&format!("    call {}\n", target));
+                        } else {
+                            let (default_target, overrides) = collect_virtual_dispatch_overrides(
+                                &owner,
+                                class_name,
+                                args,
+                                method,
+                                method_symbols,
+                                method_symbols_by_sig,
+                            )?;
+                            let assignable_class_ids = collect_instanceof_class_ids(&owner);
+                            let label_seed = format!(
+                                "{}_{}_vd{}_{}",
+                                current_class_name,
+                                method.name,
+                                value.source.statement_index,
+                                value.id
+                            );
+                            emit_virtual_dispatch_call(
+                                out,
+                                &label_seed,
+                                &default_target,
+                                &assignable_class_ids,
+                                &overrides,
+                            );
+                        }
+                    }
+                    emit_call_arg_releases(out, method, &arc_arg_flags);
+                    return Ok(());
+                }
+            }
+            let IrValueKind::MemberAccess { object, member } = &callee_v.kind else {
+                return Err(format!(
+                    "Only member-call expressions are supported in masm value lowering (in {}.{})",
+                    current_class_name, method.name
+                ));
+            };
+            let Some(owner_v) = method.values.get(*object as usize) else {
+                return Err(format!("Invalid owner id {}", object));
+            };
+            let mut is_super_receiver = false;
+            let owner_name = match &owner_v.kind {
+                IrValueKind::ThisRef => current_class_name.to_string(),
+                IrValueKind::SuperRef => {
+                    is_super_receiver = true;
+                    class_super_of(current_class_name).unwrap_or_else(|| current_class_name.to_string())
+                }
+                IrValueKind::LocalRef(name) => name.clone(),
+                IrValueKind::NewObject { class_name, .. } => class_name.clone(),
+                IrValueKind::MemberAccess {
+                    object: owner_object,
+                    member: owner_member,
+                } => {
+                    if owner_member == "out" {
+                        let Some(base_v) = method.values.get(*owner_object as usize) else {
+                            return Err(format!("Invalid owner base id {}", owner_object));
+                        };
+                        if matches!(&base_v.kind, IrValueKind::LocalRef(name) if name == "System")
+                        {
+                            "System.out".to_string()
+                        } else if let Some(normalized) =
+                            normalize_class_owner_name(&owner_v.ty, class_names)
+                        {
+                            normalized
+                        } else if let Some(ty) = field_types.get(owner_member) {
+                            normalize_class_owner_name(ty, class_names)
+                                .unwrap_or_else(|| ty.clone())
+                        } else if let Some(path) = value_dotted_path(method, *object) {
+                            path
+                        } else {
+                            return Err(format!(
+                                "Unsupported member owner for expression value id {} in {}.{}",
+                                value.id, current_class_name, method.name
+                            ));
+                        }
+                    } else if let Some(normalized) =
+                        normalize_class_owner_name(&owner_v.ty, class_names)
+                    {
+                        normalized
+                    } else if let Some(ty) = field_types.get(owner_member) {
+                        normalize_class_owner_name(ty, class_names).unwrap_or_else(|| ty.clone())
+                    } else if let Some(path) = value_dotted_path(method, *object) {
+                        path
+                    } else {
+                        return Err(format!(
+                            "Unsupported member owner for expression value id {} in {}.{}",
+                            value.id, current_class_name, method.name
+                        ));
+                    }
+                }
+                _ => {
+                    return Err(format!(
+                        "Unsupported call owner kind for expression value id {} in {}.{}",
+                        value.id,
+                        current_class_name,
+                        method.name
+                    ))
+                }
+            };
+            let resolved_owner = if let Some(normalized) =
+                normalize_class_owner_name(&owner_name, class_names)
+            {
+                normalized
+            } else if owner_name == "this" {
+                current_class_name.to_string()
+            } else if let Some(local_ty) = lookup_local_decl_type(method, &owner_name) {
+                normalize_class_owner_name(&local_ty, class_names).unwrap_or(local_ty)
+            } else if let Some(normalized) = normalize_class_owner_name(&owner_v.ty, class_names)
+            {
+                normalized
+            } else if let Some(field_ty) = field_types.get(&owner_name) {
+                normalize_class_owner_name(field_ty, class_names)
+                    .unwrap_or_else(|| field_ty.clone())
+            } else {
+                owner_name.clone()
+            };
+
+            let std_owner = normalize_stdlib_owner(&resolved_owner).to_string();
+            if let Some(std_sym) = stdlib_symbols.get(&(std_owner, member.clone())) {
+                let arc_arg_flags = emit_call_args_with_arc_boundary(
+                    out,
+                    method,
+                    args,
+                    0,
+                    current_method_is_static,
+                    current_package_name,
+                    current_class_name,
+                    method_symbols,
+                    method_staticness,
+                    method_symbols_by_sig,
+                    method_staticness_by_sig,
+                    stdlib_symbols,
+                    class_names,
+                    field_symbols,
+                    field_is_static,
+                    field_types,
+                    class_object_counter_symbol,
+                    &local_types,
+                    local_offsets,
+                    param_offsets,
+                    string_literals,
+                )?;
+                out.push_str(&format!("    call {}\n", std_sym));
+                emit_call_arg_releases(out, method, &arc_arg_flags);
+                return Ok(());
+            }
+
+            let is_target_static = resolve_method_staticness_for_call(
+                &resolved_owner,
+                member,
+                args,
+                method,
+                method_staticness,
+                method_staticness_by_sig,
+            )
+            .ok_or_else(|| {
+                format!(
+                    "Unknown staticness for target '{}.{}'",
+                    resolved_owner, member
+                )
+            })?;
+            let arc_arg_flags = emit_call_args_with_arc_boundary(
+                out,
+                method,
+                args,
+                if is_target_static { 0 } else { 1 },
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                &local_types,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            if !is_target_static {
+                if is_super_receiver || matches!(owner_v.kind, IrValueKind::ThisRef) {
+                    if let Some(this_offset) = param_offsets.get("__this") {
+                        out.push_str(&format!(
+                            "    mov rcx, qword ptr [rsp+{}]\n",
+                            this_offset
+                        ));
+                    }
+                } else {
+                    emit_value_to_eax_masm(
+                        out,
+                        method,
+                        *object,
+                        current_method_is_static,
+                        current_package_name,
+                        current_class_name,
+                        method_symbols,
+                        method_staticness,
+                        method_symbols_by_sig,
+                        method_staticness_by_sig,
+                        stdlib_symbols,
+                        class_names,
+                        field_symbols,
+                        field_is_static,
+                        field_types,
+                        class_object_counter_symbol,
+                        local_offsets,
+                        param_offsets,
+                        string_literals,
+                    )?;
+                    out.push_str("    mov rcx, rax\n");
+                }
+            }
+            let devirt = !is_target_static
+                && !is_super_receiver
+                && is_devirtualizable_instance_call(
+                    &resolved_owner,
+                    member,
+                    args,
+                    method,
+                );
+            if is_target_static || is_super_receiver || devirt {
+                let target = resolve_method_symbol_for_call(
+                    &resolved_owner,
+                    member,
+                    args,
+                    method,
+                    method_symbols,
+                    method_symbols_by_sig,
+                )
+                .ok_or_else(|| format!("Unknown call target '{}.{}'", resolved_owner, member))?;
+                out.push_str(&format!("    call {}\n", target));
+            } else {
+                let (default_target, overrides) = collect_virtual_dispatch_overrides(
+                    &resolved_owner,
+                    member,
+                    args,
+                    method,
+                    method_symbols,
+                    method_symbols_by_sig,
+                )?;
+                let assignable_class_ids = collect_instanceof_class_ids(&resolved_owner);
+                let label_seed = format!(
+                    "{}_{}_vd{}_{}",
+                    current_class_name, method.name, value.source.statement_index, value.id
+                );
+                emit_virtual_dispatch_call(
+                    out,
+                    &label_seed,
+                    &default_target,
+                    &assignable_class_ids,
+                    &overrides,
+                );
+            }
+            emit_call_arg_releases(out, method, &arc_arg_flags);
+            Ok(())
+        }
+        IrValueKind::Cast { value: inner, ty } => {
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *inner,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+
+            if is_primitive_type_name(ty) {
+                return Ok(());
+            }
+
+            let target_ty = normalize_class_owner_name(ty, class_names).unwrap_or_else(|| ty.clone());
+            let targets = collect_instanceof_class_ids(&target_ty);
+            let panic_msg_idx = string_literals.len();
+            string_literals.push("Invalid cast".to_string());
+            let panic_msg_label = format!("msg{}", panic_msg_idx);
+            let label_seed = format!(
+                "{}_{}_cast_{}_{}",
+                current_class_name, method.name, value.source.statement_index, value.id
+            );
+            emit_checked_reference_cast(out, &label_seed, &targets, &panic_msg_label);
+            Ok(())
+        }
+        IrValueKind::InstanceOf { value: inner, ty } => {
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *inner,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            let targets = collect_instanceof_class_ids(ty);
+            let label_seed = format!(
+                "{}_{}_instof_{}_{}",
+                current_class_name, method.name, value.source.statement_index, value.id
+            );
+            emit_instanceof_check(out, &label_seed, &targets);
+            Ok(())
+        }
+        IrValueKind::Unary { op, operand } => {
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *operand,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            match op {
+                IrUnaryOp::Not => {
+                    out.push_str("    test eax, eax\n");
+                    out.push_str("    sete al\n");
+                    out.push_str("    movzx eax, al\n");
+                }
+                IrUnaryOp::Neg => {
+                    out.push_str("    neg eax\n");
+                }
+            }
+            Ok(())
+        }
+        IrValueKind::Binary { op, left, right } => {
+            let tmp_offset = masm_binary_tmp_offset(method, value.id)
+                .ok_or_else(|| format!("Missing binary temp slot for value id {}", value.id))?;
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *left,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", tmp_offset));
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *right,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            out.push_str("    mov edx, eax\n");
+            out.push_str(&format!("    mov eax, dword ptr [rsp+{}]\n", tmp_offset));
+            match op {
+                IrBinaryOp::Add => out.push_str("    add eax, edx\n"),
+                IrBinaryOp::Sub => out.push_str("    sub eax, edx\n"),
+                IrBinaryOp::Mul => out.push_str("    imul eax, edx\n"),
+                IrBinaryOp::Div => {
+                    out.push_str("    mov ecx, edx\n");
+                    out.push_str("    cdq\n");
+                    out.push_str("    idiv ecx\n");
+                }
+                IrBinaryOp::Eq
+                | IrBinaryOp::NotEq
+                | IrBinaryOp::Less
+                | IrBinaryOp::LessEq
+                | IrBinaryOp::Greater
+                | IrBinaryOp::GreaterEq => {
+                    out.push_str("    cmp eax, edx\n");
+                    let set = match op {
+                        IrBinaryOp::Eq => "sete",
+                        IrBinaryOp::NotEq => "setne",
+                        IrBinaryOp::Less => "setl",
+                        IrBinaryOp::LessEq => "setle",
+                        IrBinaryOp::Greater => "setg",
+                        IrBinaryOp::GreaterEq => "setge",
+                        _ => unreachable!(),
+                    };
+                    out.push_str(&format!("    {} al\n", set));
+                    out.push_str("    movzx eax, al\n");
+                }
+                IrBinaryOp::And => {
+                    out.push_str("    test eax, eax\n");
+                    out.push_str("    setne al\n");
+                    out.push_str("    movzx eax, al\n");
+                    out.push_str("    test edx, edx\n");
+                    out.push_str("    setne dl\n");
+                    out.push_str("    and al, dl\n");
+                    out.push_str("    movzx eax, al\n");
+                }
+                IrBinaryOp::Or => {
+                    out.push_str("    test eax, eax\n");
+                    out.push_str("    setne al\n");
+                    out.push_str("    test edx, edx\n");
+                    out.push_str("    setne dl\n");
+                    out.push_str("    or al, dl\n");
+                    out.push_str("    movzx eax, al\n");
+                }
+            }
+            Ok(())
+        }
+        IrValueKind::Conditional {
+            condition,
+            then_value,
+            else_value,
+        } => {
+            let then_label = format!(
+                "{}_{}_ternary_then_{}_{}",
+                current_class_name, method.name, value.source.statement_index, value.id
+            );
+            let done_label = format!(
+                "{}_{}_ternary_done_{}_{}",
+                current_class_name, method.name, value.source.statement_index, value.id
+            );
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *condition,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            out.push_str("    test rax, rax\n");
+            out.push_str(&format!("    jne {}\n", then_label));
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *else_value,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            out.push_str(&format!("    jmp {}\n", done_label));
+            out.push_str(&format!("{}:\n", then_label));
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *then_value,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            out.push_str(&format!("{}:\n", done_label));
+            Ok(())
+        }
+        IrValueKind::ArrayNew { lengths, .. } => {
+            if lengths.len() != 1 {
+                return Err(
+                    "Multidimensional native array creation still requires later backend/runtime work"
+                        .to_string(),
+                );
+            }
+            emit_value_to_eax_masm(
+                out,
+                method,
+                lengths[0],
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            out.push_str("    mov ecx, eax\n");
+            out.push_str("    call pulsec_rt_arrayNew\n");
+            Ok(())
+        }
+        IrValueKind::ArrayNewInitialized { element_ty, values } => {
+            emit_array_new_initialized_value(
+                out,
+                method,
+                value,
+                element_ty,
+                values,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            Ok(())
+        }
+        IrValueKind::ArrayLength { array } => {
+            emit_value_to_eax_masm(
+                out,
+                method,
+                *array,
+                current_method_is_static,
+                current_package_name,
+                current_class_name,
+                method_symbols,
+                method_staticness,
+                method_symbols_by_sig,
+                method_staticness_by_sig,
+                stdlib_symbols,
+                class_names,
+                field_symbols,
+                field_is_static,
+                field_types,
+                class_object_counter_symbol,
+                local_offsets,
+                param_offsets,
+                string_literals,
+            )?;
+            out.push_str("    mov rcx, rax\n");
+            out.push_str("    call pulsec_rt_arrayLength\n");
+            Ok(())
+        }
+    }
+}
+
+pub(crate) fn collect_object_arc_field_dispatch(ir: &IrProgram) -> BTreeMap<u32, ArcFieldDispatch> {
+    let mut by_class_id: BTreeMap<u32, ArcFieldDispatch> = BTreeMap::new();
+    for class in &ir.classes {
+        let Some(class_id) = class_id_of(&class.name) else {
+            continue;
+        };
+        if class
+            .fields
+            .iter()
+            .any(|field| !field.is_static && is_arc_managed_type_name(&field.ty))
+        {
+            by_class_id.insert(
+                class_id,
+                ArcFieldDispatch {
+                    teardown_proc: mangle_class_arc_teardown_proc_symbol(
+                        &class.package_name,
+                        &class.name,
+                    ),
+                    scan_edges_proc: mangle_class_arc_scan_edges_proc_symbol(
+                        &class.package_name,
+                        &class.name,
+                    ),
+                    invalidate_edges_proc: mangle_class_arc_invalidate_edges_proc_symbol(
+                        &class.package_name,
+                        &class.name,
+                    ),
+                },
+            );
+        }
+    }
+    by_class_id
+}
+
+pub(crate) fn extract_println_literals(method: &IrMethod) -> Result<Vec<String>, String> {
+    let mut lines = Vec::new();
+    for block in &method.blocks {
+        for instr in &block.instructions {
+            let IrInstr::Eval { value, .. } = instr else {
+                continue;
+            };
+            let Some(v) = method.values.get(*value as usize) else {
+                continue;
+            };
+            let IrValueKind::Call { callee, args } = &v.kind else {
+                continue;
+            };
+            if args.len() != 1 {
+                continue;
+            }
+            let Some(callee_v) = method.values.get(*callee as usize) else {
+                continue;
+            };
+            let is_println = match &callee_v.kind {
+                IrValueKind::MemberAccess { member, .. } => member == "println",
+                IrValueKind::LocalRef(name) => name == "println",
+                _ => false,
+            };
+            if !is_println {
+                continue;
+            }
+            let Some(arg_v) = method.values.get(args[0] as usize) else {
+                continue;
+            };
+            let line = match &arg_v.kind {
+                IrValueKind::StringLiteral(s) => s.clone(),
+                IrValueKind::IntLiteral(i) => i.to_string(),
+                IrValueKind::BoolLiteral(b) => b.to_string(),
+                _ => {
+                    return Err(format!(
+                        "Unsupported println argument kind at value id {}",
+                        arg_v.id
+                    ));
+                }
+            };
+            lines.push(line);
+        }
+    }
+    Ok(lines)
+}
+
+

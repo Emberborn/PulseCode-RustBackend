@@ -1,0 +1,7 @@
+package app.mixed;
+
+class BaseShape {
+    public String label() {
+        return "shape";
+    }
+}

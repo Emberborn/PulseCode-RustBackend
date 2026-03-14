@@ -1,0 +1,313 @@
+# F1 Task Board: Java-Close Language Completion + Standard Library Expansion + Validation
+
+Status legend: `Todo`, `In Progress`, `Blocked`, `Done (Locked)`.
+
+## Scope
+F1 is the large language-and-stdlib completion phase that moves PulseCode from its current partial Java-style surface to a substantially Java-close language ecosystem. By F1 exit, the goal is not just "more library classes" but a usable, operational Java-like syntax and runtime model across lexer, parser, semantics, IR/backend/runtime lowering, standard library APIs, and the validation/CI guardrails that prove those features are real.
+
+This board is grounded in the current repo state:
+- many foundational stdlib classes already exist in `stdlib/src`
+- significant Java-like OOP support already exists (`extends`, `implements`, `interface`, `abstract`, `final`, `super`, `@Override`, `instanceof`)
+- native execution already exists
+- but the language surface is still incomplete relative to Java, and many stdlib APIs remain shallow
+
+## F1 End-State Intent
+At F1 closure, PulseCode should have:
+- a broadly operational Java-like syntax surface for mainstream application code
+- enough frontend + backend support that those syntax features really build and run, not just parse
+- a materially expanded standard library that feels recognizably Java-like
+- integrated conformance/fixture/backend/package validation for the shipped F1 surface
+- explicit documentation of what remains intentionally non-Java or deferred past F1
+
+## Current Baseline (Observed)
+Already present in `stdlib/src`:
+- `com.pulse.lang`: core object/string/wrapper/exception/console classes and interfaces
+- `com.pulse.collections`: `Array`, `Collection`, `List`, `ArrayList`, `LinkedList`, `Set`, `HashSet`, `Map`, `HashMap`, `Queue`, `Deque`
+- `com.pulse.io`: `File`, `Files`, `InputStream`, `OutputStream`, `Path`
+- `com.pulse.math`: `Math`, `Random`
+- `com.pulse.time`: `Instant`, `Duration`
+- `com.pulse.rt`: `Intrinsics`
+
+Already present in the language/compiler at a meaningful baseline:
+- packages/imports/static imports
+- classes, interfaces, inheritance, abstract/final, override validation
+- fields, methods, constructors
+- control flow: `if`, `while`, `do-while`, `for`, `switch`, `break`, `continue`, `return`
+- member access/calls, static-vs-instance rules, constructors, `super`, `this`
+- boxing/unboxing baseline, wrappers, explicit numeric casts, `instanceof`
+- IR lowering, native backend, runtime-backed executable builds
+
+Known major gaps relative to a Java-close F1 target:
+- several Java syntax families still missing or partial at token/parser/semantic/runtime level
+- shallow stdlib APIs even where classes already exist
+- collections remain non-generic and specialized around current runtime shapes
+- exception classes exist, but language-level exception flow is not complete
+- Java-close literals/tokens/operator surface is incomplete
+- several core language declarations and modifiers are still unsupported or only reserved
+- Java-adjacent utility families such as `Scanner`, `Objects`, concurrency baselines, and networking baselines are not yet explicitly tracked enough
+- full Java-style reflection/invocation is not yet explicitly scoped and should not be implied by the existing `Class` baseline
+- desktop UI families (`awt` / `swing`) are not part of F1 scope
+- generics scope, exception runtime strategy, and some utility/network/concurrency sub-policies still need explicit F1 boundaries
+- conformance/docs currently do not define a full Java-close supported subset
+
+## F1 Strict Done Policy
+- F1 starts with a current-state audit of what already exists and whether it is genuinely runtime/backend implemented.
+- F1 is not complete when syntax merely parses; syntax counts only when semantics, lowering, runtime behavior, fixture evidence, and task-local docs exist where relevant.
+- `Done (Locked)` means tokens/AST/semantics/backend/runtime/docs/tests all align for the task's surface area.
+- under the stricter current policy, `Done (Locked)` also means the shipped surface is hardened enough for the Java-close F1/self-hosting target, not just an earlier staged baseline
+- Any Java-closeness claim must be backed by explicit support matrices and real fixture evidence.
+- Validation is not deferred to a later phase; parser/semantic/backend/runtime/package/benchmark coverage lands as features are added.
+- Any syntax or stdlib surface intentionally deferred beyond F1 must be documented as such; no ambiguity at closure.
+- F1 stdlib expansion is for app/runtime language completion and self-hosting readiness, not yet a full external native library authoring/distribution ecosystem.
+- `Class` reflection in F1 is reflection-lite only; full Java-style reflection/invocation is explicitly deferred until after self-hosting.
+- `awt` / `swing` / desktop UI work is explicitly out of scope for F1 and is deferred until after self-hosting.
+- if a bootstrap implementation can live in Pulse stdlib instead of Rust, F1 should prefer the Pulse-owned version and leave Rust with only the compiler/runtime/backend pieces that genuinely cannot move yet
+- tasks may return from `Done (Locked)` to `In Progress` when the end-to-end feature is real but the ownership model is still knowingly bootstrap and a later F1/F2/F-A pass must finish the Pulse-facing contract honestly
+
+## Workstream A: Java Syntax Inventory + Lock Plan
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-00 | Audit the current language/stdlib/codebase and verify every claimed existing feature is actually backed by semantics, backend, runtime, and executable evidence where required | E3 | Codex | 2026-03-11 | Done (Locked) | A truthful baseline inventory exists for what PulseCode already supports end-to-end versus what only parses/checks or is still shallow |
+| F1-01 | Inventory full Java-close syntax target against current lexer/parser/semantics/backend/runtime support | C1.5, C2, C3 | Codex | 2026-03-11 | Done (Locked) | Gap matrix exists for tokens, declarations, statements, expressions, types, exceptions, and stdlib blockers |
+| F1-02 | Publish F1 support policy: "required by F1", "allowed to defer", and "Pulse-specific intentional differences" | F1-00, F1-01 | Codex | 2026-03-11 | Done (Locked) | F1 language support matrix is documented and used as the board's closure contract |
+| F1-03 | Break syntax completion into staged dependency graph across frontend, backend, runtime, stdlib, and validation work | F1-00, F1-01 | Codex | 2026-03-11 | Done (Locked) | Every major syntax family has prerequisite mapping and no major F1 blocker is untracked |
+
+## Workstream B: Lexer/Token Surface Completion
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-04 | Audit and add missing Java-close keywords/tokens to the lexer and reserved-word model | F1-01 | Codex | 2026-03-11 | Done (Locked) | Token inventory is aligned with the F1 language support matrix and lexer tests lock recognized keywords/operators |
+| F1-05 | Add char literal tokenization and escape-sequence handling | F1-04 | Codex | 2026-03-11 | Done (Locked) | Char literals and common escapes lex deterministically with success/failure coverage |
+| F1-06 | Add missing literal/token forms needed for Java-close syntax (`null`, numeric suffixes, hex/bin/octal/underscores, text escapes as selected F1 scope) | F1-04 | Codex | 2026-03-11 | Done (Locked) | Literal token behavior is documented and tested against the selected F1 Java-close subset |
+| F1-07 | Add token support for exception/resource/lambda/generic/annotation families needed by F1 | F1-04 | Codex | 2026-03-11 | Done (Locked) | Lexer supports all punctuation/operators required by selected F1 syntax families |
+| F1-08 | Lock lexer diagnostics for unsupported/invalid Java-like token forms | F1-05, F1-06, F1-07 | Codex | 2026-03-11 | Done (Locked) | Bad token forms fail deterministically with clear diagnostics and fixture coverage |
+
+## Workstream C: Type and Declaration Syntax Completion
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-09 | Complete primitive/literal declaration support needed for Java-close programming (`char`, numeric literal breadth, array declarations, varargs policy) | F1-06 | Codex | 2026-03-11 | Done (Locked) | Declaration syntax for the selected F1 type surface parses and typechecks correctly |
+| F1-10 | Add enum declaration syntax and baseline semantics/runtime strategy | F1-02, F1-04 | Codex | - | In Progress | The ordinal-backed enum baseline is real, but F1 must return in `F1-47` and `F1-69` to finish the std-facing `com.pulse.lang.Enum` contract and document the shipped boundary honestly |
+| F1-11 | Lock F1 generics scope and implement the selected baseline for classes/interfaces/methods | F1-02, F1-07 | Codex | - | In Progress | Erased generics are real today, but F1 must return in `F1-31`, `F1-49`, and `F1-68` to reach a Java-hardened generics story for self-hosting instead of treating the erased bootstrap as the final contract |
+| F1-12 | Add richer annotation syntax and support policy beyond current `@Override` baseline | F1-02, F1-07 | Codex | - | In Progress | Annotation syntax/policy is real, but the built-in semantic ownership model is still bootstrap; return in `F-A` for processor/runtime-backed Pulse ownership and keep `F2` docs explicit until then |
+| F1-13 | Add remaining Java-close modifier semantics or explicitly lock their F1 support subset (`native`, `synchronized`, `transient`, `volatile`, `strictfp`, `final` field publication semantics) | F1-04, F1-02 | Codex | - | In Progress | Modifier parsing/fences are real today, but F1 must return in `F1-20`, `F1-86`, `F1-89`, and `F1-93` before the modifier surface is Java-hardened enough for self-hosting |
+| F1-14 | Add package/member/import declaration breadth needed by F1 (`static nested policy`, wildcard behavior hardening, import edge parity) | F1-03 | Codex | - | In Progress | Core declaration/import behavior is stable today, but F1 must return in `F1-33` to finish the broader Java declaration/nested-type story instead of treating the current fenced subset as fully complete |
+
+## Workstream D: Statement and Control-Flow Syntax Completion
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-15 | Add `throw` statement end-to-end | F1-05 | Codex | - | In Progress | `throw` is real today, but F1 must return in `F1-16`, `F1-29`, `F1-35`, and `F1-46` before exception flow and throwable behavior are Java-hardened enough for self-hosting |
+| F1-16 | Lock F1 exception runtime model and add `try` / `catch` / `finally` to that baseline | F1-15 | Codex | - | In Progress | Same-method `try` / `catch` / `finally` is real today, but F1 must return in `F1-29`, `F1-35`, and `F1-46` for a Java-hardened exception model instead of the current narrow region-based subset |
+| F1-17 | Add try-with-resources or explicitly lock it as out-of-scope for F1 | F1-16, F1-26 | Codex | - | In Progress | The unsupported boundary is now honest and `com.pulse.lang.AutoCloseable` exists as a bootstrap stdlib seam, but F1 must return in `F1-47` and `F1-57` to implement the real resource-statement and resource-lifecycle model end to end |
+| F1-18 | Add enhanced-for / foreach loop support over arrays and iterable types | F1-09, F1-22 | Codex | - | In Progress | Foreach is real today for `com.pulse.lang.Iterable` object streams, the current stdlib `com.pulse.collections.Array` int/string lanes, and native arrays with compatible loop variable types, but F1 must still return in `F1-53` for the broader iteration contract honestly |
+| F1-19 | Add assert statement support or explicitly define its F1 status | F1-02 | Codex | - | In Progress | `assert` is executable today, but F1 must return in `F1-26` and `F1-46` to finish Java-like assertion expression typing and assertion error behavior instead of the current narrower bootstrap |
+| F1-20 | Add synchronized statement support or explicitly define its F1 status relative to threading model | F1-13, C2 | Codex | - | In Progress | The unsupported boundary is now honest with a deterministic compiler diagnostic, but F1 must return in `F1-86`, `F1-89`, and `F1-93` to implement real monitor/threading/memory-model semantics end to end |
+
+## Workstream E: Expression and Operator Completion
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-21 | Add ternary operator (`?:`) end-to-end | F1-01 | Codex | - | In Progress | Ternary is real today, but F1 must return in `F1-26` and `F1-28` for the fuller Java-like typing and promotion behavior instead of the current narrower branch-compatibility subset |
+| F1-22 | Complete cast expression breadth for Java-close primitive/reference casting | F1-09 | Codex | - | In Progress | Explicit numeric casts, checked reference casts, and `instanceof` are real today, but F1 must return in `F1-26` and `F1-28` before casts/conversions are Java-hardened enough for self-hosting |
+| F1-23 | Add array creation and initializer expression breadth (`new T[n]`, initializer policy, multidimensional support) | F1-09 | Codex | 2026-03-12 | Done (Locked) | Native arrays now cover the full current primitive and reference element surface, including multidimensional allocation, nested initializer expressions, array `length`, native subscript read/write syntax, and native-array foreach |
+| F1-24 | Add lambda expression syntax and staged semantic/runtime support or explicitly defer it past F1 | F1-07, F1-11, F1-16 | Codex | - | In Progress | Lambdas are explicitly fenced for the current F1 baseline; F2 must return for closure object model, capture semantics, functional-interface targeting, and executable runtime/backend support |
+| F1-25 | Add method reference support or explicitly defer it past F1 | F1-24 | Codex | - | In Progress | Method references are explicitly fenced for the current F1 baseline; F2 must return after the lambda/runtime model exists |
+| F1-26 | Expand operator/type-promotion semantics toward Java-close behavior | F1-06, F1-22 | Codex | - | In Progress | The first executable slices are real today: signed primitive widening, integral promotion of smaller signed types to `int`, executable `int`/`long` arithmetic/comparison, and the current Pulse unsigned promotion path (`ubyte`/`ushort` -> `uint`, `uint`/`ulong` -> `ulong`); F1 must still return for float/double arithmetic semantics and the fuller promotion lattice |
+| F1-27 | Add bitwise/shift operator family and assignment forms to the selected F1 baseline | F1-26 | - | - | Todo | Bitwise/shift syntax and semantics are fully operational and tested |
+| F1-99 | Define and implement switch-expression / `yield` policy for the self-hosting cutoff | F1-21, F1-26 | - | - | Todo | It is explicit whether switch expressions are required before self-host, and if shipped they parse/typecheck/lower/execute with deterministic docs and tests |
+| F1-100 | Define and implement the pre-self-host local `var` baseline and fold varargs applicability hardening into the Java-close conversion/applicability rules | F1-09, F1-26, F1-28 | - | - | Todo | Local `var` is either shipped to a real pre-self-host baseline or fenced explicitly, and varargs applicability/conversion behavior is no longer left implicit in overload resolution |
+
+## Workstream F: Semantic Model and Type-System Completion
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-28 | Expand type-system rules for Java-close overload resolution, promotions, conversions, and generic applicability | F1-11, F1-22, F1-26 | Codex | - | In Progress | Overload applicability and implicit numeric widening now cover the first signed primitive slice plus current unsigned widening inside the Pulse unsigned family, but F1 must still return for float/double arithmetic applicability, broader conversion rules, and generic applicability closure |
+| F1-29 | Add checked/unchecked exception semantic model to the chosen F1 baseline | F1-15, F1-16 | - | - | Todo | Exception typing/propagation rules are documented and enforced in a way that matches the explicitly chosen F1 exception runtime model |
+| F1-30 | Expand annotation semantics beyond `@Override` where F1 supports them | F1-12 | Codex | - | In Progress | Supported annotations have real semantic meaning today, but they remain compiler-owned bootstrap behavior until `F-A` lands a processor/runtime/backend model and `F2` documents the migration clearly |
+| F1-31 | Expand generic type checking and compatibility rules to the chosen F1 baseline | F1-11, F1-28 | - | - | Todo | Generic usage rules are coherent, deterministic, and tested |
+| F1-32 | Expand definite-assignment/nullability/control-flow analysis for the broader F1 syntax surface | F1-16, F1-18, F1-21 | - | - | Todo | Flow analysis remains sound across new syntax families |
+| F1-33 | Lock visibility, inheritance, and nested-type semantics required by the selected F1 Java-close subset | F1-10, F1-11, F1-14 | - | - | Todo | OOP semantics remain coherent after new declaration/type features land |
+| F1-96 | Define and implement the pre-self-host interface inheritance and member baseline (`interface extends`, `default`, `static`, and `private` interface methods) | F1-14, F1-33 | - | - | Todo | Interface inheritance plus `default` / `static` / `private` interface methods are either shipped to a real pre-self-host baseline or fenced with deterministic docs/tests/diagnostics so compiler/runtime code is not blocked by hidden Java-parity gaps |
+| F1-98 | Define and lock inner/local/anonymous class policy for the self-hosting cutoff | F1-14, F1-33, F1-96 | - | - | Todo | It is explicit whether inner/local/anonymous classes are required before self-host, deferred until after self-host, or intentionally unsupported, and docs/tests/diagnostics match that decision |
+
+## Workstream G: IR, Backend, and Runtime Enablement for New Syntax
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-34 | Expand IR to represent new F1 syntax families cleanly | F1-15, F1-16, F1-21, F1-23, F1-27 | - | - | Todo | IR supports the selected new syntax without hidden lowering hacks |
+| F1-35 | Expand lowering/codegen for exception control flow and runtime error model | F1-16, F1-29, F1-34 | - | - | Todo | The chosen F1 exception runtime strategy builds and runs correctly in native output |
+| F1-36 | Expand lowering/codegen for arrays, foreach, ternary, bitwise/shift, and other F1 expressions/statements | F1-18, F1-21, F1-23, F1-27, F1-34 | - | - | Todo | New syntax families are executable in realistic fixtures |
+| F1-37 | Add runtime support and ABI/intrinsic growth required by F1 language completion | F1-35, F1-36 | - | - | Todo | Runtime and ABI docs/intrinsics are aligned with the new syntax surface |
+| F1-38 | Add shared/fat build compatibility coverage for the new language surface | E1, E2, E3, F1-35, F1-36 | - | - | Todo | Newly added F1 syntax behaves consistently across fat and shared builds |
+
+## Workstream H: `com.pulse.lang` Core Surface Expansion
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-39 | Expand `Object` toward a stable Java-close baseline (`hashCode`, stronger `equals`, class identity rules) | F1-01 | - | - | Todo | `Object` contract is documented and real fixture usage validates baseline semantics |
+| F1-40 | Expand `Class` reflection-lite surface (`getSimpleName`, package/type identity helpers, baseline introspection rules) | F1-39 | - | - | Todo | `Class` exposes a documented minimal reflection surface backed by runtime metadata, without implying full Java-style reflection/invocation |
+| F1-41 | Expand `String` API beyond the current minimal baseline | F1-05, F1-06, F1-37 | - | - | Todo | Core Java-close `String` operations used in real apps are available, documented, and runtime-backed |
+| F1-42 | Expand `StringBuilder` toward practical Java-close usage (`append` overload growth, insert/delete/setLength-like staged surface) | F1-37, F1-41 | - | - | Todo | `StringBuilder` supports common builder flows in executable fixtures |
+| F1-43 | Expand wrapper classes (`Byte`..`Boolean`, unsigned wrappers where retained) toward Java-close constants/helpers/string interop | F1-26, F1-37 | - | - | Todo | Wrapper APIs are meaningfully closer to Java and fixture-validated across parse/value/compare/use cases |
+| F1-44 | Lock policy for Pulse-only unsigned primitives/wrappers versus Java-close compatibility surface | F1-02, F1-43 | - | - | Todo | Unsigned types are either explicitly retained as Pulse extensions with docs/tests or clearly scoped away from Java-close claims |
+| F1-45 | Expand `System` / console/runtime process surface (`err`, properties/env/time/exit hooks as selected baseline) | F1-37 | - | - | Todo | `System` exposes a practical Java-close baseline and intentional omissions are documented |
+| F1-46 | Expand `Throwable` hierarchy with Java-close message/cause/toString semantics baseline | F1-15, F1-16, F1-29 | - | - | Todo | Throwable/Exception contracts are stable enough for userland error flows and stdlib use, including cause chaining and the minimum self-host-relevant exception detail surface |
+| F1-47 | Add missing foundational `com.pulse.lang` types needed for Java-close programming (`Enum`, `Runnable`, `Appendable`, `CharSequence`, `AutoCloseable`, selected subset of marker/core interfaces) | F1-10, F1-11, F1-16 | - | - | Todo | Foundational types exist with clear contracts and are wired into relevant stdlib APIs |
+| F1-101 | Harden exception diagnostics and stack-trace/source-location surface for compiler/runtime authoring | F1-29, F1-35, F1-46 | - | - | Todo | Runtime failures and exception flows expose stable stack trace/source-location behavior strong enough for self-hosted compiler and runtime debugging |
+
+## Workstream I: Collections Refactor and Expansion
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-48 | Inventory current collection API limitations versus Java-close expectations | F1-01 | - | - | Todo | Gap doc maps current collection surface to desired Java-close behavior |
+| F1-49 | Define staged collection strategy before and after generic support is available | F1-11, F1-48 | - | - | Todo | Collection roadmap clearly distinguishes interim and generic Java-close phases |
+| F1-50 | Expand core collection contracts (`Collection`, `List`, `Set`, `Map`, `Queue`, `Deque`) toward a consistent baseline | F1-49 | - | - | Todo | Contracts are coherent, documented, and implemented across concrete classes where promised |
+| F1-51 | Expand `ArrayList` and `LinkedList` with practical CRUD/iteration/query helpers | F1-50 | - | - | Todo | Common list workflows are executable-fixture validated |
+| F1-52 | Expand `HashMap` and `HashSet` toward practical Java-close usage (`remove`, query helpers, iteration support, selected views) | F1-50 | - | - | Todo | Map/set APIs support real application flows and runtime behavior is deterministic |
+| F1-53 | Define and implement iteration contract across collections (`iterator`, foreach baseline, fail-fast policy if any) | F1-18, F1-47, F1-50 | - | - | Todo | Iteration behavior is documented, consistent, and fixture-validated |
+| F1-54 | Add missing collection families needed for Java-close baseline (`Arrays`, `Collections`, selected additional containers/utilities) | F1-49 | - | - | Todo | Chosen utility/types baseline exists and intentional omissions are documented |
+| F1-55 | Lock nullability/ownership/runtime behavior for collections under the larger F1 API surface | F1-50, C2 | - | - | Todo | Expanded collection semantics remain safe, deterministic, and stress-tested |
+
+## Workstream J: IO, Path, Resource, Math, Time, and Util Surface Expansion
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-56 | Expand `File`, `Files`, `Path`, `InputStream`, and `OutputStream` from the current minimal baseline | F1-37 | - | - | Todo | IO/path APIs cover practical Java-close file flows used by real apps and tests |
+| F1-104 | Add console input / stdin baseline needed for interactive programs and self-host validation (`System.in`, console read policy, and the minimum runtime-backed input API) | F1-45, F1-56, F1-63 | - | - | Todo | Pulse programs can read interactive console input through a documented runtime-backed baseline that is usable for manual verification and later utility layers such as `Scanner` |
+| F1-57 | Add resource-lifecycle support aligned with selected Java-close model (`close`, `flush`, ownership rules) | F1-16, F1-17, F1-47, F1-56 | - | - | Todo | Resource APIs are explicit and safe, with runtime/fixture validation |
+| F1-58 | Add text/binary policy and encoding baseline for IO APIs | F1-56 | - | - | Todo | Encoding/text-vs-binary behavior is documented and deterministic |
+| F1-59 | Add path/file metadata and utility baseline (`name`, combine/resolve, exists/isFile/isDirectory-style subset) | F1-56 | - | - | Todo | Path/file metadata APIs are available and tested under fixture projects |
+| F1-60 | Expand `Math` toward a practical Java-close baseline (`min/max/abs` overload growth, rounding, selected numeric helpers) | F1-26, F1-37 | - | - | Todo | Math surface is materially broader and backed by deterministic fixture coverage |
+| F1-61 | Expand `Random` beyond current seeded `nextInt(bound)` baseline | F1-60 | - | - | Todo | Random supports a useful deterministic subset for application and self-hosting needs |
+| F1-62 | Expand `Instant` and `Duration` toward a more Java-close time API baseline | F1-37 | - | - | Todo | Time APIs support richer arithmetic/comparison/query flows and are documented clearly |
+| F1-63 | Add high-value util-style helpers needed before self-hosting (`Objects`, `Arrays`, parsing/tokenizing/utility helpers) | F1-41, F1-54, F1-60 | - | - | Todo | Utility types chosen for self-hosting and Java-close ergonomics are available and fixture-validated |
+| F1-97 | Define and implement the compiler-host utility/resource-loading surface required before self-host (`text/config/token/path helpers`, resource lookup policy, and any required compiler-facing support APIs) | F1-56, F1-58, F1-63 | - | - | Todo | Pulse has the minimum util/resource surface needed to rewrite the compiler/runtime cleanly instead of depending on ad hoc Rust-only helpers |
+| F1-105 | Add logging helper baseline needed before self-host (`Logger`/logging policy, console/file logger helpers, and the minimum practical runtime-backed logging surface) | F1-45, F1-56, F1-63 | - | - | Todo | Pulse has enough logging support to make self-hosted compiler/runtime development and debugging practical without relying only on ad hoc print statements |
+| F1-64 | Lock packaging/install compatibility expectations for stdlib IO/resource/shared payload APIs | F1-56, D4, E3 | - | - | Todo | IO/resource behavior remains valid under staged/installed app layouts |
+
+## Workstream J2: Utility, Concurrency, and Networking Baselines
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-83 | Add explicit `com.pulse.util` baseline plan and initial utility surface (`Scanner`, `Objects`, tokenizer/parsing helpers) | F1-02, F1-63 | - | - | Todo | Utility scope is explicit, `Scanner` is no longer implicit, and tokenizer/parsing helpers are clearly marked as in-scope, deferred, or self-hosting-only helpers |
+| F1-84 | Implement `com.pulse.util.Scanner` baseline over the selected IO/string model | F1-56, F1-58, F1-83 | - | - | Todo | `Scanner` exists to the chosen F1 baseline with deterministic parsing/tokenizing behavior and executable fixture coverage |
+| F1-85 | Expand utility baseline beyond `Scanner` for high-value Java-close helpers (`Objects`, tokenizer/collections-adjacent helpers, and any non-`Optional` pre-self-host subset) | F1-83 | - | - | Todo | The selected `util` subset is explicit, useful, and backed by docs/tests rather than implied future intent |
+| F1-102 | Define and implement the pre-self-host annotation metadata baseline (`@Target`, `@Retention`, and the minimum compile-time/runtime metadata contract before full annotation processing lands) | F1-12, F1-30, F1-47 | - | - | Todo | `@Target` and `@Retention` are real pre-self-host contracts, and annotation metadata requirements are explicit enough for self-hosting instead of staying hidden behind the later full annotation-processor/runtime work |
+| F1-86 | Define and implement the pre-self-host concurrency baseline (`Thread`, `Runnable`, monitor semantics, visibility/publication rules, intentional fences relative to the current threading model) | F1-20, F1-47, C2 | - | - | Todo | Concurrency support boundaries are explicit and the pre-self-host threading baseline is backed by real runtime semantics or deterministic fences |
+| F1-89 | Define Java-close memory model baseline for F1 (`synchronized`, `volatile`, `final` fields, safe publication, what remains out of scope) | F1-13, F1-20, F1-86, C2 | - | - | Todo | Memory-visibility/order guarantees are explicitly documented and any unsupported guarantees fail deterministically or remain fenced |
+| F1-90 | Add the pre-self-host `java.util.concurrent` baseline plan for Pulse (`locks`, `atomics`, concurrent collections, executors/semaphores policy) | F1-86, F1-89 | - | - | Todo | Concurrency library scope is explicit enough to guide implementation instead of leaving `concurrent` as a vague future bucket, including what is intentionally deferred past F1 |
+| F1-91 | Implement the pre-self-host atomic baseline (`AtomicInteger`, `AtomicLong`, `AtomicReference`, and policy for additional atomics) or explicitly fence unsupported atomics | F1-90 | - | - | Todo | The selected atomic subset has real runtime semantics and deterministic fixture coverage |
+| F1-92 | Implement concurrent collection baseline (`ConcurrentHashMap`, `CopyOnWriteArrayList`, blocking-queue/deque policy) or explicitly defer unsupported pieces | F1-90 | - | - | Todo | Concurrent collection support boundaries are explicit and shipped pieces are runtime-backed and tested |
+| F1-93 | Implement the pre-self-host thread/runtime baseline (`Thread`, `Runnable`, lifecycle, join/sleep/yield/interruption policy, executor baseline`) | F1-86, F1-89, F1-90 | - | - | Todo | Threading APIs are either shipped to a clear pre-self-host baseline or fenced with deterministic diagnostics/documentation |
+| F1-103 | Define and implement the higher-level executor/future baseline needed before self-host (`Executor`, `ExecutorService`, `Future`, scheduling/submission policy) | F1-86, F1-89, F1-90, F1-93 | - | - | Todo | Pulse has enough higher-level task execution primitives to make compiler/runtime transition and larger self-hosted tooling workflows practical before self-host |
+| F1-87 | Define and implement F1 networking baseline policy (`com.pulse.net`, sockets-only baseline, URL/HTTP helper policy, or explicit deferral) | F1-56, F1-58 | - | - | Todo | Networking is either shipped to a clear baseline such as sockets-first with explicit URL/HTTP deferral, or explicitly fenced out of F1 with deterministic docs/diagnostics |
+| F1-88 | Lock desktop UI policy: `awt` / `swing` remain out of scope for F1 and are deferred until after self-hosting | F1-02 | - | - | Todo | F1 docs/roadmap/task boards explicitly exclude desktop UI work so Java-closeness claims stay honest |
+| F1-94 | Lock reflection policy: keep `Class` reflection-lite in F1 and defer full Java-style reflection/invocation until after self-hosting | F1-02, F1-40 | - | - | Todo | F1 docs/roadmap/task boards explicitly distinguish reflection-lite from full reflection and do not imply unsupported runtime introspection/dynamic invocation |
+| F1-95 | Lock F1 ecosystem boundary: stdlib/language expansion in F1 is for app/runtime completion and self-hosting readiness, not the later external library/binding ecosystem | F1-02 | - | - | Todo | F1 docs/roadmap/task boards clearly separate language/stdlib growth from the later FA library artifact/binding phase |
+
+## Workstream K: Compiler Metadata, Import Surface, and Ecosystem Integration
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-65 | Expand builtin metadata/import/prelude wiring so new stdlib APIs and syntax resolve cleanly in `check` and `build` | F1-39, F1-41, F1-50, F1-56, F1-60 | - | - | Todo | Compiler metadata stays aligned with stdlib source and fixture projects prove import/typecheck stability |
+| F1-66 | Add large multi-file fixture suites that mix new syntax with expanded stdlib APIs | F1-34, F1-35, F1-36, F1-65 | - | - | Todo | Realistic app fixtures validate language and stdlib together rather than in isolation |
+| F1-67 | Add stress/performance guards for new language/runtime/stdlib combinations | F1-37, F1-55, F1-56, F1-66 | - | - | Todo | New F1 surface remains stable under repeated stress and no major regressions escape |
+
+## Workstream L: Conformance, Docs, and Closure
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-68 | Publish Java-close compatibility notes documenting supported syntax, APIs, intentional differences, Pulse extensions, and explicit non-F1 areas such as desktop UI, full reflection, and later library-ecosystem work | F1-02, F1-44, F1-49, F1-63, F1-88, F1-94, F1-95 | - | - | Todo | Compatibility guide is explicit about what is Java-close versus intentionally different |
+| F1-69 | Expand stdlib API index into signature-level reference docs for shipped F1 surface | F1-65, F1-85, F1-87 | - | - | Todo | Docs enumerate class/method inventory at signature level, not just class names |
+| F1-70 | Publish language-surface reference for the F1 Java-close syntax subset | F1-34, F1-68 | - | - | Todo | Language reference clearly documents supported declarations, statements, expressions, and notable differences from Java |
+| F1-71 | Add semantic and executable conformance suites for the completed F1 syntax surface and selected utility/concurrency/network additions | F1-34, F1-35, F1-36, F1-66, F1-84, F1-86, F1-87, F1-89, F1-91, F1-92, F1-93 | - | - | Todo | Conformance suites exercise syntax families and real multi-file app usage |
+| F1-72 | Publish F1 closure checklist and evidence index | F1-68, F1-69, F1-70, F1-71 | - | - | Todo | Closure docs cross-link all contracts, fixtures, and validation commands |
+| F1-73 | Run F1 closure verification and roadmap lock | F1-72 | - | - | Todo | F1 tasks/gates are `Done (Locked)` and roadmap reflects the locked Java-close baseline |
+
+## Workstream M: Integrated Validation, CI, and Performance Gates
+
+| ID | Task | Depends On | Owner | Target | Status | Exit Condition |
+|---|---|---|---|---|---|---|
+| F1-74 | Inventory current test suites and map them to F1 language/stdlib/toolchain risk areas | F1-00, F1-03 | - | - | Todo | Coverage map shows what parts of the F1 surface are protected and what still lacks tests |
+| F1-75 | Define validation layering policy across lexer/parser, semantics, IR, backend, runtime, fixtures, artifacts, packaging, and stress suites | F1-74 | - | - | Todo | Test responsibilities are explicit and new F1 work lands in the correct validation layer |
+| F1-76 | Define F1 CI topology and required-vs-optional gate policy for local, PR, and release runs | F1-74 | - | - | Todo | CI responsibilities are staged appropriately and F1 feature work has clear mandatory validation gates |
+| F1-77 | Add lexer/parser conformance suites for the completed F1 syntax surface | F1-08, F1-14, F1-17, F1-20, F1-25, F1-27, F1-75 | - | - | Todo | Parser/token regressions are locked independently of semantic/backend behavior |
+| F1-78 | Expand semantic conformance suites for conversions, overloads, visibility, inheritance, exceptions, generics, and flow analysis | F1-29, F1-31, F1-32, F1-33, F1-75 | - | - | Todo | Semantic rules are deterministic and broadly covered by success/failure suites |
+| F1-79 | Add multi-file declaration/import/package-resolution regression suites for large realistic projects | F1-65, F1-66, F1-75 | - | - | Todo | Complex project-graph regressions are caught outside small unit tests |
+| F1-80 | Expand IR/backend/artifact validation for new syntax, fat/shared outputs, and packaging-relevant artifacts | F1-35, F1-36, F1-38, F1-75 | - | - | Todo | Lowering/codegen/artifact drift is caught with deterministic snapshots and assertions |
+| F1-81 | Add executable fixture, package/install, and failure-path suites for mixed language/runtime/stdlib scenarios | F1-38, F1-55, F1-64, F1-66, F1-67, F1-75, F1-84, F1-86, F1-87, F1-89, F1-91, F1-92, F1-93 | - | - | Todo | Real application flows, package/install behavior, and important failure paths stay locked |
+| F1-82 | Add benchmark/stress corpus, regression thresholds, flaky-test policy, and release-readiness gates for the F1 baseline | F1-67, F1-76, F1-81 | - | - | Todo | Performance/stability guardrails are actionable and tied to concrete F1 release gates |
+
+## F1 Gates
+
+| Gate | Definition | Status |
+|---|---|---|
+| F1-G1 | Lexer/token surface for selected Java-close syntax is complete | Todo |
+| F1-G2 | Parser/AST surface for selected Java-close syntax is complete | Todo |
+| F1-G3 | Semantic/type-system support for selected Java-close syntax is complete | Todo |
+| F1-G4 | IR/backend/runtime support for selected Java-close syntax is complete | Todo |
+| F1-G5 | `com.pulse.lang` and foundational stdlib surface is materially Java-close | Todo |
+| F1-G6 | Collections, IO, math, time, util, threading, atomics, and selected concurrency/network baselines are materially expanded and usable | Todo |
+| F1-G7 | Large realistic fixture coverage proves the combined language+stdlib ecosystem works | Todo |
+| F1-G8 | Docs + closure artifact completeness | Todo |
+| F1-G9 | Conformance, artifact, packaging, CI, and performance gates are integrated into the shipped F1 surface | Todo |
+
+## Required Test/Evidence Gates
+
+| Gate ID | Gate | Command / Evidence | Status |
+|---|---|---|---|
+| F1-G1 | Lexer/token surface | lexer/unit tests for all new token families, literals, escapes, and invalid-token diagnostics | Todo |
+| F1-G2 | Parser/AST surface | parser/conformance tests for declarations, statements, expressions, exceptions, arrays, generics, enums, annotations, and selected F1 syntax families | Todo |
+| F1-G3 | Semantic/type-system support | semantic conformance suites for conversions, generics, exceptions, flow analysis, and Java-close language rules | Todo |
+| F1-G4 | IR/backend/runtime support | executable fixture suites proving newly added syntax really builds and runs in native output | Todo |
+| F1-G5 | Foundational stdlib surface | semantic + executable fixtures for Object/String/System/wrappers/exceptions/core interfaces | Todo |
+| F1-G6 | Expanded stdlib ecosystem | collection/io/math/time/util plus threading/atomics/concurrent-collection and selected concurrency/network conformance suites and stress fixtures | Todo |
+| F1-G7 | Realistic ecosystem coverage | large multi-file fixture apps using multiple stdlib packages and multiple new syntax families together | Todo |
+| F1-G8 | Docs + closure artifacts | compatibility guide + syntax reference + signature docs + API index + closure checklist + evidence index | Todo |
+| F1-G9 | Validation/CI/performance integration | conformance suites + backend/artifact/package validation + CI topology + benchmark/stress thresholds + release-readiness evidence | Todo |
+
+## Suggested First 5 Sprints
+
+### Sprint 1 (Truthful Gap Lock)
+- Target tasks: `F1-01`..`F1-08`
+- Focus: produce the authoritative Java-close syntax/token gap inventory and complete the lexer/token baseline required for the rest of F1
+- Exit checks:
+  - `F1-G1` green at baseline level
+  - no major syntax family needed later in F1 is missing a tokenization plan
+
+### Sprint 2 (Core Syntax Families)
+- Target tasks: `F1-09`..`F1-27`
+- Focus: land the missing declaration/statement/expression syntax families and lock their parser behavior
+- Exit checks:
+  - `F1-G2` green at baseline level
+  - selected F1 syntax subset parses coherently across realistic source files
+
+### Sprint 3 (Type System + Runtime Enablement)
+- Target tasks: `F1-28`..`F1-38`
+- Focus: make the newly added syntax semantically real and executable in native builds
+- Exit checks:
+  - `F1-G3` and `F1-G4` green at baseline level
+  - new syntax is not parser-only; representative fixtures build and run
+
+### Sprint 4 (`com.pulse.lang` + Collections + IO Depth)
+- Target tasks: `F1-39`..`F1-64`, `F1-83`..`F1-95`
+- Focus: expand the stdlib from skeletal to materially useful Java-close baseline, including explicit utility/threading/atomics/concurrency/network/reflection/ecosystem policy instead of leaving those areas implied
+- Exit checks:
+  - `F1-G5` and `F1-G6` green at baseline level
+  - realistic programs can rely on the shipped stdlib rather than only intrinsics/minimal helpers
+
+### Sprint 5 (Integration + Validation Depth)
+- Target tasks: `F1-65`..`F1-82`
+- Focus: integration, large fixtures, docs, closure evidence, and validation/release guardrails for the locked language/stdlib support boundaries
+- Exit checks:
+  - `F1-G7`..`F1-G9` green
+  - F1 closes with a documented, tested Java-close language+stdlib baseline rather than an aspirational roadmap
+
+## Exit Criteria
+
+| Milestone | Exit Criteria |
+|---|---|
+| F1 | Tasks `F1-00`..`F1-105` and gates `F1-G1`..`F1-G9` are all `Done (Locked)` |
+| F1 Deliverable | PulseCode ships a documented, conformance-tested Java-close language and stdlib baseline where the selected F1 syntax surface is operational end-to-end, benchmarked, and usable in real applications |

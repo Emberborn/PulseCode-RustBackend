@@ -1,0 +1,113 @@
+{
+  "schema": "pulsec.native.plan.v1",
+  "target": {
+    "triple": "x86_64-pc-windows-msvc",
+    "object_format": "coff"
+  },
+  "entry": {
+    "symbol": "main",
+    "calling_convention": "system"
+  },
+  "runtime": {
+    "abi_version": "v2",
+    "abi_compatibility": {
+      "schema": "pulsec.runtime.abi.v1",
+      "compiler_abi_version": 2,
+      "runtime_abi_version": 2,
+      "mismatch_policy": "deterministic-fail-fast"
+    },
+    "required_symbols": ["com.pulse.rt.Intrinsics.consoleWriteLine", "com.pulse.rt.Intrinsics.consoleWrite", "com.pulse.rt.Intrinsics.panic", "com.pulse.rt.Intrinsics.stringConcat", "com.pulse.rt.Intrinsics.stringLength", "com.pulse.rt.Intrinsics.intToString", "com.pulse.rt.Intrinsics.booleanToString", "com.pulse.rt.Intrinsics.parseInt", "com.pulse.rt.Intrinsics.parseBoolean", "com.pulse.rt.Intrinsics.arrayNew", "com.pulse.rt.Intrinsics.arrayLength", "com.pulse.rt.Intrinsics.arrayGetInt", "com.pulse.rt.Intrinsics.arraySetInt", "com.pulse.rt.Intrinsics.arrayGetString", "com.pulse.rt.Intrinsics.arraySetString", "com.pulse.rt.Intrinsics.listNew", "com.pulse.rt.Intrinsics.listSize", "com.pulse.rt.Intrinsics.listClear", "com.pulse.rt.Intrinsics.listAddInt", "com.pulse.rt.Intrinsics.listAddString", "com.pulse.rt.Intrinsics.listGetInt", "com.pulse.rt.Intrinsics.listGetString", "com.pulse.rt.Intrinsics.mapNew", "com.pulse.rt.Intrinsics.mapSize", "com.pulse.rt.Intrinsics.mapClear", "com.pulse.rt.Intrinsics.mapContainsKey", "com.pulse.rt.Intrinsics.mapPut", "com.pulse.rt.Intrinsics.mapPutInt", "com.pulse.rt.Intrinsics.mapGet", "com.pulse.rt.Intrinsics.mapGetInt", "com.pulse.rt.Intrinsics.arcRetain", "com.pulse.rt.Intrinsics.arcRelease", "com.pulse.rt.Intrinsics.arcCycleYoungPass", "com.pulse.rt.Intrinsics.arcCycleFullPass", "com.pulse.rt.Intrinsics.arcCycleTick", "com.pulse.rt.Intrinsics.weakNew", "com.pulse.rt.Intrinsics.weakGet", "com.pulse.rt.Intrinsics.weakClear", "com.pulse.lang.IO.println", "com.pulse.lang.IO.print", "com.pulse.io.Console.writeLine", "com.pulse.io.File.readAllText", "com.pulse.math.Math.abs", "com.pulse.math.Math.max"],
+    "memory_model": {
+      "strategy": "arc",
+      "header_schema": "pulsec.arc.header.v1",
+      "handle": {
+        "kind": "u64-slot32-gen32-handle",
+        "null_handle": 0
+      },
+      "arc_header": {
+        "word_size_bits": 32,
+        "word_count": 4,
+        "words": ["kind_tag", "refcount", "flags", "meta_index"],
+        "refcount_bits": 32,
+        "refcount_saturation_guard": 4294967294,
+        "kind_tags": {
+          "object": 1,
+          "array": 2,
+          "string": 3,
+          "collection": 4
+        }
+      },
+      "allocator": {
+        "schema": "pulsec.alloc.policy.v1",
+        "backend": "win64-process-heap",
+        "slot_capacity": 4294967295,
+        "slot_capacity_initial": 63,
+        "slot_capacity_growth": "runtime-doubling",
+        "alignment": {
+          "pointer_bytes": 8,
+          "lane_bytes": 4
+        },
+        "array_storage": {
+          "lanes": ["int", "string_handle"],
+          "backing": "per-instance-heap"
+        },
+        "container_storage": {
+          "list": {
+            "init_capacity": 16,
+            "max_capacity": 2147483647,
+            "growth_factor": { "numerator": 2, "denominator": 1 },
+            "shrink": { "hysteresis_trigger_multiplier": 4 }
+          },
+          "map": {
+            "init_capacity": 16,
+            "max_capacity": 2147483647,
+            "growth_factor": { "numerator": 2, "denominator": 1 },
+            "shrink": { "hysteresis_trigger_multiplier": 4 }
+          }
+        },
+        "failure_mode": "deterministic-fatal"
+      },
+      "cycle_detector": {
+        "schema": "pulsec.arc.cycle.v1",
+        "strategy": "trial-deletion",
+        "cadence": {
+          "young_window": 64,
+          "full_interval_ticks": 8
+        },
+        "failure_semantics": {
+          "zero_reclaim_lag_limit": 1024,
+          "lag_action": "track"
+        },
+        "passes": ["young", "full"],
+        "tick_entry": "arcCycleTick"
+      },
+      "frame_budget": {
+        "warn_bytes": 1024,
+        "fail_bytes": 4096,
+        "max_frame_bytes": 376,
+        "max_frame_method": "app.stress.SoakRunner.run",
+        "warn_violations": 0,
+        "fail_violations": 0
+      },
+      "debug_allocator": {
+        "enabled": false
+      },
+      "threading": {
+        "schema": "pulsec.runtime.threading.v1",
+        "model": "single-threaded",
+        "arc_atomicity": "non-atomic",
+        "runtime_thread_safety": "not-thread-safe",
+        "container_thread_safety": "not-thread-safe"
+      }
+    }
+  },
+  "inputs": {
+    "ir_artifact": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\stress_soak\build\pulsec.ir.txt"
+  },
+  "summary": {
+    "classes": 48,
+    "methods": 244,
+    "fields": 17
+  },
+  "class_names": ["app.stress.Main", "app.stress.SoakRunner", "app.stress.Token", "com.pulse.collections.Array", "com.pulse.collections.ArrayList", "com.pulse.collections.Collection", "com.pulse.collections.Deque", "com.pulse.collections.HashMap", "com.pulse.collections.HashSet", "com.pulse.collections.LinkedList", "com.pulse.collections.List", "com.pulse.collections.Map", "com.pulse.collections.Queue", "com.pulse.collections.Set", "com.pulse.lang.Boolean", "com.pulse.lang.Byte", "com.pulse.lang.Char", "com.pulse.lang.Class", "com.pulse.lang.Comparable", "com.pulse.lang.ConsoleWriter", "com.pulse.lang.Double", "com.pulse.lang.Exception", "com.pulse.lang.Float", "com.pulse.lang.IO", "com.pulse.lang.IllegalArgumentException", "com.pulse.lang.IllegalStateException", "com.pulse.lang.IndexOutOfBoundsException", "com.pulse.lang.Integer", "com.pulse.lang.Iterable", "com.pulse.lang.Iterator", "com.pulse.lang.Long", "com.pulse.lang.NullPointerException", "com.pulse.lang.NumberFormatException", "com.pulse.lang.Object", "com.pulse.lang.PrintStream", "com.pulse.lang.RuntimeException", "com.pulse.lang.Short", "com.pulse.lang.String", "com.pulse.lang.StringBuilder", "com.pulse.lang.System", "com.pulse.lang.Throwable", "com.pulse.lang.UByte", "com.pulse.lang.UInteger", "com.pulse.lang.ULong", "com.pulse.lang.UShort", "com.pulse.lang.UnsupportedOperationException", "com.pulse.lang.Void", "com.pulse.rt.Intrinsics"]
+}

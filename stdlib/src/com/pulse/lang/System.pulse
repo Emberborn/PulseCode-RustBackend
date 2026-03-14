@@ -1,0 +1,13 @@
+package com.pulse.lang;
+
+/**
+ * Process-level system facade for standard streams.
+ */
+class System {
+    /**
+     * Standard console output stream for the current process.
+     * Use this when code wants an object-oriented output surface instead of IO helpers.
+     */
+    public static final ConsoleWriter out;
+}
+

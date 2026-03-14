@@ -1,0 +1,82 @@
+package com.pulse.collections;
+import com.pulse.rt.Intrinsics;
+
+/**
+ * Runtime-backed resizable list implementation.
+ */
+class ArrayList implements Collection, List {
+    private long handle;
+
+    /**
+     * Creates an empty runtime-backed list.
+     * Use this when code needs append-oriented list storage.
+     */
+    public ArrayList() {
+        this.handle = Intrinsics.listNew();
+    }
+
+    /**
+     * Returns the number of values stored in the list.
+     * Use this before indexed access or to test for emptiness.
+     */
+    public int size() {
+        return Intrinsics.listSize(this.handle);
+    }
+
+    /**
+     * Removes all values from the list.
+     * Use this to reuse an existing list instance.
+     */
+    public void clear() {
+        Intrinsics.listClear(this.handle);
+    }
+
+    /**
+     * Appends an integer to the list.
+     * Use this when building primitive integer sequences.
+     */
+    public void add(int value) {
+        if (Intrinsics.listSize(this.handle) >= 64) {
+            Intrinsics.panic("ArrayList capacity exceeded");
+        }
+        Intrinsics.listAddInt(this.handle, value);
+    }
+
+    /**
+     * Appends a string to the list.
+     * Use this when building ordered text sequences.
+     */
+    public void add(String value) {
+        if (Intrinsics.listSize(this.handle) >= 64) {
+            Intrinsics.panic("ArrayList capacity exceeded");
+        }
+        Intrinsics.listAddString(this.handle, value);
+    }
+
+    /**
+     * Returns the integer value stored at the supplied index.
+     * Use this for indexed primitive reads from the list.
+     */
+    public int getInt(int index) {
+        int size = Intrinsics.listSize(this.handle);
+        if (index < 0 || index >= size) {
+            Intrinsics.panic("ArrayList index out of bounds");
+            return 0;
+        }
+        return Intrinsics.listGetInt(this.handle, index);
+    }
+
+    /**
+     * Returns the string value stored at the supplied index.
+     * Use this for indexed text reads from the list.
+     */
+    public String getString(int index) {
+        int size = Intrinsics.listSize(this.handle);
+        if (index < 0 || index >= size) {
+            Intrinsics.panic("ArrayList index out of bounds");
+            return "";
+        }
+        return Intrinsics.listGetString(this.handle, index);
+    }
+}
+

@@ -1,0 +1,42 @@
+package com.pulse.collections;
+
+/**
+ * Indexed collection contract for ordered values.
+ */
+interface List {
+    /**
+     * Returns the number of values currently stored in the list.
+     * Use this before indexed access or to test for emptiness.
+     */
+    int size();
+
+    /**
+     * Removes all values from the list.
+     * Use this to reset an ordered container to its empty state.
+     */
+    void clear();
+
+    /**
+     * Appends an integer value to the list.
+     * Use this when building an ordered integer sequence.
+     */
+    void add(int value);
+
+    /**
+     * Appends a string value to the list.
+     * Use this when building an ordered text sequence.
+     */
+    void add(String value);
+
+    /**
+     * Returns the integer at the supplied index.
+     * Use this when reading back primitive values by position.
+     */
+    int getInt(int index);
+
+    /**
+     * Returns the string at the supplied index.
+     * Use this when reading back text values by position.
+     */
+    String getString(int index);
+}

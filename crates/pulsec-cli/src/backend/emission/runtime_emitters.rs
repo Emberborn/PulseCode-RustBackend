@@ -1,0 +1,5283 @@
+use super::*;
+
+pub(crate) fn emit_console_write_handle_proc(out: &mut String, symbol: &str, newline: bool) {
+    let l_empty = format!("{}_empty", symbol);
+    let l_stale = format!("{}_stale", symbol);
+    let l_plain = format!("{}_plain", symbol);
+    let l_ready = format!("{}_ready", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    je {}\n", l_empty));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", l_empty));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_empty));
+    out.push_str("    mov r11, rcx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", l_plain));
+    out.push_str("    cmp r11d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str(&format!("    jne {}\n", l_stale));
+    out.push_str(&format!("{}:\n", l_plain));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r10*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", l_stale));
+    out.push_str("    mov eax, dword ptr [rt_arc_kinds+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_STRING));
+    out.push_str(&format!("    jne {}\n", l_stale));
+    out.push_str("    mov eax, r10d\n");
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov edx, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov r8d, r10d\n");
+    out.push_str("    imul r8d, 256\n");
+    out.push_str("    mov rcx, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add rcx, r8\n");
+    out.push_str(&format!("    jmp {}\n", l_ready));
+    out.push_str(&format!("{}:\n", l_empty));
+    out.push_str("    lea rcx, rt_empty\n");
+    out.push_str(&format!("{}:\n", l_ready));
+    out.push_str("    mov qword ptr [rsp+16], rcx\n");
+    out.push_str("    mov dword ptr [rsp+24], edx\n");
+    out.push_str("    mov rcx, -11\n");
+    out.push_str("    call GetStdHandle\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    mov rdx, qword ptr [rsp+16]\n");
+    out.push_str("    mov r8d, dword ptr [rsp+24]\n");
+    out.push_str("    lea r9, written\n");
+    out.push_str("    mov qword ptr [rsp+32], 0\n");
+    out.push_str("    call WriteFile\n");
+    if newline {
+        out.push_str("    mov rcx, -11\n");
+        out.push_str("    call GetStdHandle\n");
+        out.push_str("    mov rcx, rax\n");
+        out.push_str("    lea rdx, rt_newline\n");
+        out.push_str("    mov r8d, 2\n");
+        out.push_str("    lea r9, written\n");
+        out.push_str("    mov qword ptr [rsp+32], 0\n");
+        out.push_str("    call WriteFile\n");
+    }
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_stale));
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_object_class_id_proc(out: &mut String, symbol: &str) {
+    let invalid = format!("{}_invalid", symbol);
+    let plain = format!("{}_plain", symbol);
+    let string_kind = format!("{}_string_kind", symbol);
+    let stale = format!("{}_stale", symbol);
+    let string_class_id = class_id_of("String")
+        .or_else(|| class_id_of("com.pulse.lang.String"))
+        .unwrap_or(0);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str(&format!("    mov r10d, ecx\n    and r10d, {}\n", ARC_HANDLE_SLOT_MASK));
+    out.push_str("    mov r11, rcx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", invalid));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", invalid));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", plain));
+    out.push_str("    cmp r11d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str(&format!("    jne {}\n", stale));
+    out.push_str(&format!("{}:\n", plain));
+    out.push_str("    cmp dword ptr [rt_arc_refcounts+r10*4], 0\n");
+    out.push_str(&format!("    je {}\n", stale));
+    out.push_str(&format!(
+        "    cmp dword ptr [rt_arc_kinds+r10*4], {}\n",
+        ARC_KIND_TAG_STRING
+    ));
+    out.push_str(&format!("    je {}\n", string_kind));
+    out.push_str(&format!(
+        "    cmp dword ptr [rt_arc_kinds+r10*4], {}\n",
+        ARC_KIND_TAG_OBJECT
+    ));
+    out.push_str(&format!("    jne {}\n", stale));
+    out.push_str(&format!("    mov rax, qword ptr [{}]\n", RT_OBJECT_CLASS_IDS_SYMBOL));
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", string_kind));
+    out.push_str(&format!("    mov eax, {}\n", string_class_id));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", stale));
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", invalid));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_panic_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    call pulsec_rt_consoleWriteLine\n");
+    out.push_str(&format!("    call {}\n", TRACE_DUMP_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_dispatch_panic_proc(out: &mut String, symbol: &str, msg_label: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str(&format!("    lea rcx, {}\n", msg_label));
+    out.push_str(&format!("    mov edx, {}_len\n", msg_label));
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_arc_retain_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let valid = format!("{}_valid", symbol);
+    let skip_inc = format!("{}_skip_inc", symbol);
+    let saturation = format!("{}_saturation", symbol);
+    let debug_invalid = format!("{}_debug_invalid", symbol);
+    let debug_skip = format!("{}_debug_skip", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov rax, rcx\n");
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    mov r8d, ecx\n");
+    out.push_str("    cmp r8d, 1\n");
+    out.push_str(&format!("    jb {}\n", debug_invalid));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", debug_invalid));
+    out.push_str("    mov r9, rcx\n");
+    out.push_str(&format!("    shr r9, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r9d, r9d\n");
+    out.push_str(&format!("    jz {}\n", valid));
+    out.push_str("    cmp r9d, dword ptr [rt_arc_generation+r8*4]\n");
+    out.push_str(&format!("    jne {}\n", debug_invalid));
+    out.push_str(&format!("{}:\n", valid));
+    out.push_str("    mov edx, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    test edx, edx\n");
+    out.push_str(&format!("    jz {}\n", debug_invalid));
+    out.push_str(&format!(
+        "    cmp edx, {}\n",
+        ARC_REFCOUNT_SATURATION_GUARD
+    ));
+    out.push_str(&format!("    jae {}\n", saturation));
+    out.push_str("    add edx, 1\n");
+    out.push_str("    mov dword ptr [rt_arc_refcounts+r8*4], edx\n");
+    out.push_str(&format!("{}:\n", skip_inc));
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", saturation));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_arc_refcount_saturation_err\n");
+    out.push_str("    mov edx, rt_arc_refcount_saturation_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("{}:\n", debug_invalid));
+    out.push_str("    cmp dword ptr [rt_debug_alloc_mode], 0\n");
+    out.push_str(&format!("    je {}\n", debug_skip));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_debug_arc_retain_err\n");
+    out.push_str("    mov edx, rt_debug_arc_retain_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", debug_skip));
+    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_arc_teardown_proc(
+    out: &mut String,
+    symbol: &str,
+    object_arc_fields: &BTreeMap<u32, ArcFieldDispatch>,
+) {
+    let done = format!("{}_done", symbol);
+    let kind_object = format!("{}_kind_object", symbol);
+    let kind_array = format!("{}_kind_array", symbol);
+    let kind_string = format!("{}_kind_string", symbol);
+    let kind_collection = format!("{}_kind_collection", symbol);
+    let collection_list = format!("{}_collection_list", symbol);
+    let collection_map = format!("{}_collection_map", symbol);
+    let clear_header = format!("{}_clear_header", symbol);
+    let loop_string = format!("{}_loop_string", symbol);
+    let free_array_i_done = format!("{}_free_array_i_done", symbol);
+    let release_array_loop = format!("{}_release_array_loop", symbol);
+    let release_array_done = format!("{}_release_array_done", symbol);
+    let release_array_skip = format!("{}_release_array_skip", symbol);
+    let free_array_s_done = format!("{}_free_array_s_done", symbol);
+    let free_list_i_done = format!("{}_free_list_i_done", symbol);
+    let free_list_s_done = format!("{}_free_list_s_done", symbol);
+    let free_map_keys_done = format!("{}_free_map_keys_done", symbol);
+    let free_map_tags_done = format!("{}_free_map_tags_done", symbol);
+    let free_map_i_done = format!("{}_free_map_i_done", symbol);
+    let free_map_s_done = format!("{}_free_map_s_done", symbol);
+    let release_list_loop = format!("{}_release_list_loop", symbol);
+    let release_list_done = format!("{}_release_list_done", symbol);
+    let release_list_skip = format!("{}_release_list_skip", symbol);
+    let release_map_loop = format!("{}_release_map_loop", symbol);
+    let release_map_done = format!("{}_release_map_done", symbol);
+    let release_map_skip_key = format!("{}_release_map_skip_key", symbol);
+    let release_map_skip_value = format!("{}_release_map_skip_value", symbol);
+
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", done));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", done));
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], ecx\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_kinds+rcx*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_OBJECT));
+    out.push_str(&format!("    je {}\n", kind_object));
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_ARRAY));
+    out.push_str(&format!("    je {}\n", kind_array));
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_STRING));
+    out.push_str(&format!("    je {}\n", kind_string));
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_COLLECTION));
+    out.push_str(&format!("    je {}\n", kind_collection));
+    out.push_str(&format!("    jmp {}\n", clear_header));
+
+    out.push_str(&format!("{}:\n", kind_object));
+    out.push_str(&format!("    mov r10, qword ptr [{}]\n", RT_OBJECT_CLASS_IDS_SYMBOL));
+    out.push_str("    mov edx, dword ptr [r10+rcx*4]\n");
+    if !object_arc_fields.is_empty() {
+        let object_done = format!("{}_kind_object_done", symbol);
+        let object_unmatched = format!("{}_kind_object_unmatched", symbol);
+        for class_id in object_arc_fields.keys() {
+            let class_label = format!("{}_kind_object_c{}", symbol, class_id);
+            out.push_str(&format!("    cmp edx, {}\n", class_id));
+            out.push_str(&format!("    je {}\n", class_label));
+        }
+        out.push_str(&format!("    jmp {}\n", object_unmatched));
+        for (class_id, dispatch) in object_arc_fields {
+            let class_label = format!("{}_kind_object_c{}", symbol, class_id);
+            out.push_str(&format!("{}:\n", class_label));
+            out.push_str(&format!("    call {}\n", dispatch.teardown_proc));
+            out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+            out.push_str(&format!("    jmp {}\n", object_done));
+        }
+        out.push_str(&format!("{}:\n", object_unmatched));
+        out.push_str(&format!("{}:\n", object_done));
+    }
+    out.push_str(&format!("    jmp {}\n", clear_header));
+
+    out.push_str(&format!("{}:\n", kind_array));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", clear_header));
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+rcx*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_alive_ptr]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_i_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+rcx*8]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", free_array_i_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", free_array_i_done));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_s_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+rcx*8]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], 0\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], r11\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], 0\n");
+    out.push_str(&format!("{}:\n", release_array_loop));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    cmp ecx, dword ptr [rt_tmp_size]\n");
+    out.push_str(&format!("    jae {}\n", release_array_done));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", release_array_skip));
+    out.push_str("    mov rcx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", release_array_skip));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], ecx\n");
+    out.push_str(&format!("    jmp {}\n", release_array_loop));
+    out.push_str(&format!("{}:\n", release_array_done));
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", free_array_s_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", free_array_s_done));
+    out.push_str(&format!("    jmp {}\n", clear_header));
+
+    out.push_str(&format!("{}:\n", kind_string));
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], 0\n");
+    out.push_str("    mov r8d, ecx\n");
+    out.push_str("    imul r8d, 256\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", loop_string));
+    out.push_str("    cmp eax, 256\n");
+    out.push_str(&format!("    jae {}\n", clear_header));
+    out.push_str("    mov r11, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add r11, r8\n");
+    out.push_str("    mov byte ptr [r11+rax], 0\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", loop_string));
+
+    out.push_str(&format!("{}:\n", kind_collection));
+    out.push_str("    mov eax, dword ptr [rt_arc_meta+rcx*4]\n");
+    out.push_str("    cmp eax, 1\n");
+    out.push_str(&format!("    je {}\n", collection_list));
+    out.push_str("    cmp eax, 2\n");
+    out.push_str(&format!("    je {}\n", collection_map));
+    out.push_str(&format!("    jmp {}\n", clear_header));
+
+    out.push_str(&format!("{}:\n", collection_list));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", clear_header));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", clear_header));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    mov rax, qword ptr [rt_list_kind_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    cmp eax, 2\n");
+    out.push_str(&format!("    jne {}\n", release_list_done));
+    out.push_str("    mov rax, qword ptr [rt_list_s_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], rax\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], 0\n");
+    out.push_str(&format!("{}:\n", release_list_loop));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    cmp ecx, dword ptr [rt_tmp_size]\n");
+    out.push_str(&format!("    jae {}\n", release_list_done));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", release_list_skip));
+    out.push_str("    mov rcx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", release_list_skip));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], ecx\n");
+    out.push_str(&format!("    jmp {}\n", release_list_loop));
+    out.push_str(&format!("{}:\n", release_list_done));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_kind_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_cap_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_alive_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_i_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", free_list_i_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", free_list_i_done));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_list_s_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", free_list_s_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", free_list_s_done));
+    out.push_str(&format!("    jmp {}\n", clear_header));
+
+    out.push_str(&format!("{}:\n", collection_map));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", clear_header));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", clear_header));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], rax\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], 0\n");
+    out.push_str(&format!("{}:\n", release_map_loop));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    cmp ecx, dword ptr [rt_tmp_size]\n");
+    out.push_str(&format!("    jae {}\n", release_map_done));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", release_map_skip_key));
+    out.push_str("    mov rcx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", release_map_skip_key));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", release_map_skip_value));
+    out.push_str("    cmp dword ptr [rax+rcx*4], 2\n");
+    out.push_str(&format!("    jne {}\n", release_map_skip_value));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", release_map_skip_value));
+    out.push_str("    mov rcx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", release_map_skip_value));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], ecx\n");
+    out.push_str(&format!("    jmp {}\n", release_map_loop));
+    out.push_str(&format!("{}:\n", release_map_done));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_alive_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", free_map_keys_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", free_map_keys_done));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", free_map_tags_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", free_map_tags_done));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", free_map_i_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", free_map_i_done));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", free_map_s_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", free_map_s_done));
+    out.push_str(&format!("    jmp {}\n", clear_header));
+
+    out.push_str(&format!("{}:\n", clear_header));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    let clear_obj_id_skip = format!("{}_clear_obj_id_skip", symbol);
+    out.push_str(&format!("    cmp ecx, {}\n", OBJECT_SLOT_CAPACITY));
+    out.push_str(&format!("    ja {}\n", clear_obj_id_skip));
+    out.push_str(&format!("    mov r10, qword ptr [{}]\n", RT_OBJECT_CLASS_IDS_SYMBOL));
+    out.push_str("    mov dword ptr [r10+rcx*4], 0\n");
+    out.push_str(&format!("{}:\n", clear_obj_id_skip));
+    out.push_str("    mov dword ptr [rt_arc_refcounts+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_kinds+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_meta+rcx*4], 0\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_free_head]\n");
+    out.push_str("    mov dword ptr [rt_arc_free_next+rcx*4], eax\n");
+    out.push_str("    mov dword ptr [rt_arc_free_head], ecx\n");
+
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_alloc_arc_slot_inline(out: &mut String, label_prefix: &str, fail_label: &str) {
+    let l_fresh = format!("{}_allocslot_fresh", label_prefix);
+    let l_have_room = format!("{}_allocslot_have_room", label_prefix);
+    let l_done = format!("{}_allocslot_done", label_prefix);
+    out.push_str("    mov eax, dword ptr [rt_arc_free_head]\n");
+    out.push_str("    cmp eax, 1\n");
+    out.push_str(&format!("    jb {}\n", l_fresh));
+    out.push_str("    cmp eax, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_fresh));
+    out.push_str("    mov r9d, eax\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_free_next+r9*4]\n");
+    out.push_str("    mov dword ptr [rt_arc_free_head], eax\n");
+    out.push_str("    mov eax, r9d\n");
+    out.push_str("    mov dword ptr [rt_arc_free_next+rax*4], 0\n");
+    out.push_str(&format!("    jmp {}\n", l_done));
+    out.push_str(&format!("{}:\n", l_fresh));
+    out.push_str("    mov eax, dword ptr [rt_handle_next]\n");
+    out.push_str("    cmp eax, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    jb {}\n", l_have_room));
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call pulsec_rt_ensureSlotCapacity\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jne {}\n", fail_label));
+    out.push_str("    mov eax, dword ptr [rt_handle_next]\n");
+    out.push_str(&format!("{}:\n", l_have_room));
+    out.push_str("    add eax, 1\n");
+    out.push_str("    mov dword ptr [rt_handle_next], eax\n");
+    out.push_str(&format!("{}:\n", l_done));
+}
+
+pub(crate) fn emit_ensure_slot_capacity_proc(out: &mut String, symbol: &str) {
+    let done_ok = format!("{}_done_ok", symbol);
+    let need_grow = format!("{}_need_grow", symbol);
+    let grow_loop = format!("{}_grow_loop", symbol);
+    let cap_max = format!("{}_cap_max", symbol);
+    let prep_alloc = format!("{}_prep_alloc", symbol);
+    let fail = format!("{}_fail", symbol);
+    let fail_stack = format!("{}_fail_stack", symbol);
+    let fail_cleanup = format!("{}_fail_cleanup", symbol);
+    let alloc_ref = format!("{}_alloc_ref", symbol);
+    let alloc_kinds = format!("{}_alloc_kinds", symbol);
+    let alloc_flags = format!("{}_alloc_flags", symbol);
+    let alloc_meta = format!("{}_alloc_meta", symbol);
+    let alloc_gen = format!("{}_alloc_gen", symbol);
+    let alloc_free = format!("{}_alloc_free", symbol);
+    let alloc_weak_free = format!("{}_alloc_weak_free", symbol);
+    let alloc_weak_slot = format!("{}_alloc_weak_slot", symbol);
+    let alloc_weak_tgen = format!("{}_alloc_weak_tgen", symbol);
+    let alloc_weak_gen = format!("{}_alloc_weak_gen", symbol);
+    let copy_ref = format!("{}_copy_ref", symbol);
+    let copy_ref_done = format!("{}_copy_ref_done", symbol);
+    let copy_kinds = format!("{}_copy_kinds", symbol);
+    let copy_kinds_done = format!("{}_copy_kinds_done", symbol);
+    let copy_flags = format!("{}_copy_flags", symbol);
+    let copy_flags_done = format!("{}_copy_flags_done", symbol);
+    let copy_meta = format!("{}_copy_meta", symbol);
+    let copy_meta_done = format!("{}_copy_meta_done", symbol);
+    let copy_gen = format!("{}_copy_gen", symbol);
+    let copy_gen_done = format!("{}_copy_gen_done", symbol);
+    let copy_free = format!("{}_copy_free", symbol);
+    let copy_free_done = format!("{}_copy_free_done", symbol);
+    let copy_wfree = format!("{}_copy_wfree", symbol);
+    let copy_wfree_done = format!("{}_copy_wfree_done", symbol);
+    let copy_wslot = format!("{}_copy_wslot", symbol);
+    let copy_wslot_done = format!("{}_copy_wslot_done", symbol);
+    let copy_wtgen = format!("{}_copy_wtgen", symbol);
+    let copy_wtgen_done = format!("{}_copy_wtgen_done", symbol);
+    let copy_wgen = format!("{}_copy_wgen", symbol);
+    let copy_wgen_done = format!("{}_copy_wgen_done", symbol);
+    let grow_str_lens_loop = format!("{}_grow_str_lens_loop", symbol);
+    let grow_str_lens_done = format!("{}_grow_str_lens_done", symbol);
+    let grow_str_lens_next = format!("{}_grow_str_lens_next", symbol);
+    let grow_str_data_loop = format!("{}_grow_str_data_loop", symbol);
+    let grow_str_data_done = format!("{}_grow_str_data_done", symbol);
+    let grow_str_data_next = format!("{}_grow_str_data_next", symbol);
+    let grow_str_data_alloc_fail = format!("{}_grow_str_data_alloc_fail", symbol);
+    let grow_str_commit = format!("{}_grow_str_commit", symbol);
+    let free_old = format!("{}_free_old", symbol);
+    let free_old_weak = format!("{}_free_old_weak", symbol);
+    let commit = format!("{}_commit", symbol);
+    let mut grow_table_ix: u32 = 0;
+    let mut emit_grow_table = |out: &mut String, root_ptr: &str, heap_owned: &str, qword_lane: bool| {
+        let alloc_fail = format!("{}_grow_tbl_{}_alloc_fail", symbol, grow_table_ix);
+        let copy_loop = format!("{}_grow_tbl_{}_copy_loop", symbol, grow_table_ix);
+        let copy_next = format!("{}_grow_tbl_{}_copy_next", symbol, grow_table_ix);
+        let copy_done = format!("{}_grow_tbl_{}_copy_done", symbol, grow_table_ix);
+        let skip_free = format!("{}_grow_tbl_{}_skip_free", symbol, grow_table_ix);
+        let done = format!("{}_grow_tbl_{}_done", symbol, grow_table_ix);
+        grow_table_ix += 1;
+        out.push_str(&format!("    mov r10, qword ptr [{}]\n", root_ptr));
+        out.push_str("    mov qword ptr [rt_tmp_ptr_b], r10\n");
+        out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+        out.push_str("    mov edx, 8\n");
+        if qword_lane {
+            out.push_str("    mov r8d, dword ptr [rsp+260]\n");
+        } else {
+            out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+        }
+        out.push_str("    call HeapAlloc\n");
+        out.push_str("    test rax, rax\n");
+        out.push_str(&format!("    jz {}\n", alloc_fail));
+        out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
+        out.push_str("    xor ecx, ecx\n");
+        out.push_str(&format!("{}:\n", copy_loop));
+        out.push_str("    cmp ecx, dword ptr [rsp+256]\n");
+        out.push_str(&format!("    ja {}\n", copy_done));
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+        out.push_str("    test r10, r10\n");
+        out.push_str(&format!("    jz {}\n", copy_next));
+        out.push_str("    mov r11, qword ptr [rt_tmp_ptr_a]\n");
+        if qword_lane {
+            out.push_str("    mov rax, qword ptr [r10+rcx*8]\n");
+            out.push_str("    mov qword ptr [r11+rcx*8], rax\n");
+        } else {
+            out.push_str("    mov edx, dword ptr [r10+rcx*4]\n");
+            out.push_str("    mov dword ptr [r11+rcx*4], edx\n");
+        }
+        out.push_str(&format!("{}:\n", copy_next));
+        out.push_str("    add ecx, 1\n");
+        out.push_str(&format!("    jmp {}\n", copy_loop));
+        out.push_str(&format!("{}:\n", copy_done));
+        out.push_str(&format!("    cmp dword ptr [{}], 0\n", heap_owned));
+        out.push_str(&format!("    je {}\n", skip_free));
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+        out.push_str("    test r10, r10\n");
+        out.push_str(&format!("    jz {}\n", skip_free));
+        out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+        out.push_str("    xor edx, edx\n");
+        out.push_str("    mov r8, r10\n");
+        out.push_str("    call HeapFree\n");
+        out.push_str(&format!("{}:\n", skip_free));
+        out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+        out.push_str(&format!("    mov qword ptr [{}], rax\n", root_ptr));
+        out.push_str(&format!("    jmp {}\n", done));
+        out.push_str(&format!("{}:\n", alloc_fail));
+        out.push_str(&format!("    jmp {}\n", fail_stack));
+        out.push_str(&format!("{}:\n", done));
+    };
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", done_ok));
+    out.push_str("    mov eax, dword ptr [rt_slot_capacity]\n");
+    out.push_str("    cmp ecx, eax\n");
+    out.push_str(&format!("    ja {}\n", need_grow));
+    out.push_str(&format!("{}:\n", done_ok));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", need_grow));
+    out.push_str("    mov edx, eax\n");
+    out.push_str("    mov r9d, eax\n");
+    out.push_str(&format!("{}:\n", grow_loop));
+    out.push_str("    cmp edx, ecx\n");
+    out.push_str(&format!("    jae {}\n", prep_alloc));
+    out.push_str(&format!("    cmp edx, {}\n", HANDLE_SLOT_CAPACITY));
+    out.push_str(&format!("    jae {}\n", cap_max));
+    out.push_str("    mov r8d, edx\n");
+    out.push_str("    shl edx, 1\n");
+    out.push_str("    cmp edx, r8d\n");
+    out.push_str(&format!("    jbe {}\n", cap_max));
+    out.push_str(&format!("    cmp edx, {}\n", HANDLE_SLOT_CAPACITY));
+    out.push_str(&format!("    jbe {}\n", grow_loop));
+    out.push_str(&format!("{}:\n", cap_max));
+    out.push_str(&format!("    mov edx, {}\n", HANDLE_SLOT_CAPACITY));
+    out.push_str("    cmp edx, ecx\n");
+    out.push_str(&format!("    jb {}\n", fail));
+    out.push_str(&format!("{}:\n", prep_alloc));
+    out.push_str("    sub rsp, 280\n");
+    out.push_str("    mov dword ptr [rsp+248], edx\n");
+    out.push_str("    mov dword ptr [rsp+252], r9d\n");
+    out.push_str("    mov eax, edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    shl eax, 2\n");
+    out.push_str("    mov dword ptr [rsp+232], eax\n");
+    out.push_str("    mov eax, dword ptr [rsp+248]\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    shl eax, 3\n");
+    out.push_str("    mov dword ptr [rsp+260], eax\n");
+    out.push_str("    mov eax, dword ptr [rsp+248]\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    shl eax, 8\n");
+    out.push_str("    mov dword ptr [rsp+264], eax\n");
+    out.push_str("    mov eax, dword ptr [rsp+252]\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    shl eax, 8\n");
+    out.push_str("    mov dword ptr [rsp+268], eax\n");
+    out.push_str("    mov qword ptr [rsp+88], 0\n");
+    out.push_str("    mov qword ptr [rsp+96], 0\n");
+    out.push_str("    mov qword ptr [rsp+104], 0\n");
+    out.push_str("    mov qword ptr [rsp+112], 0\n");
+    out.push_str("    mov qword ptr [rsp+120], 0\n");
+    out.push_str("    mov qword ptr [rsp+128], 0\n");
+    out.push_str("    mov qword ptr [rsp+136], 0\n");
+    out.push_str("    mov qword ptr [rsp+144], 0\n");
+    out.push_str("    mov qword ptr [rsp+200], 0\n");
+    out.push_str("    mov qword ptr [rsp+208], 0\n");
+    out.push_str("    mov qword ptr [rsp+216], 0\n");
+    out.push_str("    mov qword ptr [rsp+224], 0\n");
+    out.push_str("    mov qword ptr [rsp+40], r12\n");
+    out.push_str("    mov qword ptr [rsp+48], r13\n");
+    out.push_str("    mov qword ptr [rsp+56], r14\n");
+    out.push_str("    mov qword ptr [rsp+64], r15\n");
+    out.push_str("    mov qword ptr [rsp+72], rdi\n");
+    out.push_str("    mov qword ptr [rsp+80], rsi\n");
+    out.push_str("    mov rax, qword ptr [rt_weak_free_next_ptr]\n");
+    out.push_str("    mov qword ptr [rsp+168], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_weak_target_slot_ptr]\n");
+    out.push_str("    mov qword ptr [rsp+176], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_weak_target_gen_ptr]\n");
+    out.push_str("    mov qword ptr [rsp+184], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_weak_generation_ptr]\n");
+    out.push_str("    mov qword ptr [rsp+192], rax\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_stack));
+    out.push_str("    mov qword ptr [rsp+240], rax\n");
+    out.push_str(&format!("{}:\n", alloc_ref));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+88], rax\n");
+    out.push_str(&format!("{}:\n", alloc_kinds));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+96], rax\n");
+    out.push_str(&format!("{}:\n", alloc_flags));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+104], rax\n");
+    out.push_str(&format!("{}:\n", alloc_meta));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+112], rax\n");
+    out.push_str(&format!("{}:\n", alloc_gen));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+120], rax\n");
+    out.push_str(&format!("{}:\n", alloc_free));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+128], rax\n");
+    out.push_str(&format!("{}:\n", alloc_weak_free));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+200], rax\n");
+    out.push_str(&format!("{}:\n", alloc_weak_slot));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+208], rax\n");
+    out.push_str(&format!("{}:\n", alloc_weak_tgen));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+216], rax\n");
+    out.push_str(&format!("{}:\n", alloc_weak_gen));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+224], rax\n");
+    out.push_str("    mov ecx, dword ptr [rsp+252]\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    mov dword ptr [rsp+256], ecx\n");
+    out.push_str("    mov r10, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], r10\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+232]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_cleanup));
+    out.push_str("    mov qword ptr [rsp+136], rax\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str(&format!("{}:\n", grow_str_lens_loop));
+    out.push_str("    cmp ecx, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", grow_str_lens_done));
+    out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    test r10, r10\n");
+    out.push_str(&format!("    jz {}\n", grow_str_lens_next));
+    out.push_str("    mov r11, qword ptr [rsp+136]\n");
+    out.push_str("    mov edx, dword ptr [r10+rcx*4]\n");
+    out.push_str("    mov dword ptr [r11+rcx*4], edx\n");
+    out.push_str(&format!("{}:\n", grow_str_lens_next));
+    out.push_str("    add ecx, 1\n");
+    out.push_str(&format!("    jmp {}\n", grow_str_lens_loop));
+    out.push_str(&format!("{}:\n", grow_str_lens_done));
+    out.push_str("    mov r10, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], r10\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+264]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", grow_str_data_alloc_fail));
+    out.push_str("    mov qword ptr [rsp+144], rax\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str(&format!("{}:\n", grow_str_data_loop));
+    out.push_str("    cmp ecx, dword ptr [rsp+268]\n");
+    out.push_str(&format!("    jae {}\n", grow_str_data_done));
+    out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    test r10, r10\n");
+    out.push_str(&format!("    jz {}\n", grow_str_data_next));
+    out.push_str("    mov r11, qword ptr [rsp+144]\n");
+    out.push_str("    mov dl, byte ptr [r10+rcx]\n");
+    out.push_str("    mov byte ptr [r11+rcx], dl\n");
+    out.push_str(&format!("{}:\n", grow_str_data_next));
+    out.push_str("    add ecx, 1\n");
+    out.push_str(&format!("    jmp {}\n", grow_str_data_loop));
+    out.push_str(&format!("{}:\n", grow_str_data_done));
+    out.push_str(&format!("{}:\n", grow_str_commit));
+    out.push_str("    mov rax, qword ptr [rsp+136]\n");
+    out.push_str("    mov qword ptr [rt_str_lens_ptr], rax\n");
+    out.push_str("    mov rax, qword ptr [rsp+144]\n");
+    out.push_str("    mov qword ptr [rt_str_data_ptr], rax\n");
+    out.push_str(&format!("    jmp {}\n", copy_ref));
+    out.push_str(&format!("{}:\n", grow_str_data_alloc_fail));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+136]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str(&format!("    jz {}\n", fail_stack));
+    out.push_str("    call HeapFree\n");
+    out.push_str(&format!("    jmp {}\n", fail_stack));
+    out.push_str(&format!("{}:\n", copy_ref));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_ref_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_kinds));
+    out.push_str("    mov r10, qword ptr [rsp+40]\n");
+    out.push_str("    mov r11, qword ptr [rsp+88]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_ref_done));
+    out.push_str(&format!("{}:\n", copy_kinds));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_kinds_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_flags));
+    out.push_str("    mov r10, qword ptr [rsp+48]\n");
+    out.push_str("    mov r11, qword ptr [rsp+96]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_kinds_done));
+    out.push_str(&format!("{}:\n", copy_flags));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_flags_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_meta));
+    out.push_str("    mov r10, qword ptr [rsp+56]\n");
+    out.push_str("    mov r11, qword ptr [rsp+104]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_flags_done));
+    out.push_str(&format!("{}:\n", copy_meta));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_meta_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_gen));
+    out.push_str("    mov r10, qword ptr [rsp+64]\n");
+    out.push_str("    mov r11, qword ptr [rsp+112]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_meta_done));
+    out.push_str(&format!("{}:\n", copy_gen));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_gen_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_free));
+    out.push_str("    mov r10, qword ptr [rsp+72]\n");
+    out.push_str("    mov r11, qword ptr [rsp+120]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_gen_done));
+    out.push_str(&format!("{}:\n", copy_free));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_free_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_wfree));
+    out.push_str("    mov r10, qword ptr [rsp+80]\n");
+    out.push_str("    mov r11, qword ptr [rsp+128]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_free_done));
+    out.push_str(&format!("{}:\n", copy_wfree));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_wfree_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_wslot));
+    out.push_str("    mov r10, qword ptr [rsp+168]\n");
+    out.push_str("    mov r11, qword ptr [rsp+200]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_wfree_done));
+    out.push_str(&format!("{}:\n", copy_wslot));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_wslot_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_wtgen));
+    out.push_str("    mov r10, qword ptr [rsp+176]\n");
+    out.push_str("    mov r11, qword ptr [rsp+208]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_wslot_done));
+    out.push_str(&format!("{}:\n", copy_wtgen));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_wtgen_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", copy_wgen));
+    out.push_str("    mov r10, qword ptr [rsp+184]\n");
+    out.push_str("    mov r11, qword ptr [rsp+216]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_wtgen_done));
+    out.push_str(&format!("{}:\n", copy_wgen));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", copy_wgen_done));
+    out.push_str("    cmp eax, dword ptr [rsp+256]\n");
+    out.push_str(&format!("    ja {}\n", free_old));
+    out.push_str("    mov r10, qword ptr [rsp+192]\n");
+    out.push_str("    mov r11, qword ptr [rsp+224]\n");
+    out.push_str("    mov edx, dword ptr [r10+rax*4]\n");
+    out.push_str("    mov dword ptr [r11+rax*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_wgen_done));
+    out.push_str(&format!("{}:\n", free_old));
+    out.push_str("    cmp dword ptr [rt_arc_heap_owned], 0\n");
+    out.push_str(&format!("    je {}\n", free_old_weak));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+40]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+48]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+56]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+64]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+72]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+80]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str(&format!("{}:\n", free_old_weak));
+    out.push_str("    cmp dword ptr [rt_weak_heap_owned], 0\n");
+    out.push_str(&format!("    je {}\n", commit));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+168]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+176]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+184]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+192]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str(&format!("{}:\n", commit));
+    out.push_str("    mov r12, qword ptr [rsp+88]\n");
+    out.push_str("    mov r13, qword ptr [rsp+96]\n");
+    out.push_str("    mov r14, qword ptr [rsp+104]\n");
+    out.push_str("    mov r15, qword ptr [rsp+112]\n");
+    out.push_str("    mov rdi, qword ptr [rsp+120]\n");
+    out.push_str("    mov rsi, qword ptr [rsp+128]\n");
+    out.push_str("    mov rax, qword ptr [rsp+200]\n");
+    out.push_str("    mov qword ptr [rt_weak_free_next_ptr], rax\n");
+    out.push_str("    mov rax, qword ptr [rsp+208]\n");
+    out.push_str("    mov qword ptr [rt_weak_target_slot_ptr], rax\n");
+    out.push_str("    mov rax, qword ptr [rsp+216]\n");
+    out.push_str("    mov qword ptr [rt_weak_target_gen_ptr], rax\n");
+    out.push_str("    mov rax, qword ptr [rsp+224]\n");
+    out.push_str("    mov qword ptr [rt_weak_generation_ptr], rax\n");
+    out.push_str("    mov ecx, dword ptr [rsp+252]\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    mov dword ptr [rsp+256], ecx\n");
+    emit_grow_table(out, "rt_arr_len_ptr", "rt_arr_heap_owned", false);
+    emit_grow_table(out, "rt_arr_alive_ptr", "rt_arr_heap_owned", false);
+    emit_grow_table(out, "rt_arr_i_ptr_ptr", "rt_arr_heap_owned", true);
+    emit_grow_table(out, "rt_arr_s_ptr_ptr", "rt_arr_heap_owned", true);
+    out.push_str("    mov dword ptr [rt_arr_heap_owned], 1\n");
+    emit_grow_table(out, "rt_list_size_ptr", "rt_list_heap_owned", false);
+    emit_grow_table(out, "rt_list_cap_ptr", "rt_list_heap_owned", false);
+    emit_grow_table(out, "rt_list_alive_ptr", "rt_list_heap_owned", false);
+    emit_grow_table(out, "rt_list_kind_ptr", "rt_list_heap_owned", false);
+    emit_grow_table(out, "rt_list_i_ptr_ptr", "rt_list_heap_owned", true);
+    emit_grow_table(out, "rt_list_s_ptr_ptr", "rt_list_heap_owned", true);
+    out.push_str("    mov dword ptr [rt_list_heap_owned], 1\n");
+    emit_grow_table(out, "rt_map_size_ptr", "rt_map_heap_owned", false);
+    emit_grow_table(out, "rt_map_cap_ptr", "rt_map_heap_owned", false);
+    emit_grow_table(out, "rt_map_alive_ptr", "rt_map_heap_owned", false);
+    emit_grow_table(out, "rt_map_keys_ptr_ptr", "rt_map_heap_owned", true);
+    emit_grow_table(out, "rt_map_tags_ptr_ptr", "rt_map_heap_owned", true);
+    emit_grow_table(out, "rt_map_i_ptr_ptr", "rt_map_heap_owned", true);
+    emit_grow_table(out, "rt_map_s_ptr_ptr", "rt_map_heap_owned", true);
+    out.push_str("    mov dword ptr [rt_map_heap_owned], 1\n");
+    emit_grow_table(
+        out,
+        RT_OBJECT_CLASS_IDS_SYMBOL,
+        RT_OBJECT_CLASS_IDS_HEAP_OWNED_SYMBOL,
+        false,
+    );
+    out.push_str(&format!(
+        "    mov dword ptr [{}], 1\n",
+        RT_OBJECT_CLASS_IDS_HEAP_OWNED_SYMBOL
+    ));
+    out.push_str("    mov dword ptr [rt_arc_heap_owned], 1\n");
+    out.push_str("    mov dword ptr [rt_weak_heap_owned], 1\n");
+    out.push_str("    mov eax, dword ptr [rsp+248]\n");
+    out.push_str("    mov dword ptr [rt_slot_capacity], eax\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 280\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", fail_cleanup));
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", fail_stack));
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+88]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+96]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+104]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+112]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+120]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+128]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+200]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+208]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+216]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov rcx, qword ptr [rsp+240]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rsp+224]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str(&format!("{}:\n", fail_stack));
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    add rsp, 280\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_class_field_capacity_proc(
+    out: &mut String,
+    package_name: &str,
+    class_name: &str,
+    fields: &[IrField],
+) {
+    let instance_fields = fields
+        .iter()
+        .filter(|field| !field.is_static)
+        .collect::<Vec<_>>();
+    if instance_fields.is_empty() {
+        return;
+    }
+
+    let symbol = mangle_class_field_capacity_proc_symbol(package_name, class_name);
+    let capacity_symbol = mangle_class_field_capacity_symbol(package_name, class_name);
+    let done_ok = format!("{}_done_ok", symbol);
+    let fail = format!("{}_fail", symbol);
+    let alloc_fail = format!("{}_alloc_fail", symbol);
+    let field_done_labels = instance_fields
+        .iter()
+        .enumerate()
+        .map(|(idx, _)| format!("{}_field_{}_done", symbol, idx))
+        .collect::<Vec<_>>();
+
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", done_ok));
+    out.push_str(&format!("    cmp ecx, dword ptr [{}]\n", capacity_symbol));
+    out.push_str(&format!("    jbe {}\n", done_ok));
+    out.push_str("    sub rsp, 88\n");
+    out.push_str("    mov qword ptr [rsp+40], rbx\n");
+    out.push_str("    mov qword ptr [rsp+48], rsi\n");
+    out.push_str("    mov qword ptr [rsp+56], rdi\n");
+    out.push_str("    mov qword ptr [rsp+64], r12\n");
+    out.push_str("    mov qword ptr [rsp+72], r13\n");
+    out.push_str("    mov dword ptr [rsp+80], ecx\n");
+    out.push_str(&format!("    mov eax, dword ptr [{}]\n", capacity_symbol));
+    out.push_str("    mov dword ptr [rsp+84], eax\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail));
+    out.push_str("    mov r13, rax\n");
+
+    for (idx, field) in instance_fields.iter().enumerate() {
+        let field_sym = mangle_field_symbol(package_name, class_name, &field.name);
+        let heap_owned_sym = mangle_field_heap_owned_symbol(package_name, class_name, &field.name);
+        let alloc_bytes_shift = if uses_qword_field_storage(&field.ty) {
+            3
+        } else {
+            2
+        };
+        let alloc_bytes_reg = if uses_qword_field_storage(&field.ty) {
+            "edx"
+        } else {
+            "edx"
+        };
+        out.push_str("    mov eax, dword ptr [rt_slot_capacity]\n");
+        out.push_str("    add eax, 1\n");
+        out.push_str(&format!("    shl eax, {}\n", alloc_bytes_shift));
+        out.push_str(&format!("    mov {}, eax\n", alloc_bytes_reg));
+        out.push_str("    mov rcx, r13\n");
+        out.push_str("    mov r8d, edx\n");
+        out.push_str("    mov edx, 8\n");
+        out.push_str("    call HeapAlloc\n");
+        out.push_str("    test rax, rax\n");
+        out.push_str(&format!("    jz {}\n", alloc_fail));
+        out.push_str("    mov r12, rax\n");
+        out.push_str(&format!("    mov rbx, qword ptr [{}]\n", field_sym));
+        out.push_str("    xor esi, esi\n");
+        out.push_str(&format!("{}_copy_loop:\n", field_done_labels[idx]));
+        out.push_str("    cmp esi, dword ptr [rsp+84]\n");
+        out.push_str(&format!("    ja {}\n", field_done_labels[idx]));
+        out.push_str("    test rbx, rbx\n");
+        out.push_str(&format!("    jz {}_next\n", field_done_labels[idx]));
+        if uses_qword_field_storage(&field.ty) {
+            out.push_str("    mov rax, qword ptr [rbx+rsi*8]\n");
+            out.push_str("    mov qword ptr [r12+rsi*8], rax\n");
+        } else {
+            out.push_str("    mov eax, dword ptr [rbx+rsi*4]\n");
+            out.push_str("    mov dword ptr [r12+rsi*4], eax\n");
+        }
+        out.push_str(&format!("{}_next:\n", field_done_labels[idx]));
+        out.push_str("    add esi, 1\n");
+        out.push_str(&format!("    jmp {}_copy_loop\n", field_done_labels[idx]));
+        out.push_str(&format!("{}:\n", field_done_labels[idx]));
+        out.push_str(&format!("    cmp dword ptr [{}], 0\n", heap_owned_sym));
+        out.push_str(&format!("    je {}_commit\n", field_done_labels[idx]));
+        out.push_str("    test rbx, rbx\n");
+        out.push_str(&format!("    jz {}_commit\n", field_done_labels[idx]));
+        out.push_str("    mov rcx, r13\n");
+        out.push_str("    xor edx, edx\n");
+        out.push_str("    mov r8, rbx\n");
+        out.push_str("    call HeapFree\n");
+        out.push_str(&format!("{}_commit:\n", field_done_labels[idx]));
+        out.push_str(&format!("    mov qword ptr [{}], r12\n", field_sym));
+        out.push_str(&format!("    mov dword ptr [{}], 1\n", heap_owned_sym));
+    }
+
+    out.push_str("    mov eax, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    mov dword ptr [{}], eax\n", capacity_symbol));
+    out.push_str("    mov rbx, qword ptr [rsp+40]\n");
+    out.push_str("    mov rsi, qword ptr [rsp+48]\n");
+    out.push_str("    mov rdi, qword ptr [rsp+56]\n");
+    out.push_str("    mov r12, qword ptr [rsp+64]\n");
+    out.push_str("    mov r13, qword ptr [rsp+72]\n");
+    out.push_str("    add rsp, 88\n");
+    out.push_str(&format!("{}:\n", done_ok));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", alloc_fail));
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n\n", symbol));
+}
+
+pub(crate) fn emit_arc_release_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let valid = format!("{}_valid", symbol);
+    let debug_invalid = format!("{}_debug_invalid", symbol);
+    let debug_skip = format!("{}_debug_skip", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    mov r8d, ecx\n");
+    out.push_str("    cmp r8d, 1\n");
+    out.push_str(&format!("    jb {}\n", debug_invalid));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", debug_invalid));
+    out.push_str("    mov r9, rcx\n");
+    out.push_str(&format!("    shr r9, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r9d, r9d\n");
+    out.push_str(&format!("    jz {}\n", valid));
+    out.push_str("    cmp r9d, dword ptr [rt_arc_generation+r8*4]\n");
+    out.push_str(&format!("    jne {}\n", debug_invalid));
+    out.push_str(&format!("{}:\n", valid));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", debug_invalid));
+    out.push_str("    sub eax, 1\n");
+    out.push_str("    mov dword ptr [rt_arc_refcounts+r8*4], eax\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jnz {}\n", done));
+    out.push_str("    mov ecx, r8d\n");
+    out.push_str("    call pulsec_rt_arcTeardown\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", debug_invalid));
+    out.push_str("    cmp dword ptr [rt_debug_alloc_mode], 0\n");
+    out.push_str(&format!("    je {}\n", debug_skip));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_debug_arc_release_err\n");
+    out.push_str("    mov edx, rt_debug_arc_release_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", debug_skip));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_class_arc_teardown_proc(
+    out: &mut String,
+    package_name: &str,
+    class_name: &str,
+    fields: &[IrField],
+) {
+    let arc_fields = fields
+        .iter()
+        .filter(|field| !field.is_static && is_arc_managed_type_name(&field.ty))
+        .collect::<Vec<_>>();
+    if arc_fields.is_empty() {
+        return;
+    }
+
+    let symbol = mangle_class_arc_teardown_proc_symbol(package_name, class_name);
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", done));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    for (idx, field) in arc_fields.iter().enumerate() {
+        let field_sym = mangle_field_symbol(package_name, class_name, &field.name);
+        let skip = format!("{}_field_{}_skip", symbol, idx);
+        out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+        out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+        out.push_str("    mov rax, qword ptr [r10+rcx*8]\n");
+        out.push_str("    mov qword ptr [r10+rcx*8], 0\n");
+        out.push_str("    test rax, rax\n");
+        out.push_str(&format!("    jz {}\n", skip));
+        out.push_str("    mov rcx, rax\n");
+        out.push_str("    call pulsec_rt_arcRelease\n");
+        out.push_str(&format!("{}:\n", skip));
+    }
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_class_arc_scan_edges_proc(
+    out: &mut String,
+    package_name: &str,
+    class_name: &str,
+    fields: &[IrField],
+) {
+    let arc_fields = fields
+        .iter()
+        .filter(|field| !field.is_static && is_arc_managed_type_name(&field.ty))
+        .collect::<Vec<_>>();
+    if arc_fields.is_empty() {
+        return;
+    }
+
+    let symbol = mangle_class_arc_scan_edges_proc_symbol(package_name, class_name);
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", done));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    for (idx, field) in arc_fields.iter().enumerate() {
+        let field_sym = mangle_field_symbol(package_name, class_name, &field.name);
+        let skip = format!("{}_field_{}_skip", symbol, idx);
+        out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+        out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+        out.push_str("    mov rcx, qword ptr [r10+rcx*8]\n");
+        out.push_str("    test rcx, rcx\n");
+        out.push_str(&format!("    jz {}\n", skip));
+        out.push_str("    cmp ecx, 1\n");
+        out.push_str(&format!("    jb {}\n", skip));
+        out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+        out.push_str(&format!("    ja {}\n", skip));
+        out.push_str("    lea r11, rt_arc_refcounts_tbl\n");
+        out.push_str("    mov eax, dword ptr [r11+rcx*4]\n");
+        out.push_str("    cmp eax, 0\n");
+        out.push_str(&format!("    je {}\n", skip));
+        out.push_str("    lea r11, rt_arc_kinds_tbl\n");
+        out.push_str(&format!(
+            "    cmp dword ptr [r11+rcx*4], {}\n",
+            ARC_KIND_TAG_OBJECT
+        ));
+        out.push_str(&format!("    jne {}\n", skip));
+        out.push_str("    lea r11, rt_arc_flags_tbl\n");
+        out.push_str("    mov eax, dword ptr [r11+rcx*4]\n");
+        out.push_str(&format!(
+            "    cmp eax, {}\n",
+            ARC_REFCOUNT_SATURATION_GUARD
+        ));
+        out.push_str(&format!("    jae {}\n", skip));
+        out.push_str("    add eax, 1\n");
+        out.push_str("    mov dword ptr [r11+rcx*4], eax\n");
+        out.push_str(&format!("{}:\n", skip));
+    }
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_class_arc_invalidate_edges_proc(
+    out: &mut String,
+    package_name: &str,
+    class_name: &str,
+    fields: &[IrField],
+) {
+    let arc_fields = fields
+        .iter()
+        .filter(|field| !field.is_static && is_arc_managed_type_name(&field.ty))
+        .collect::<Vec<_>>();
+    if arc_fields.is_empty() {
+        return;
+    }
+
+    let symbol = mangle_class_arc_invalidate_edges_proc_symbol(package_name, class_name);
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", done));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    for (idx, field) in arc_fields.iter().enumerate() {
+        let field_sym = mangle_field_symbol(package_name, class_name, &field.name);
+        let skip = format!("{}_field_{}_skip", symbol, idx);
+        out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+        out.push_str(&format!("    mov r10, qword ptr [{}]\n", field_sym));
+        out.push_str("    mov rcx, qword ptr [r10+rcx*8]\n");
+        out.push_str("    test rcx, rcx\n");
+        out.push_str(&format!("    jz {}\n", skip));
+        out.push_str("    cmp ecx, 1\n");
+        out.push_str(&format!("    jb {}\n", skip));
+        out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+        out.push_str(&format!("    ja {}\n", skip));
+        out.push_str("    lea r11, rt_arc_kinds_tbl\n");
+        out.push_str(&format!(
+            "    cmp dword ptr [r11+rcx*4], {}\n",
+            ARC_KIND_TAG_OBJECT
+        ));
+        out.push_str(&format!("    jne {}\n", skip));
+        out.push_str("    lea r11, rt_arc_refcounts_tbl\n");
+        out.push_str("    cmp dword ptr [r11+rcx*4], 0\n");
+        out.push_str(&format!("    je {}\n", skip));
+        out.push_str("    lea r11, rt_arc_flags_tbl\n");
+        out.push_str("    cmp dword ptr [r11+rcx*4], 1\n");
+        out.push_str(&format!("    jne {}\n", skip));
+        out.push_str("    mov dword ptr [r11+rcx*4], 0\n");
+        out.push_str(&format!("{}:\n", skip));
+    }
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_class_arc_field_helpers(
+    out: &mut String,
+    package_name: &str,
+    class_name: &str,
+    fields: &[IrField],
+) {
+    emit_class_arc_teardown_proc(out, package_name, class_name, fields);
+    emit_class_arc_scan_edges_proc(out, package_name, class_name, fields);
+    emit_class_arc_invalidate_edges_proc(out, package_name, class_name, fields);
+}
+
+pub(crate) fn emit_arc_cycle_young_pass_proc(out: &mut String, symbol: &str) {
+    let l_init = format!("{}_init", symbol);
+    let l_loop = format!("{}_loop", symbol);
+    let l_scan = format!("{}_scan", symbol);
+    let l_next = format!("{}_next", symbol);
+    let l_done = format!("{}_done", symbol);
+    let l_store = format!("{}_store", symbol);
+    let l_wrap = format!("{}_wrap", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    xor r11d, r11d\n");
+    out.push_str("    mov r8d, dword ptr [rt_arc_cycle_young_cursor]\n");
+    out.push_str("    cmp r8d, 1\n");
+    out.push_str(&format!("    jb {}\n", l_wrap));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    jbe {}\n", l_init));
+    out.push_str(&format!("{}:\n", l_wrap));
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_init));
+    out.push_str("    mov r9d, 64\n");
+    out.push_str(&format!("{}:\n", l_loop));
+    out.push_str("    cmp r9d, 0\n");
+    out.push_str(&format!("    je {}\n", l_done));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    jbe {}\n", l_scan));
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_scan));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jne {}\n", l_next));
+    out.push_str("    cmp dword ptr [rt_arc_kinds+r8*4], 0\n");
+    out.push_str(&format!("    je {}\n", l_next));
+    out.push_str("    mov ecx, r8d\n");
+    out.push_str("    call pulsec_rt_arcTeardown\n");
+    out.push_str("    add r11d, 1\n");
+    out.push_str(&format!("{}:\n", l_next));
+    out.push_str("    add r8d, 1\n");
+    out.push_str("    sub r9d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_loop));
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    jbe {}\n", l_store));
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_store));
+    out.push_str("    mov dword ptr [rt_arc_cycle_young_cursor], r8d\n");
+    out.push_str("    mov eax, r11d\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_arc_cycle_full_pass_proc(
+    out: &mut String,
+    symbol: &str,
+    object_arc_fields: &BTreeMap<u32, ArcFieldDispatch>,
+) {
+    let l_clear_flags_loop = format!("{}_clear_flags_loop", symbol);
+    let l_clear_flags_done = format!("{}_clear_flags_done", symbol);
+    let l_scan_edges_loop = format!("{}_scan_edges_loop", symbol);
+    let l_scan_edges_next = format!("{}_scan_edges_next", symbol);
+    let l_scan_edges_done = format!("{}_scan_edges_done", symbol);
+    let l_mark_candidates_loop = format!("{}_mark_candidates_loop", symbol);
+    let l_mark_candidates_next = format!("{}_mark_candidates_next", symbol);
+    let l_mark_candidates_done = format!("{}_mark_candidates_done", symbol);
+    let l_invalidate_loop = format!("{}_invalidate_loop", symbol);
+    let l_invalidate_next = format!("{}_invalidate_next", symbol);
+    let l_invalidate_done = format!("{}_invalidate_done", symbol);
+    let l_collect_cycles_loop = format!("{}_collect_cycles_loop", symbol);
+    let l_collect_cycles_next = format!("{}_collect_cycles_next", symbol);
+    let l_collect_cycles_done = format!("{}_collect_cycles_done", symbol);
+    let l_zero_sweep_loop = format!("{}_zero_sweep_loop", symbol);
+    let l_zero_sweep_next = format!("{}_zero_sweep_next", symbol);
+    let l_done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    xor r11d, r11d\n");
+
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_clear_flags_loop));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_clear_flags_done));
+    out.push_str("    mov dword ptr [rt_arc_flags+r8*4], 0\n");
+    out.push_str("    add r8d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_clear_flags_loop));
+    out.push_str(&format!("{}:\n", l_clear_flags_done));
+
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_scan_edges_loop));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_scan_edges_done));
+    out.push_str(&format!(
+        "    cmp dword ptr [rt_arc_kinds+r8*4], {}\n",
+        ARC_KIND_TAG_OBJECT
+    ));
+    out.push_str(&format!("    jne {}\n", l_scan_edges_next));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", l_scan_edges_next));
+    out.push_str(&format!("    mov r10, qword ptr [{}]\n", RT_OBJECT_CLASS_IDS_SYMBOL));
+    out.push_str("    mov edx, dword ptr [r10+r8*4]\n");
+    if !object_arc_fields.is_empty() {
+        let unmatched = format!("{}_scan_edges_unmatched", symbol);
+        for class_id in object_arc_fields.keys() {
+            let class_label = format!("{}_scan_edges_c{}", symbol, class_id);
+            out.push_str(&format!("    cmp edx, {}\n", class_id));
+            out.push_str(&format!("    je {}\n", class_label));
+        }
+        out.push_str(&format!("    jmp {}\n", unmatched));
+        for (class_id, dispatch) in object_arc_fields {
+            let class_label = format!("{}_scan_edges_c{}", symbol, class_id);
+            out.push_str(&format!("{}:\n", class_label));
+            out.push_str("    mov ecx, r8d\n");
+            out.push_str(&format!("    call {}\n", dispatch.scan_edges_proc));
+            out.push_str(&format!("    jmp {}\n", l_scan_edges_next));
+        }
+        out.push_str(&format!("{}:\n", unmatched));
+    }
+    out.push_str(&format!("{}:\n", l_scan_edges_next));
+    out.push_str("    add r8d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_scan_edges_loop));
+    out.push_str(&format!("{}:\n", l_scan_edges_done));
+
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_mark_candidates_loop));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_mark_candidates_done));
+    out.push_str(&format!(
+        "    cmp dword ptr [rt_arc_kinds+r8*4], {}\n",
+        ARC_KIND_TAG_OBJECT
+    ));
+    out.push_str(&format!("    jne {}\n", l_mark_candidates_next));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", l_mark_candidates_next));
+    out.push_str("    mov edx, dword ptr [rt_arc_flags+r8*4]\n");
+    out.push_str("    cmp eax, edx\n");
+    out.push_str(&format!("    jne {}\n", l_mark_candidates_next));
+    out.push_str("    mov dword ptr [rt_arc_flags+r8*4], 1\n");
+    out.push_str(&format!("    jmp {}\n", l_mark_candidates_next));
+    out.push_str(&format!("{}:\n", l_mark_candidates_next));
+    out.push_str("    cmp dword ptr [rt_arc_flags+r8*4], 1\n");
+    out.push_str("    je @F\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+r8*4], 0\n");
+    out.push_str("@@:\n");
+    out.push_str("    add r8d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_mark_candidates_loop));
+    out.push_str(&format!("{}:\n", l_mark_candidates_done));
+
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_invalidate_loop));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_invalidate_done));
+    out.push_str(&format!(
+        "    cmp dword ptr [rt_arc_kinds+r8*4], {}\n",
+        ARC_KIND_TAG_OBJECT
+    ));
+    out.push_str(&format!("    jne {}\n", l_invalidate_next));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", l_invalidate_next));
+    out.push_str("    cmp dword ptr [rt_arc_flags+r8*4], 0\n");
+    out.push_str(&format!("    jne {}\n", l_invalidate_next));
+    out.push_str(&format!("    mov r10, qword ptr [{}]\n", RT_OBJECT_CLASS_IDS_SYMBOL));
+    out.push_str("    mov edx, dword ptr [r10+r8*4]\n");
+    if !object_arc_fields.is_empty() {
+        let unmatched = format!("{}_invalidate_unmatched", symbol);
+        for class_id in object_arc_fields.keys() {
+            let class_label = format!("{}_invalidate_c{}", symbol, class_id);
+            out.push_str(&format!("    cmp edx, {}\n", class_id));
+            out.push_str(&format!("    je {}\n", class_label));
+        }
+        out.push_str(&format!("    jmp {}\n", unmatched));
+        for (class_id, dispatch) in object_arc_fields {
+            let class_label = format!("{}_invalidate_c{}", symbol, class_id);
+            out.push_str(&format!("{}:\n", class_label));
+            out.push_str("    mov ecx, r8d\n");
+            out.push_str(&format!("    call {}\n", dispatch.invalidate_edges_proc));
+            out.push_str(&format!("    jmp {}\n", l_invalidate_next));
+        }
+        out.push_str(&format!("{}:\n", unmatched));
+    }
+    out.push_str(&format!("{}:\n", l_invalidate_next));
+    out.push_str("    add r8d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_invalidate_loop));
+    out.push_str(&format!("{}:\n", l_invalidate_done));
+
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_collect_cycles_loop));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_collect_cycles_done));
+    out.push_str(&format!(
+        "    cmp dword ptr [rt_arc_kinds+r8*4], {}\n",
+        ARC_KIND_TAG_OBJECT
+    ));
+    out.push_str(&format!("    jne {}\n", l_collect_cycles_next));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", l_collect_cycles_next));
+    out.push_str("    mov edx, dword ptr [rt_arc_flags+r8*4]\n");
+    out.push_str("    cmp edx, 1\n");
+    out.push_str(&format!("    jne {}\n", l_collect_cycles_next));
+    out.push_str("    mov ecx, r8d\n");
+    out.push_str("    call pulsec_rt_arcTeardown\n");
+    out.push_str("    add r11d, 1\n");
+    out.push_str(&format!("{}:\n", l_collect_cycles_next));
+    out.push_str("    add r8d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_collect_cycles_loop));
+    out.push_str(&format!("{}:\n", l_collect_cycles_done));
+
+    out.push_str("    mov r8d, 1\n");
+    out.push_str(&format!("{}:\n", l_zero_sweep_loop));
+    out.push_str("    cmp r8d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_done));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jne {}\n", l_zero_sweep_next));
+    out.push_str("    cmp dword ptr [rt_arc_kinds+r8*4], 0\n");
+    out.push_str(&format!("    je {}\n", l_zero_sweep_next));
+    out.push_str("    mov ecx, r8d\n");
+    out.push_str("    call pulsec_rt_arcTeardown\n");
+    out.push_str("    add r11d, 1\n");
+    out.push_str(&format!("{}:\n", l_zero_sweep_next));
+    out.push_str("    add r8d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_zero_sweep_loop));
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str("    mov eax, r11d\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_arc_cycle_tick_proc(out: &mut String, symbol: &str) {
+    let l_full = format!("{}_full", symbol);
+    let l_after_pass = format!("{}_after_pass", symbol);
+    let l_update_lag = format!("{}_update_lag", symbol);
+    let l_reset_lag = format!("{}_reset_lag", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, dword ptr [rt_arc_cycle_epoch]\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    mov dword ptr [rt_arc_cycle_epoch], eax\n");
+    out.push_str("    mov edx, eax\n");
+    out.push_str("    and edx, 7\n");
+    out.push_str("    cmp edx, 0\n");
+    out.push_str(&format!("    je {}\n", l_full));
+    out.push_str("    call pulsec_rt_arcCycleYoungPass\n");
+    out.push_str(&format!("    jmp {}\n", l_after_pass));
+    out.push_str(&format!("{}:\n", l_full));
+    out.push_str("    call pulsec_rt_arcCycleFullPass\n");
+    out.push_str(&format!("{}:\n", l_after_pass));
+    out.push_str("    mov dword ptr [rt_arc_cycle_last_reclaimed], eax\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", l_update_lag));
+    out.push_str(&format!("{}:\n", l_reset_lag));
+    out.push_str("    mov dword ptr [rt_arc_cycle_zero_reclaim_streak], 0\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_cycle_last_reclaimed]\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_update_lag));
+    out.push_str("    mov eax, dword ptr [rt_arc_cycle_zero_reclaim_streak]\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    cmp eax, 1024\n");
+    out.push_str("    jbe @F\n");
+    out.push_str("    mov eax, 1024\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov dword ptr [rt_arc_cycle_zero_reclaim_streak], eax\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_weak_new_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let valid = format!("{}_valid", symbol);
+    let alloc = format!("{}_alloc", symbol);
+    let alloc_fresh = format!("{}_alloc_fresh", symbol);
+    let alloc_have_room = format!("{}_alloc_have_room", symbol);
+    let alloc_done = format!("{}_alloc_done", symbol);
+    let fail = format!("{}_fail", symbol);
+    let exhausted = format!("{}_exhausted", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    je {}\n", fail));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", fail));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", fail));
+    out.push_str("    mov r11, rcx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", valid));
+    out.push_str("    cmp r11d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str(&format!("    jne {}\n", fail));
+    out.push_str(&format!("{}:\n", valid));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r10*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", fail));
+    out.push_str(&format!("{}:\n", alloc));
+    out.push_str("    mov eax, dword ptr [rt_weak_free_head]\n");
+    out.push_str("    cmp eax, 1\n");
+    out.push_str(&format!("    jb {}\n", alloc_fresh));
+    out.push_str("    cmp eax, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", alloc_fresh));
+    out.push_str("    mov r11d, eax\n");
+    out.push_str("    mov r9, qword ptr [rt_weak_free_next_ptr]\n");
+    out.push_str("    mov eax, dword ptr [r9+r11*4]\n");
+    out.push_str("    mov dword ptr [rt_weak_free_head], eax\n");
+    out.push_str("    mov dword ptr [r9+r11*4], 0\n");
+    out.push_str(&format!("    jmp {}\n", alloc_done));
+    out.push_str(&format!("{}:\n", alloc_fresh));
+    out.push_str("    mov eax, dword ptr [rt_weak_next]\n");
+    out.push_str("    cmp eax, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    jb {}\n", alloc_have_room));
+    out.push_str("    mov dword ptr [rt_tmp_arg_key], r10d\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call pulsec_rt_ensureSlotCapacity\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arg_key]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jne {}\n", exhausted));
+    out.push_str("    mov eax, dword ptr [rt_weak_next]\n");
+    out.push_str(&format!("{}:\n", alloc_have_room));
+    out.push_str("    add eax, 1\n");
+    out.push_str("    mov dword ptr [rt_weak_next], eax\n");
+    out.push_str("    mov r11d, eax\n");
+    out.push_str(&format!("{}:\n", alloc_done));
+    out.push_str("    mov r9, qword ptr [rt_weak_target_slot_ptr]\n");
+    out.push_str("    mov dword ptr [r9+r11*4], r10d\n");
+    out.push_str("    mov edx, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str("    mov r9, qword ptr [rt_weak_target_gen_ptr]\n");
+    out.push_str("    mov dword ptr [r9+r11*4], edx\n");
+    out.push_str("    mov r9, qword ptr [rt_weak_generation_ptr]\n");
+    out.push_str("    mov edx, dword ptr [r9+r11*4]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    jnz @F\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_weak_generation_overflow_err\n");
+    out.push_str("    mov edx, rt_weak_generation_overflow_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov r9, qword ptr [rt_weak_generation_ptr]\n");
+    out.push_str("    mov dword ptr [r9+r11*4], edx\n");
+    out.push_str("    mov eax, r11d\n");
+    out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    or rax, rdx\n");
+    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("{}:\n", exhausted));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_weak_exhausted_err\n");
+    out.push_str("    mov edx, rt_weak_exhausted_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_weak_get_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let stale = format!("{}_stale", symbol);
+    let token_ok = format!("{}_token_ok", symbol);
+    let token_plain = format!("{}_token_plain", symbol);
+    let target_live = format!("{}_target_live", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", stale));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", stale));
+    out.push_str("    mov r11, rcx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", token_plain));
+    out.push_str("    mov r9, qword ptr [rt_weak_generation_ptr]\n");
+    out.push_str("    cmp r11d, dword ptr [r9+r10*4]\n");
+    out.push_str(&format!("    jne {}\n", stale));
+    out.push_str(&format!("    jmp {}\n", token_ok));
+    out.push_str(&format!("{}:\n", token_plain));
+    out.push_str("    mov r9, qword ptr [rt_weak_generation_ptr]\n");
+    out.push_str("    cmp dword ptr [r9+r10*4], 0\n");
+    out.push_str(&format!("    je {}\n", stale));
+    out.push_str(&format!("{}:\n", token_ok));
+    out.push_str("    mov r9, qword ptr [rt_weak_target_slot_ptr]\n");
+    out.push_str("    mov r11d, dword ptr [r9+r10*4]\n");
+    out.push_str("    cmp r11d, 1\n");
+    out.push_str(&format!("    jb {}\n", done));
+    out.push_str("    cmp r11d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", done));
+    out.push_str("    mov r9, qword ptr [rt_weak_target_gen_ptr]\n");
+    out.push_str("    mov edx, dword ptr [r9+r10*4]\n");
+    out.push_str("    cmp edx, 0\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    cmp edx, dword ptr [rt_arc_generation+r11*4]\n");
+    out.push_str(&format!("    jne {}\n", done));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r11*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jne {}\n", target_live));
+    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("{}:\n", target_live));
+    out.push_str("    mov eax, r11d\n");
+    out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    or rax, rdx\n");
+    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("{}:\n", stale));
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_weak_clear_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let stale = format!("{}_stale", symbol);
+    let token_ok = format!("{}_token_ok", symbol);
+    let recycle = format!("{}_recycle", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", stale));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", stale));
+    out.push_str("    mov r11, rcx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", token_ok));
+    out.push_str("    mov r9, qword ptr [rt_weak_generation_ptr]\n");
+    out.push_str("    cmp r11d, dword ptr [r9+r10*4]\n");
+    out.push_str(&format!("    jne {}\n", stale));
+    out.push_str(&format!("{}:\n", token_ok));
+    out.push_str("    mov r9, qword ptr [rt_weak_target_slot_ptr]\n");
+    out.push_str("    mov dword ptr [r9+r10*4], 0\n");
+    out.push_str("    mov r9, qword ptr [rt_weak_target_gen_ptr]\n");
+    out.push_str("    cmp dword ptr [r9+r10*4], 0\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    mov r9, qword ptr [rt_weak_target_gen_ptr]\n");
+    out.push_str("    mov dword ptr [r9+r10*4], 0\n");
+    out.push_str(&format!("{}:\n", recycle));
+    out.push_str("    mov eax, dword ptr [rt_weak_free_head]\n");
+    out.push_str("    mov r9, qword ptr [rt_weak_free_next_ptr]\n");
+    out.push_str("    mov dword ptr [r9+r10*4], eax\n");
+    out.push_str("    mov dword ptr [rt_weak_free_head], r10d\n");
+    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("{}:\n", stale));
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_stale_handle_kind_guard_ecx(
+    out: &mut String,
+    label_prefix: &str,
+    expected_kind: Option<u32>,
+    expected_meta: Option<u32>,
+) {
+    let live = format!("{}_live", label_prefix);
+    let done = format!("{}_ok", label_prefix);
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}_panic\n", live));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}_panic\n", live));
+    out.push_str("    mov r11, rcx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", live));
+    out.push_str("    cmp r11d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str(&format!("    jne {}_panic\n", live));
+    out.push_str(&format!("{}:\n", live));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r10*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}_panic\n", live));
+    if let Some(kind) = expected_kind {
+        out.push_str("    mov eax, dword ptr [rt_arc_kinds+r10*4]\n");
+        out.push_str(&format!("    cmp eax, {}\n", kind));
+        out.push_str(&format!("    jne {}_panic\n", live));
+    }
+    if let Some(meta) = expected_meta {
+        out.push_str("    mov eax, dword ptr [rt_arc_meta+r10*4]\n");
+        out.push_str(&format!("    cmp eax, {}\n", meta));
+        out.push_str(&format!("    jne {}_panic\n", live));
+    }
+    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("{}_panic:\n", live));
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    mov ecx, r10d\n");
+}
+
+pub(crate) fn emit_write_raw_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov qword ptr [rsp+16], rcx\n");
+    out.push_str("    mov dword ptr [rsp+24], edx\n");
+    out.push_str("    mov rcx, -11\n");
+    out.push_str("    call GetStdHandle\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    mov rdx, qword ptr [rsp+16]\n");
+    out.push_str("    mov r8d, dword ptr [rsp+24]\n");
+    out.push_str("    lea r9, written\n");
+    out.push_str("    mov qword ptr [rsp+32], 0\n");
+    out.push_str("    call WriteFile\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_runtime_init_proc(out: &mut String, symbol: &str, write_raw_symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let fail = format!("{}_fail", symbol);
+    let fail_free_lens = format!("{}_fail_free_lens", symbol);
+    let abi_mismatch = format!("{}_abi_mismatch", symbol);
+    let obj_abi_mismatch = format!("{}_obj_abi_mismatch", symbol);
+    let rows = HANDLE_SLOT_INITIAL_CAPACITY + 1;
+    let lens_bytes = rows * 4;
+    let data_bytes = rows * STRING_SLOT_BYTES;
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov eax, dword ptr [rt_runtime_abi_version]\n");
+    out.push_str("    cmp eax, dword ptr [rt_compiler_abi_expected]\n");
+    out.push_str(&format!("    jne {}\n", abi_mismatch));
+    out.push_str("    mov eax, dword ptr [rt_runtime_object_model_abi_version]\n");
+    out.push_str("    cmp eax, dword ptr [rt_compiler_object_model_abi_expected]\n");
+    out.push_str(&format!("    jne {}\n", obj_abi_mismatch));
+    out.push_str("    cmp dword ptr [rt_runtime_init_state], 1\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    cmp qword ptr [rt_str_lens_ptr], 0\n");
+    out.push_str(&format!("    jne {}\n", done));
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail));
+    out.push_str("    mov qword ptr [rsp+32], rax\n");
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str(&format!("    mov r8d, {}\n", lens_bytes));
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail));
+    out.push_str("    mov qword ptr [rt_str_lens_ptr], rax\n");
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str(&format!("    mov r8d, {}\n", data_bytes));
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_free_lens));
+    out.push_str("    mov qword ptr [rt_str_data_ptr], rax\n");
+    out.push_str("    lea rax, rt_weak_free_next\n");
+    out.push_str("    mov qword ptr [rt_weak_free_next_ptr], rax\n");
+    out.push_str("    lea rax, rt_weak_target_slot\n");
+    out.push_str("    mov qword ptr [rt_weak_target_slot_ptr], rax\n");
+    out.push_str("    lea rax, rt_weak_target_gen\n");
+    out.push_str("    mov qword ptr [rt_weak_target_gen_ptr], rax\n");
+    out.push_str("    lea rax, rt_weak_generation\n");
+    out.push_str("    mov qword ptr [rt_weak_generation_ptr], rax\n");
+    out.push_str("    lea rax, rt_arr_len\n");
+    out.push_str("    mov qword ptr [rt_arr_len_ptr], rax\n");
+    out.push_str("    lea rax, rt_arr_alive\n");
+    out.push_str("    mov qword ptr [rt_arr_alive_ptr], rax\n");
+    out.push_str("    lea rax, rt_arr_i_ptr\n");
+    out.push_str("    mov qword ptr [rt_arr_i_ptr_ptr], rax\n");
+    out.push_str("    lea rax, rt_arr_s_ptr\n");
+    out.push_str("    mov qword ptr [rt_arr_s_ptr_ptr], rax\n");
+    out.push_str("    lea rax, rt_list_size\n");
+    out.push_str("    mov qword ptr [rt_list_size_ptr], rax\n");
+    out.push_str("    lea rax, rt_list_cap\n");
+    out.push_str("    mov qword ptr [rt_list_cap_ptr], rax\n");
+    out.push_str("    lea rax, rt_list_alive\n");
+    out.push_str("    mov qword ptr [rt_list_alive_ptr], rax\n");
+    out.push_str("    lea rax, rt_list_kind\n");
+    out.push_str("    mov qword ptr [rt_list_kind_ptr], rax\n");
+    out.push_str("    lea rax, rt_list_i_ptr\n");
+    out.push_str("    mov qword ptr [rt_list_i_ptr_ptr], rax\n");
+    out.push_str("    lea rax, rt_list_s_ptr\n");
+    out.push_str("    mov qword ptr [rt_list_s_ptr_ptr], rax\n");
+    out.push_str("    lea rax, rt_map_size\n");
+    out.push_str("    mov qword ptr [rt_map_size_ptr], rax\n");
+    out.push_str("    lea rax, rt_map_cap\n");
+    out.push_str("    mov qword ptr [rt_map_cap_ptr], rax\n");
+    out.push_str("    lea rax, rt_map_alive\n");
+    out.push_str("    mov qword ptr [rt_map_alive_ptr], rax\n");
+    out.push_str("    lea rax, rt_map_keys_ptr\n");
+    out.push_str("    mov qword ptr [rt_map_keys_ptr_ptr], rax\n");
+    out.push_str("    lea rax, rt_map_tags_ptr\n");
+    out.push_str("    mov qword ptr [rt_map_tags_ptr_ptr], rax\n");
+    out.push_str("    lea rax, rt_map_i_ptr\n");
+    out.push_str("    mov qword ptr [rt_map_i_ptr_ptr], rax\n");
+    out.push_str("    lea rax, rt_map_s_ptr\n");
+    out.push_str("    mov qword ptr [rt_map_s_ptr_ptr], rax\n");
+    out.push_str("    lea r12, rt_arc_refcounts_tbl\n");
+    out.push_str("    lea r13, rt_arc_kinds_tbl\n");
+    out.push_str("    lea r14, rt_arc_flags_tbl\n");
+    out.push_str("    lea r15, rt_arc_meta_tbl\n");
+    out.push_str("    lea rdi, rt_arc_generation_tbl\n");
+    out.push_str("    lea rsi, rt_arc_free_next_tbl\n");
+    out.push_str("    mov dword ptr [rt_runtime_init_state], 1\n");
+    out.push_str("    mov eax, dword ptr [rt_runtime_init_epoch]\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    mov dword ptr [rt_runtime_init_epoch], eax\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", abi_mismatch));
+    out.push_str("    lea rcx, rt_abi_mismatch_err\n");
+    out.push_str("    mov edx, rt_abi_mismatch_err_len\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", obj_abi_mismatch));
+    out.push_str("    lea rcx, rt_object_model_abi_mismatch_err\n");
+    out.push_str("    mov edx, rt_object_model_abi_mismatch_err_len\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", fail_free_lens));
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov qword ptr [rt_str_lens_ptr], 0\n");
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_runtime_shutdown_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let teardown = format!("{}_teardown", symbol);
+    let free_data = format!("{}_free_data", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp dword ptr [rt_runtime_init_state], 1\n");
+    out.push_str(&format!("    jne {}\n", done));
+    out.push_str(&format!("{}:\n", teardown));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", free_data));
+    out.push_str("    mov qword ptr [rsp+32], rax\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str(&format!("    jz {}\n", free_data));
+    out.push_str("    call HeapFree\n");
+    out.push_str(&format!("{}:\n", free_data));
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str(&format!("    jz {}_final\n", symbol));
+    out.push_str("    call HeapFree\n");
+    out.push_str(&format!("{}_final:\n", symbol));
+    out.push_str("    mov qword ptr [rt_str_lens_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_str_data_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_weak_free_next_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_weak_target_slot_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_weak_target_gen_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_weak_generation_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_arr_len_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_arr_alive_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_arr_i_ptr_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_arr_s_ptr_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_list_size_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_list_cap_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_list_alive_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_list_kind_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_list_i_ptr_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_list_s_ptr_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_map_size_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_map_cap_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_map_alive_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_map_keys_ptr_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_map_tags_ptr_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_map_i_ptr_ptr], 0\n");
+    out.push_str("    mov qword ptr [rt_map_s_ptr_ptr], 0\n");
+    out.push_str("    mov dword ptr [rt_runtime_init_state], 0\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_startup_entry_proc(
+    out: &mut String,
+    startup_symbol: &str,
+    runtime_init_symbol: &str,
+    runtime_shutdown_symbol: &str,
+    entry_symbol: &str,
+) {
+    out.push_str(&format!("{} proc\n", startup_symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str(&format!("    call {}\n", runtime_init_symbol));
+    out.push_str(&format!("    call {}\n", entry_symbol));
+    out.push_str("    mov ecx, eax\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    out.push_str(&format!("    call {}\n", runtime_shutdown_symbol));
+    out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str(&format!("{} endp\n", startup_symbol));
+}
+
+pub(crate) fn emit_trace_push_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, dword ptr [rt_trace_depth]\n");
+    out.push_str("    cmp eax, 1023\n");
+    out.push_str(&format!("    ja {}\n", done));
+    out.push_str("    mov r8d, eax\n");
+    out.push_str("    lea r10, rt_trace_ptrs\n");
+    out.push_str("    mov qword ptr [r10+r8*8], rcx\n");
+    out.push_str("    lea r10, rt_trace_lens\n");
+    out.push_str("    mov dword ptr [r10+r8*4], edx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    mov dword ptr [rt_trace_depth], eax\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_object_hash_code_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    mov eax, ecx\n");
+    out.push_str("    mov rdx, rcx\n");
+    out.push_str(&format!("    shr rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    xor eax, edx\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jnz {}\n", done));
+    out.push_str("    mov eax, 1\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_trace_update_top_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, dword ptr [rt_trace_depth]\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    sub eax, 1\n");
+    out.push_str("    mov r8d, eax\n");
+    out.push_str("    lea r10, rt_trace_ptrs\n");
+    out.push_str("    mov qword ptr [r10+r8*8], rcx\n");
+    out.push_str("    lea r10, rt_trace_lens\n");
+    out.push_str("    mov dword ptr [r10+r8*4], edx\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_trace_pop_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, dword ptr [rt_trace_depth]\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    sub eax, 1\n");
+    out.push_str("    mov dword ptr [rt_trace_depth], eax\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_trace_dump_proc(out: &mut String, symbol: &str, write_raw_symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let loop_label = format!("{}_loop", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_trace_hdr\n");
+    out.push_str("    mov edx, rt_trace_hdr_len\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    mov eax, dword ptr [rt_trace_depth]\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    sub eax, 1\n");
+    out.push_str("    mov dword ptr [rsp+32], eax\n");
+    out.push_str(&format!("{}:\n", loop_label));
+    out.push_str("    lea rcx, rt_trace_prefix\n");
+    out.push_str("    mov edx, rt_trace_prefix_len\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    mov eax, dword ptr [rsp+32]\n");
+    out.push_str("    mov r8d, eax\n");
+    out.push_str("    lea r10, rt_trace_ptrs\n");
+    out.push_str("    mov rcx, qword ptr [r10+r8*8]\n");
+    out.push_str("    lea r10, rt_trace_lens\n");
+    out.push_str("    mov edx, dword ptr [r10+r8*4]\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    mov eax, dword ptr [rsp+32]\n");
+    out.push_str("    sub eax, 1\n");
+    out.push_str("    mov dword ptr [rsp+32], eax\n");
+    out.push_str("    cmp eax, -1\n");
+    out.push_str(&format!("    jne {}\n", loop_label));
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_push_exception_handler_proc(
+    out: &mut String,
+    symbol: &str,
+    write_raw_symbol: &str,
+) {
+    let done = format!("{}_done", symbol);
+    let overflow = format!("{}_overflow", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, dword ptr [rt_exc_depth]\n");
+    out.push_str("    cmp eax, 1023\n");
+    out.push_str(&format!("    ja {}\n", overflow));
+    out.push_str("    mov r8d, eax\n");
+    out.push_str("    lea r10, rt_exc_target_ptrs\n");
+    out.push_str("    mov qword ptr [r10+r8*8], rcx\n");
+    out.push_str("    lea r10, rt_exc_saved_rsp\n");
+    out.push_str("    mov qword ptr [r10+r8*8], rdx\n");
+    out.push_str("    lea r10, rt_exc_trace_depths\n");
+    out.push_str("    mov ecx, dword ptr [rt_trace_depth]\n");
+    out.push_str("    mov dword ptr [r10+r8*4], ecx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    mov dword ptr [rt_exc_depth], eax\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", overflow));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_exception_stack_overflow_err\n");
+    out.push_str("    mov edx, rt_exception_stack_overflow_err_len\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_pop_exception_handler_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, dword ptr [rt_exc_depth]\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    sub eax, 1\n");
+    out.push_str("    mov dword ptr [rt_exc_depth], eax\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_take_pending_exception_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov rax, qword ptr [rt_pending_exception]\n");
+    out.push_str("    mov qword ptr [rt_pending_exception], 0\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_throw_proc(out: &mut String, symbol: &str) {
+    let uncaught = format!("{}_uncaught", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov qword ptr [rt_pending_exception], rcx\n");
+    out.push_str("    mov eax, dword ptr [rt_exc_depth]\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", uncaught));
+    out.push_str("    sub eax, 1\n");
+    out.push_str("    mov dword ptr [rt_exc_depth], eax\n");
+    out.push_str("    mov r8d, eax\n");
+    out.push_str("    lea r10, rt_exc_target_ptrs\n");
+    out.push_str("    mov r11, qword ptr [r10+r8*8]\n");
+    out.push_str("    lea r10, rt_exc_saved_rsp\n");
+    out.push_str("    mov rdx, qword ptr [r10+r8*8]\n");
+    out.push_str("    lea r10, rt_exc_trace_depths\n");
+    out.push_str("    mov ecx, dword ptr [r10+r8*4]\n");
+    out.push_str("    mov dword ptr [rt_trace_depth], ecx\n");
+    out.push_str("    mov rsp, rdx\n");
+    out.push_str("    jmp r11\n");
+    out.push_str(&format!("{}:\n", uncaught));
+    out.push_str("    mov rax, rcx\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_string_from_bytes_proc(out: &mut String, symbol: &str) {
+    let l_len_ok = format!("{}_len_ok", symbol);
+    let l_fail = format!("{}_fail", symbol);
+    let l_copy_loop = format!("{}_copy_loop", symbol);
+    let l_done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov r10, rcx\n");
+    out.push_str("    mov r11d, edx\n");
+    out.push_str("    cmp r11d, 255\n");
+    out.push_str(&format!("    jbe {}\n", l_len_ok));
+    out.push_str(&format!("    jmp {}\n", l_fail));
+    out.push_str(&format!("{}:\n", l_len_ok));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_c], r10\n");
+    out.push_str("    mov dword ptr [rt_tmp_arg_val], r11d\n");
+    emit_alloc_arc_slot_inline(out, symbol, &l_fail);
+    out.push_str("    mov r10, qword ptr [rt_tmp_ptr_c]\n");
+    out.push_str("    mov r11d, dword ptr [rt_tmp_arg_val]\n");
+    out.push_str("    mov edx, dword ptr [rt_str_count]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    mov dword ptr [rt_str_count], edx\n");
+    out.push_str("    mov r9, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov dword ptr [r9+rax*4], r11d\n");
+    out.push_str(&format!(
+        "    mov dword ptr [rt_arc_kinds+rax*4], {}\n",
+        ARC_KIND_TAG_STRING
+    ));
+    out.push_str("    mov dword ptr [rt_arc_refcounts+rax*4], 1\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+rax*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_meta+rax*4], 0\n");
+    out.push_str("    mov edx, dword ptr [rt_arc_generation+rax*4]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    jnz @F\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_arc_gen_overflow_err\n");
+    out.push_str("    mov edx, rt_arc_gen_overflow_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov dword ptr [rt_arc_generation+rax*4], edx\n");
+    out.push_str("    mov r8d, eax\n");
+    out.push_str("    imul r8d, 256\n");
+    out.push_str("    mov r9, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add r9, r8\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str(&format!("{}:\n", l_copy_loop));
+    out.push_str("    cmp ecx, r11d\n");
+    out.push_str(&format!("    jae {}\n", l_done));
+    out.push_str("    mov dl, byte ptr [r10+rcx]\n");
+    out.push_str("    mov byte ptr [r9+rcx], dl\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_copy_loop));
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str("    mov edx, dword ptr [rt_arc_generation+rax*4]\n");
+    out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    or rax, rdx\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_string_alloc_err\n");
+    out.push_str("    mov edx, rt_string_alloc_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_object_new_proc(out: &mut String, symbol: &str) {
+    let cap_fail_label = format!("{}_cap_fail", symbol);
+    let fail_label = format!("{}_fail", symbol);
+    let gen_ok_label = format!("{}_gen_ok", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov r10d, ecx\n");
+    emit_alloc_arc_slot_inline(out, symbol, fail_label.as_str());
+    out.push_str("    mov ecx, eax\n");
+    out.push_str(&format!("    cmp ecx, {}\n", OBJECT_SLOT_CAPACITY));
+    out.push_str(&format!("    ja {}\n", cap_fail_label));
+    out.push_str(&format!("    mov r11, qword ptr [{}]\n", RT_OBJECT_CLASS_IDS_SYMBOL));
+    out.push_str("    mov dword ptr [r11+rcx*4], r10d\n");
+    out.push_str(&format!(
+        "    mov dword ptr [rt_arc_kinds+rcx*4], {}\n",
+        ARC_KIND_TAG_OBJECT
+    ));
+    out.push_str("    mov dword ptr [rt_arc_refcounts+rcx*4], 1\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_meta+rcx*4], 0\n");
+    out.push_str("    mov edx, dword ptr [rt_arc_generation+rcx*4]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str(&format!("    jnz {}\n", gen_ok_label));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_arc_gen_overflow_err\n");
+    out.push_str("    mov edx, rt_arc_gen_overflow_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", gen_ok_label));
+    out.push_str("    mov dword ptr [rt_arc_generation+rcx*4], edx\n");
+    out.push_str("    mov eax, ecx\n");
+    out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    or rax, rdx\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", cap_fail_label));
+    out.push_str("    mov dword ptr [rt_arc_refcounts+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_kinds+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_meta+rcx*4], 0\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_free_head]\n");
+    out.push_str("    mov dword ptr [rt_arc_free_next+rcx*4], eax\n");
+    out.push_str("    mov dword ptr [rt_arc_free_head], ecx\n");
+    out.push_str(&format!("    jmp {}\n", fail_label));
+    out.push_str(&format!("{}:\n", fail_label));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_object_alloc_err\n");
+    out.push_str("    mov edx, rt_object_alloc_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_string_length_proc(out: &mut String, symbol: &str) {
+    let l_fail = format!("{}_fail", symbol);
+    let l_plain = format!("{}_plain", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str(&format!("    mov r10d, ecx\n    and r10d, {}\n", ARC_HANDLE_SLOT_MASK));
+    out.push_str("    mov r11, rcx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", l_fail));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_fail));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", l_plain));
+    out.push_str("    cmp r11d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str(&format!("    jne {}_panic\n", l_plain));
+    out.push_str(&format!("{}:\n", l_plain));
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r10*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}_panic\n", l_plain));
+    out.push_str("    mov eax, dword ptr [rt_arc_kinds+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_STRING));
+    out.push_str(&format!("    jne {}_panic\n", l_plain));
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}_panic:\n", l_plain));
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str(&format!("{}:\n", l_fail));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_class_simple_name_proc(out: &mut String, symbol: &str) {
+    let scan = format!("{}_scan", symbol);
+    let no_dot = format!("{}_no_dot", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov r8, rcx\n");
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_STRING), None);
+    out.push_str("    mov r11d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov edx, dword ptr [rax+r11*4]\n");
+    out.push_str("    mov eax, r11d\n");
+    out.push_str("    imul eax, 256\n");
+    out.push_str("    mov r9, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add r9, rax\n");
+    out.push_str("    mov r10d, edx\n");
+    out.push_str(&format!("{}:\n", scan));
+    out.push_str("    cmp r10d, 0\n");
+    out.push_str(&format!("    je {}\n", no_dot));
+    out.push_str("    sub r10d, 1\n");
+    out.push_str("    cmp byte ptr [r9+r10], '.'\n");
+    out.push_str(&format!("    jne {}\n", scan));
+    out.push_str("    lea rcx, [r9+r10+1]\n");
+    out.push_str("    mov eax, edx\n");
+    out.push_str("    sub eax, r10d\n");
+    out.push_str("    sub eax, 1\n");
+    out.push_str("    mov edx, eax\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", no_dot));
+    out.push_str("    mov rax, r8\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_class_package_name_proc(out: &mut String, symbol: &str) {
+    let scan = format!("{}_scan", symbol);
+    let empty = format!("{}_empty", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_STRING), None);
+    out.push_str("    mov r11d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov edx, dword ptr [rax+r11*4]\n");
+    out.push_str("    mov eax, r11d\n");
+    out.push_str("    imul eax, 256\n");
+    out.push_str("    mov r9, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add r9, rax\n");
+    out.push_str("    mov r10d, edx\n");
+    out.push_str(&format!("{}:\n", scan));
+    out.push_str("    cmp r10d, 0\n");
+    out.push_str(&format!("    je {}\n", empty));
+    out.push_str("    sub r10d, 1\n");
+    out.push_str("    cmp byte ptr [r9+r10], '.'\n");
+    out.push_str(&format!("    jne {}\n", scan));
+    out.push_str("    mov rcx, r9\n");
+    out.push_str("    mov edx, r10d\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", empty));
+    out.push_str("    lea rcx, rt_empty\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_string_char_at_proc(out: &mut String, symbol: &str) {
+    let fail = format!("{}_fail", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov r9d, edx\n");
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_STRING), None);
+    out.push_str("    mov r11d, ecx\n");
+    out.push_str("    cmp r9d, 0\n");
+    out.push_str(&format!("    jl {}\n", fail));
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov edx, dword ptr [rax+r11*4]\n");
+    out.push_str("    cmp r9d, edx\n");
+    out.push_str(&format!("    jae {}\n", fail));
+    out.push_str("    mov eax, r11d\n");
+    out.push_str("    imul eax, 256\n");
+    out.push_str("    mov r10, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add r10, rax\n");
+    out.push_str("    movzx eax, byte ptr [r10+r9]\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    lea rcx, rt_string_index_oob_err\n");
+    out.push_str("    mov edx, rt_string_index_oob_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_string_substring_proc(out: &mut String, symbol: &str) {
+    let fail = format!("{}_fail", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov r9d, edx\n");
+    out.push_str("    mov r10d, r8d\n");
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_STRING), None);
+    out.push_str("    mov r11d, ecx\n");
+    out.push_str("    cmp r9d, 0\n");
+    out.push_str(&format!("    jl {}\n", fail));
+    out.push_str("    cmp r10d, r9d\n");
+    out.push_str(&format!("    jl {}\n", fail));
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov edx, dword ptr [rax+r11*4]\n");
+    out.push_str("    cmp r10d, edx\n");
+    out.push_str(&format!("    jg {}\n", fail));
+    out.push_str("    mov eax, r10d\n");
+    out.push_str("    sub eax, r9d\n");
+    out.push_str("    mov r8d, eax\n");
+    out.push_str("    mov eax, r11d\n");
+    out.push_str("    imul eax, 256\n");
+    out.push_str("    mov rcx, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add rcx, rax\n");
+    out.push_str("    add rcx, r9\n");
+    out.push_str("    mov edx, r8d\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    lea rcx, rt_string_substring_bounds_err\n");
+    out.push_str("    mov edx, rt_string_substring_bounds_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_char_to_string_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov byte ptr [rt_tmpbuf], cl\n");
+    out.push_str("    lea rcx, rt_tmpbuf\n");
+    out.push_str("    mov edx, 1\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_boolean_to_string_proc(out: &mut String, symbol: &str) {
+    let l_false = format!("{}_false", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    je {}\n", l_false));
+    out.push_str("    lea rcx, rt_true\n");
+    out.push_str("    mov edx, 4\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_false));
+    out.push_str("    lea rcx, rt_false\n");
+    out.push_str("    mov edx, 5\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_int_to_string_proc(out: &mut String, symbol: &str) {
+    let l_nonzero = format!("{}_nonzero", symbol);
+    let l_positive = format!("{}_positive", symbol);
+    let l_digit_loop = format!("{}_digit_loop", symbol);
+    let l_after_sign = format!("{}_after_sign", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, ecx\n");
+    out.push_str("    lea r8, rt_tmpbuf\n");
+    out.push_str("    add r8, 31\n");
+    out.push_str("    xor r9d, r9d\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jne {}\n", l_nonzero));
+    out.push_str("    mov byte ptr [r8], '0'\n");
+    out.push_str("    mov rcx, r8\n");
+    out.push_str("    mov edx, 1\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_nonzero));
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jge {}\n", l_positive));
+    out.push_str("    neg eax\n");
+    out.push_str("    mov r9d, 1\n");
+    out.push_str(&format!("{}:\n", l_positive));
+    out.push_str("    mov r10d, 10\n");
+    out.push_str("    xor r11d, r11d\n");
+    out.push_str(&format!("{}:\n", l_digit_loop));
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    div r10d\n");
+    out.push_str("    add dl, '0'\n");
+    out.push_str("    mov byte ptr [r8], dl\n");
+    out.push_str("    sub r8, 1\n");
+    out.push_str("    add r11d, 1\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jne {}\n", l_digit_loop));
+    out.push_str("    cmp r9d, 0\n");
+    out.push_str(&format!("    je {}\n", l_after_sign));
+    out.push_str("    mov byte ptr [r8], '-'\n");
+    out.push_str("    sub r8, 1\n");
+    out.push_str("    add r11d, 1\n");
+    out.push_str(&format!("{}:\n", l_after_sign));
+    out.push_str("    add r8, 1\n");
+    out.push_str("    mov rcx, r8\n");
+    out.push_str("    mov edx, r11d\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_parse_int_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str(&format!("    mov r10d, ecx\n    and r10d, {}\n", ARC_HANDLE_SLOT_MASK));
+    out.push_str("    mov r8, rcx\n");
+    out.push_str(&format!("    shr r8, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    cmp r10d, 0\n");
+    out.push_str("    jl rt_parse_int_fail\n");
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str("    jg rt_parse_int_fail\n");
+    out.push_str("    test r8d, r8d\n");
+    out.push_str("    jz rt_parse_int_plain\n");
+    out.push_str("    cmp r8d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str("    jne rt_parse_int_stale\n");
+    out.push_str("rt_parse_int_plain:\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r10*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str("    je rt_parse_int_stale\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_kinds+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_STRING));
+    out.push_str("    jne rt_parse_int_stale\n");
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov r11d, dword ptr [rax+r10*4]\n");
+    out.push_str("    cmp r11d, 0\n");
+    out.push_str("    je rt_parse_int_fail\n");
+    out.push_str("    mov r9, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    mov r8d, r10d\n");
+    out.push_str("    imul r8d, 256\n");
+    out.push_str("    add r9, r8\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    xor r8d, r8d\n");
+    out.push_str("    mov edx, 1\n");
+    out.push_str("    mov bl, byte ptr [r9]\n");
+    out.push_str("    cmp bl, '-'\n");
+    out.push_str("    jne rt_parse_int_loop\n");
+    out.push_str("    cmp r11d, 1\n");
+    out.push_str("    je rt_parse_int_fail\n");
+    out.push_str("    mov edx, -1\n");
+    out.push_str("    mov r8d, 1\n");
+    out.push_str("rt_parse_int_loop:\n");
+    out.push_str("    cmp r8d, r11d\n");
+    out.push_str("    jge rt_parse_int_done\n");
+    out.push_str("    mov bl, byte ptr [r9+r8]\n");
+    out.push_str("    cmp bl, '0'\n");
+    out.push_str("    jb rt_parse_int_fail\n");
+    out.push_str("    cmp bl, '9'\n");
+    out.push_str("    ja rt_parse_int_fail\n");
+    out.push_str("    movzx ecx, bl\n");
+    out.push_str("    sub ecx, '0'\n");
+    out.push_str("    imul eax, eax, 10\n");
+    out.push_str("    add eax, ecx\n");
+    out.push_str("    inc r8d\n");
+    out.push_str("    jmp rt_parse_int_loop\n");
+    out.push_str("rt_parse_int_done:\n");
+    out.push_str("    cmp edx, -1\n");
+    out.push_str("    jne rt_parse_int_ret\n");
+    out.push_str("    neg eax\n");
+    out.push_str("rt_parse_int_ret:\n");
+    out.push_str("    ret\n");
+    out.push_str("rt_parse_int_fail:\n");
+    out.push_str("    lea rcx, rt_parse_int_err\n");
+    out.push_str("    mov edx, 23\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str("rt_parse_int_stale:\n");
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_parse_boolean_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str(&format!("    mov r10d, ecx\n    and r10d, {}\n", ARC_HANDLE_SLOT_MASK));
+    out.push_str("    mov r8, rcx\n");
+    out.push_str(&format!("    shr r8, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    cmp r10d, 0\n");
+    out.push_str("    jl rt_parse_bool_fail\n");
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str("    jg rt_parse_bool_fail\n");
+    out.push_str("    test r8d, r8d\n");
+    out.push_str("    jz rt_parse_bool_plain\n");
+    out.push_str("    cmp r8d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str("    jne rt_parse_bool_stale\n");
+    out.push_str("rt_parse_bool_plain:\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r10*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str("    je rt_parse_bool_stale\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_kinds+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_STRING));
+    out.push_str("    jne rt_parse_bool_stale\n");
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov r11d, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov r9, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    mov r8d, r10d\n");
+    out.push_str("    imul r8d, 256\n");
+    out.push_str("    add r9, r8\n");
+    out.push_str("    cmp r11d, 4\n");
+    out.push_str("    jne rt_parse_bool_false_check\n");
+    out.push_str("    mov al, byte ptr [r9]\n");
+    out.push_str("    cmp al, 't'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov al, byte ptr [r9+1]\n");
+    out.push_str("    cmp al, 'r'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov al, byte ptr [r9+2]\n");
+    out.push_str("    cmp al, 'u'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov al, byte ptr [r9+3]\n");
+    out.push_str("    cmp al, 'e'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    ret\n");
+    out.push_str("rt_parse_bool_false_check:\n");
+    out.push_str("    cmp r11d, 5\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov al, byte ptr [r9]\n");
+    out.push_str("    cmp al, 'f'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov al, byte ptr [r9+1]\n");
+    out.push_str("    cmp al, 'a'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov al, byte ptr [r9+2]\n");
+    out.push_str("    cmp al, 'l'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov al, byte ptr [r9+3]\n");
+    out.push_str("    cmp al, 's'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    mov al, byte ptr [r9+4]\n");
+    out.push_str("    cmp al, 'e'\n");
+    out.push_str("    jne rt_parse_bool_fail\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str("rt_parse_bool_fail:\n");
+    out.push_str("    lea rcx, rt_parse_bool_err\n");
+    out.push_str("    mov edx, 23\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str("rt_parse_bool_stale:\n");
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_string_concat_proc(out: &mut String, symbol: &str) {
+    let l_check_h2 = format!("{}_check_h2", symbol);
+    let l_h1_plain = format!("{}_h1_plain", symbol);
+    let l_h1_stale = format!("{}_h1_stale", symbol);
+    let l_h2_live = format!("{}_h2_live", symbol);
+    let l_h2_plain = format!("{}_h2_plain", symbol);
+    let l_h2_stale = format!("{}_h2_stale", symbol);
+    let l_h2_ready = format!("{}_h2_ready", symbol);
+    let l_total_ready = format!("{}_total_ready", symbol);
+    let l_copy_h1 = format!("{}_copy_h1", symbol);
+    let l_copy_h1_loop = format!("{}_copy_h1_loop", symbol);
+    let l_copy_h2 = format!("{}_copy_h2", symbol);
+    let l_copy_h2_loop = format!("{}_copy_h2_loop", symbol);
+    let l_emit = format!("{}_emit", symbol);
+    let l_fail = format!("{}_fail", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov r10, rcx\n");
+    out.push_str("    mov r11, rdx\n");
+    out.push_str("    xor r8d, r8d\n");
+    out.push_str("    xor r9d, r9d\n");
+    out.push_str(&format!("    mov ecx, r10d\n    and ecx, {}\n", ARC_HANDLE_SLOT_MASK));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", l_check_h2));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_check_h2));
+    out.push_str("    mov rax, r10\n");
+    out.push_str(&format!("    shr rax, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", l_h1_plain));
+    out.push_str("    cmp eax, dword ptr [rt_arc_generation+rcx*4]\n");
+    out.push_str(&format!("    jne {}\n", l_h1_stale));
+    out.push_str(&format!("{}:\n", l_h1_plain));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r10*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jne {}\n", l_h2_live));
+    out.push_str(&format!("{}:\n", l_h1_stale));
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str(&format!("{}:\n", l_h2_live));
+    out.push_str("    mov eax, dword ptr [rt_arc_kinds+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_STRING));
+    out.push_str(&format!("    jne {}\n", l_check_h2));
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov r8d, dword ptr [rax+r10*4]\n");
+    out.push_str(&format!("{}:\n", l_check_h2));
+    out.push_str(&format!("    mov ecx, r11d\n    and ecx, {}\n", ARC_HANDLE_SLOT_MASK));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", l_total_ready));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_total_ready));
+    out.push_str("    mov rax, r11\n");
+    out.push_str(&format!("    shr rax, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", l_h2_plain));
+    out.push_str("    cmp eax, dword ptr [rt_arc_generation+rcx*4]\n");
+    out.push_str(&format!("    jne {}\n", l_h2_stale));
+    out.push_str(&format!("{}:\n", l_h2_plain));
+    out.push_str("    mov r11d, ecx\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r11*4]\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    jne {}\n", l_h2_ready));
+    out.push_str(&format!("{}:\n", l_h2_stale));
+    out.push_str("    lea rcx, rt_stale_handle_err\n");
+    out.push_str("    mov edx, rt_stale_handle_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str(&format!("{}:\n", l_h2_ready));
+    out.push_str("    mov eax, dword ptr [rt_arc_kinds+r11*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", ARC_KIND_TAG_STRING));
+    out.push_str(&format!("    jne {}\n", l_total_ready));
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov r9d, dword ptr [rax+r11*4]\n");
+    out.push_str(&format!("{}:\n", l_total_ready));
+    out.push_str("    mov eax, r8d\n");
+    out.push_str("    add eax, r9d\n");
+    out.push_str("    cmp eax, 255\n");
+    out.push_str(&format!("    jbe {}\n", l_copy_h1));
+    out.push_str(&format!("    jmp {}\n", l_fail));
+    out.push_str(&format!("{}:\n", l_copy_h1));
+    out.push_str("    mov dword ptr [rt_tmp_concat_len], eax\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("    lea rdx, rt_tmp_concat\n");
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", l_copy_h2));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_copy_h2));
+    out.push_str("    mov eax, r10d\n");
+    out.push_str("    imul eax, 256\n");
+    out.push_str("    mov r10, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add r10, rax\n");
+    out.push_str(&format!("{}:\n", l_copy_h1_loop));
+    out.push_str("    cmp ecx, r8d\n");
+    out.push_str(&format!("    jae {}\n", l_copy_h2));
+    out.push_str("    cmp ecx, dword ptr [rt_tmp_concat_len]\n");
+    out.push_str(&format!("    jae {}\n", l_copy_h2));
+    out.push_str("    mov al, byte ptr [r10+rcx]\n");
+    out.push_str("    mov byte ptr [rdx+rcx], al\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_copy_h1_loop));
+    out.push_str(&format!("{}:\n", l_copy_h2));
+    out.push_str("    cmp r11d, 1\n");
+    out.push_str(&format!("    jb {}\n", l_emit));
+    out.push_str("    cmp r11d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", l_emit));
+    out.push_str("    mov eax, r11d\n");
+    out.push_str("    imul eax, 256\n");
+    out.push_str("    mov r11, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    add r11, rax\n");
+    out.push_str("    xor r8d, r8d\n");
+    out.push_str(&format!("{}:\n", l_copy_h2_loop));
+    out.push_str("    cmp r8d, r9d\n");
+    out.push_str(&format!("    jae {}\n", l_emit));
+    out.push_str("    cmp ecx, dword ptr [rt_tmp_concat_len]\n");
+    out.push_str(&format!("    jae {}\n", l_emit));
+    out.push_str("    mov al, byte ptr [r11+r8]\n");
+    out.push_str("    mov byte ptr [rdx+rcx], al\n");
+    out.push_str("    add r8d, 1\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_copy_h2_loop));
+    out.push_str(&format!("{}:\n", l_emit));
+    out.push_str("    lea rcx, rt_tmp_concat\n");
+    out.push_str("    mov edx, dword ptr [rt_tmp_concat_len]\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_string_alloc_err\n");
+    out.push_str("    mov edx, rt_string_alloc_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_array_new_proc(out: &mut String, symbol: &str) {
+    let l_done = format!("{}_done", symbol);
+    let l_alloc_done = format!("{}_alloc_done", symbol);
+    let l_alloc_fail = format!("{}_alloc_fail", symbol);
+    let l_alloc_fail_free_i = format!("{}_alloc_fail_free_i", symbol);
+    let l_alloc_panic = format!("{}_alloc_panic", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str("    jge @F\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], ecx\n");
+    emit_alloc_arc_slot_inline(out, symbol, &l_done);
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], eax\n");
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov edx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], edx\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_alive_ptr]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], 0\n");
+    out.push_str("    cmp edx, 0\n");
+    out.push_str(&format!("    je {}\n", l_alloc_done));
+    out.push_str("    mov eax, edx\n");
+    out.push_str(&format!("    cmp eax, {}\n", ARRAY_MAX_LENGTH));
+    out.push_str(&format!("    ja {}\n", l_alloc_fail));
+    out.push_str("    shl rax, 3\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov r11, qword ptr [rt_arr_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+rcx*8], rax\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    shl rax, 3\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail_free_i));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov r11, qword ptr [rt_arr_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+rcx*8], rax\n");
+    out.push_str(&format!("{}:\n", l_alloc_done));
+    out.push_str("    mov edx, dword ptr [rt_arr_count]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    mov dword ptr [rt_arr_count], edx\n");
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_alive_ptr]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], 1\n");
+    out.push_str(&format!(
+        "    mov dword ptr [rt_arc_kinds+rcx*4], {}\n",
+        ARC_KIND_TAG_ARRAY
+    ));
+    out.push_str("    mov dword ptr [rt_arc_refcounts+rcx*4], 1\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_meta+rcx*4], 0\n");
+    out.push_str("    mov edx, dword ptr [rt_arc_generation+rcx*4]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    jnz @F\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_arc_gen_overflow_err\n");
+    out.push_str("    mov edx, rt_arc_gen_overflow_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov dword ptr [rt_arc_generation+rcx*4], edx\n");
+    out.push_str("    mov eax, ecx\n");
+    out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    or rax, rdx\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_alloc_fail_free_i));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_i_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+rcx*8]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_alloc_fail));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_alive_ptr]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_refcounts+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_kinds+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+rcx*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_meta+rcx*4], 0\n");
+    out.push_str("    mov eax, dword ptr [rt_arc_free_head]\n");
+    out.push_str("    mov dword ptr [rt_arc_free_next+rcx*4], eax\n");
+    out.push_str("    mov dword ptr [rt_arc_free_head], ecx\n");
+    out.push_str(&format!("    jmp {}\n", l_alloc_panic));
+    out.push_str(&format!("{}:\n", l_alloc_panic));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_array_alloc_err\n");
+    out.push_str("    mov edx, rt_array_alloc_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_array_new_multi_proc(out: &mut String, symbol: &str) {
+    let l_zero = format!("{}_zero", symbol);
+    let l_loop = format!("{}_loop", symbol);
+    let l_done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 88\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    out.push_str("    mov qword ptr [rsp+40], rdx\n");
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jl {}\n", l_zero));
+    out.push_str("    mov ecx, dword ptr [rdx]\n");
+    out.push_str("    call pulsec_rt_arrayNew\n");
+    out.push_str("    mov qword ptr [rsp+48], rax\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_arrayLength\n");
+    out.push_str("    mov dword ptr [rsp+56], eax\n");
+    out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jle {}\n", l_done));
+    out.push_str("    mov dword ptr [rsp+64], 0\n");
+    out.push_str(&format!("{}:\n", l_loop));
+    out.push_str("    mov eax, dword ptr [rsp+64]\n");
+    out.push_str("    cmp eax, dword ptr [rsp+56]\n");
+    out.push_str(&format!("    jae {}\n", l_done));
+    out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+    out.push_str("    sub ecx, 1\n");
+    out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+    out.push_str("    add rdx, 8\n");
+    out.push_str(&format!("    call {}\n", symbol));
+    out.push_str("    mov qword ptr [rsp+72], rax\n");
+    out.push_str("    mov r8, rax\n");
+    out.push_str("    mov rcx, qword ptr [rsp+48]\n");
+    out.push_str("    mov edx, dword ptr [rsp+64]\n");
+    out.push_str("    call pulsec_rt_arraySetString\n");
+    out.push_str("    mov rcx, qword ptr [rsp+72]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str("    mov eax, dword ptr [rsp+64]\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("    mov dword ptr [rsp+64], eax\n");
+    out.push_str(&format!("    jmp {}\n", l_loop));
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str("    mov rax, qword ptr [rsp+48]\n");
+    out.push_str("    add rsp, 88\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_zero));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 88\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_array_length_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_ARRAY), None);
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+rcx*4]\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_array_get_proc(out: &mut String, symbol: &str, table_ptr: &str) {
+    let table_ptr_root = match table_ptr {
+        "rt_arr_i_ptr" => "rt_arr_i_ptr_ptr",
+        "rt_arr_s_ptr" => "rt_arr_s_ptr_ptr",
+        _ => table_ptr,
+    };
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_ARRAY), None);
+    out.push_str("    cmp edx, 0\n");
+    out.push_str("    jl @F\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov r8d, dword ptr [rax+rcx*4]\n");
+    out.push_str("    cmp edx, r8d\n");
+    out.push_str("    jae @F\n");
+    out.push_str(&format!("    mov r11, qword ptr [{}]\n", table_ptr_root));
+    out.push_str("    mov r9, qword ptr [r11+rcx*8]\n");
+    out.push_str("    test r9, r9\n");
+    out.push_str("    jz @F\n");
+    if table_ptr == "rt_arr_s_ptr" {
+        out.push_str("    mov rax, qword ptr [r9+rdx*8]\n");
+    } else {
+        out.push_str("    mov eax, dword ptr [r9+rdx*4]\n");
+    }
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_array_get_qword_proc(out: &mut String, symbol: &str, table_ptr: &str) {
+    let table_ptr_root = match table_ptr {
+        "rt_arr_i_ptr" => "rt_arr_i_ptr_ptr",
+        "rt_arr_s_ptr" => "rt_arr_s_ptr_ptr",
+        _ => table_ptr,
+    };
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_ARRAY), None);
+    out.push_str("    cmp edx, 0\n");
+    out.push_str("    jl @F\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov r8d, dword ptr [rax+rcx*4]\n");
+    out.push_str("    cmp edx, r8d\n");
+    out.push_str("    jae @F\n");
+    out.push_str(&format!("    mov r11, qword ptr [{}]\n", table_ptr_root));
+    out.push_str("    mov r9, qword ptr [r11+rcx*8]\n");
+    out.push_str("    test r9, r9\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    mov rax, qword ptr [r9+rdx*8]\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_array_set_proc(out: &mut String, symbol: &str, table_ptr: &str) {
+    let table_ptr_root = match table_ptr {
+        "rt_arr_i_ptr" => "rt_arr_i_ptr_ptr",
+        "rt_arr_s_ptr" => "rt_arr_s_ptr_ptr",
+        _ => table_ptr,
+    };
+    let ref_release_done = format!("{}_ref_release_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_ARRAY), None);
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], ecx\n");
+    out.push_str("    cmp edx, 0\n");
+    out.push_str("    jl @F\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov r9d, dword ptr [rax+rcx*4]\n");
+    out.push_str("    cmp edx, r9d\n");
+    out.push_str("    jae @F\n");
+    out.push_str(&format!("    mov r11, qword ptr [{}]\n", table_ptr_root));
+    out.push_str("    mov r10, qword ptr [r11+rcx*8]\n");
+    out.push_str("    test r10, r10\n");
+    out.push_str("    jz @F\n");
+    if table_ptr == "rt_arr_s_ptr" {
+        out.push_str("    mov rax, qword ptr [r10+rdx*8]\n");
+        out.push_str("    test rax, rax\n");
+        out.push_str(&format!("    jz {}\n", ref_release_done));
+        out.push_str("    mov rcx, rax\n");
+        out.push_str("    call pulsec_rt_arcRelease\n");
+        out.push_str(&format!("{}:\n", ref_release_done));
+        out.push_str("    mov rcx, r8\n");
+        out.push_str("    call pulsec_rt_arcRetain\n");
+        out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+        out.push_str("    mov r11, qword ptr [rt_arr_s_ptr_ptr]\n");
+        out.push_str("    mov r10, qword ptr [r11+rcx*8]\n");
+        out.push_str("    mov qword ptr [r10+rdx*8], r8\n");
+    } else {
+        out.push_str("    mov dword ptr [r10+rdx*4], r8d\n");
+    }
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_fp_to_int_proc(out: &mut String, symbol: &str) {
+    let nan = format!("{}_nan", symbol);
+    let check_overflow = format!("{}_check_overflow", symbol);
+    let neg_overflow = format!("{}_neg_overflow", symbol);
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    movq xmm0, rcx\n");
+    out.push_str("    ucomisd xmm0, xmm0\n");
+    out.push_str(&format!("    jp {}\n", nan));
+    out.push_str("    cvttsd2si eax, xmm0\n");
+    out.push_str("    cmp eax, 80000000h\n");
+    out.push_str(&format!("    je {}\n", check_overflow));
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", check_overflow));
+    out.push_str("    mov rax, qword ptr [rt_fp_int_min]\n");
+    out.push_str("    movq xmm1, rax\n");
+    out.push_str("    ucomisd xmm0, xmm1\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    xorpd xmm1, xmm1\n");
+    out.push_str("    ucomisd xmm0, xmm1\n");
+    out.push_str(&format!("    jb {}\n", neg_overflow));
+    out.push_str("    mov eax, 7fffffffh\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", neg_overflow));
+    out.push_str("    mov eax, 80000000h\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", nan));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_fp_to_long_proc(out: &mut String, symbol: &str) {
+    let nan = format!("{}_nan", symbol);
+    let check_overflow = format!("{}_check_overflow", symbol);
+    let neg_overflow = format!("{}_neg_overflow", symbol);
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    movq xmm0, rcx\n");
+    out.push_str("    ucomisd xmm0, xmm0\n");
+    out.push_str(&format!("    jp {}\n", nan));
+    out.push_str("    cvttsd2si rax, xmm0\n");
+    out.push_str("    mov r10, 08000000000000000h\n");
+    out.push_str("    cmp rax, r10\n");
+    out.push_str(&format!("    je {}\n", check_overflow));
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", check_overflow));
+    out.push_str("    mov r10, qword ptr [rt_fp_long_min]\n");
+    out.push_str("    movq xmm1, r10\n");
+    out.push_str("    ucomisd xmm0, xmm1\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    xorpd xmm1, xmm1\n");
+    out.push_str("    ucomisd xmm0, xmm1\n");
+    out.push_str(&format!("    jb {}\n", neg_overflow));
+    out.push_str("    mov rax, 07fffffffffffffffh\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", neg_overflow));
+    out.push_str("    mov rax, 08000000000000000h\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", nan));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_array_set_qword_proc(out: &mut String, symbol: &str, table_ptr: &str) {
+    let table_ptr_root = match table_ptr {
+        "rt_arr_i_ptr" => "rt_arr_i_ptr_ptr",
+        "rt_arr_s_ptr" => "rt_arr_s_ptr_ptr",
+        _ => table_ptr,
+    };
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_ARRAY), None);
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], ecx\n");
+    out.push_str("    cmp edx, 0\n");
+    out.push_str("    jl @F\n");
+    out.push_str("    mov rax, qword ptr [rt_arr_len_ptr]\n");
+    out.push_str("    mov r9d, dword ptr [rax+rcx*4]\n");
+    out.push_str("    cmp edx, r9d\n");
+    out.push_str("    jae @F\n");
+    out.push_str(&format!("    mov r11, qword ptr [{}]\n", table_ptr_root));
+    out.push_str("    mov r10, qword ptr [r11+rcx*8]\n");
+    out.push_str("    test r10, r10\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    mov qword ptr [r10+rdx*8], r8\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_list_new_proc(out: &mut String, symbol: &str) {
+    let l_done = format!("{}_done", symbol);
+    let l_fail = format!("{}_fail", symbol);
+    let l_alloc_ok = format!("{}_alloc_ok", symbol);
+    let l_alloc_fail_free_i = format!("{}_alloc_fail_free_i", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_alloc_arc_slot_inline(out, symbol, &l_done);
+    out.push_str("    mov r10d, eax\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], r10d\n");
+    out.push_str("    mov rax, qword ptr [rt_list_cap_ptr]\n");
+    out.push_str(&format!("    mov dword ptr [rax+r10*4], {}\n", LIST_INIT_CAPACITY));
+    out.push_str("    mov rax, qword ptr [rt_list_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_cap_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", LIST_MAX_CAPACITY));
+    out.push_str(&format!("    ja {}\n", l_fail));
+    out.push_str("    shl rax, 3\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_fail));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov r11, qword ptr [rt_list_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str(&format!("    mov qword ptr [rt_tmp_arr_bytes], {}\n", LIST_INIT_CAPACITY * 8));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail_free_i));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov r11, qword ptr [rt_list_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str(&format!("    jmp {}\n", l_alloc_ok));
+    out.push_str(&format!("{}:\n", l_alloc_fail_free_i));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_list_i_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("    jmp {}\n", l_fail));
+    out.push_str(&format!("{}:\n", l_alloc_ok));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov edx, dword ptr [rt_list_count]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    mov dword ptr [rt_list_count], edx\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_kind_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_alive_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 1\n");
+    out.push_str(&format!(
+        "    mov dword ptr [rt_arc_kinds+r10*4], {}\n",
+        ARC_KIND_TAG_COLLECTION
+    ));
+    out.push_str("    mov dword ptr [rt_arc_refcounts+r10*4], 1\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+r10*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_meta+r10*4], 1\n");
+    out.push_str("    mov edx, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    jnz @F\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_arc_gen_overflow_err\n");
+    out.push_str("    mov edx, rt_arc_gen_overflow_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov dword ptr [rt_arc_generation+r10*4], edx\n");
+    out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    mov eax, r10d\n");
+    out.push_str("    or rax, rdx\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str(&format!("    jmp {}\n", l_fail));
+    out.push_str(&format!("{}:\n", l_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_list_alloc_err\n");
+    out.push_str("    mov edx, rt_list_alloc_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_list_size_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(1));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_list_clear_proc(out: &mut String, symbol: &str) {
+    let l_done = format!("{}_done", symbol);
+    let l_release_loop = format!("{}_release_loop", symbol);
+    let l_release_done = format!("{}_release_done", symbol);
+    let l_release_skip = format!("{}_release_skip", symbol);
+    let l_alloc_s_fail = format!("{}_alloc_s_fail", symbol);
+    let l_free_old_i_done = format!("{}_free_old_i_done", symbol);
+    let l_free_old_s_done = format!("{}_free_old_s_done", symbol);
+    let l_free_new_i_done = format!("{}_free_new_i_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(1));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], r10d\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    mov rax, qword ptr [rt_list_kind_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    cmp eax, 2\n");
+    out.push_str(&format!("    jne {}\n", l_release_done));
+    out.push_str("    mov rax, qword ptr [rt_list_s_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], rax\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], 0\n");
+    out.push_str(&format!("{}:\n", l_release_loop));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    cmp ecx, dword ptr [rt_tmp_size]\n");
+    out.push_str(&format!("    jae {}\n", l_release_done));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_release_skip));
+    out.push_str("    mov rcx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", l_release_skip));
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], ecx\n");
+    out.push_str(&format!("    jmp {}\n", l_release_loop));
+    out.push_str(&format!("{}:\n", l_release_done));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_kind_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_list_cap_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", LIST_INIT_CAPACITY));
+    out.push_str(&format!("    jbe {}\n", l_done));
+    out.push_str(&format!(
+        "    cmp eax, {}\n",
+        LIST_INIT_CAPACITY * LIST_SHRINK_HYSTERESIS_MULT
+    ));
+    out.push_str(&format!("    jb {}\n", l_done));
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        LIST_INIT_CAPACITY * 4
+    ));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_done));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        LIST_INIT_CAPACITY * 8
+    ));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_s_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], rax\n");
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_list_i_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_c], r11\n");
+    out.push_str("    mov rax, qword ptr [rt_list_s_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], r11\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    mov r11, qword ptr [rt_list_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    mov r11, qword ptr [rt_list_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_list_cap_ptr]\n");
+    out.push_str(&format!("    mov dword ptr [rax+r10*4], {}\n", LIST_INIT_CAPACITY));
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_c]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_old_i_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_old_i_done));
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_old_s_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_old_s_done));
+    out.push_str(&format!("    jmp {}\n", l_done));
+    out.push_str(&format!("{}:\n", l_alloc_s_fail));
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_new_i_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_new_i_done));
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_list_add_proc(out: &mut String, symbol: &str, table_ptr: &str) {
+    let table_ptr_root = match table_ptr {
+        "rt_list_i_ptr" => "rt_list_i_ptr_ptr",
+        "rt_list_s_ptr" => "rt_list_s_ptr_ptr",
+        _ => table_ptr,
+    };
+    let l_fail = format!("{}_fail", symbol);
+    let l_grow = format!("{}_grow", symbol);
+    let l_grow_done = format!("{}_grow_done", symbol);
+    let l_copy_loop = format!("{}_copy_loop", symbol);
+    let l_grow_alloc_fail = format!("{}_grow_alloc_fail", symbol);
+    let l_emit = format!("{}_emit", symbol);
+    let l_kind_done = format!("{}_kind_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(1));
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], ecx\n");
+    if table_ptr == "rt_list_s_ptr" {
+        out.push_str("    mov qword ptr [rt_tmp_arg_val], rdx\n");
+    } else {
+        out.push_str("    mov qword ptr [rt_tmp_arg_val], rdx\n");
+    }
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov r8d, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], r8d\n");
+    out.push_str("    mov rax, qword ptr [rt_list_cap_ptr]\n");
+    out.push_str("    mov r9d, dword ptr [rax+r10*4]\n");
+    out.push_str("    cmp r8d, r9d\n");
+    out.push_str(&format!("    jae {}\n", l_grow));
+    out.push_str(&format!("{}:\n", l_emit));
+    if table_ptr == "rt_list_s_ptr" {
+        out.push_str("    mov rcx, qword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    call pulsec_rt_arcRetain\n");
+        out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+        out.push_str("    mov rax, qword ptr [rt_list_kind_ptr]\n");
+        out.push_str("    mov dword ptr [rax+r10*4], 2\n");
+    } else {
+        out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+        out.push_str("    mov rax, qword ptr [rt_list_kind_ptr]\n");
+        out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+        out.push_str("    cmp eax, 0\n");
+        out.push_str(&format!("    jne {}\n", l_kind_done));
+        out.push_str("    mov rax, qword ptr [rt_list_kind_ptr]\n");
+        out.push_str("    mov dword ptr [rax+r10*4], 1\n");
+        out.push_str(&format!("{}:\n", l_kind_done));
+    }
+    out.push_str(&format!("    mov rax, qword ptr [{}]\n", table_ptr_root));
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_fail));
+    out.push_str("    mov r8d, dword ptr [rt_tmp_size]\n");
+    if table_ptr == "rt_list_s_ptr" {
+        out.push_str("    mov rcx, qword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    mov qword ptr [r11+r8*8], rcx\n");
+    } else {
+        out.push_str("    mov edx, dword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    mov dword ptr [r11+r8*4], edx\n");
+    }
+    out.push_str("    add r8d, 1\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], r8d\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], r8d\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_grow));
+    out.push_str("    mov eax, r9d\n");
+    out.push_str(&format!("    cmp eax, {}\n", LIST_MAX_CAPACITY));
+    out.push_str(&format!("    jae {}\n", l_fail));
+    out.push_str("    add eax, eax\n");
+    out.push_str("    cmp eax, r9d\n");
+    out.push_str("    ja @F\n");
+    out.push_str("    mov eax, r9d\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("@@:\n");
+    out.push_str(&format!("    cmp eax, {}\n", LIST_MAX_CAPACITY));
+    out.push_str("    jbe @F\n");
+    out.push_str(&format!("    mov eax, {}\n", LIST_MAX_CAPACITY));
+    out.push_str("@@:\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], eax\n");
+    if table_ptr == "rt_list_s_ptr" {
+        out.push_str("    shl rax, 3\n");
+    } else {
+        out.push_str("    shl rax, 2\n");
+    }
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_grow_alloc_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], rax\n");
+    out.push_str("    mov r11, rax\n");
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str(&format!("    mov rax, qword ptr [{}]\n", table_ptr_root));
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str(&format!("{}:\n", l_copy_loop));
+    out.push_str("    cmp ecx, dword ptr [rt_tmp_size]\n");
+    out.push_str(&format!("    jae {}\n", l_grow_done));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    if table_ptr == "rt_list_s_ptr" {
+        out.push_str("    mov rax, qword ptr [rax+rcx*8]\n");
+        out.push_str("    mov qword ptr [r11+rcx*8], rax\n");
+    } else {
+        out.push_str("    mov eax, dword ptr [rax+rcx*4]\n");
+        out.push_str("    mov dword ptr [r11+rcx*4], eax\n");
+    }
+    out.push_str("    add ecx, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_copy_loop));
+    out.push_str(&format!("{}:\n", l_grow_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str(&format!("    mov r11, qword ptr [{}]\n", table_ptr_root));
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov edx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    mov rax, qword ptr [rt_list_cap_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], edx\n");
+    out.push_str("    mov r8d, dword ptr [rt_tmp_size]\n");
+    out.push_str(&format!("    jmp {}\n", l_emit));
+    out.push_str(&format!("{}:\n", l_grow_alloc_fail));
+    out.push_str(&format!("    jmp {}\n", l_fail));
+    out.push_str(&format!("{}:\n", l_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_list_growth_err\n");
+    out.push_str("    mov edx, rt_list_growth_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_list_get_proc(out: &mut String, symbol: &str, table_ptr: &str) {
+    let table_ptr_root = match table_ptr {
+        "rt_list_i_ptr" => "rt_list_i_ptr_ptr",
+        "rt_list_s_ptr" => "rt_list_s_ptr_ptr",
+        _ => table_ptr,
+    };
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(1));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    cmp edx, 0\n");
+    out.push_str("    jl @F\n");
+    out.push_str("    mov rax, qword ptr [rt_list_size_ptr]\n");
+    out.push_str("    mov r8d, dword ptr [rax+r10*4]\n");
+    out.push_str("    cmp edx, r8d\n");
+    out.push_str("    jae @F\n");
+    out.push_str(&format!("    mov rax, qword ptr [{}]\n", table_ptr_root));
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str("    jz @F\n");
+    if table_ptr == "rt_list_s_ptr" {
+        out.push_str("    mov rax, qword ptr [r11+rdx*8]\n");
+    } else {
+        out.push_str("    mov eax, dword ptr [r11+rdx*4]\n");
+    }
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_map_new_proc(out: &mut String, symbol: &str) {
+    let l_done = format!("{}_done", symbol);
+    let l_fail = format!("{}_fail", symbol);
+    let l_alloc_ok = format!("{}_alloc_ok", symbol);
+    let l_alloc_fail_free_keys = format!("{}_alloc_fail_free_keys", symbol);
+    let l_alloc_fail_free_tags = format!("{}_alloc_fail_free_tags", symbol);
+    let l_alloc_fail_free_i = format!("{}_alloc_fail_free_i", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_alloc_arc_slot_inline(out, symbol, &l_done);
+    out.push_str("    mov r10d, eax\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], r10d\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str(&format!("    mov dword ptr [rax+r10*4], {}\n", MAP_INIT_CAPACITY));
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", MAP_MAX_CAPACITY));
+    out.push_str(&format!("    ja {}\n", l_fail));
+    out.push_str("    shl rax, 3\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_fail));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov r11, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    shl rax, 2\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail_free_keys));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov r11, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail_free_tags));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov r11, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    shl rax, 3\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail_free_i));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov r11, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str(&format!("    jmp {}\n", l_alloc_ok));
+    out.push_str(&format!("{}:\n", l_alloc_fail_free_i));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail_free_tags));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_alloc_fail_free_tags));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail_free_keys));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_alloc_fail_free_keys));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rax+r10*8], 0\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("    jmp {}\n", l_fail));
+    out.push_str(&format!("{}:\n", l_alloc_ok));
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov edx, dword ptr [rt_map_count]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    mov dword ptr [rt_map_count], edx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_alive_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 1\n");
+    out.push_str(&format!(
+        "    mov dword ptr [rt_arc_kinds+r10*4], {}\n",
+        ARC_KIND_TAG_COLLECTION
+    ));
+    out.push_str("    mov dword ptr [rt_arc_refcounts+r10*4], 1\n");
+    out.push_str("    mov dword ptr [rt_arc_flags+r10*4], 0\n");
+    out.push_str("    mov dword ptr [rt_arc_meta+r10*4], 2\n");
+    out.push_str("    mov edx, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str("    add edx, 1\n");
+    out.push_str("    jnz @F\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_arc_gen_overflow_err\n");
+    out.push_str("    mov edx, rt_arc_gen_overflow_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov dword ptr [rt_arc_generation+r10*4], edx\n");
+    out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    mov eax, r10d\n");
+    out.push_str("    or rax, rdx\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str(&format!("    jmp {}\n", l_fail));
+    out.push_str(&format!("{}:\n", l_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_map_alloc_err\n");
+    out.push_str("    mov edx, rt_map_alloc_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_map_size_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(2));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_map_clear_proc(out: &mut String, symbol: &str) {
+    let l_done = format!("{}_done", symbol);
+    let l_release_loop = format!("{}_release_loop", symbol);
+    let l_release_done = format!("{}_release_done", symbol);
+    let l_release_skip_key = format!("{}_release_skip_key", symbol);
+    let l_release_skip_value = format!("{}_release_skip_value", symbol);
+    let l_alloc_tags = format!("{}_alloc_tags", symbol);
+    let l_alloc_i = format!("{}_alloc_i", symbol);
+    let l_alloc_s = format!("{}_alloc_s", symbol);
+    let l_alloc_fail = format!("{}_alloc_fail", symbol);
+    let l_free_new_keys_done = format!("{}_free_new_keys_done", symbol);
+    let l_free_new_tags_done = format!("{}_free_new_tags_done", symbol);
+    let l_free_new_i_done = format!("{}_free_new_i_done", symbol);
+    let l_free_old_keys_done = format!("{}_free_old_keys_done", symbol);
+    let l_free_old_tags_done = format!("{}_free_old_tags_done", symbol);
+    let l_free_old_i_done = format!("{}_free_old_i_done", symbol);
+    let l_free_old_s_done = format!("{}_free_old_s_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(2));
+    out.push_str("    sub rsp, 88\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov dword ptr [rsp+40], eax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rsp+48], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rsp+56], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rsp+64], rax\n");
+    out.push_str("    mov dword ptr [rsp+72], 0\n");
+    out.push_str(&format!("{}:\n", l_release_loop));
+    out.push_str("    mov ecx, dword ptr [rsp+72]\n");
+    out.push_str("    cmp ecx, dword ptr [rsp+40]\n");
+    out.push_str(&format!("    jae {}\n", l_release_done));
+    out.push_str("    mov rax, qword ptr [rsp+48]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_release_skip_key));
+    out.push_str("    mov rcx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", l_release_skip_key));
+    out.push_str("    mov ecx, dword ptr [rsp+72]\n");
+    out.push_str("    mov rax, qword ptr [rsp+56]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_release_skip_value));
+    out.push_str("    cmp dword ptr [rax+rcx*4], 2\n");
+    out.push_str(&format!("    jne {}\n", l_release_skip_value));
+    out.push_str("    mov rax, qword ptr [rsp+64]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_release_skip_value));
+    out.push_str("    mov rcx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", l_release_skip_value));
+    out.push_str("    mov ecx, dword ptr [rsp+72]\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    mov dword ptr [rsp+72], ecx\n");
+    out.push_str(&format!("    jmp {}\n", l_release_loop));
+    out.push_str(&format!("{}:\n", l_release_done));
+    out.push_str("    mov r10d, dword ptr [rsp+32]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r10*4], 0\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+r10*4]\n");
+    out.push_str(&format!("    cmp eax, {}\n", MAP_INIT_CAPACITY));
+    out.push_str(&format!("    jbe {}\n", l_done));
+    out.push_str(&format!(
+        "    cmp eax, {}\n",
+        MAP_INIT_CAPACITY * MAP_SHRINK_HYSTERESIS_MULT
+    ));
+    out.push_str(&format!("    jb {}\n", l_done));
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        MAP_INIT_CAPACITY * 8
+    ));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_done));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        MAP_INIT_CAPACITY * 4
+    ));
+    out.push_str(&format!("{}:\n", l_alloc_tags));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], rax\n");
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        MAP_INIT_CAPACITY * 4
+    ));
+    out.push_str(&format!("{}:\n", l_alloc_i));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_c], rax\n");
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        MAP_INIT_CAPACITY * 8
+    ));
+    out.push_str(&format!("{}:\n", l_alloc_s));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_alloc_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], rax\n");
+    out.push_str("    mov r10d, dword ptr [rsp+32]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_old_keys_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_old_keys_done));
+    out.push_str("    mov r10d, dword ptr [rsp+32]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_old_tags_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_old_tags_done));
+    out.push_str("    mov r10d, dword ptr [rsp+32]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_old_i_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_old_i_done));
+    out.push_str("    mov r10d, dword ptr [rsp+32]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_old_s_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_old_s_done));
+    out.push_str("    mov r10d, dword ptr [rsp+32]\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    mov r11, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    mov r11, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_c]\n");
+    out.push_str("    mov r11, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    mov r11, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r11+r10*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str(&format!("    mov dword ptr [rax+r10*4], {}\n", MAP_INIT_CAPACITY));
+    out.push_str(&format!("    jmp {}\n", l_done));
+    out.push_str(&format!("{}:\n", l_alloc_fail));
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_new_keys_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_new_keys_done));
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_new_tags_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_new_tags_done));
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_c]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_free_new_i_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_free_new_i_done));
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, r11\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", l_done));
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 88\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_map_contains_proc(out: &mut String, symbol: &str) {
+    let l_end = format!("{}_end", symbol);
+    let l_loop = format!("{}_loop", symbol);
+    let l_next = format!("{}_next", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    xor eax, eax\n");
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(2));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov r8d, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    test r11, r11\n");
+    out.push_str(&format!("    jz {}\n", l_end));
+    out.push_str("    xor r9d, r9d\n");
+    out.push_str(&format!("{}:\n", l_loop));
+    out.push_str("    cmp r9d, r8d\n");
+    out.push_str(&format!("    jae {}\n", l_end));
+    out.push_str("    cmp qword ptr [r11+r9*8], rdx\n");
+    out.push_str(&format!("    jne {}\n", l_next));
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_next));
+    out.push_str("    add r9d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_loop));
+    out.push_str(&format!("{}:\n", l_end));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_map_put_proc(out: &mut String, symbol: &str, is_int: bool) {
+    let l_end = format!("{}_end", symbol);
+    let l_loop = format!("{}_loop", symbol);
+    let l_miss = format!("{}_miss", symbol);
+    let l_insert = format!("{}_insert", symbol);
+    let l_grow = format!("{}_grow", symbol);
+    let l_grow_copy = format!("{}_grow_copy", symbol);
+    let l_grow_done = format!("{}_grow_done", symbol);
+    let l_grow_alloc_tags = format!("{}_grow_alloc_tags", symbol);
+    let l_grow_alloc_i = format!("{}_grow_alloc_i", symbol);
+    let l_grow_alloc_s = format!("{}_grow_alloc_s", symbol);
+    let l_grow_alloc_fail = format!("{}_grow_alloc_fail", symbol);
+    let l_fail = format!("{}_fail", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(2));
+    out.push_str("    mov dword ptr [rt_tmp_arr_slot], ecx\n");
+    if is_int {
+        out.push_str("    mov qword ptr [rt_tmp_arg_key], rdx\n");
+        out.push_str("    mov qword ptr [rt_tmp_arg_val], r8\n");
+    } else {
+        out.push_str("    mov qword ptr [rt_tmp_arg_key], rdx\n");
+        out.push_str("    mov qword ptr [rt_tmp_arg_val], r8\n");
+    }
+    out.push_str("    mov r11d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov r9d, dword ptr [rax+r11*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], r9d\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str("    mov r8d, dword ptr [rax+r11*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], r8d\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        MAP_INIT_CAPACITY * 4
+    ));
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], rax\n");
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        MAP_INIT_CAPACITY * 4
+    ));
+    out.push_str("    mov rax, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_c], rax\n");
+    out.push_str(&format!(
+        "    mov qword ptr [rt_tmp_arr_bytes], {}\n",
+        MAP_INIT_CAPACITY * 8
+    ));
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_fail));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_fail));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", l_loop));
+    out.push_str("    cmp eax, dword ptr [rt_tmp_size]\n");
+    out.push_str(&format!("    jae {}\n", l_insert));
+    out.push_str("    mov r10, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    mov rdx, qword ptr [rt_tmp_arg_key]\n");
+    out.push_str("    cmp qword ptr [r10+rax*8], rdx\n");
+    out.push_str(&format!("    jne {}\n", l_miss));
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], eax\n");
+    out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    cmp dword ptr [r10+rax*4], 2\n");
+    out.push_str("    jne @F\n");
+    out.push_str("    mov r10, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    test r10, r10\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    mov ecx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    mov rcx, qword ptr [r10+rcx*8]\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_arr_len]\n");
+    if is_int {
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+        out.push_str("    mov dword ptr [r10+rax*4], 1\n");
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_c]\n");
+        out.push_str("    mov edx, dword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    mov dword ptr [r10+rax*4], edx\n");
+    } else {
+        out.push_str("    mov rcx, qword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    call pulsec_rt_arcRetain\n");
+        out.push_str("    mov eax, dword ptr [rt_tmp_arr_len]\n");
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+        out.push_str("    mov dword ptr [r10+rax*4], 2\n");
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_d]\n");
+        out.push_str("    mov rdx, qword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    mov qword ptr [r10+rax*8], rdx\n");
+    }
+    out.push_str(&format!("    jmp {}\n", l_end));
+    out.push_str(&format!("{}:\n", l_miss));
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_loop));
+    out.push_str(&format!("{}:\n", l_insert));
+    out.push_str("    mov r9d, dword ptr [rt_tmp_size]\n");
+    out.push_str("    cmp r9d, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str(&format!("    jae {}\n", l_grow));
+    out.push_str("    mov rcx, qword ptr [rt_tmp_arg_key]\n");
+    out.push_str("    call pulsec_rt_arcRetain\n");
+    if !is_int {
+        out.push_str("    mov rcx, qword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    call pulsec_rt_arcRetain\n");
+    }
+    out.push_str("    mov r9d, dword ptr [rt_tmp_size]\n");
+    out.push_str("    mov r10, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    mov rdx, qword ptr [rt_tmp_arg_key]\n");
+    out.push_str("    mov qword ptr [r10+r9*8], rdx\n");
+    if is_int {
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+        out.push_str("    mov dword ptr [r10+r9*4], 1\n");
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_c]\n");
+        out.push_str("    mov edx, dword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    mov dword ptr [r10+r9*4], edx\n");
+    } else {
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
+        out.push_str("    mov dword ptr [r10+r9*4], 2\n");
+        out.push_str("    mov r10, qword ptr [rt_tmp_ptr_d]\n");
+        out.push_str("    mov rdx, qword ptr [rt_tmp_arg_val]\n");
+        out.push_str("    mov qword ptr [r10+r9*8], rdx\n");
+    }
+    out.push_str("    add r9d, 1\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r11*4], r9d\n");
+    out.push_str(&format!("{}:\n", l_end));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_grow));
+    out.push_str("    mov eax, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str(&format!("    cmp eax, {}\n", MAP_MAX_CAPACITY));
+    out.push_str(&format!("    jae {}\n", l_fail));
+    out.push_str("    mov ecx, eax\n");
+    out.push_str("    add eax, eax\n");
+    out.push_str("    cmp eax, ecx\n");
+    out.push_str("    ja @F\n");
+    out.push_str("    mov eax, ecx\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str("@@:\n");
+    out.push_str(&format!("    cmp eax, {}\n", MAP_MAX_CAPACITY));
+    out.push_str("    jbe @F\n");
+    out.push_str(&format!("    mov eax, {}\n", MAP_MAX_CAPACITY));
+    out.push_str("@@:\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], eax\n");
+    out.push_str("    shl rax, 3\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_grow_alloc_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    shl rax, 2\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str(&format!("{}:\n", l_grow_alloc_tags));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_grow_alloc_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], rax\n");
+    out.push_str(&format!("{}:\n", l_grow_alloc_i));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_grow_alloc_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_c], rax\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    shl rax, 3\n");
+    out.push_str("    mov qword ptr [rt_tmp_arr_bytes], rax\n");
+    out.push_str(&format!("{}:\n", l_grow_alloc_s));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_grow_alloc_fail));
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], rax\n");
+    out.push_str("    mov r11d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str(&format!("{}:\n", l_grow_copy));
+    out.push_str("    cmp ecx, dword ptr [rt_tmp_size]\n");
+    out.push_str(&format!("    jae {}\n", l_grow_done));
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov rdx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], rdx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov edx, dword ptr [rax+rcx*4]\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], edx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov edx, dword ptr [rax+rcx*4]\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_c]\n");
+    out.push_str("    mov dword ptr [rax+rcx*4], edx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov rdx, qword ptr [rax+rcx*8]\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    mov qword ptr [rax+rcx*8], rdx\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_grow_copy));
+    out.push_str(&format!("{}:\n", l_grow_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov r11d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov r8, qword ptr [rax+r11*8]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov r11d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov r8, qword ptr [rax+r11*8]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov r11d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov r8, qword ptr [rax+r11*8]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov r11d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov r8, qword ptr [rax+r11*8]\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    mov r11d, dword ptr [rt_tmp_arr_slot]\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    mov r10, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r10+r11*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    mov r10, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r10+r11*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_c]\n");
+    out.push_str("    mov r10, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r10+r11*8], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_d]\n");
+    out.push_str("    mov r10, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov qword ptr [r10+r11*8], rax\n");
+    out.push_str("    mov edx, dword ptr [rt_tmp_arr_len]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_cap_ptr]\n");
+    out.push_str("    mov dword ptr [rax+r11*4], edx\n");
+    out.push_str(&format!("    jmp {}\n", l_insert));
+    out.push_str(&format!("{}:\n", l_grow_alloc_fail));
+    out.push_str(&format!("    jmp {}\n", l_fail));
+    out.push_str(&format!("{}:\n", l_fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_map_growth_err\n");
+    out.push_str("    mov edx, rt_map_growth_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_map_get_proc(out: &mut String, symbol: &str, want_int: bool) {
+    let l_end = format!("{}_end", symbol);
+    let l_loop = format!("{}_loop", symbol);
+    let l_next = format!("{}_next", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    xor eax, eax\n");
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(2));
+    out.push_str("    mov r11d, ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
+    out.push_str("    mov r8d, dword ptr [rax+r11*4]\n");
+    out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_tags_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_b], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_i_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_c], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_map_s_ptr_ptr]\n");
+    out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_d], rax\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_end));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", l_end));
+    out.push_str("    xor r9d, r9d\n");
+    out.push_str(&format!("{}:\n", l_loop));
+    out.push_str("    cmp r9d, r8d\n");
+    out.push_str(&format!("    jae {}\n", l_end));
+    out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    cmp qword ptr [rax+r9*8], rdx\n");
+    out.push_str(&format!("    jne {}\n", l_next));
+    if want_int {
+        out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+        out.push_str("    cmp dword ptr [rax+r9*4], 1\n");
+        out.push_str(&format!("    jne {}\n", l_end));
+        out.push_str("    mov rax, qword ptr [rt_tmp_ptr_c]\n");
+        out.push_str("    test rax, rax\n");
+        out.push_str(&format!("    jz {}\n", l_end));
+        out.push_str("    mov eax, dword ptr [rax+r9*4]\n");
+    } else {
+        out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");
+        out.push_str("    cmp dword ptr [rax+r9*4], 2\n");
+        out.push_str(&format!("    jne {}\n", l_end));
+        out.push_str("    mov rax, qword ptr [rt_tmp_ptr_d]\n");
+        out.push_str("    test rax, rax\n");
+        out.push_str(&format!("    jz {}\n", l_end));
+        out.push_str("    mov rax, qword ptr [rax+r9*8]\n");
+    }
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", l_next));
+    out.push_str("    add r9d, 1\n");
+    out.push_str(&format!("    jmp {}\n", l_loop));
+    out.push_str(&format!("{}:\n", l_end));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_math_max_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, ecx\n");
+    out.push_str("    cmp edx, ecx\n");
+    out.push_str("    jle @F\n");
+    out.push_str("    mov eax, edx\n");
+    out.push_str("@@:\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_math_abs_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov eax, ecx\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str("    jge @F\n");
+    out.push_str("    neg eax\n");
+    out.push_str("@@:\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_stub_return_zero_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn instance_field_count(class: &IrClass) -> usize {
+    class.fields.iter().filter(|f| !f.is_static).count()
+}
+
+pub(crate) fn instance_size_bytes(class: &IrClass) -> u32 {
+    OBJECT_HEADER_BYTES + (instance_field_count(class) as u32 * OBJECT_FIELD_SLOT_BYTES)
+}
+
+pub(crate) fn align_u32(value: u32, align: u32) -> u32 {
+    if align == 0 {
+        value
+    } else {
+        (value + align - 1) & !(align - 1)
+    }
+}
+
+pub(crate) fn find_entry_method(ir: &IrProgram) -> Option<&IrMethod> {
+    ir.classes
+        .iter()
+        .flat_map(|c| c.methods.iter())
+        .find(|m| m.is_static && m.name == "main")
+}
+
+pub(crate) fn compile_method_text(method: &IrMethod) -> Result<Vec<u8>, String> {
+    let mut local_offsets: HashMap<String, i32> = HashMap::new();
+    let mut next_offset = 8i32;
+    for block in &method.blocks {
+        for instr in &block.instructions {
+            if let IrInstr::DeclareLocal { name, .. } = instr {
+                local_offsets.entry(name.clone()).or_insert_with(|| {
+                    let current = next_offset;
+                    next_offset += 8;
+                    current
+                });
+            }
+        }
+    }
+    let stack_size = align_u32((next_offset - 8).max(0) as u32, 16) as i32;
+    let mut asm = AsmBuf::new();
+
+    // prologue
+    asm.push_u8(0x55); // push rbp
+    asm.push_bytes(&[0x48, 0x89, 0xE5]); // mov rbp,rsp
+    if stack_size > 0 {
+        asm.push_bytes(&[0x48, 0x81, 0xEC]); // sub rsp,imm32
+        asm.push_i32(stack_size);
+    }
+
+    let mut block_ids = method.blocks.iter().map(|b| b.id).collect::<Vec<_>>();
+    block_ids.sort_unstable();
+    let blocks_by_id = method
+        .blocks
+        .iter()
+        .map(|b| (b.id, b))
+        .collect::<HashMap<usize, &IrBlock>>();
+
+    for block_id in block_ids {
+        let block = blocks_by_id
+            .get(&block_id)
+            .ok_or_else(|| format!("Missing IR block {}", block_id))?;
+        asm.mark_label(block_id);
+        for instr in &block.instructions {
+            match instr {
+                IrInstr::DeclareLocal { .. } => {}
+                IrInstr::StoreLocal { name, value, .. } => {
+                    emit_value_to_rax(&mut asm, method, *value, &local_offsets)?;
+                    let offset = *local_offsets
+                        .get(name)
+                        .ok_or_else(|| format!("Unknown local '{}'", name))?;
+                    asm.mov_qword_ptr_rbp_minus_offset_rax(offset);
+                }
+                IrInstr::Eval { value, .. } => {
+                    emit_value_to_rax(&mut asm, method, *value, &local_offsets)?;
+                }
+                IrInstr::PushExceptionHandler { .. }
+                | IrInstr::PopExceptionHandler { .. } => {
+                    return Err("Unsupported native IR exception instruction in compile_method_text".to_string())
+                }
+            }
+        }
+
+        match &block.terminator {
+            IrTerminator::Goto { target, .. } => asm.jmp(*target),
+            IrTerminator::Branch {
+                condition,
+                then_target,
+                else_target,
+                ..
+            } => {
+                emit_value_to_rax(&mut asm, method, *condition, &local_offsets)?;
+                asm.push_bytes(&[0x48, 0x85, 0xC0]); // test rax,rax
+                asm.jne(*then_target);
+                asm.jmp(*else_target);
+            }
+            IrTerminator::Return { value, .. } => {
+                if let Some(value_id) = value {
+                    emit_value_to_rax(&mut asm, method, *value_id, &local_offsets)?;
+                } else {
+                    asm.push_bytes(&[0x31, 0xC0]); // xor eax,eax
+                }
+                if stack_size > 0 {
+                    asm.push_bytes(&[0x48, 0x81, 0xC4]); // add rsp,imm32
+                    asm.push_i32(stack_size);
+                }
+                asm.push_u8(0x5D); // pop rbp
+                asm.push_u8(0xC3); // ret
+            }
+            IrTerminator::Throw { .. } => {
+                return Err("Unsupported native IR throw terminator in compile_method_text".to_string())
+            }
+            IrTerminator::Stop => {
+                asm.push_bytes(&[0x31, 0xC0]); // xor eax,eax
+                if stack_size > 0 {
+                    asm.push_bytes(&[0x48, 0x81, 0xC4]); // add rsp,imm32
+                    asm.push_i32(stack_size);
+                }
+                asm.push_u8(0x5D); // pop rbp
+                asm.push_u8(0xC3); // ret
+            }
+        }
+    }
+
+    asm.finalize()
+}
+
+fn emit_value_to_rax(
+    asm: &mut AsmBuf,
+    method: &IrMethod,
+    value_id: IrValueId,
+    local_offsets: &HashMap<String, i32>,
+) -> Result<(), String> {
+    let value = method
+        .values
+        .get(value_id as usize)
+        .ok_or_else(|| format!("Invalid IR value id {}", value_id))?;
+    match &value.kind {
+        IrValueKind::IntLiteral(v) => asm.mov_rax_imm64(*v),
+        IrValueKind::BoolLiteral(v) => asm.mov_rax_imm64(if *v { 1 } else { 0 }),
+        IrValueKind::LocalRef(name) => {
+            let offset = *local_offsets
+                .get(name)
+                .ok_or_else(|| format!("Unknown local '{}'", name))?;
+            asm.mov_rax_qword_ptr_rbp_minus_offset(offset);
+        }
+        IrValueKind::Unary { op, operand } => {
+            emit_value_to_rax(asm, method, *operand, local_offsets)?;
+            match op {
+                IrUnaryOp::Neg => asm.push_bytes(&[0x48, 0xF7, 0xD8]), // neg rax
+                IrUnaryOp::BitNot => asm.push_bytes(&[0x48, 0xF7, 0xD0]), // not rax
+                IrUnaryOp::Not => {
+                    asm.push_bytes(&[0x48, 0x85, 0xC0]); // test rax,rax
+                    asm.push_bytes(&[0x0F, 0x94, 0xC0]); // sete al
+                    asm.push_bytes(&[0x0F, 0xB6, 0xC0]); // movzx eax,al
+                }
+            }
+        }
+        IrValueKind::Binary { op, left, right } => {
+            emit_value_to_rax(asm, method, *left, local_offsets)?;
+            asm.push_bytes(&[0x49, 0x89, 0xC2]); // mov r10,rax
+            emit_value_to_rax(asm, method, *right, local_offsets)?;
+            match op {
+                IrBinaryOp::Add => asm.push_bytes(&[0x4C, 0x01, 0xD0]), // add rax,r10
+                IrBinaryOp::Sub => {
+                    asm.push_bytes(&[0x48, 0x89, 0xC1]); // mov rcx,rax
+                    asm.push_bytes(&[0x4C, 0x89, 0xD0]); // mov rax,r10
+                    asm.push_bytes(&[0x48, 0x29, 0xC8]); // sub rax,rcx
+                }
+                IrBinaryOp::Mul => asm.push_bytes(&[0x49, 0x0F, 0xAF, 0xC2]), // imul rax,r10
+                IrBinaryOp::Div => {
+                    asm.push_bytes(&[0x48, 0x89, 0xC1]); // mov rcx,rax
+                    asm.push_bytes(&[0x4C, 0x89, 0xD0]); // mov rax,r10
+                    asm.push_bytes(&[0x48, 0x99]); // cqo
+                    asm.push_bytes(&[0x48, 0xF7, 0xF9]); // idiv rcx
+                }
+                IrBinaryOp::Eq
+                | IrBinaryOp::NotEq
+                | IrBinaryOp::Less
+                | IrBinaryOp::LessEq
+                | IrBinaryOp::Greater
+                | IrBinaryOp::GreaterEq => {
+                    asm.push_bytes(&[0x49, 0x39, 0xC2]); // cmp r10,rax
+                    let cc = match op {
+                        IrBinaryOp::Eq => 0x94,      // sete
+                        IrBinaryOp::NotEq => 0x95,   // setne
+                        IrBinaryOp::Less => 0x9C,    // setl
+                        IrBinaryOp::LessEq => 0x9E,  // setle
+                        IrBinaryOp::Greater => 0x9F, // setg
+                        IrBinaryOp::GreaterEq => 0x9D, // setge
+                        _ => unreachable!(),
+                    };
+                    asm.push_bytes(&[0x0F, cc, 0xC0]);
+                    asm.push_bytes(&[0x0F, 0xB6, 0xC0]); // movzx eax,al
+                }
+                IrBinaryOp::BitAnd => asm.push_bytes(&[0x4C, 0x21, 0xD0]), // and rax,r10
+                IrBinaryOp::BitOr => asm.push_bytes(&[0x4C, 0x09, 0xD0]),  // or rax,r10
+                IrBinaryOp::BitXor => asm.push_bytes(&[0x4C, 0x31, 0xD0]), // xor rax,r10
+                IrBinaryOp::ShiftLeft => {
+                    asm.push_bytes(&[0x44, 0x89, 0xD1]); // mov ecx,r10d
+                    asm.push_bytes(&[0x48, 0xD3, 0xE0]); // shl rax,cl
+                }
+                IrBinaryOp::ShiftRight => {
+                    asm.push_bytes(&[0x44, 0x89, 0xD1]); // mov ecx,r10d
+                    asm.push_bytes(&[0x48, 0xD3, 0xF8]); // sar rax,cl
+                }
+                IrBinaryOp::UnsignedShiftRight => {
+                    asm.push_bytes(&[0x44, 0x89, 0xD1]); // mov ecx,r10d
+                    asm.push_bytes(&[0x48, 0xD3, 0xE8]); // shr rax,cl
+                }
+            }
+        }
+        IrValueKind::Conditional {
+            condition,
+            then_value,
+            else_value,
+        } => {
+            let then_label = 1_000_000usize + (value.id as usize * 2);
+            let done_label = then_label + 1;
+            emit_value_to_rax(asm, method, *condition, local_offsets)?;
+            asm.push_bytes(&[0x48, 0x85, 0xC0]); // test rax,rax
+            asm.jne(then_label);
+            emit_value_to_rax(asm, method, *else_value, local_offsets)?;
+            asm.jmp(done_label);
+            asm.mark_label(then_label);
+            emit_value_to_rax(asm, method, *then_value, local_offsets)?;
+            asm.mark_label(done_label);
+        }
+        IrValueKind::StringLiteral(_)
+        | IrValueKind::NullLiteral
+        | IrValueKind::ThisRef
+        | IrValueKind::SuperRef
+        | IrValueKind::NewObject { .. }
+        | IrValueKind::Call { .. }
+        | IrValueKind::ArrayNew { .. }
+        | IrValueKind::ArrayNewInitialized { .. }
+        | IrValueKind::ArrayLength { .. }
+        | IrValueKind::ArrayGet { .. }
+        | IrValueKind::ArraySet { .. }
+        | IrValueKind::SwitchExpr { .. }
+        | IrValueKind::Cast { .. }
+        | IrValueKind::InstanceOf { .. }
+        | IrValueKind::MemberAccess { .. }
+        | IrValueKind::TakePendingException => {
+            return Err(format!("Unsupported native IR value kind at id {}", value.id));
+        }
+    }
+    Ok(())
+}
+
+#[derive(Default)]
+struct AsmBuf {
+    bytes: Vec<u8>,
+    labels: HashMap<usize, usize>,
+    patches: Vec<(usize, usize)>,
+    cond_patches: Vec<(usize, usize, u8)>,
+}
+
+impl AsmBuf {
+    fn new() -> Self {
+        Self::default()
+    }
+
+    fn push_u8(&mut self, b: u8) {
+        self.bytes.push(b);
+    }
+
+    fn push_i32(&mut self, v: i32) {
+        self.bytes.extend_from_slice(&v.to_le_bytes());
+    }
+
+    fn push_i64(&mut self, v: i64) {
+        self.bytes.extend_from_slice(&v.to_le_bytes());
+    }
+
+    fn push_bytes(&mut self, bytes: &[u8]) {
+        self.bytes.extend_from_slice(bytes);
+    }
+
+    fn mark_label(&mut self, id: usize) {
+        self.labels.insert(id, self.bytes.len());
+    }
+
+    fn jmp(&mut self, label: usize) {
+        self.push_u8(0xE9);
+        let at = self.bytes.len();
+        self.push_i32(0);
+        self.patches.push((at, label));
+    }
+
+    fn jne(&mut self, label: usize) {
+        self.push_bytes(&[0x0F, 0x85]);
+        let at = self.bytes.len();
+        self.push_i32(0);
+        self.cond_patches.push((at, label, 0x85));
+    }
+
+    fn mov_rax_imm64(&mut self, v: i64) {
+        self.push_bytes(&[0x48, 0xB8]);
+        self.push_i64(v);
+    }
+
+    fn mov_rax_qword_ptr_rbp_minus_offset(&mut self, offset: i32) {
+        self.push_bytes(&[0x48, 0x8B, 0x85]);
+        self.push_i32(-offset);
+    }
+
+    fn mov_qword_ptr_rbp_minus_offset_rax(&mut self, offset: i32) {
+        self.push_bytes(&[0x48, 0x89, 0x85]);
+        self.push_i32(-offset);
+    }
+
+    fn finalize(mut self) -> Result<Vec<u8>, String> {
+        for (at, label) in &self.patches {
+            let Some(target) = self.labels.get(label) else {
+                return Err(format!("Unresolved jump target block {}", label));
+            };
+            let disp = *target as i64 - (*at as i64 + 4);
+            let disp = i32::try_from(disp).map_err(|_| "Jump displacement overflow".to_string())?;
+            self.bytes[*at..*at + 4].copy_from_slice(&disp.to_le_bytes());
+        }
+        for (at, label, _cc) in &self.cond_patches {
+            let Some(target) = self.labels.get(label) else {
+                return Err(format!("Unresolved branch target block {}", label));
+            };
+            let disp = *target as i64 - (*at as i64 + 4);
+            let disp = i32::try_from(disp).map_err(|_| "Branch displacement overflow".to_string())?;
+            self.bytes[*at..*at + 4].copy_from_slice(&disp.to_le_bytes());
+        }
+        Ok(self.bytes)
+    }
+}
+
+pub(crate) fn emit_masm_print_entry_object(
+    method: &IrMethod,
+    object_path: &Path,
+    linker_override: Option<&Path>,
+) -> Result<(String, Vec<PathBuf>), String> {
+    let lines = extract_println_literals(method)?;
+    if lines.is_empty() {
+        return Err("No supported println literals in entry method".to_string());
+    }
+    let ml64 = discover_ml64(linker_override)
+        .ok_or_else(|| "ml64.exe not found for MASM print-entry path".to_string())?;
+    let kernel32 = discover_kernel32_lib()
+        .ok_or_else(|| "kernel32.lib not found for MASM print-entry path".to_string())?;
+
+    let asm_path = object_path.with_extension("asm");
+    let asm_source = build_masm_print_entry_source(&lines);
+    fs::write(&asm_path, asm_source)
+        .map_err(|e| format!("Failed to write MASM source '{}': {}", asm_path.display(), e))?;
+
+    let output = Command::new(&ml64)
+        .arg("/c")
+        .arg("/nologo")
+        .arg(format!("/Fo{}", object_path.display()))
+        .arg(asm_path.display().to_string())
+        .output()
+        .map_err(|e| format!("Failed to execute '{}': {}", ml64.display(), e))?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("MASM assembly failed: {}", stderr.trim()));
+    }
+
+    Ok(("masm-println".to_string(), vec![kernel32]))
+}
+
+pub(crate) struct MasmSplitArtifacts {
+    pub(crate) startup_obj: PathBuf,
+    pub(crate) link_inputs: Vec<PathBuf>,
+    pub(crate) codegen: String,
+    pub(crate) link_plan: NativeLinkPlan,
+}
+
+
+

@@ -1,0 +1,10 @@
+package app.core;
+
+class Vault {
+    private int code;
+
+    public Vault(int code) {
+        this.code = code;
+    }
+}
+

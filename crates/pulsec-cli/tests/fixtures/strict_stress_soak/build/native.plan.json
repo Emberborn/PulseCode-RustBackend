@@ -1,0 +1,232 @@
+{
+  "schema": "pulsec.native.plan.v1",
+  "target": {
+    "triple": "x86_64-pc-windows-msvc",
+    "object_format": "coff"
+  },
+  "entry": {
+    "symbol": "main",
+    "calling_convention": "system"
+  },
+  "runtime": {
+    "abi_version": "v2",
+    "abi_compatibility": {
+      "schema": "pulsec.runtime.abi.v1",
+      "compiler_abi_version": 2,
+      "runtime_abi_version": 2,
+      "mismatch_policy": "deterministic-fail-fast"
+    },
+    "required_symbols": ["com.pulse.rt.Intrinsics.consoleWriteLine", "com.pulse.rt.Intrinsics.consoleWrite", "com.pulse.rt.Intrinsics.panic", "com.pulse.rt.Intrinsics.stringConcat", "com.pulse.rt.Intrinsics.stringLength", "com.pulse.rt.Intrinsics.intToString", "com.pulse.rt.Intrinsics.booleanToString", "com.pulse.rt.Intrinsics.parseInt", "com.pulse.rt.Intrinsics.parseBoolean", "com.pulse.rt.Intrinsics.arrayNew", "com.pulse.rt.Intrinsics.arrayLength", "com.pulse.rt.Intrinsics.arrayGetInt", "com.pulse.rt.Intrinsics.arraySetInt", "com.pulse.rt.Intrinsics.arrayGetString", "com.pulse.rt.Intrinsics.arraySetString", "com.pulse.rt.Intrinsics.listNew", "com.pulse.rt.Intrinsics.listSize", "com.pulse.rt.Intrinsics.listClear", "com.pulse.rt.Intrinsics.listAddInt", "com.pulse.rt.Intrinsics.listAddString", "com.pulse.rt.Intrinsics.listGetInt", "com.pulse.rt.Intrinsics.listGetString", "com.pulse.rt.Intrinsics.mapNew", "com.pulse.rt.Intrinsics.mapSize", "com.pulse.rt.Intrinsics.mapClear", "com.pulse.rt.Intrinsics.mapContainsKey", "com.pulse.rt.Intrinsics.mapPut", "com.pulse.rt.Intrinsics.mapPutInt", "com.pulse.rt.Intrinsics.mapGet", "com.pulse.rt.Intrinsics.mapGetInt", "com.pulse.rt.Intrinsics.arcRetain", "com.pulse.rt.Intrinsics.arcRelease", "com.pulse.rt.Intrinsics.arcCycleYoungPass", "com.pulse.rt.Intrinsics.arcCycleFullPass", "com.pulse.rt.Intrinsics.arcCycleTick", "com.pulse.rt.Intrinsics.weakNew", "com.pulse.rt.Intrinsics.weakGet", "com.pulse.rt.Intrinsics.weakClear", "com.pulse.lang.IO.println", "com.pulse.lang.IO.print", "com.pulse.io.Console.writeLine", "com.pulse.io.File.readAllText", "com.pulse.math.Math.abs", "com.pulse.math.Math.max"],
+    "memory_model": {
+      "strategy": "arc",
+      "header_schema": "pulsec.arc.header.v1",
+      "handle": {
+        "kind": "u64-slot32-gen32-handle",
+        "null_handle": 0
+      },
+      "arc_header": {
+        "word_size_bits": 32,
+        "word_count": 4,
+        "words": ["kind_tag", "refcount", "flags", "meta_index"],
+        "refcount_bits": 32,
+        "refcount_saturation_guard": 4294967294,
+        "kind_tags": {
+          "object": 1,
+          "array": 2,
+          "string": 3,
+          "collection": 4
+        }
+      },
+      "allocator": {
+        "schema": "pulsec.alloc.policy.v1",
+        "backend": "win64-process-heap",
+        "slot_capacity": 4294967295,
+        "slot_capacity_initial": 63,
+        "slot_capacity_growth": "runtime-doubling",
+        "alignment": {
+          "pointer_bytes": 8,
+          "lane_bytes": 4
+        },
+        "array_storage": {
+          "lanes": ["int", "string_handle"],
+          "backing": "per-instance-heap"
+        },
+        "container_storage": {
+          "list": {
+            "init_capacity": 16,
+            "max_capacity": 2147483647,
+            "growth_factor": { "numerator": 2, "denominator": 1 },
+            "shrink": { "hysteresis_trigger_multiplier": 4 }
+          },
+          "map": {
+            "init_capacity": 16,
+            "max_capacity": 2147483647,
+            "growth_factor": { "numerator": 2, "denominator": 1 },
+            "shrink": { "hysteresis_trigger_multiplier": 4 }
+          }
+        },
+        "failure_mode": "deterministic-fatal"
+      },
+      "cycle_detector": {
+        "schema": "pulsec.arc.cycle.v1",
+        "strategy": "trial-deletion",
+        "cadence": {
+          "young_window": 64,
+          "full_interval_ticks": 8
+        },
+        "failure_semantics": {
+          "zero_reclaim_lag_limit": 1024,
+          "lag_action": "track"
+        },
+        "passes": ["young", "full"],
+        "tick_entry": "arcCycleTick"
+      },
+      "frame_budget": {
+        "warn_bytes": 1024,
+        "fail_bytes": 4096,
+        "max_frame_bytes": 376,
+        "max_frame_method": "strict_stress_soak.SoakRunner.run",
+        "warn_violations": 0,
+        "fail_violations": 0
+      },
+      "debug_allocator": {
+        "enabled": false
+      },
+      "threading": {
+        "schema": "pulsec.runtime.threading.v1",
+        "model": "single-threaded",
+        "arc_atomicity": "non-atomic",
+        "runtime_thread_safety": "not-thread-safe",
+        "container_thread_safety": "not-thread-safe"
+      },
+      "object_model": {
+        "schema": "pulsec.object.layout.v1",
+        "layout_version": 1,
+        "instance_layout": {
+          "header_bytes": 16,
+          "field_slot_bytes": 8,
+          "alignment_bytes": 8,
+          "field_ordering": "declaration-order",
+          "inherited_field_placement": "base-prefix-then-derived"
+        },
+        "static_storage": {
+          "schema": "pulsec.static.storage.v1",
+          "owner_model": "class-owned",
+          "symbol_model": "per-class-field-symbol",
+          "initialization_order": "declaration-order-within-class",
+          "access_rules": {
+            "class_reference_read": "allowed",
+            "class_reference_write": "allowed",
+            "instance_reference_read": "forbidden",
+            "instance_reference_write": "forbidden"
+          }
+        },
+        "dispatch": {
+          "schema": "pulsec.dispatch.schema.v1",
+          "slot_assignment": "deterministic-lexicographic-signature",
+          "virtual_call_mode": "planned-runtime-vtable",
+          "interface_call_mode": "planned-runtime-interface-bridge",
+          "devirtualization": {
+            "mode": "safe-fast-paths",
+            "rules": ["static-direct", "super-direct", "final-method-direct", "private-method-direct", "final-class-direct"],
+            "parity_requirement": "behavioral-equivalence-with-runtime-dispatch"
+          },
+          "slot_table": [{ "class": "com.pulse.collections.Array", "slots": [{ "slot": 0, "key": "Array(int)" }, { "slot": 1, "key": "getInt(int)" }, { "slot": 2, "key": "getString(int)" }, { "slot": 3, "key": "length()" }, { "slot": 4, "key": "setInt(int,int)" }, { "slot": 5, "key": "setString(int,String)" }] }, { "class": "com.pulse.collections.ArrayList", "slots": [{ "slot": 0, "key": "ArrayList()" }, { "slot": 1, "key": "add(String)" }, { "slot": 2, "key": "add(int)" }, { "slot": 3, "key": "clear()" }, { "slot": 4, "key": "getInt(int)" }, { "slot": 5, "key": "getString(int)" }, { "slot": 6, "key": "size()" }] }, { "class": "com.pulse.collections.Collection", "slots": [{ "slot": 0, "key": "clear()" }, { "slot": 1, "key": "size()" }] }, { "class": "com.pulse.collections.Deque", "slots": [{ "slot": 0, "key": "addFirst(int)" }, { "slot": 1, "key": "addLast(int)" }, { "slot": 2, "key": "isEmpty()" }, { "slot": 3, "key": "removeFirst()" }, { "slot": 4, "key": "removeLast()" }] }, { "class": "com.pulse.collections.HashMap", "slots": [{ "slot": 0, "key": "HashMap()" }, { "slot": 1, "key": "clear()" }, { "slot": 2, "key": "containsKey(String)" }, { "slot": 3, "key": "get(String)" }, { "slot": 4, "key": "getInt(String)" }, { "slot": 5, "key": "put(String,String)" }, { "slot": 6, "key": "putInt(String,int)" }, { "slot": 7, "key": "size()" }] }, { "class": "com.pulse.collections.HashSet", "slots": [{ "slot": 0, "key": "HashSet()" }, { "slot": 1, "key": "add(String)" }, { "slot": 2, "key": "clear()" }, { "slot": 3, "key": "contains(String)" }, { "slot": 4, "key": "size()" }] }, { "class": "com.pulse.collections.LinkedList", "slots": [{ "slot": 0, "key": "LinkedList()" }, { "slot": 1, "key": "add(String)" }, { "slot": 2, "key": "add(int)" }, { "slot": 3, "key": "addFirst(int)" }, { "slot": 4, "key": "addLast(int)" }, { "slot": 5, "key": "clear()" }, { "slot": 6, "key": "getInt(int)" }, { "slot": 7, "key": "getString(int)" }, { "slot": 8, "key": "isEmpty()" }, { "slot": 9, "key": "offer(int)" }, { "slot": 10, "key": "poll()" }, { "slot": 11, "key": "removeFirst()" }, { "slot": 12, "key": "removeLast()" }, { "slot": 13, "key": "size()" }] }, { "class": "com.pulse.collections.List", "slots": [{ "slot": 0, "key": "add(String)" }, { "slot": 1, "key": "add(int)" }, { "slot": 2, "key": "clear()" }, { "slot": 3, "key": "getInt(int)" }, { "slot": 4, "key": "getString(int)" }, { "slot": 5, "key": "size()" }] }, { "class": "com.pulse.collections.Map", "slots": [{ "slot": 0, "key": "Map()" }, { "slot": 1, "key": "clear()" }, { "slot": 2, "key": "containsKey(String)" }, { "slot": 3, "key": "get(String)" }, { "slot": 4, "key": "getInt(String)" }, { "slot": 5, "key": "put(String,String)" }, { "slot": 6, "key": "putInt(String,int)" }, { "slot": 7, "key": "size()" }] }, { "class": "com.pulse.collections.Queue", "slots": [{ "slot": 0, "key": "isEmpty()" }, { "slot": 1, "key": "offer(int)" }, { "slot": 2, "key": "poll()" }] }, { "class": "com.pulse.collections.Set", "slots": [{ "slot": 0, "key": "add(String)" }, { "slot": 1, "key": "clear()" }, { "slot": 2, "key": "contains(String)" }, { "slot": 3, "key": "size()" }] }, { "class": "com.pulse.lang.Boolean", "slots": [] }, { "class": "com.pulse.lang.Byte", "slots": [] }, { "class": "com.pulse.lang.Char", "slots": [] }, { "class": "com.pulse.lang.Class", "slots": [{ "slot": 0, "key": "Class(String)" }, { "slot": 1, "key": "getName()" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.Comparable", "slots": [{ "slot": 0, "key": "compareTo(Object)" }] }, { "class": "com.pulse.lang.ConsoleWriter", "slots": [{ "slot": 0, "key": "print(String)" }, { "slot": 1, "key": "print(boolean)" }, { "slot": 2, "key": "print(int)" }, { "slot": 3, "key": "println(String)" }, { "slot": 4, "key": "println(boolean)" }, { "slot": 5, "key": "println(int)" }] }, { "class": "com.pulse.lang.Double", "slots": [] }, { "class": "com.pulse.lang.Exception", "slots": [{ "slot": 0, "key": "Exception()" }, { "slot": 1, "key": "Exception(String)" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.Float", "slots": [] }, { "class": "com.pulse.lang.IO", "slots": [] }, { "class": "com.pulse.lang.IllegalArgumentException", "slots": [{ "slot": 0, "key": "IllegalArgumentException()" }, { "slot": 1, "key": "IllegalArgumentException(String)" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.IllegalStateException", "slots": [{ "slot": 0, "key": "IllegalStateException()" }, { "slot": 1, "key": "IllegalStateException(String)" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.IndexOutOfBoundsException", "slots": [{ "slot": 0, "key": "IndexOutOfBoundsException()" }, { "slot": 1, "key": "IndexOutOfBoundsException(String)" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.Integer", "slots": [] }, { "class": "com.pulse.lang.Iterable", "slots": [{ "slot": 0, "key": "iterator()" }] }, { "class": "com.pulse.lang.Iterator", "slots": [{ "slot": 0, "key": "hasNext()" }, { "slot": 1, "key": "next()" }] }, { "class": "com.pulse.lang.Long", "slots": [] }, { "class": "com.pulse.lang.NullPointerException", "slots": [{ "slot": 0, "key": "NullPointerException()" }, { "slot": 1, "key": "NullPointerException(String)" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.NumberFormatException", "slots": [{ "slot": 0, "key": "NumberFormatException()" }, { "slot": 1, "key": "NumberFormatException(String)" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.Object", "slots": [{ "slot": 0, "key": "equals(Object)" }, { "slot": 1, "key": "getClass()" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.PrintStream", "slots": [{ "slot": 0, "key": "print(String)" }, { "slot": 1, "key": "print(boolean)" }, { "slot": 2, "key": "print(int)" }, { "slot": 3, "key": "println(String)" }, { "slot": 4, "key": "println(boolean)" }, { "slot": 5, "key": "println(int)" }] }, { "class": "com.pulse.lang.RuntimeException", "slots": [{ "slot": 0, "key": "RuntimeException()" }, { "slot": 1, "key": "RuntimeException(String)" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.Short", "slots": [] }, { "class": "com.pulse.lang.String", "slots": [{ "slot": 0, "key": "concat(String)" }, { "slot": 1, "key": "isEmpty()" }, { "slot": 2, "key": "length()" }] }, { "class": "com.pulse.lang.StringBuilder", "slots": [{ "slot": 0, "key": "StringBuilder()" }, { "slot": 1, "key": "StringBuilder(String)" }, { "slot": 2, "key": "append(String)" }, { "slot": 3, "key": "append(boolean)" }, { "slot": 4, "key": "append(int)" }, { "slot": 5, "key": "clear()" }, { "slot": 6, "key": "length()" }, { "slot": 7, "key": "toString()" }] }, { "class": "com.pulse.lang.System", "slots": [] }, { "class": "com.pulse.lang.Throwable", "slots": [{ "slot": 0, "key": "Throwable()" }, { "slot": 1, "key": "Throwable(String)" }, { "slot": 2, "key": "getMessage()" }, { "slot": 3, "key": "toString()" }] }, { "class": "com.pulse.lang.UByte", "slots": [] }, { "class": "com.pulse.lang.UInteger", "slots": [] }, { "class": "com.pulse.lang.ULong", "slots": [] }, { "class": "com.pulse.lang.UShort", "slots": [] }, { "class": "com.pulse.lang.UnsupportedOperationException", "slots": [{ "slot": 0, "key": "UnsupportedOperationException()" }, { "slot": 1, "key": "UnsupportedOperationException(String)" }, { "slot": 2, "key": "toString()" }] }, { "class": "com.pulse.lang.Void", "slots": [] }, { "class": "com.pulse.rt.Intrinsics", "slots": [] }, { "class": "strict_stress_soak.Main", "slots": [] }, { "class": "strict_stress_soak.SoakRunner", "slots": [{ "slot": 0, "key": "run(int)" }] }, { "class": "strict_stress_soak.Token", "slots": [{ "slot": 0, "key": "Token(int)" }, { "slot": 1, "key": "value()" }] }]
+        },
+        "constructor_model": {
+          "schema": "pulsec.constructor.model.v1",
+          "receiver_allocation": "allocated-before-body",
+          "chaining": "explicit-this-super-unsupported",
+          "implicit_super": "not-emitted",
+          "return_behavior": "implicit-receiver",
+          "failure_mode": "deterministic-fatal"
+        },
+        "allocation": {
+          "schema": "pulsec.class.alloc.v1",
+          "size_formula": "header_bytes + (instance_field_count * field_slot_bytes)",
+          "allocator_integration": "slot-allocator-with-class-size-metadata",
+          "class_size_table": [{ "class": "com.pulse.collections.Array", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }, { "class": "com.pulse.collections.ArrayList", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }, { "class": "com.pulse.collections.Collection", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.collections.Deque", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.collections.HashMap", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }, { "class": "com.pulse.collections.HashSet", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }, { "class": "com.pulse.collections.LinkedList", "instance_field_count": 7, "inherited_instance_field_count": 0, "instance_size_bytes": 72 }, { "class": "com.pulse.collections.List", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.collections.Map", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }, { "class": "com.pulse.collections.Queue", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.collections.Set", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Boolean", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Byte", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Char", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Class", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }, { "class": "com.pulse.lang.Comparable", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.ConsoleWriter", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Double", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Exception", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Float", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.IO", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.IllegalArgumentException", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.IllegalStateException", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.IndexOutOfBoundsException", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Integer", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Iterable", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Iterator", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Long", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.NullPointerException", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.NumberFormatException", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Object", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.PrintStream", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.RuntimeException", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Short", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.String", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.StringBuilder", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }, { "class": "com.pulse.lang.System", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Throwable", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }, { "class": "com.pulse.lang.UByte", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.UInteger", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.ULong", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.UShort", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.UnsupportedOperationException", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.lang.Void", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "com.pulse.rt.Intrinsics", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "strict_stress_soak.Main", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "strict_stress_soak.SoakRunner", "instance_field_count": 0, "inherited_instance_field_count": 0, "instance_size_bytes": 16 }, { "class": "strict_stress_soak.Token", "instance_field_count": 1, "inherited_instance_field_count": 0, "instance_size_bytes": 24 }]
+        },
+        "type_ids": {
+          "schema": "pulsec.typeid.schema.v1",
+          "class_id_width_bits": 32,
+          "source": "deterministic-class-order",
+          "class_table": [{ "class": "com.pulse.collections.Array", "class_id": 1, "kind": "class" }, { "class": "com.pulse.collections.ArrayList", "class_id": 2, "kind": "class" }, { "class": "com.pulse.collections.Collection", "class_id": 3, "kind": "interface" }, { "class": "com.pulse.collections.Deque", "class_id": 4, "kind": "interface" }, { "class": "com.pulse.collections.HashMap", "class_id": 5, "kind": "class" }, { "class": "com.pulse.collections.HashSet", "class_id": 6, "kind": "class" }, { "class": "com.pulse.collections.LinkedList", "class_id": 7, "kind": "class" }, { "class": "com.pulse.collections.List", "class_id": 8, "kind": "interface" }, { "class": "com.pulse.collections.Map", "class_id": 9, "kind": "class" }, { "class": "com.pulse.collections.Queue", "class_id": 10, "kind": "interface" }, { "class": "com.pulse.collections.Set", "class_id": 11, "kind": "interface" }, { "class": "com.pulse.lang.Boolean", "class_id": 12, "kind": "class" }, { "class": "com.pulse.lang.Byte", "class_id": 13, "kind": "class" }, { "class": "com.pulse.lang.Char", "class_id": 14, "kind": "class" }, { "class": "com.pulse.lang.Class", "class_id": 15, "kind": "class" }, { "class": "com.pulse.lang.Comparable", "class_id": 16, "kind": "interface" }, { "class": "com.pulse.lang.ConsoleWriter", "class_id": 17, "kind": "interface" }, { "class": "com.pulse.lang.Double", "class_id": 18, "kind": "class" }, { "class": "com.pulse.lang.Exception", "class_id": 19, "kind": "class" }, { "class": "com.pulse.lang.Float", "class_id": 20, "kind": "class" }, { "class": "com.pulse.lang.IO", "class_id": 21, "kind": "class" }, { "class": "com.pulse.lang.IllegalArgumentException", "class_id": 22, "kind": "class" }, { "class": "com.pulse.lang.IllegalStateException", "class_id": 23, "kind": "class" }, { "class": "com.pulse.lang.IndexOutOfBoundsException", "class_id": 24, "kind": "class" }, { "class": "com.pulse.lang.Integer", "class_id": 25, "kind": "class" }, { "class": "com.pulse.lang.Iterable", "class_id": 26, "kind": "interface" }, { "class": "com.pulse.lang.Iterator", "class_id": 27, "kind": "interface" }, { "class": "com.pulse.lang.Long", "class_id": 28, "kind": "class" }, { "class": "com.pulse.lang.NullPointerException", "class_id": 29, "kind": "class" }, { "class": "com.pulse.lang.NumberFormatException", "class_id": 30, "kind": "class" }, { "class": "com.pulse.lang.Object", "class_id": 31, "kind": "class" }, { "class": "com.pulse.lang.PrintStream", "class_id": 32, "kind": "class" }, { "class": "com.pulse.lang.RuntimeException", "class_id": 33, "kind": "class" }, { "class": "com.pulse.lang.Short", "class_id": 34, "kind": "class" }, { "class": "com.pulse.lang.String", "class_id": 35, "kind": "class" }, { "class": "com.pulse.lang.StringBuilder", "class_id": 36, "kind": "class" }, { "class": "com.pulse.lang.System", "class_id": 37, "kind": "class" }, { "class": "com.pulse.lang.Throwable", "class_id": 38, "kind": "class" }, { "class": "com.pulse.lang.UByte", "class_id": 39, "kind": "class" }, { "class": "com.pulse.lang.UInteger", "class_id": 40, "kind": "class" }, { "class": "com.pulse.lang.ULong", "class_id": 41, "kind": "class" }, { "class": "com.pulse.lang.UShort", "class_id": 42, "kind": "class" }, { "class": "com.pulse.lang.UnsupportedOperationException", "class_id": 43, "kind": "class" }, { "class": "com.pulse.lang.Void", "class_id": 44, "kind": "class" }, { "class": "com.pulse.rt.Intrinsics", "class_id": 45, "kind": "class" }, { "class": "strict_stress_soak.Main", "class_id": 46, "kind": "class" }, { "class": "strict_stress_soak.SoakRunner", "class_id": 47, "kind": "class" }, { "class": "strict_stress_soak.Token", "class_id": 48, "kind": "class" }]
+        },
+        "abi_compatibility": {
+          "schema": "pulsec.object_model.abi.v1",
+          "version": 1,
+          "compiler_object_model_abi_version": 1,
+          "runtime_object_model_abi_version": 1,
+          "mismatch_policy": "deterministic-fail-fast"
+        }
+      }
+    }
+  },
+  "inputs": {
+    "ir_artifact": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\pulsec.ir.txt"
+  },
+  "outputs": {
+    "mode": "fat",
+    "entrypoint": "main",
+    "artifacts": [
+      { "id": "app_executable", "kind": "exe", "role": "application", "required": true, "status": "planned" },
+      { "id": "runtime_payload", "kind": "embedded", "role": "runtime_stdlib", "required": true, "status": "planned" }
+    ]
+  },
+  "shared_runtime_abi": {
+    "schema": "pulsec.shared_runtime.abi.v1",
+    "mode": "fat",
+    "compatibility": {
+      "runtime_abi_schema": "pulsec.runtime.abi.v1",
+      "runtime_abi_version": 2,
+      "object_model_abi_schema": "pulsec.object_model.abi.v1",
+      "object_model_abi_version": 1,
+      "version_source": "pulsec_toolchain_semver",
+      "mismatch_policy": "deterministic-fail-fast"
+    },
+    "executable_role": "app_executable",
+    "runtime_role": "embedded_runtime_payload",
+    "imports": {
+      "kind": "procedure_only",
+      "required": ["pulsec_rt_init", "pulsec_rt_objectNew", "pulsec_rt_stringFromBytes", "pulsec_rt_consoleWrite", "pulsec_rt_consoleWriteLine", "pulsec_rt_intToString", "pulsec_rt_booleanToString", "pulsec_rt_arcRetain", "pulsec_rt_arcRelease", "pulsec_rt_arcCycleTick", "pulsec_rt_weakNew", "pulsec_rt_weakGet", "pulsec_rt_weakClear", "pulsec_rt_dispatchNullReceiverPanic", "pulsec_rt_dispatchInvalidTypePanic", "pulsec_rt_tracePush", "pulsec_rt_tracePop", "pulsec_rt_traceDump"],
+      "forbidden_data_import_patterns": ["rt_arc_*", "rt_weak_*", "rt_list_*", "rt_map_*", "rt_arr_*", "pulsec_rt_obj_*"]
+    },
+    "init_sequence": ["startup_entry", "pulsec_rt_init", "app_entry"],
+    "ownership": {
+      "runtime_private_state": "runtime_image",
+      "startup_object": "app_image",
+      "user_method_objects": "app_image"
+    },
+    "runtime_state_layout": {
+      "schema": "pulsec.shared_runtime.state_layout.v1",
+      "metadata_state": "runtime_library_storage",
+      "allocator_state": "runtime_library_storage",
+      "object_metadata_symbols": ["pulsec_rt_obj_counter", "pulsec_rt_obj_class_ids", "pulsec_rt_obj_class_ids_init", "pulsec_rt_obj_class_ids_heap_owned"],
+      "allocator_symbols": ["rt_handle_next", "rt_slot_capacity", "rt_arc_free_head", "rt_arc_free_next_tbl", "rt_arc_heap_owned"],
+      "arc_symbols": ["rt_arc_refcounts_tbl", "rt_arc_kinds_tbl", "rt_arc_flags_tbl", "rt_arc_meta_tbl", "rt_arc_generation_tbl"],
+      "weak_symbols": ["rt_weak_next", "rt_weak_free_head", "rt_weak_generation"],
+      "container_registry_symbols": ["rt_arr_*", "rt_list_*", "rt_map_*", "rt_str_*"],
+      "user_field_storage_runtime_dependency": "removed_in_e2_06"
+    },
+    "transition_status": {
+      "user_field_storage_imports": "removed_in_e2_06",
+      "runtime_bookkeeping_policy": "runtime_independent_of_app_field_storage"
+    }
+  },
+  "link_plan": {
+    "startup_objects": [{ "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\runtime\Startup.obj", "owner": "app_executable", "kind": "startup_object" }],
+    "app_owned_objects": [{ "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\strict_stress_soak\Main.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\strict_stress_soak\SoakRunner.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\strict_stress_soak\Token.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\Array.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\ArrayList.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\Collection.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\Deque.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\HashMap.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\HashSet.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\LinkedList.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\List.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\Map.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\Queue.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\collections\Set.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Boolean.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Byte.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Char.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Class.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Comparable.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\ConsoleWriter.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Double.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Exception.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Float.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\IO.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\IllegalArgumentException.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\IllegalStateException.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\IndexOutOfBoundsException.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Integer.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Iterable.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Iterator.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Long.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\NullPointerException.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\NumberFormatException.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Object.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\PrintStream.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\RuntimeException.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Short.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\String.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\StringBuilder.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\System.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Throwable.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\UByte.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\UInteger.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\ULong.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\UShort.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\UnsupportedOperationException.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\Void.obj", "owner": "app_executable", "kind": "app_object" }, { "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\rt\Intrinsics.obj", "owner": "app_executable", "kind": "app_object" }],
+    "runtime_owned_objects": [{ "path": "\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\strict_stress_soak\build\obj\com\pulse\lang\IO.obj", "owner": "shared_runtime_candidate", "kind": "runtime_stdlib_object" }],
+    "system_inputs": [{ "path": "C:\Program Files (x86)\Windows Kits\10\Lib\10.0.26100.0\um\x64\kernel32.lib", "owner": "linker", "kind": "system_input" }],
+    "link_targets": [
+      { "id": "app_executable", "consumes": ["startup_objects", "app_owned_objects", "runtime_owned_objects", "system_inputs"] }
+    ]
+  },
+  "summary": {
+    "classes": 48,
+    "methods": 244,
+    "fields": 17
+  },
+  "class_names": ["com.pulse.collections.Array", "com.pulse.collections.ArrayList", "com.pulse.collections.Collection", "com.pulse.collections.Deque", "com.pulse.collections.HashMap", "com.pulse.collections.HashSet", "com.pulse.collections.LinkedList", "com.pulse.collections.List", "com.pulse.collections.Map", "com.pulse.collections.Queue", "com.pulse.collections.Set", "com.pulse.lang.Boolean", "com.pulse.lang.Byte", "com.pulse.lang.Char", "com.pulse.lang.Class", "com.pulse.lang.Comparable", "com.pulse.lang.ConsoleWriter", "com.pulse.lang.Double", "com.pulse.lang.Exception", "com.pulse.lang.Float", "com.pulse.lang.IO", "com.pulse.lang.IllegalArgumentException", "com.pulse.lang.IllegalStateException", "com.pulse.lang.IndexOutOfBoundsException", "com.pulse.lang.Integer", "com.pulse.lang.Iterable", "com.pulse.lang.Iterator", "com.pulse.lang.Long", "com.pulse.lang.NullPointerException", "com.pulse.lang.NumberFormatException", "com.pulse.lang.Object", "com.pulse.lang.PrintStream", "com.pulse.lang.RuntimeException", "com.pulse.lang.Short", "com.pulse.lang.String", "com.pulse.lang.StringBuilder", "com.pulse.lang.System", "com.pulse.lang.Throwable", "com.pulse.lang.UByte", "com.pulse.lang.UInteger", "com.pulse.lang.ULong", "com.pulse.lang.UShort", "com.pulse.lang.UnsupportedOperationException", "com.pulse.lang.Void", "com.pulse.rt.Intrinsics", "strict_stress_soak.Main", "strict_stress_soak.SoakRunner", "strict_stress_soak.Token"]
+}

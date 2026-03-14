@@ -1,0 +1,2033 @@
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+fn fixture_root(name: &str) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures")
+        .join(name)
+}
+
+fn unique_temp_root() -> PathBuf {
+    static NEXT_ID: AtomicU64 = AtomicU64::new(1);
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system time")
+        .as_nanos();
+    let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
+    let root = std::env::temp_dir().join(format!(
+        "pulsec_stage_lock_{}_{}_{}",
+        std::process::id(),
+        nanos,
+        id
+    ));
+    fs::create_dir_all(&root).expect("create temp root");
+    root
+}
+
+fn write_file(path: &Path, contents: &str) {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).expect("create parent");
+    }
+    fs::write(path, contents).expect("write file");
+}
+
+fn run_pulsec(args: &[&str]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_pulsec"))
+        .args(args)
+        .output()
+        .expect("run pulsec")
+}
+
+fn assert_check_ok(entry: &Path, src_root: &Path) {
+    let output = run_pulsec(&[
+        "check",
+        entry.to_str().expect("entry utf8"),
+        "--source-root",
+        src_root.to_str().expect("src utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        output.status.success(),
+        "expected check success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+fn assert_check_fails(entry: &Path, src_root: &Path, expected: &str) {
+    let output = run_pulsec(&[
+        "check",
+        entry.to_str().expect("entry utf8"),
+        "--source-root",
+        src_root.to_str().expect("src utf8"),
+        "--strict-package",
+    ]);
+    assert!(!output.status.success(), "expected check failure");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains(expected),
+        "expected stderr to contain '{}'\nstderr:\n{}",
+        expected,
+        stderr
+    );
+}
+
+fn assert_fixture_build_and_run(name: &str, entry_rel: &str, expected_out: &str) {
+    let fixture = fixture_root(name);
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    copy_dir_recursive(&fixture.join("src"), &src_root);
+    let entry = src_root.join(entry_rel);
+    let exe = root.join("build").join("main.exe");
+    let _ = fs::remove_file(&exe);
+    let output = run_pulsec(&[
+        "build",
+        entry.to_str().expect("entry utf8"),
+        "--source-root",
+        src_root.to_str().expect("src utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        output.status.success(),
+        "expected build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report = fs::read_to_string(root.join("build").join("native.link.txt"))
+        .expect("read native.link.txt");
+    assert!(
+        report.contains("status=linked"),
+        "expected linked status in report:\n{}",
+        report
+    );
+    let run = Command::new(&exe).output().expect("run exe");
+    assert!(run.status.success(), "exe failed");
+    let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
+    assert_eq!(out, expected_out, "unexpected output");
+}
+
+fn copy_dir_recursive(src: &Path, dst: &Path) {
+    fs::create_dir_all(dst).expect("create destination dir");
+    for entry in fs::read_dir(src).expect("read source dir").flatten() {
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+        if src_path.is_dir() {
+            copy_dir_recursive(&src_path, &dst_path);
+        } else {
+            fs::copy(&src_path, &dst_path).expect("copy file");
+        }
+    }
+}
+
+#[test]
+fn lock_m2_01_wrapper_map_semantics() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Integer;
+        import com.pulse.lang.Boolean;
+        class Main {
+            public static void main() {
+                Integer x = 1;
+                int y = x;
+                Boolean ok = true;
+                boolean b = ok;
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_02_signed_wrapper_skeletons_importable() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Byte;
+        import com.pulse.lang.Short;
+        import com.pulse.lang.Integer;
+        import com.pulse.lang.Long;
+        import com.pulse.lang.Float;
+        import com.pulse.lang.Double;
+        import com.pulse.lang.Char;
+        import com.pulse.lang.Boolean;
+        class Main {
+            public static void main() {
+                Byte b = null;
+                Short s = null;
+                Integer i = null;
+                Long l = null;
+                Float f = null;
+                Double d = null;
+                Char c = null;
+                Boolean ok = null;
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_03_unsigned_wrapper_skeletons_importable() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.UByte;
+        import com.pulse.lang.UShort;
+        import com.pulse.lang.UInteger;
+        import com.pulse.lang.ULong;
+        class Main {
+            public static void main() {
+                UByte b = null;
+                UShort s = null;
+                UInteger i = null;
+                ULong l = null;
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_04_void_wrapper_contract() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Void;
+        class Main {
+            public static Void id(Void v) { return v; }
+            public static void main() {
+                Void v = null;
+                id(v);
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_05_boxing_assignment() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Integer;
+        class Main {
+            public static void main() {
+                Integer boxed = 42;
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_06_unboxing_assignment() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Integer;
+        class Main {
+            public static void main() {
+                Integer boxed = Integer.valueOf(9);
+                int unboxed = boxed;
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_07_boxing_in_call_and_return() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Integer;
+        class Main {
+            public static int id(int x) { return x; }
+            public static Integer wid(Integer x) { return x; }
+            public static void main() {
+                Integer a = wid(3);
+                int b = id(a);
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_08_overload_precedence() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Integer;
+        class Main {
+            public static void pick(int x) {}
+            public static void pick(Integer x) {}
+            public static void main() {
+                pick(1);
+                pick(Integer.valueOf(2));
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_09_numeric_conversion_diagnostics() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        class Main {
+            public static void main() {
+                uint u = -1;
+            }
+        }"#,
+    );
+    assert_check_fails(&entry, &src_root, "Semantic error");
+}
+
+#[test]
+fn lock_m2_10_wrapper_api_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Integer;
+        import com.pulse.lang.Boolean;
+        class Main {
+            public static void main() {
+                Integer i = Integer.valueOf(5);
+                int p = Integer.intValue(i);
+                boolean eq = Integer.equals(p, 5);
+                int cmp = Integer.compare(p, 7);
+                Integer parsed = Integer.parse("9");
+                Boolean b = Boolean.valueOf(true);
+                Boolean pb = Boolean.parse("true");
+                boolean raw = Boolean.booleanValue(pb);
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_11_core_bootstrap_classes() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Object;
+        import com.pulse.lang.StringBuilder;
+        import com.pulse.lang.Iterable;
+        import com.pulse.lang.Iterator;
+        class Main {
+            public static void main() {
+                Object o = new Object();
+                StringBuilder sb = new StringBuilder();
+                sb.append("x");
+                Iterable it = null;
+                Iterator iter = null;
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m2_12_wrapper_nullability_enforced() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Integer;
+        class Main {
+            public static void main() {
+                Integer x = null;
+                int y = x;
+            }
+        }"#,
+    );
+    assert_check_fails(&entry, &src_root, "Cannot unbox null variable");
+}
+
+#[test]
+fn lock_m2_13_wrapper_runtime_failure_fixture() {
+    assert_fixture_build_and_run("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n20313\n");
+}
+
+#[test]
+fn lock_m2_14_freeze_docs_present() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let freeze = fs::read_to_string(root.join("M1_SEMANTICS_FREEZE.md")).expect("read freeze doc");
+    let matrix = fs::read_to_string(root.join("NUMERIC_CONVERSION_MATRIX.md")).expect("read conversion matrix");
+    assert!(freeze.contains("boxing") || freeze.contains("Boxing"));
+    assert!(matrix.contains("signed") && matrix.contains("unsigned"));
+}
+
+#[test]
+fn lock_m3_01_exception_hierarchy_available() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Throwable;
+        import com.pulse.lang.Exception;
+        import com.pulse.lang.RuntimeException;
+        class Main {
+            public static void main() {
+                Throwable t = new Exception();
+                Exception e = new RuntimeException();
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_02_runtime_exception_set_available() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.IllegalArgumentException;
+        import com.pulse.lang.IllegalStateException;
+        import com.pulse.lang.NullPointerException;
+        import com.pulse.lang.IndexOutOfBoundsException;
+        import com.pulse.lang.UnsupportedOperationException;
+        import com.pulse.lang.NumberFormatException;
+        class Main {
+            public static void main() {
+                IllegalArgumentException a = new IllegalArgumentException();
+                IllegalStateException b = new IllegalStateException();
+                NullPointerException c = new NullPointerException();
+                IndexOutOfBoundsException d = new IndexOutOfBoundsException();
+                UnsupportedOperationException e = new UnsupportedOperationException();
+                NumberFormatException f = new NumberFormatException();
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_03_collection_list_contracts() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.collections.Collection;
+        import com.pulse.collections.List;
+        import com.pulse.collections.ArrayList;
+        class Main {
+            public static void main() {
+                Collection c = new ArrayList();
+                List l = new ArrayList();
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_04_arraylist_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.collections.ArrayList;
+        class Main {
+            public static void main() {
+                ArrayList l = new ArrayList();
+                l.add(1);
+                int x = l.getInt(0);
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_05_linkedlist_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.collections.LinkedList;
+        class Main {
+            public static void main() {
+                LinkedList l = new LinkedList();
+                l.add(1);
+                int x = l.getInt(0);
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_06_set_hashset_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.collections.HashSet;
+        class Main {
+            public static void main() {
+                HashSet s = new HashSet();
+                s.add("x");
+                boolean c = s.contains("x");
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_07_map_hashmap_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.collections.HashMap;
+        class Main {
+            public static void main() {
+                HashMap m = new HashMap();
+                m.putInt("hp", 10);
+                int hp = m.getInt("hp");
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_08_queue_deque_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.collections.LinkedList;
+        class Main {
+            public static void main() {
+                LinkedList q = new LinkedList();
+                q.offer(1);
+                int x = q.poll();
+                q.addFirst(2);
+                int y = q.removeFirst();
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_09_math_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.math.Math;
+        class Main {
+            public static void main() {
+                int x = Math.max(1, 2);
+                int y = Math.abs(-5);
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_10_random_seeded_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.math.Random;
+        class Main {
+            public static void main() {
+                Random r = new Random(0);
+                int x = r.nextInt(10);
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_11_file_path_files_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.io.Files;
+        import com.pulse.io.Path;
+        class Main {
+            public static void main() {
+                String p = Path.combine("a", "b");
+                Files.writeString(p, "x");
+                String read = Files.readString(p);
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_12_stream_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.io.InputStream;
+        import com.pulse.io.OutputStream;
+        class Main {
+            public static void main() {
+                OutputStream out = new OutputStream("x");
+                out.write("a");
+                InputStream inp = new InputStream("x");
+                String s = inp.readAll();
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_13_time_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.time.Instant;
+        import com.pulse.time.Duration;
+        class Main {
+            public static void main() {
+                Instant now = Instant.now();
+                Duration d = Duration.ofMillis(3);
+                Instant next = now.plusMillis(d.toMillis());
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_14_abi_doc_and_lock_tests_exist() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let abi_doc = fs::read_to_string(root.join("docs").join("RUNTIME_INTRINSICS_ABI.md"))
+        .expect("read ABI doc");
+    assert!(abi_doc.contains("Intrinsics.arrayNew"));
+    assert!(abi_doc.contains("pulsec_rt_mapGetInt"));
+}
+
+#[test]
+fn lock_m3_15_multifile_fixture_projects_check() {
+    let runtime_mix = fixture_root("runtime_mix");
+    let runtime_src = runtime_mix.join("src");
+    let runtime_entry = runtime_src.join("app/runtime/Main.pulse");
+    assert_check_ok(&runtime_entry, &runtime_src);
+
+    let mix = fixture_root("object_interface_mix");
+    let mix_src = mix.join("src");
+    let mix_entry = mix_src.join("app/mixed/Main.pulse");
+    assert_check_ok(&mix_entry, &mix_src);
+}
+
+#[test]
+fn lock_m3_16_stress_soak_fixture_check() {
+    let strict = fixture_root("strict_stress_soak");
+    let strict_src = strict.join("src");
+    let strict_entry = strict_src.join("strict_stress_soak/Main.pulse");
+    assert_check_ok(&strict_entry, &strict_src);
+}
+
+#[test]
+fn lock_m3_17_windows_matrix_doc_exists() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let matrix = fs::read_to_string(root.join("WINDOWS_TOOLCHAIN_MATRIX.md"))
+        .expect("read windows toolchain matrix");
+    assert!(matrix.contains("Default linker discovery"));
+    assert!(matrix.contains("Explicit linker CLI override"));
+    assert!(matrix.contains("PULSEC_LINKER"));
+}
+
+#[test]
+fn lock_e3_14_windows_matrix_covers_fat_shared_package_install_parity() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let matrix = fs::read_to_string(root.join("WINDOWS_TOOLCHAIN_MATRIX.md"))
+        .expect("read windows toolchain matrix");
+    assert!(matrix.contains("E3 Fat/Shared Parity Validation Matrix"));
+    assert!(matrix.contains("Release native build + launch"));
+    assert!(matrix.contains("Debug native build + launch"));
+    assert!(matrix.contains("Staged package output"));
+    assert!(matrix.contains("MSI generation"));
+    assert!(matrix.contains("MSI install + launch"));
+    assert!(matrix.contains("MSI repair/upgrade/uninstall"));
+    assert!(matrix.contains("Shared-only expected additions"));
+    assert!(matrix.contains("supported programs in the locked fixture corpus"));
+}
+
+#[test]
+fn lock_f1_board_explicitly_tracks_scanner_util_concurrency_network_and_defers_desktop_ui() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let board = fs::read_to_string(root.join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let roadmap = fs::read_to_string(root.join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    assert!(board.contains("com.pulse.util"));
+    assert!(board.contains("Scanner"));
+    assert!(board.contains("Objects"));
+    assert!(board.contains("Optional"));
+    assert!(board.contains("Lock F1 generics scope"));
+    assert!(board.contains("Erased generics are real today"));
+    assert!(board.contains("Java-hardened generics story"));
+    assert!(board.contains("F1-29"));
+    assert!(board.contains("F1-35"));
+    assert!(board.contains("F1-46"));
+    assert!(board.contains("Same-method `try` / `catch` / `finally` is real today"));
+    assert!(board.contains("pre-self-host concurrency baseline"));
+    assert!(board.contains("networking baseline policy"));
+    assert!(board.contains("sockets-only baseline"));
+    assert!(board.contains("URL/HTTP"));
+    assert!(board.contains("Thread"));
+    assert!(board.contains("Runnable"));
+    assert!(board.contains("volatile"));
+    assert!(board.contains("final` fields"));
+    assert!(board.contains("AtomicInteger"));
+    assert!(board.contains("AtomicReference"));
+    assert!(board.contains("ConcurrentHashMap"));
+    assert!(board.contains("CopyOnWriteArrayList"));
+    assert!(board.contains("executors/semaphores"));
+    assert!(board.contains("reflection-lite"));
+    assert!(board.contains("full Java-style reflection/invocation"));
+    assert!(board.contains("external library/binding ecosystem"));
+    assert!(board.contains("awt"));
+    assert!(board.contains("swing"));
+    assert!(board.contains("deferred until after self-hosting"));
+    assert!(roadmap.contains("com.pulse.util"));
+    assert!(roadmap.contains("Scanner"));
+    assert!(roadmap.contains("generics baseline is explicitly chosen"));
+    assert!(roadmap.contains("exception runtime model is explicitly chosen"));
+    assert!(roadmap.contains("Thread"));
+    assert!(roadmap.contains("Runnable"));
+    assert!(roadmap.contains("volatile"));
+    assert!(roadmap.contains("atomics"));
+    assert!(roadmap.contains("concurrent collections"));
+    assert!(roadmap.contains("executor/semaphore"));
+    assert!(roadmap.contains("reflection-lite"));
+    assert!(roadmap.contains("full reflection/invocation deferred until after self-hosting"));
+    assert!(roadmap.contains("external library/binding ecosystem work remains in Phase F-A"));
+    assert!(roadmap.contains("desktop UI families"));
+    assert!(roadmap.contains("after self-hosting"));
+}
+
+#[test]
+fn lock_f2_language_docs_tree_is_explicit_and_present() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let f2 = fs::read_to_string(root.join("docs").join("F2_TASK_BOARD.md"))
+        .expect("read F2 task board");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let compiler_backed = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("README.md"),
+    )
+    .expect("read compiler-backed language docs readme");
+    let runtime_backed = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("README.md"),
+    )
+    .expect("read runtime-backed language docs readme");
+    let stdlib = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("README.md"),
+    )
+    .expect("read stdlib language docs readme");
+    let packages_and_imports = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("packages-and-imports.md"),
+    )
+    .expect("read compiler-backed packages/imports doc");
+    let declarations = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("declarations-and-modifiers.md"),
+    )
+    .expect("read compiler-backed declarations doc");
+    let constructors = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("constructors.md"),
+    )
+    .expect("read compiler-backed constructors doc");
+    let types = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read compiler-backed types doc");
+    let entry = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("program-entry-and-execution.md"),
+    )
+    .expect("read runtime-backed entry doc");
+    let gc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("object-lifetime-and-gc.md"),
+    )
+    .expect("read runtime-backed gc doc");
+    let null_and_type = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("runtime-type-and-null-behavior.md"),
+    )
+    .expect("read runtime-backed null/type doc");
+    let exceptions = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("exceptions-and-failure.md"),
+    )
+    .expect("read runtime-backed exceptions doc");
+    assert!(f2.contains("docs/language/{compiler-backed,runtime-backed,stdlib}"));
+    assert!(f2.contains("PulseDoc"));
+    assert!(roadmap.contains("docs/language/{compiler-backed,runtime-backed,stdlib}"));
+    assert!(compiler_backed.contains("compiler/frontend/type system"));
+    assert!(runtime_backed.contains("runtime/native backend"));
+    assert!(stdlib.contains("each doc file corresponds to exactly one `.pulse` class"));
+    assert!(packages_and_imports.contains("static imports"));
+    assert!(declarations.contains("Supported Declaration Kinds"));
+    assert!(constructors.contains("Construction Call"));
+    assert!(constructors.contains("new Player(\"Nova\")"));
+    assert!(types.contains("Current primitive baseline"));
+    assert!(entry.contains("Exactly one valid entry point is required"));
+    assert!(gc.contains("ARC-backed runtime ownership"));
+    assert!(null_and_type.contains("Full Java-style reflection is intentionally deferred"));
+    assert!(exceptions.contains("exception types exist, but full Java-close exception flow is not yet the finished contract"));
+}
+
+#[test]
+fn lock_current_shipped_stdlib_pulse_files_have_multiline_pulsedoc_blocks() {
+    fn has_pulsedoc_before(lines: &[&str], index: usize) -> bool {
+        let mut cursor = index;
+        while cursor > 0 {
+            cursor -= 1;
+            let trimmed = lines[cursor].trim();
+            if trimmed.is_empty() {
+                continue;
+            }
+            if trimmed == "*/" {
+                let mut start = cursor;
+                while start > 0 {
+                    start -= 1;
+                    let candidate = lines[start].trim();
+                    if candidate.starts_with("/**") {
+                        return true;
+                    }
+                    if !candidate.starts_with('*') && !candidate.is_empty() {
+                        return false;
+                    }
+                }
+                return false;
+            }
+            return false;
+        }
+        false
+    }
+
+    fn is_type_declaration(trimmed: &str) -> bool {
+        if trimmed.starts_with('/') || trimmed.starts_with('*') {
+            return false;
+        }
+        trimmed.contains(" class ")
+            || trimmed.starts_with("class ")
+            || trimmed.contains(" interface ")
+            || trimmed.starts_with("interface ")
+            || trimmed.contains(" enum ")
+            || trimmed.starts_with("enum ")
+    }
+
+    fn is_public_method_or_constructor(trimmed: &str) -> bool {
+        trimmed.starts_with("public ")
+            && trimmed.contains('(')
+            && (trimmed.ends_with('{') || trimmed.ends_with(';'))
+    }
+
+    fn is_public_field(trimmed: &str) -> bool {
+        trimmed.starts_with("public ") && trimmed.ends_with(';') && !trimmed.contains('(')
+    }
+
+    fn collect_pulse_files(root: &Path, out: &mut Vec<PathBuf>) {
+        for entry in fs::read_dir(root).expect("read stdlib dir") {
+            let entry = entry.expect("dir entry");
+            let path = entry.path();
+            if path.is_dir() {
+                collect_pulse_files(&path, out);
+            } else if path.extension().and_then(|ext| ext.to_str()) == Some("pulse") {
+                out.push(path);
+            }
+        }
+    }
+
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("stdlib")
+        .join("src")
+        .join("com")
+        .join("pulse");
+    let mut files = Vec::new();
+    collect_pulse_files(&root, &mut files);
+    for file in files {
+        let text = fs::read_to_string(&file).expect("read stdlib pulse file");
+        let lines: Vec<&str> = text.lines().collect();
+        assert!(
+            text.contains("/**") && text.contains("*/"),
+            "expected PulseDoc block in {}",
+            file.display()
+        );
+        for (index, line) in lines.iter().enumerate() {
+            let trimmed = line.trim();
+            if is_type_declaration(trimmed) {
+                assert!(
+                    has_pulsedoc_before(&lines, index),
+                    "expected PulseDoc before type declaration in {}: {}",
+                    file.display(),
+                    trimmed
+                );
+            }
+            if is_public_method_or_constructor(trimmed) || is_public_field(trimmed) {
+                assert!(
+                    has_pulsedoc_before(&lines, index),
+                    "expected PulseDoc before public member in {}: {}",
+                    file.display(),
+                    trimmed
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn lock_generated_stdlib_reference_docs_cover_shipped_stdlib_surface() {
+    fn collect_files(root: &Path, extension: &str, out: &mut Vec<PathBuf>) {
+        for entry in fs::read_dir(root).expect("read dir") {
+            let entry = entry.expect("dir entry");
+            let path = entry.path();
+            if path.is_dir() {
+                collect_files(&path, extension, out);
+            } else if path.extension().and_then(|ext| ext.to_str()) == Some(extension) {
+                out.push(path);
+            }
+        }
+    }
+
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let script = fs::read_to_string(root.join("scripts").join("generate-stdlib-docs.ps1"))
+        .expect("read stdlib docs generator");
+    let stdlib_readme = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("README.md"),
+    )
+    .expect("read stdlib docs readme");
+    let stdlib_root = root.join("stdlib").join("src").join("com").join("pulse");
+    let docs_root = root
+        .join("docs")
+        .join("language")
+        .join("stdlib")
+        .join("com")
+        .join("pulse");
+    let sample = fs::read_to_string(docs_root.join("lang").join("String.md"))
+        .expect("read generated String stdlib doc");
+
+    let mut pulse_files = Vec::new();
+    let mut doc_files = Vec::new();
+    collect_files(&stdlib_root, "pulse", &mut pulse_files);
+    collect_files(&docs_root, "md", &mut doc_files);
+
+    assert!(script.contains("docs\\language\\stdlib"));
+    assert!(script.contains("Remove-Item -Recurse -Force $docsPulseRoot"));
+    assert!(script.contains("## Members"));
+    assert!(stdlib_readme.contains("overwrites the generated `docs/language/stdlib/com/pulse/**` tree"));
+    assert_eq!(
+        pulse_files.len(),
+        doc_files.len(),
+        "expected generated stdlib docs to cover each shipped stdlib pulse file"
+    );
+    assert!(sample.contains("# com.pulse.lang.String"));
+    assert!(sample.contains("Source: ``stdlib/src/com/pulse/lang/String.pulse``"));
+    assert!(sample.contains("## Members"));
+    assert!(sample.contains("public int length()"));
+}
+
+#[test]
+fn lock_f1_00_baseline_audit_distinguishes_real_partial_and_reserved_features() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let audit = fs::read_to_string(root.join("docs").join("F1_BASELINE_AUDIT.md"))
+        .expect("read F1 baseline audit");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+
+    assert!(audit.contains("End-To-End Supported Baseline"));
+    assert!(audit.contains("Reserved / Parsed / Tokenized But Not Supported As Real Features"));
+    assert!(audit.contains("synchronized"));
+    assert!(audit.contains("volatile"));
+    assert!(audit.contains("async"));
+    assert!(audit.contains("throwable/exception classes exist in the stdlib"));
+    assert!(audit.contains("throw"));
+    assert!(audit.contains("try"));
+    assert!(audit.contains("catch"));
+    assert!(audit.contains("finally"));
+    assert!(audit.contains("enum runtime semantics are not implemented"));
+    assert!(audit.contains("current practical annotation support is `@Override`"));
+    assert!(audit.contains("collections are non-generic"));
+    assert!(audit.contains("docs/LANGUAGE_GUIDE.md"));
+    assert!(audit.contains("docs/LANGUAGE_OVERVIEW.md"));
+    assert!(board.contains("| F1-00 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_01_to_f1_03_gap_policy_and_dependency_docs_are_present_and_truthful() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let gap = fs::read_to_string(root.join("docs").join("F1_GAP_MATRIX.md"))
+        .expect("read F1 gap matrix");
+    let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
+        .expect("read F1 support policy");
+    let graph = fs::read_to_string(root.join("docs").join("F1_DEPENDENCY_GRAPH.md"))
+        .expect("read F1 dependency graph");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+
+    assert!(gap.contains("Reserved/Fenced"));
+    assert!(gap.contains("synchronized"));
+    assert!(gap.contains("throw"));
+    assert!(gap.contains("enum"));
+    assert!(gap.contains("generics"));
+    assert!(gap.contains("Real, non-generic, specialized"));
+
+    assert!(policy.contains("Required By F1"));
+    assert!(policy.contains("Allowed To Defer In F1"));
+    assert!(policy.contains("Pulse-Specific Intentional Differences"));
+    assert!(policy.contains("unsigned primitive and wrapper support"));
+    assert!(policy.contains("reserved keywords or modifiers do not count as partial support"));
+
+    assert!(graph.contains("Layer 0: Truth And Policy"));
+    assert!(graph.contains("Layer 3: Runtime / Backend Enablement"));
+    assert!(graph.contains("Layer 4: Stdlib Expansion"));
+    assert!(graph.contains("Recommended Execution Batches"));
+    assert!(graph.contains("Policy lock batch"));
+
+    assert!(board.contains("| F1-01 |"));
+    assert!(board.contains("| F1-02 |"));
+    assert!(board.contains("| F1-03 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_04_to_f1_08_lexer_and_literal_surface_is_documented_and_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let lexer_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("lexer-and-literals.md"),
+    )
+    .expect("read lexer and literals doc");
+
+    assert!(lexer_doc.contains("## Keyword Baseline"));
+    assert!(lexer_doc.contains("enum"));
+    assert!(lexer_doc.contains("throw"));
+    assert!(lexer_doc.contains("## Literal Baseline"));
+    assert!(lexer_doc.contains("hexadecimal integer literals"));
+    assert!(lexer_doc.contains("binary integer literals"));
+    assert!(lexer_doc.contains("octal integer literals"));
+    assert!(lexer_doc.contains("numeric underscore separators"));
+    assert!(lexer_doc.contains("## Char Baseline"));
+    assert!(lexer_doc.contains("char literal use in declarations and method-call arguments"));
+    assert!(lexer_doc.contains("->"));
+    assert!(lexer_doc.contains("::"));
+    assert!(lexer_doc.contains("..."));
+    assert!(lexer_doc.contains("invalid numeric underscore placement"));
+
+    assert!(board.contains("| F1-04 |"));
+    assert!(board.contains("| F1-05 |"));
+    assert!(board.contains("| F1-06 |"));
+    assert!(board.contains("| F1-07 |"));
+    assert!(board.contains("| F1-08 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_04_to_f1_08_cli_check_accepts_numeric_breadth_and_stages_char_literals_honestly() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        class Main {
+            public static void main() {
+                int hex = 0x2A;
+                int binary = 0b101010;
+                int octal = 052;
+                int grouped = 1_000;
+                long wide = 9_223L;
+                float ratio = 3.14_15F;
+                double precise = 6.02_2D;
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+
+}
+
+#[test]
+fn lock_f1_09_f1_13_and_f1_14_type_modifier_and_declaration_edges_are_explicit() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let decls = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("declarations-and-modifiers.md"),
+    )
+    .expect("read declarations and modifiers doc");
+    let types = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read types and conversions doc");
+    let imports = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("packages-and-imports.md"),
+    )
+    .expect("read packages and imports doc");
+
+    assert!(decls.contains("The following modifiers are intentionally fenced"));
+    assert!(decls.contains("nested type declarations are not part of the current shipped baseline"));
+    assert!(types.contains("varargs parameter declarations such as `String... args`"));
+    assert!(types.contains("entrypoint `main(String... args)` is accepted"));
+    assert!(imports.contains("nested or static-nested type import flows are deferred"));
+
+    assert!(board.contains("| F1-09 |"));
+    assert!(board.contains("| F1-13 |"));
+    assert!(board.contains("| F1-14 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_10_enum_baseline_is_documented_and_backend_backed() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let decls = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("declarations-and-modifiers.md"),
+    )
+    .expect("read declarations and modifiers doc");
+    let types = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read types and conversions doc");
+    let enums = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("enums.md"),
+    )
+    .expect("read enums doc");
+
+    assert!(decls.contains("- `enum`"));
+    assert!(types.contains("- enums"));
+    assert!(enums.contains("ordinal-backed executable form"));
+    assert!(enums.contains("full enum object model"));
+    assert!(board.contains("| F1-10 |"));
+    assert!(board.contains("In Progress"));
+    assert!(board.contains("com.pulse.lang.Enum"));
+}
+
+#[test]
+fn lock_f1_10_cli_build_executes_enum_baseline_honestly() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/types/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.types;
+        import com.pulse.lang.IO;
+
+        enum Mode {
+            OFF,
+            ON
+        }
+
+        class Main {
+            public static void main() {
+                Mode current = Mode.ON;
+                if (current == Mode.ON) {
+                    IO.println(1);
+                } else {
+                    IO.println(0);
+                }
+            }
+        }"#,
+    );
+
+    let exe = root.join("build").join("main.exe");
+    let output = run_pulsec(&[
+        "build",
+        entry.to_str().expect("entry utf8"),
+        "--source-root",
+        src_root.to_str().expect("src utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        output.status.success(),
+        "expected enum build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let run = Command::new(&exe).output().expect("run enum exe");
+    assert!(run.status.success(), "enum exe failed");
+    let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
+    assert_eq!(out, "1\n");
+}
+
+#[test]
+fn lock_f1_11_generics_baseline_is_documented_as_erased_java_like() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
+        .expect("read F1 support policy");
+    let generics = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("generics.md"),
+    )
+    .expect("read generics doc");
+
+    assert!(generics.contains("erased Java-like generics baseline"));
+    assert!(generics.contains("type parameters are supported on classes and interfaces"));
+    assert!(generics.contains("type parameters are supported on methods"));
+    assert!(generics.contains("primitive generic arguments are rejected"));
+    assert!(generics.contains("lowers as `Object`"));
+    assert!(policy.contains("erased Java-like generics baseline"));
+    assert!(board.contains("| F1-11 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_11_cli_build_executes_erased_generic_baseline() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/generics/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.generics;
+        import com.pulse.lang.IO;
+        import com.pulse.lang.Object;
+        import com.pulse.lang.String;
+
+        class Box<T> {
+            private T value;
+
+            public void set(T value) {
+                this.value = value;
+            }
+
+            public T get() {
+                return this.value;
+            }
+        }
+
+        class Main {
+            public static <T> T id(T value) {
+                return value;
+            }
+
+            public static void main() {
+                Box<Object> box = new Box();
+                box.set(null);
+                Object raw = box.get();
+                Object echoed = Main.id(raw);
+                if (echoed == null) {
+                    IO.println(1);
+                } else {
+                    IO.println(0);
+                }
+            }
+        }"#,
+    );
+
+    let exe = root.join("build").join("main.exe");
+    let output = run_pulsec(&[
+        "build",
+        entry.to_str().expect("entry utf8"),
+        "--source-root",
+        src_root.to_str().expect("src utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        output.status.success(),
+        "expected generic build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let run = Command::new(&exe).output().expect("run generic exe");
+    assert!(run.status.success(), "generic exe failed");
+    let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
+    assert_eq!(out, "1\n");
+}
+
+#[test]
+fn lock_f1_09_f1_13_and_f1_14_cli_baseline_is_char_varargs_and_explicit_nested_type_fence() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.Char;
+
+        class Main {
+            public static void main(String... args) {
+                char a = 'a';
+                Char boxed = 'b';
+                take('z');
+            }
+
+            public static void take(char value) {
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+
+    let nested_entry = src_root.join("app/core/NestedFail.pulse");
+    write_file(
+        &nested_entry,
+        r#"
+        package app.core;
+
+        class NestedFail {
+            public static class Inner() {
+            }
+        }"#,
+    );
+    assert_check_fails(
+        &nested_entry,
+        &src_root,
+        "Nested type declarations are not supported yet",
+    );
+}
+
+#[test]
+fn lock_f1_12_and_f1_30_annotation_baseline_is_documented_and_compiler_owned() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("annotations.md"),
+    )
+    .expect("read annotations doc");
+
+    assert!(doc.contains("compiler-backed annotation registry"));
+    assert!(doc.contains("@interface Marker"));
+    assert!(doc.contains("`@Override`"));
+    assert!(doc.contains("`@NotNull`"));
+    assert!(doc.contains("`@Test`"));
+    assert!(doc.contains("bootstrap contract"));
+    assert!(doc.contains("Phase F-A"));
+    assert!(doc.contains("Lombok-style annotations"));
+    assert!(doc.contains("rejects `null` field initializers"));
+    assert!(doc.contains("method must be `public static`"));
+    assert!(doc.contains("external annotation processors"));
+    assert!(doc.contains("`@Getter` / `@Setter`"));
+
+    assert!(board.contains("| F1-12 |"));
+    assert!(board.contains("| F1-30 |"));
+    assert!(board.contains("In Progress"));
+    assert!(board.contains("processor/runtime-backed Pulse ownership"));
+}
+
+#[test]
+fn lock_f1_12_and_f1_30_cli_check_enforces_override_notnull_and_test_baseline() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let ok = src_root.join("app/core/Main.pulse");
+    write_file(
+        &ok,
+        r#"
+        package app.core;
+        import com.pulse.lang.String;
+
+        class Base {
+            public String value() {
+                return "base";
+            }
+        }
+
+        class Main extends Base {
+            @Override
+            @NotNull
+            public String value() {
+                return "ok";
+            }
+
+            @Test
+            public static void smoke() {
+            }
+
+            public static void main() {
+                Main m = new Main();
+                String v = m.value();
+            }
+        }"#,
+    );
+    assert_check_ok(&ok, &src_root);
+
+    let not_null_fail = src_root.join("app/core/NotNullFail.pulse");
+    write_file(
+        &not_null_fail,
+        r#"
+        package app.core;
+        import com.pulse.lang.String;
+
+        class NotNullFail {
+            @NotNull
+            private String name = null;
+
+            public static void main() {
+            }
+        }"#,
+    );
+    assert_check_fails(
+        &not_null_fail,
+        &src_root,
+        "Annotation '@NotNull' forbids null in field initializer",
+    );
+
+    let test_fail = src_root.join("app/core/TestFail.pulse");
+    write_file(
+        &test_fail,
+        r#"
+        package app.core;
+
+        class TestFail {
+            @Test
+            public int smoke(int value) {
+                return value;
+            }
+
+            public static void main() {
+            }
+        }"#,
+    );
+    assert_check_fails(
+        &test_fail,
+        &src_root,
+        "Annotation '@Test' requires method 'TestFail.smoke' to be public static",
+    );
+}
+
+#[test]
+fn lock_f1_15_throw_baseline_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let compiler_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("exceptions.md"),
+    )
+    .expect("read compiler-backed exceptions doc");
+    let runtime_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("exceptions-and-failure.md"),
+    )
+    .expect("read runtime-backed exceptions doc");
+
+    assert!(compiler_doc.contains("## `throw`"));
+    assert!(compiler_doc.contains("must typecheck as `com.pulse.lang.Throwable`"));
+    assert!(compiler_doc.contains("Throwable.panic()"));
+    assert!(compiler_doc.contains("`try`"));
+    assert!(runtime_doc.contains("Current `throw` Runtime Contract"));
+    assert!(runtime_doc.contains("Intrinsics.panic(String)"));
+    assert!(runtime_doc.contains("Throwable.panic()"));
+    assert!(board.contains("| F1-15 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_16_try_catch_finally_baseline_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let compiler_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("exceptions.md"),
+    )
+    .expect("read compiler-backed exceptions doc");
+    let runtime_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("exceptions-and-failure.md"),
+    )
+    .expect("read runtime-backed exceptions doc");
+
+    assert!(compiler_doc.contains("## `try` / `catch` / `finally`"));
+    assert!(compiler_doc.contains("same-method explicit Pulse `throw`"));
+    assert!(compiler_doc.contains("cross-method exception unwinding is not implemented yet"));
+    assert!(compiler_doc.contains("`return`, `break`, and `continue`"));
+    assert!(runtime_doc.contains("Current `try` / `catch` / `finally` Runtime Contract"));
+    assert!(runtime_doc.contains("not full stack unwinding across method calls yet"));
+    assert!(board.contains("| F1-16 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_17_try_with_resources_policy_is_documented_and_fenced() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let compiler_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("exceptions.md"),
+    )
+    .expect("read compiler-backed exceptions doc");
+    let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
+        .expect("read F1 support policy");
+
+    assert!(compiler_doc.contains("## `try-with-resources`"));
+    assert!(compiler_doc.contains("explicitly out of scope for the shipped F1 syntax baseline"));
+    assert!(compiler_doc.contains("deterministic diagnostic"));
+    assert!(compiler_doc.contains("com.pulse.lang.AutoCloseable"));
+    assert!(compiler_doc.contains("F1-47"));
+    assert!(compiler_doc.contains("F1-57"));
+    assert!(policy.contains("try-with-resources for the current F1 baseline"));
+    assert!(board.contains("| F1-17 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_17_cli_check_rejects_try_with_resources_baseline() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.io.InputStream;
+
+        class Main {
+            public static void main() {
+                try (InputStream input = new InputStream("x")) {
+                }
+            }
+        }"#,
+    );
+    assert_check_fails(
+        &entry,
+        &src_root,
+        "Try-with-resources is not supported in the current F1 baseline",
+    );
+}
+
+#[test]
+fn lock_f1_18_foreach_baseline_is_documented_and_board_staged() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("statements-and-control-flow.md"),
+    )
+    .expect("read statements and control flow doc");
+
+    assert!(doc.contains("## `foreach`"));
+    assert!(doc.contains("com.pulse.lang.Iterable"));
+    assert!(doc.contains("com.pulse.collections.Array"));
+    assert!(doc.contains("`for (T value : nativeArrayExpr) { ... }` works for native array types"));
+    assert!(doc.contains("native-array foreach lowers through array `length` plus native array subscript reads"));
+    assert!(doc.contains("F1-53"));
+    assert!(board.contains("| F1-18 |"));
+    assert!(board.contains("In Progress"));
+}
+
+#[test]
+fn lock_f1_19_assert_baseline_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("statements-and-control-flow.md"),
+    )
+    .expect("read statements and control flow doc");
+
+    assert!(doc.contains("## `assert`"));
+    assert!(doc.contains("com.pulse.lang.AssertionError"));
+    assert!(doc.contains("condition must typecheck as `boolean`"));
+    assert!(doc.contains("optional message must currently typecheck as `String`"));
+    assert!(board.contains("| F1-19 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_20_synchronized_statement_policy_is_documented_and_board_staged() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
+        .expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("statements-and-control-flow.md"),
+    )
+    .expect("read statements and control flow doc");
+    let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
+        .expect("read F1 support policy");
+
+    assert!(doc.contains("## `synchronized`"));
+    assert!(doc.contains("statements are explicitly fenced"));
+    assert!(doc.contains("F1-86"));
+    assert!(doc.contains("F1-89"));
+    assert!(doc.contains("F1-93"));
+    assert!(policy.contains("synchronized statements for the current F1 baseline"));
+    assert!(board.contains("| F1-20 |"));
+    assert!(board.contains("In Progress"));
+}
+
+#[test]
+fn lock_f1_20_cli_check_rejects_synchronized_statement_baseline() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        class Main {
+            public static void main() {
+                synchronized (new Main()) {
+                }
+            }
+        }"#,
+    );
+    assert_check_fails(
+        &entry,
+        &src_root,
+        "Synchronized statements are not supported in the current F1 baseline",
+    );
+}
+
+#[test]
+fn lock_f1_21_ternary_baseline_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read types and conversions doc");
+
+    assert!(doc.contains("## Ternary"));
+    assert!(doc.contains("condition must typecheck as `boolean`"));
+    assert!(doc.contains("branch expressions must have compatible types"));
+    assert!(doc.contains("only the selected branch is evaluated"));
+    assert!(board.contains("| F1-21 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_22_cast_baseline_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let compiler_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read types and conversions doc");
+    let runtime_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("runtime-type-and-null-behavior.md"),
+    )
+    .expect("read runtime type and null behavior doc");
+
+    assert!(compiler_doc.contains("Current cast baseline"));
+    assert!(compiler_doc.contains("explicit primitive numeric casts"));
+    assert!(compiler_doc.contains("checked reference casts"));
+    assert!(compiler_doc.contains("Invalid cast"));
+    assert!(runtime_doc.contains("Current runtime-backed cast baseline"));
+    assert!(runtime_doc.contains("checked reference casts execute through runtime class-id checks"));
+    assert!(board.contains("| F1-22 |"));
+    assert!(board.contains("Done (Locked)"));
+}
+
+#[test]
+fn lock_f1_23_native_array_creation_policy_is_documented_and_board_staged() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let compiler_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read types and conversions doc");
+    let runtime_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("runtime-type-and-null-behavior.md"),
+    )
+    .expect("read runtime type and null behavior doc");
+    let lexer_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("lexer-and-literals.md"),
+    )
+    .expect("read lexer and literals doc");
+
+    assert!(compiler_doc.contains("## Native Array Creation"));
+    assert!(compiler_doc.contains("`new int[n]`"));
+    assert!(compiler_doc.contains("`new Box[n]`"));
+    assert!(compiler_doc.contains("one-dimensional initializer expressions such as `new int[] { 1, 2 }`"));
+    assert!(compiler_doc.contains("nested multidimensional initializer expressions such as `new int[][] { {1, 2}, {3, 4} }`"));
+    assert!(compiler_doc.contains("native subscript reads such as `values[1]`"));
+    assert!(compiler_doc.contains("native subscript writes such as `values[0] = 7`"));
+    assert!(compiler_doc.contains("multidimensional creation such as `new int[2][3]`"));
+    assert!(runtime_doc.contains("Current runtime-backed native array baseline"));
+    assert!(runtime_doc.contains("integral primitive arrays and reference arrays lower through the runtime array allocator"));
+    assert!(runtime_doc.contains("one-dimensional initializer expressions lower by allocating the array and filling the int lane or reference lane at runtime"));
+    assert!(runtime_doc.contains("multidimensional native array creation lowers by recursively composing nested runtime arrays through the reference lane"));
+    assert!(runtime_doc.contains("nested multidimensional initializer expressions lower by recursively constructing nested array values and storing them through the reference lane"));
+    assert!(runtime_doc.contains("native subscript reads and writes lower through the current int lane or reference lane runtime array paths, including chained multidimensional access"));
+    assert!(lexer_doc.contains("- `new`"));
+    assert!(board.contains("| F1-23 |"));
+    assert!(board.contains("In Progress"));
+    assert!(board.contains("F1-36"));
+}
+
+#[test]
+fn lock_f1_24_lambda_policy_is_documented_and_board_staged() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read types and conversions doc");
+
+    assert!(doc.contains("## Lambda Expressions"));
+    assert!(doc.contains("lambda expressions are not part of the current F1 baseline"));
+    assert!(doc.contains("deferred to `F2`"));
+    assert!(board.contains("| F1-24 |"));
+    assert!(board.contains("In Progress"));
+    assert!(board.contains("closure object model"));
+}
+
+#[test]
+fn lock_f1_24_cli_check_rejects_lambda_baseline() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        class Main {
+            public static void main() {
+                Object fn = () -> 1;
+            }
+        }"#,
+    );
+    assert_check_fails(
+        &entry,
+        &src_root,
+        "Lambda expressions are not supported in the current F1 baseline",
+    );
+}
+
+#[test]
+fn lock_f1_25_method_reference_policy_is_documented_and_board_staged() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read types and conversions doc");
+
+    assert!(doc.contains("## Method References"));
+    assert!(doc.contains("method references are not part of the current F1 baseline"));
+    assert!(doc.contains("deferred until after the lambda/runtime model exists in `F2`"));
+    assert!(board.contains("| F1-25 |"));
+    assert!(board.contains("In Progress"));
+}
+
+#[test]
+fn lock_f1_25_cli_check_rejects_method_reference_baseline() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        class Main {
+            public static void main() {
+                Object fn = Main::main;
+            }
+        }"#,
+    );
+    assert_check_fails(
+        &entry,
+        &src_root,
+        "Method references are not supported in the current F1 baseline",
+    );
+}
+
+#[test]
+fn lock_m3_18_closure_docs_exist() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let idx = fs::read_to_string(root.join("STDLIB_API_INDEX.md")).expect("read stdlib index");
+    let closure =
+        fs::read_to_string(root.join("C1_5_CLOSURE_CHECKLIST.md")).expect("read closure checklist");
+    assert!(idx.contains("com.pulse.collections"));
+    assert!(closure.contains("Closure Commands"));
+}
+
+#[test]
+fn lock_e3_01_parity_support_matrix_scopes_supported_vs_intentional_differences() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let matrix = fs::read_to_string(root.join("E3_PARITY_SUPPORT_MATRIX.md"))
+        .expect("read E3 parity support matrix");
+    assert!(matrix.contains("runtime_mix"));
+    assert!(matrix.contains("object_interface_mix"));
+    assert!(matrix.contains("strict_stress_soak"));
+    assert!(matrix.contains("Intentional Non-Parity"));
+    assert!(matrix.contains("fat"));
+    assert!(matrix.contains("shared"));
+    assert!(matrix.contains("missing runtime library payload"));
+}
+
+#[test]
+fn lock_e3_02_and_e3_03_cli_parity_semantics_and_evidence_strategy_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let cli = fs::read_to_string(root.join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read CLI command contract");
+    let strategy = fs::read_to_string(root.join("E3_PARITY_EVIDENCE_STRATEGY.md"))
+        .expect("read E3 parity evidence strategy");
+    assert!(cli.contains("E3 Parity Baseline"));
+    assert!(cli.contains("--output-mode fat"));
+    assert!(cli.contains("--output-mode shared"));
+    assert!(cli.contains("same fixture corpus"));
+    assert!(strategy.contains("side-by-side evidence"));
+    assert!(strategy.contains("runtime_mix"));
+    assert!(strategy.contains("object_interface_mix"));
+    assert!(strategy.contains("strict_stress_soak"));
+    assert!(strategy.contains("Packaging / Install Comparison Rules"));
+}
+
+#[test]
+fn gate_m3_g1_fixture_project_coverage() {
+    assert_fixture_build_and_run("runtime_mix", "app/runtime/Main.pulse", "runtime_mix_ok\n");
+    assert_fixture_build_and_run("object_interface_mix", "app/mixed/Main.pulse", "object_interface_mix_ok\n");
+    assert_fixture_build_and_run("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n20313\n");
+}
+
+#[test]
+fn gate_m3_g2_collections_behavior_coverage() {
+    assert_fixture_build_and_run("runtime_mix", "app/runtime/Main.pulse", "runtime_mix_ok\n");
+}
+
+#[test]
+fn gate_m3_g3_io_stream_behavior_coverage() {
+    let fixture = fixture_root("object_interface_mix");
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    copy_dir_recursive(&fixture.join("src"), &src_root);
+    let entry = src_root.join("app/mixed/Main.pulse");
+    let output = run_pulsec(&[
+        "build",
+        entry.to_str().expect("entry utf8"),
+        "--source-root",
+        src_root.to_str().expect("src utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        output.status.success(),
+        "expected build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let plan = fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
+    assert!(plan.contains("com.pulse.io.File.readAllText"));
+}
+
+#[test]
+fn gate_m3_g4_time_math_determinism_coverage() {
+    assert_fixture_build_and_run("runtime_mix", "app/runtime/Main.pulse", "runtime_mix_ok\n");
+}

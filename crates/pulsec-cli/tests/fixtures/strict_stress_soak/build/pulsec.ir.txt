@@ -1,0 +1,310 @@
+# PulseCode IR Dump
+class strict_stress_soak.Main
+  method void main() blocks=4 values=25
+class strict_stress_soak.SoakRunner
+  method int run(int rounds) blocks=19 values=125
+class strict_stress_soak.Token
+  field int v
+  method ctor Token(int v) blocks=1 values=3
+  method int value() blocks=1 values=2
+class com.pulse.collections.Array
+  field long handle
+  method ctor Array(int length) blocks=1 values=6
+  method int length() blocks=1 values=5
+  method int getInt(int index) blocks=1 values=6
+  method void setInt(int index, int value) blocks=1 values=7
+  method String getString(int index) blocks=1 values=6
+  method void setString(int index, String value) blocks=1 values=7
+class com.pulse.collections.ArrayList
+  field long handle
+  method ctor ArrayList() blocks=1 values=5
+  method int size() blocks=1 values=5
+  method void clear() blocks=1 values=5
+  method void add(int value) blocks=4 values=17
+  method void add(String value) blocks=4 values=17
+  method int getInt(int index) blocks=4 values=23
+  method String getString(int index) blocks=4 values=23
+class com.pulse.collections.Collection
+  method int size() blocks=1 values=0
+  method void clear() blocks=1 values=0
+class com.pulse.collections.Deque
+  method void addFirst(int value) blocks=1 values=0
+  method void addLast(int value) blocks=1 values=0
+  method int removeFirst() blocks=1 values=0
+  method int removeLast() blocks=1 values=0
+  method boolean isEmpty() blocks=1 values=0
+class com.pulse.collections.HashMap
+  field long handle
+  method ctor HashMap() blocks=1 values=5
+  method int size() blocks=1 values=5
+  method void clear() blocks=1 values=5
+  method boolean containsKey(String key) blocks=1 values=6
+  method void put(String key, String value) blocks=1 values=7
+  method void putInt(String key, int value) blocks=1 values=7
+  method String get(String key) blocks=1 values=6
+  method int getInt(String key) blocks=1 values=6
+class com.pulse.collections.HashSet
+  field long handle
+  method ctor HashSet() blocks=1 values=5
+  method int size() blocks=1 values=5
+  method void clear() blocks=1 values=5
+  method void add(String value) blocks=4 values=14
+  method boolean contains(String value) blocks=1 values=6
+class com.pulse.collections.LinkedList
+  field long handle
+  field long queueHandle
+  field int queueHead
+  field int queueTail
+  field long dequeHandle
+  field int dequeHead
+  field int dequeTail
+  method ctor LinkedList() blocks=1 values=27
+  method int size() blocks=1 values=5
+  method void clear() blocks=1 values=27
+  method void add(int value) blocks=4 values=17
+  method void add(String value) blocks=4 values=17
+  method int getInt(int index) blocks=4 values=23
+  method String getString(int index) blocks=4 values=23
+  method void offer(int value) blocks=1 values=18
+  method int poll() blocks=4 values=28
+  method boolean isEmpty() blocks=1 values=5
+  method void addFirst(int value) blocks=1 values=18
+  method void addLast(int value) blocks=1 values=18
+  method int removeFirst() blocks=4 values=28
+  method int removeLast() blocks=4 values=27
+class com.pulse.collections.List
+  method int size() blocks=1 values=0
+  method void clear() blocks=1 values=0
+  method void add(int value) blocks=1 values=0
+  method void add(String value) blocks=1 values=0
+  method int getInt(int index) blocks=1 values=0
+  method String getString(int index) blocks=1 values=0
+class com.pulse.collections.Map
+  field long handle
+  method ctor Map() blocks=1 values=5
+  method int size() blocks=1 values=5
+  method void clear() blocks=1 values=5
+  method boolean containsKey(String key) blocks=1 values=6
+  method void put(String key, String value) blocks=1 values=7
+  method void putInt(String key, int value) blocks=1 values=7
+  method String get(String key) blocks=1 values=6
+  method int getInt(String key) blocks=1 values=6
+class com.pulse.collections.Queue
+  method void offer(int value) blocks=1 values=0
+  method int poll() blocks=1 values=0
+  method boolean isEmpty() blocks=1 values=0
+class com.pulse.collections.Set
+  method int size() blocks=1 values=0
+  method void clear() blocks=1 values=0
+  method void add(String value) blocks=1 values=0
+  method boolean contains(String value) blocks=1 values=0
+class com.pulse.lang.Boolean
+  method Boolean valueOf(boolean value) blocks=1 values=1
+  method Boolean parse(String text) blocks=1 values=6
+  method boolean booleanValue(Boolean value) blocks=1 values=1
+  method boolean equals(boolean left, boolean right) blocks=1 values=3
+  method int compare(boolean left, boolean right) blocks=7 values=8
+class com.pulse.lang.Byte
+  method Byte valueOf(byte value) blocks=1 values=1
+  method Byte parse(String text) blocks=1 values=6
+  method byte byteValue(Byte value) blocks=1 values=1
+  method boolean equals(byte left, byte right) blocks=1 values=3
+  method int compare(byte left, byte right) blocks=4 values=5
+class com.pulse.lang.Char
+  method Char valueOf(char value) blocks=1 values=1
+  method Char parse(String text) blocks=1 values=6
+  method char charValue(Char value) blocks=1 values=1
+  method boolean equals(char left, char right) blocks=1 values=3
+  method int compare(char left, char right) blocks=4 values=5
+class com.pulse.lang.Class
+  field String name
+  method ctor Class(String name) blocks=1 values=3
+  method String getName() blocks=1 values=2
+  method String toString() blocks=1 values=2
+class com.pulse.lang.Comparable
+  method int compareTo(Object other) blocks=1 values=0
+class com.pulse.lang.ConsoleWriter
+  method void println(String value) blocks=1 values=0
+  method void println(int value) blocks=1 values=0
+  method void println(boolean value) blocks=1 values=0
+  method void print(String value) blocks=1 values=0
+  method void print(int value) blocks=1 values=0
+  method void print(boolean value) blocks=1 values=0
+class com.pulse.lang.Double
+  method Double valueOf(double value) blocks=1 values=1
+  method Double parse(String text) blocks=1 values=6
+  method double doubleValue(Double value) blocks=1 values=1
+  method boolean equals(double left, double right) blocks=1 values=3
+  method int compare(double left, double right) blocks=4 values=5
+class com.pulse.lang.Exception
+  method ctor Exception() blocks=1 values=0
+  method ctor Exception(String message) blocks=1 values=0
+  method String toString() blocks=1 values=1
+class com.pulse.lang.Float
+  method Float valueOf(float value) blocks=1 values=1
+  method Float parse(String text) blocks=1 values=6
+  method float floatValue(Float value) blocks=1 values=1
+  method boolean equals(float left, float right) blocks=1 values=3
+  method int compare(float left, float right) blocks=4 values=5
+class com.pulse.lang.IO
+  method void println(String value) blocks=1 values=4
+  method void println(int value) blocks=1 values=4
+  method void println(boolean value) blocks=1 values=4
+  method void print(String value) blocks=1 values=4
+  method void print(int value) blocks=1 values=4
+  method void print(boolean value) blocks=1 values=4
+class com.pulse.lang.IllegalArgumentException
+  method ctor IllegalArgumentException() blocks=1 values=0
+  method ctor IllegalArgumentException(String message) blocks=1 values=0
+  method String toString() blocks=1 values=1
+class com.pulse.lang.IllegalStateException
+  method ctor IllegalStateException() blocks=1 values=0
+  method ctor IllegalStateException(String message) blocks=1 values=0
+  method String toString() blocks=4 values=14
+class com.pulse.lang.IndexOutOfBoundsException
+  method ctor IndexOutOfBoundsException() blocks=1 values=0
+  method ctor IndexOutOfBoundsException(String message) blocks=1 values=0
+  method String toString() blocks=4 values=14
+class com.pulse.lang.Integer
+  method Integer valueOf(int value) blocks=1 values=1
+  method Integer parse(String text) blocks=1 values=6
+  method int intValue(Integer value) blocks=1 values=1
+  method boolean equals(int left, int right) blocks=1 values=3
+  method int compare(int left, int right) blocks=7 values=10
+class com.pulse.lang.Iterable
+  method Iterator iterator() blocks=1 values=0
+class com.pulse.lang.Iterator
+  method boolean hasNext() blocks=1 values=0
+  method Object next() blocks=1 values=0
+class com.pulse.lang.Long
+  method Long valueOf(long value) blocks=1 values=1
+  method Long parse(String text) blocks=1 values=6
+  method long longValue(Long value) blocks=1 values=1
+  method boolean equals(long left, long right) blocks=1 values=3
+  method int compare(long left, long right) blocks=4 values=5
+class com.pulse.lang.NullPointerException
+  method ctor NullPointerException() blocks=1 values=0
+  method ctor NullPointerException(String message) blocks=1 values=0
+  method String toString() blocks=4 values=14
+class com.pulse.lang.NumberFormatException
+  method ctor NumberFormatException() blocks=1 values=0
+  method ctor NumberFormatException(String message) blocks=1 values=0
+  method String toString() blocks=4 values=14
+class com.pulse.lang.Object
+  method String toString() blocks=1 values=1
+  method boolean equals(Object other) blocks=1 values=3
+  method Class getClass() blocks=1 values=3
+class com.pulse.lang.PrintStream
+  method void println(String value) blocks=1 values=4
+  method void println(int value) blocks=1 values=4
+  method void println(boolean value) blocks=1 values=4
+  method void print(String value) blocks=1 values=4
+  method void print(int value) blocks=1 values=4
+  method void print(boolean value) blocks=1 values=4
+class com.pulse.lang.RuntimeException
+  method ctor RuntimeException() blocks=1 values=0
+  method ctor RuntimeException(String message) blocks=1 values=0
+  method String toString() blocks=1 values=1
+class com.pulse.lang.Short
+  method Short valueOf(short value) blocks=1 values=1
+  method Short parse(String text) blocks=1 values=6
+  method short shortValue(Short value) blocks=1 values=1
+  method boolean equals(short left, short right) blocks=1 values=3
+  method int compare(short left, short right) blocks=4 values=5
+class com.pulse.lang.String
+  method int length() blocks=1 values=4
+  method boolean isEmpty() blocks=1 values=5
+  method String concat(String other) blocks=1 values=5
+  method String valueOf(int value) blocks=1 values=4
+  method String valueOf(boolean value) blocks=1 values=4
+class com.pulse.lang.StringBuilder
+  field String value
+  method ctor StringBuilder() blocks=1 values=3
+  method ctor StringBuilder(String initial) blocks=1 values=3
+  method StringBuilder append(String text) blocks=1 values=8
+  method StringBuilder append(int number) blocks=1 values=11
+  method StringBuilder append(boolean flag) blocks=1 values=11
+  method int length() blocks=1 values=4
+  method void clear() blocks=1 values=3
+  method String toString() blocks=1 values=2
+class com.pulse.lang.System
+  field ConsoleWriter static out
+class com.pulse.lang.Throwable
+  field String message
+  method ctor Throwable() blocks=1 values=3
+  method ctor Throwable(String message) blocks=1 values=3
+  method String getMessage() blocks=1 values=2
+  method String toString() blocks=4 values=13
+class com.pulse.lang.UByte
+  method UByte valueOf(ubyte value) blocks=1 values=1
+  method UByte parse(String text) blocks=1 values=6
+  method ubyte ubyteValue(UByte value) blocks=1 values=1
+  method boolean equals(ubyte left, ubyte right) blocks=1 values=3
+  method int compare(ubyte left, ubyte right) blocks=4 values=5
+class com.pulse.lang.UInteger
+  method UInteger valueOf(uint value) blocks=1 values=1
+  method UInteger parse(String text) blocks=1 values=6
+  method uint uintValue(UInteger value) blocks=1 values=1
+  method boolean equals(uint left, uint right) blocks=1 values=3
+  method int compare(uint left, uint right) blocks=4 values=5
+class com.pulse.lang.ULong
+  method ULong valueOf(ulong value) blocks=1 values=1
+  method ULong parse(String text) blocks=1 values=6
+  method ulong ulongValue(ULong value) blocks=1 values=1
+  method boolean equals(ulong left, ulong right) blocks=1 values=3
+  method int compare(ulong left, ulong right) blocks=4 values=5
+class com.pulse.lang.UShort
+  method UShort valueOf(ushort value) blocks=1 values=1
+  method UShort parse(String text) blocks=1 values=6
+  method ushort ushortValue(UShort value) blocks=1 values=1
+  method boolean equals(ushort left, ushort right) blocks=1 values=3
+  method int compare(ushort left, ushort right) blocks=4 values=5
+class com.pulse.lang.UnsupportedOperationException
+  method ctor UnsupportedOperationException() blocks=1 values=0
+  method ctor UnsupportedOperationException(String message) blocks=1 values=0
+  method String toString() blocks=4 values=14
+class com.pulse.lang.Void
+class com.pulse.rt.Intrinsics
+  method void consoleWrite(String value) blocks=1 values=0
+  method void consoleWrite(int value) blocks=1 values=0
+  method void consoleWrite(boolean value) blocks=1 values=0
+  method void consoleWriteLine(String value) blocks=1 values=0
+  method void consoleWriteLine(int value) blocks=1 values=0
+  method void consoleWriteLine(boolean value) blocks=1 values=0
+  method void panic(String message) blocks=1 values=0
+  method String stringConcat(String left, String right) blocks=1 values=1
+  method int stringLength(String value) blocks=1 values=1
+  method String intToString(int value) blocks=1 values=1
+  method String booleanToString(boolean value) blocks=1 values=1
+  method int parseInt(String text) blocks=1 values=1
+  method boolean parseBoolean(String text) blocks=1 values=1
+  method long arrayNew(int length) blocks=1 values=1
+  method int arrayLength(long handle) blocks=1 values=1
+  method int arrayGetInt(long handle, int index) blocks=1 values=1
+  method void arraySetInt(long handle, int index, int value) blocks=1 values=0
+  method String arrayGetString(long handle, int index) blocks=1 values=1
+  method void arraySetString(long handle, int index, String value) blocks=1 values=0
+  method long listNew() blocks=1 values=1
+  method int listSize(long handle) blocks=1 values=1
+  method void listClear(long handle) blocks=1 values=0
+  method void listAddInt(long handle, int value) blocks=1 values=0
+  method void listAddString(long handle, String value) blocks=1 values=0
+  method int listGetInt(long handle, int index) blocks=1 values=1
+  method String listGetString(long handle, int index) blocks=1 values=1
+  method long mapNew() blocks=1 values=1
+  method int mapSize(long handle) blocks=1 values=1
+  method void mapClear(long handle) blocks=1 values=0
+  method boolean mapContainsKey(long handle, String key) blocks=1 values=1
+  method void mapPut(long handle, String key, String value) blocks=1 values=0
+  method void mapPutInt(long handle, String key, int value) blocks=1 values=0
+  method String mapGet(long handle, String key) blocks=1 values=1
+  method int mapGetInt(long handle, String key) blocks=1 values=1
+  method long arcRetain(long handle) blocks=1 values=1
+  method void arcRelease(long handle) blocks=1 values=0
+  method void arcRelease(String value) blocks=1 values=0
+  method int arcCycleYoungPass() blocks=1 values=1
+  method int arcCycleFullPass() blocks=1 values=1
+  method int arcCycleTick() blocks=1 values=1
+  method long weakNew(String value) blocks=1 values=1
+  method String weakGet(long weakHandle) blocks=1 values=1
+  method void weakClear(long weakHandle) blocks=1 values=0

@@ -1,0 +1,75 @@
+package com.pulse.lang;
+
+import com.pulse.rt.Intrinsics;
+
+/**
+ * Wrapper facade for signed 64-bit integer values.
+ */
+public final class Long {
+    /**
+     * Smallest representable signed long value.
+     */
+    public static final long MIN_VALUE = -9223372036854775807L - 1L;
+
+    /**
+     * Largest representable signed long value.
+     */
+    public static final long MAX_VALUE = 9223372036854775807L;
+
+    /**
+     * Boxes a primitive long into the wrapper form.
+     * Use this when a reference-shaped long value is required.
+     */
+    public static Long valueOf(long value) {
+        return value;
+    }
+
+    /**
+     * Parses text into a long wrapper.
+     * Use this for textual long conversion at API boundaries.
+     */
+    public static Long parse(String text) {
+        Intrinsics.panic("Long.parse is not supported yet");
+        return new Long();
+    }
+
+    /**
+     * Unboxes a wrapper value into a primitive long.
+     * Use this when primitive arithmetic or APIs require a long.
+     */
+    public static long longValue(Long value) {
+        return value;
+    }
+
+    /**
+     * Compares two primitive longs for equality.
+     * Use this for helper-style primitive equality checks.
+     */
+    public static boolean equals(long left, long right) {
+        return left == right;
+    }
+
+    /**
+     * Orders two primitive longs.
+     * Use this when long values need deterministic comparison results.
+     */
+    public static int compare(long left, long right) {
+        if (left < right) {
+            return -1;
+        }
+        if (left > right) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Converts a primitive long into Java-like decimal text.
+     * Use this when formatting long values without manual casts.
+     */
+    public static String toString(long value) {
+        Intrinsics.panic("Long.toString is not supported yet");
+        return "";
+    }
+}
+

@@ -1,0 +1,24 @@
+package com.pulse.io;
+
+/**
+ * Sequential text input facade backed by the current file helpers.
+ */
+class InputStream {
+    private String path;
+
+    /**
+     * Creates an input stream bound to the supplied path.
+     * Use this when file reads should be expressed as a stream object.
+     */
+    public InputStream(String path) {
+        this.path = path;
+    }
+
+    /**
+     * Reads the full text payload for the bound path.
+     * Use this for simple stream-style all-at-once reads.
+     */
+    public String readAll() {
+        return Files.readString(this.path);
+    }
+}

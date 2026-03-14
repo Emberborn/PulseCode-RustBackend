@@ -1,0 +1,57 @@
+package com.pulse.lang;
+
+import com.pulse.rt.Intrinsics;
+
+/**
+ * Console-backed print stream used by system output surfaces.
+ */
+class PrintStream implements ConsoleWriter {
+    /**
+     * Writes a string and terminates the line.
+     * Use this through System.out for line-based text output.
+     */
+    public void println(String value) {
+        Intrinsics.consoleWriteLine(value);
+    }
+
+    /**
+     * Writes an integer and terminates the line.
+     * Use this through System.out for line-based numeric output.
+     */
+    public void println(int value) {
+        Intrinsics.consoleWriteLine(value);
+    }
+
+    /**
+     * Writes a boolean and terminates the line.
+     * Use this through System.out for line-based boolean output.
+     */
+    public void println(boolean value) {
+        Intrinsics.consoleWriteLine(value);
+    }
+
+    /**
+     * Writes a string without appending a newline.
+     * Use this for incremental text output.
+     */
+    public void print(String value) {
+        Intrinsics.consoleWrite(value);
+    }
+
+    /**
+     * Writes an integer without appending a newline.
+     * Use this for incremental numeric output.
+     */
+    public void print(int value) {
+        Intrinsics.consoleWrite(value);
+    }
+
+    /**
+     * Writes a boolean without appending a newline.
+     * Use this for incremental boolean output.
+     */
+    public void print(boolean value) {
+        Intrinsics.consoleWrite(value);
+    }
+}
+

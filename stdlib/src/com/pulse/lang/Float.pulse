@@ -1,0 +1,67 @@
+package com.pulse.lang;
+
+import com.pulse.rt.Intrinsics;
+
+/**
+ * Wrapper facade for single-precision floating-point values.
+ */
+public final class Float {
+    /**
+     * Boxes a primitive float into the wrapper form.
+     * Use this when a reference-shaped float value is required.
+     */
+    public static Float valueOf(float value) {
+        return value;
+    }
+
+    /**
+     * Parses text into a float wrapper.
+     * Use this for textual float conversion at API boundaries.
+     */
+    public static Float parse(String text) {
+        Intrinsics.panic("Float.parse is not supported yet");
+        return new Float();
+    }
+
+    /**
+     * Unboxes a wrapper value into a primitive float.
+     * Use this when numeric operations require a float.
+     */
+    public static float floatValue(Float value) {
+        return value;
+    }
+
+    /**
+     * Compares two primitive floats for equality.
+     * Use this for helper-style primitive equality checks.
+     */
+    public static boolean equals(float left, float right) {
+        return left == right;
+    }
+
+    /**
+     * Orders two primitive floats.
+     * Use this when float values need deterministic comparison results.
+     */
+    public static int compare(float left, float right) {
+        if (left < right) {
+            return -1;
+        }
+        if (left > right) {
+            return 1;
+        }
+        if (left == right) {
+            return 0;
+        }
+        boolean leftNaN = left != left;
+        boolean rightNaN = right != right;
+        if (leftNaN && rightNaN) {
+            return 0;
+        }
+        if (leftNaN) {
+            return 1;
+        }
+        return -1;
+    }
+}
+

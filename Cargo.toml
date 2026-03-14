@@ -1,0 +1,6 @@
+﻿[workspace]
+members = [
+    "crates/pulsec-core",
+    "crates/pulsec-cli"
+]
+resolver = "2"

@@ -1,0 +1,260 @@
+package com.pulse.lang;
+import com.pulse.rt.Intrinsics;
+
+/**
+ * Runtime-backed immutable string value.
+ */
+public final class String {
+    /**
+     * Returns the number of characters in this string.
+     * Use this before indexing or for empty-string checks.
+     */
+    public int length() {
+        return Intrinsics.stringLength(this);
+    }
+
+    /**
+     * Reports whether this string has zero length.
+     * Use this for the common empty-string fast path.
+     */
+    public boolean isEmpty() {
+        return this.length() == 0;
+    }
+
+    /**
+     * Returns a new string containing this value followed by the other value.
+     * Use this to build combined text when a mutable builder is not needed.
+     */
+    public String concat(String other) {
+        return Intrinsics.stringConcat(this, other);
+    }
+
+    /**
+     * Returns the character at the supplied index.
+     * Use this when implementing indexing, search, or substring logic over immutable text.
+     */
+    public char charAt(int index) {
+        return String.runtimeCharAt(this, index);
+    }
+
+    /**
+     * Returns a substring from the supplied begin index to the end of the string.
+     * Use this when slicing trailing text from an immutable string value.
+     */
+    public String substring(int beginIndex) {
+        return this.substring(beginIndex, this.length());
+    }
+
+    /**
+     * Returns a substring over the supplied half-open range.
+     * Use this when slicing immutable text with Java-like begin/end bounds.
+     */
+    public String substring(int beginIndex, int endIndex) {
+        return String.runtimeSubstring(this, beginIndex, endIndex);
+    }
+
+    /**
+     * Reports whether this string has the same content as the supplied object.
+     * Use this for Java-like string content equality instead of reference equality.
+     */
+    public boolean equals(Object other) {
+        if (!(other instanceof String)) {
+            return false;
+        }
+        String text = (String) other;
+        if (this.length() != text.length()) {
+            return false;
+        }
+        int i = 0;
+        while (i < this.length()) {
+            if (this.charAt(i) != text.charAt(i)) {
+                return false;
+            }
+            i = i + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Reports whether this string begins with the supplied prefix.
+     * Use this for Java-like prefix checks in parsing and path/text handling.
+     */
+    public boolean startsWith(String prefix) {
+        return this.indexOf(prefix) == 0;
+    }
+
+    /**
+     * Reports whether this string ends with the supplied suffix.
+     * Use this for Java-like suffix checks in parsing and path/text handling.
+     */
+    public boolean endsWith(String suffix) {
+        int suffixLength = suffix.length();
+        int ownLength = this.length();
+        String slice = "";
+        if (suffixLength > ownLength) {
+            return false;
+        }
+        slice = this.substring(ownLength - suffixLength, ownLength);
+        return slice.equals(suffix);
+    }
+
+    /**
+     * Reports whether this string contains the supplied substring.
+     * Use this for Java-like containment checks in parsing and diagnostics.
+     */
+    public boolean contains(String text) {
+        return this.indexOf(text) >= 0;
+    }
+
+    /**
+     * Returns the first index of the supplied substring, or `-1` when it is absent.
+     * Use this for Java-like forward search over immutable text.
+     */
+    public int indexOf(String text) {
+        int needleLength = text.length();
+        int haystackLength = this.length();
+        if (needleLength == 0) {
+            return 0;
+        }
+        if (needleLength > haystackLength) {
+            return -1;
+        }
+        int limit = haystackLength - needleLength;
+        int start = 0;
+        while (start <= limit) {
+            int i = 0;
+            boolean match = true;
+            while (i < needleLength) {
+                if (this.charAt(start + i) != text.charAt(i)) {
+                    match = false;
+                    i = needleLength;
+                } else {
+                    i = i + 1;
+                }
+            }
+            if (match) {
+                return start;
+            }
+            start = start + 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the last index of the supplied substring, or `-1` when it is absent.
+     * Use this for Java-like reverse search over immutable text.
+     */
+    public int lastIndexOf(String text) {
+        int needleLength = text.length();
+        int haystackLength = this.length();
+        if (needleLength == 0) {
+            return haystackLength;
+        }
+        if (needleLength > haystackLength) {
+            return -1;
+        }
+        int start = haystackLength - needleLength;
+        while (start >= 0) {
+            int i = 0;
+            boolean match = true;
+            while (i < needleLength) {
+                if (this.charAt(start + i) != text.charAt(i)) {
+                    match = false;
+                    i = needleLength;
+                } else {
+                    i = i + 1;
+                }
+            }
+            if (match) {
+                return start;
+            }
+            start = start - 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns a copy of this string with leading and trailing ASCII whitespace removed.
+     * Use this for the current Java-close trim baseline in text-processing flows.
+     */
+    public String trim() {
+        int start = 0;
+        int end = this.length();
+        while (start < end) {
+            char current = this.charAt(start);
+            if (current == ' ' || current == '\t' || current == '\n' || current == '\r') {
+                start = start + 1;
+            } else {
+                break;
+            }
+        }
+        while (end > start) {
+            char current = this.charAt(end - 1);
+            if (current == ' ' || current == '\t' || current == '\n' || current == '\r') {
+                end = end - 1;
+            } else {
+                break;
+            }
+        }
+        return this.substring(start, end);
+    }
+
+    /**
+     * Converts an integer value into its string representation.
+     * Use this when formatting numeric output.
+     */
+    public static String valueOf(int value) {
+        return Intrinsics.intToString(value);
+    }
+
+    /**
+     * Converts a boolean value into its string representation.
+     * Use this when formatting boolean output.
+     */
+    public static String valueOf(boolean value) {
+        return Intrinsics.booleanToString(value);
+    }
+
+    /**
+     * Converts a character value into its string representation.
+     * Use this when formatting character data into string-based APIs.
+     */
+    public static String valueOf(char value) {
+        return String.runtimeFromChar(value);
+    }
+
+    /**
+     * Converts an object reference into its string representation.
+     * Use this for Java-like formatting where `null` should become `"null"`.
+     */
+    public static String valueOf(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        return value.toString();
+    }
+
+    /**
+     * Runtime-backed helper for indexed character access.
+     * Use this only inside the stdlib `String` implementation.
+     */
+    private static char runtimeCharAt(String value, int index) {
+        return '\0';
+    }
+
+    /**
+     * Runtime-backed helper for substring slicing.
+     * Use this only inside the stdlib `String` implementation.
+     */
+    private static String runtimeSubstring(String value, int beginIndex, int endIndex) {
+        return "";
+    }
+
+    /**
+     * Runtime-backed helper that converts a single character into a string.
+     * Use this only inside the stdlib `String` implementation.
+     */
+    private static String runtimeFromChar(char value) {
+        return "";
+    }
+}

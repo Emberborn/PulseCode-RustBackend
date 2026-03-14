@@ -1,0 +1,26 @@
+/target/
+/target_codex_tmp*/
+
+# Editor/IDE
+/.idea/
+/.vscode/
+
+# OS/editor noise
+Thumbs.db
+Desktop.ini
+*.tmp
+*.bak
+*.bak*
+*.orig
+*.swp
+*.swo
+*~
+
+# Local probe/repro scratch space
+/tmp_*/
+
+# Generated fixture build outputs
+/crates/pulsec-cli/tests/fixtures/**/build/
+
+# One-off local files
+/tmp_map_clear_main.pulse

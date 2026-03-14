@@ -1,0 +1,56 @@
+package com.pulse.lang;
+
+import com.pulse.rt.Intrinsics;
+
+/**
+ * Convenience console output facade for direct printing.
+ */
+class IO {
+    /**
+     * Writes a string and terminates the line.
+     * Use this for straightforward string console output.
+     */
+    public static void println(String value) {
+        Intrinsics.consoleWriteLine(value);
+    }
+
+    /**
+     * Writes an integer and terminates the line.
+     * Use this for straightforward numeric console output.
+     */
+    public static void println(int value) {
+        Intrinsics.consoleWriteLine(value);
+    }
+
+    /**
+     * Writes a boolean and terminates the line.
+     * Use this for straightforward boolean console output.
+     */
+    public static void println(boolean value) {
+        Intrinsics.consoleWriteLine(value);
+    }
+
+    /**
+     * Writes a string without a trailing newline.
+     * Use this for incremental console output.
+     */
+    public static void print(String value) {
+        Intrinsics.consoleWrite(value);
+    }
+
+    /**
+     * Writes an integer without a trailing newline.
+     * Use this for incremental numeric console output.
+     */
+    public static void print(int value) {
+        Intrinsics.consoleWrite(value);
+    }
+
+    /**
+     * Writes a boolean without a trailing newline.
+     * Use this for incremental boolean console output.
+     */
+    public static void print(boolean value) {
+        Intrinsics.consoleWrite(value);
+    }
+}

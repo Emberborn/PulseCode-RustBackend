@@ -1,0 +1,24 @@
+package com.pulse.collections;
+
+/**
+ * Queue contract for ordered head/tail access.
+ */
+interface Queue {
+    /**
+     * Adds a value at the tail of the queue.
+     * Use this when scheduling work or storing FIFO values.
+     */
+    void offer(int value);
+
+    /**
+     * Removes and returns the head value from the queue.
+     * Use this when consuming queued values in FIFO order.
+     */
+    int poll();
+
+    /**
+     * Reports whether the queue currently holds any values.
+     * Use this before polling when code must avoid empty-queue failures.
+     */
+    boolean isEmpty();
+}

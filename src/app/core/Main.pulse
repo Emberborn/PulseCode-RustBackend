@@ -1,0 +1,16 @@
+﻿package app.core;
+
+import com.pulse.lang.IO;
+
+class Main {
+    private static int score;
+
+    public static void main(String[] args) {
+        score = 42;
+        IO.println("PulseCode online");
+        IO.println(score);
+    }
+}
+
+
+
