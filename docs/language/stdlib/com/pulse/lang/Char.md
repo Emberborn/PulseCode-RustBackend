@@ -53,3 +53,8 @@ Use this when char values need deterministic comparison results.
 
 Converts a primitive char into a single-character string.
 Use this when formatting character data explicitly through the wrapper API.
+
+### ``private static char runtimeCharAt(String value, int index)``
+
+Runtime-backed helper for indexed character access.
+Use this only inside the stdlib `Char` implementation.

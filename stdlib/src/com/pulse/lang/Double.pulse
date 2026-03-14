@@ -7,6 +7,16 @@ import com.pulse.rt.Intrinsics;
  */
 public final class Double {
     /**
+     * Smallest positive non-zero double value in the current baseline.
+     */
+    public static final double MIN_VALUE = Double.buildMinValue();
+
+    /**
+     * Largest finite double value in the current baseline.
+     */
+    public static final double MAX_VALUE = Double.buildMaxValue();
+
+    /**
      * Boxes a primitive double into the wrapper form.
      * Use this when a reference-shaped double value is required.
      */
@@ -19,8 +29,7 @@ public final class Double {
      * Use this for textual double conversion at API boundaries.
      */
     public static Double parse(String text) {
-        Intrinsics.panic("Double.parse is not supported yet");
-        return new Double();
+        return valueOf(Double.parsePrimitive(text));
     }
 
     /**
@@ -63,4 +72,353 @@ public final class Double {
         }
         return -1;
     }
+
+    /**
+     * Converts a primitive double into Java-close text.
+     * Use this for wrapper-owned decimal formatting without routing through native CRT helpers.
+     */
+    public static String toString(double value) {
+        if (Double.isNaN(value)) {
+            return "NaN";
+        }
+        if (Double.isInfinite(value)) {
+            if (value < 0.0d) {
+                return "-Infinity";
+            }
+            return "Infinity";
+        }
+        if (value == 0.0d) {
+            if (Double.isNegativeZero(value)) {
+                return "-0.0";
+            }
+            return "0.0";
+        }
+
+        boolean negative = value < 0.0d;
+        double magnitude = value;
+        if (negative) {
+            magnitude = 0.0d - magnitude;
+        }
+
+        long whole = (long) magnitude;
+        if (((double) whole) == magnitude) {
+            String text = Long.toString(whole);
+            if (negative) {
+                String prefix = "-";
+                String signed = prefix.concat(text);
+                return signed.concat(".0");
+            }
+            return text.concat(".0");
+        }
+
+        return Double.formatFiniteWithSign(negative, magnitude, 15);
+    }
+
+    private static double parsePrimitive(String text) {
+        if (text == null) {
+            Double.invalidLiteral();
+        }
+        int start = 0;
+        int end = Intrinsics.stringLength(text);
+        while (start < end) {
+            char current = Double.runtimeCharAt(text, start);
+            if (current == ' ' || current == '\t' || current == '\n' || current == '\r') {
+                start = start + 1;
+            } else {
+                break;
+            }
+        }
+        while (end > start) {
+            char current = Double.runtimeCharAt(text, end - 1);
+            if (current == ' ' || current == '\t' || current == '\n' || current == '\r') {
+                end = end - 1;
+            } else {
+                break;
+            }
+        }
+        if (start == end) {
+            Double.invalidLiteral();
+        }
+        if (Double.matchesNaN(text, start, end)) {
+            return 0.0d / 0.0d;
+        }
+
+        int index = start;
+        boolean negative = false;
+        char current = Double.runtimeCharAt(text, index);
+        if (current == '+' || current == '-') {
+            negative = current == '-';
+            index = index + 1;
+            if (index >= end) {
+                Double.invalidLiteral();
+            }
+        }
+
+        if (Double.matchesInfinity(text, index, end)) {
+            if (negative) {
+                return 0.0d - (1.0d / 0.0d);
+            }
+            return 1.0d / 0.0d;
+        }
+
+        double value = 0.0d;
+        boolean sawDigit = false;
+        while (index < end) {
+            current = Double.runtimeCharAt(text, index);
+            if (!Double.isDigit(current)) {
+                break;
+            }
+            value = (value * 10.0d) + (double) (current - '0');
+            index = index + 1;
+            sawDigit = true;
+        }
+
+        if (index < end && Double.runtimeCharAt(text, index) == '.') {
+            index = index + 1;
+            double scale = 0.1d;
+            while (index < end) {
+                current = Double.runtimeCharAt(text, index);
+                if (!Double.isDigit(current)) {
+                    break;
+                }
+                value = value + (((double) (current - '0')) * scale);
+                scale = scale / 10.0d;
+                index = index + 1;
+                sawDigit = true;
+            }
+        }
+
+        if (!sawDigit) {
+            Double.invalidLiteral();
+        }
+
+        int exponent = 0;
+        boolean exponentNegative = false;
+        if (index < end) {
+            current = Double.runtimeCharAt(text, index);
+            if (current == 'e' || current == 'E') {
+                index = index + 1;
+                if (index >= end) {
+                    Double.invalidLiteral();
+                }
+                current = Double.runtimeCharAt(text, index);
+                if (current == '+' || current == '-') {
+                    exponentNegative = current == '-';
+                    index = index + 1;
+                }
+                boolean sawExponentDigit = false;
+                while (index < end) {
+                    current = Double.runtimeCharAt(text, index);
+                    if (!Double.isDigit(current)) {
+                        break;
+                    }
+                    exponent = (exponent * 10) + (current - '0');
+                    index = index + 1;
+                    sawExponentDigit = true;
+                }
+                if (!sawExponentDigit) {
+                    Double.invalidLiteral();
+                }
+            }
+        }
+
+        if (index != end) {
+            Double.invalidLiteral();
+        }
+
+        while (exponent > 0) {
+            if (exponentNegative) {
+                value = value / 10.0d;
+            } else {
+                value = value * 10.0d;
+            }
+            exponent = exponent - 1;
+        }
+
+        if (negative) {
+            return 0.0d - value;
+        }
+        return value;
+    }
+
+    private static String formatFiniteWithSign(boolean negative, double magnitude, int precision) {
+        int exponent = 0;
+        double scaled = magnitude;
+        while (scaled >= 10.0d) {
+            scaled = scaled / 10.0d;
+            exponent = exponent + 1;
+        }
+        while (scaled < 1.0d) {
+            scaled = scaled * 10.0d;
+            exponent = exponent - 1;
+        }
+
+        StringBuilder digits = new StringBuilder();
+        int i = 0;
+        while (i < precision) {
+            int digit = (int) scaled;
+            digits.append((char) ('0' + digit));
+            scaled = (scaled - (double) digit) * 10.0d;
+            i = i + 1;
+        }
+
+        String digitText = digits.toString();
+        if (exponent >= -3 && exponent < 7) {
+            return Double.formatFixedDigits(negative, digitText, exponent);
+        }
+        return Double.formatScientificDigits(negative, digitText, exponent);
+    }
+
+    private static String formatFixedDigits(boolean negative, String digits, int exponent) {
+        StringBuilder out = new StringBuilder();
+        if (negative) {
+            out.append('-');
+        }
+        int integerDigits = exponent + 1;
+        int precision = Intrinsics.stringLength(digits);
+        int i = 0;
+        if (integerDigits > 0) {
+            while (i < integerDigits) {
+                char digit = '0';
+                if (i < precision) {
+                    digit = Double.runtimeCharAt(digits, i);
+                }
+                out.append(digit);
+                i = i + 1;
+            }
+            out.append('.');
+            int end = Double.lastNonZeroIndex(digits);
+            if (end < integerDigits) {
+                end = integerDigits;
+            }
+            if (end == integerDigits) {
+                out.append('0');
+            } else {
+                i = integerDigits;
+                while (i < end) {
+                    out.append(Double.runtimeCharAt(digits, i));
+                    i = i + 1;
+                }
+            }
+            return out.toString();
+        }
+
+        out.append('0');
+        out.append('.');
+        i = 0;
+        while (i < (0 - integerDigits)) {
+            out.append('0');
+            i = i + 1;
+        }
+        int end = Double.lastNonZeroIndex(digits);
+        if (end < 1) {
+            out.append('0');
+            return out.toString();
+        }
+        i = 0;
+        while (i < end) {
+            out.append(Double.runtimeCharAt(digits, i));
+            i = i + 1;
+        }
+        return out.toString();
+    }
+
+    private static String formatScientificDigits(boolean negative, String digits, int exponent) {
+        StringBuilder out = new StringBuilder();
+        if (negative) {
+            out.append('-');
+        }
+        out.append(Double.runtimeCharAt(digits, 0));
+        out.append('.');
+        int end = Double.lastNonZeroIndex(digits);
+        if (end < 2) {
+            out.append('0');
+        } else {
+            int i = 1;
+            while (i < end) {
+                out.append(Double.runtimeCharAt(digits, i));
+                i = i + 1;
+            }
+        }
+        out.append('E');
+        out.append(Integer.toString(exponent));
+        return out.toString();
+    }
+
+    private static int lastNonZeroIndex(String digits) {
+        int end = Intrinsics.stringLength(digits);
+        while (end > 1 && Double.runtimeCharAt(digits, end - 1) == '0') {
+            end = end - 1;
+        }
+        return end;
+    }
+
+    private static boolean matchesNaN(String text, int start, int end) {
+        if ((end - start) != 3) {
+            return false;
+        }
+        return Double.runtimeCharAt(text, start) == 'N'
+            && Double.runtimeCharAt(text, start + 1) == 'a'
+            && Double.runtimeCharAt(text, start + 2) == 'N';
+    }
+
+    private static boolean matchesInfinity(String text, int start, int end) {
+        if ((end - start) != 8) {
+            return false;
+        }
+        return Double.runtimeCharAt(text, start) == 'I'
+            && Double.runtimeCharAt(text, start + 1) == 'n'
+            && Double.runtimeCharAt(text, start + 2) == 'f'
+            && Double.runtimeCharAt(text, start + 3) == 'i'
+            && Double.runtimeCharAt(text, start + 4) == 'n'
+            && Double.runtimeCharAt(text, start + 5) == 'i'
+            && Double.runtimeCharAt(text, start + 6) == 't'
+            && Double.runtimeCharAt(text, start + 7) == 'y';
+    }
+
+    private static char runtimeCharAt(String value, int index) {
+        return '\0';
+    }
+
+    private static boolean isDigit(char value) {
+        return value >= '0' && value <= '9';
+    }
+
+    private static boolean isNaN(double value) {
+        return value != value;
+    }
+
+    private static boolean isInfinite(double value) {
+        return value == value && value != 0.0d && (value * 0.5d) == value;
+    }
+
+    private static boolean isNegativeZero(double value) {
+        return value == 0.0d && (1.0d / value) < 0.0d;
+    }
+
+    private static double buildMinValue() {
+        double value = 4.9406564584124654d;
+        int i = 0;
+        while (i < 324) {
+            value = value / 10.0d;
+            i = i + 1;
+        }
+        return value;
+    }
+
+    private static double buildMaxValue() {
+        double value = 1.7976931348623157d;
+        int i = 0;
+        while (i < 308) {
+            value = value * 10.0d;
+            i = i + 1;
+        }
+        return value;
+    }
+
+    private static void invalidLiteral() {
+        NumberFormatException ex = new NumberFormatException("Invalid floating literal");
+        ex.panic();
+    }
+
 }

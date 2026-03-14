@@ -224,6 +224,23 @@ public final class String {
     }
 
     /**
+     * Converts a float value into its string representation.
+     * Use this when formatting single-precision values through Java-like APIs.
+     */
+    public static String valueOf(float value) {
+        return Float.toString(value);
+    }
+
+    /**
+     * Converts a double value into its string representation.
+     * Use this when formatting double-precision values through Java-like APIs.
+     */
+    public static String valueOf(double value) {
+        return Double.toString(value);
+    }
+
+
+    /**
      * Converts an object reference into its string representation.
      * Use this for Java-like formatting where `null` should become `"null"`.
      */

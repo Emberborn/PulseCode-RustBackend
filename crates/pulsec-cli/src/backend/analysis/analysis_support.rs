@@ -43,6 +43,7 @@ impl BackendAdapter for NoopNativeBackend {
         let mut object_path = out_dir.join("main.obj");
         let link_report_path = out_dir.join("native.link.txt");
         let mut link_plan = NativeLinkPlan::default();
+        let mut split_failure_detail: Option<String> = None;
         let (entry_codegen, extra_link_inputs) = match emit_masm_split_program_objects(
             ir,
             out_dir,
@@ -58,7 +59,10 @@ impl BackendAdapter for NoopNativeBackend {
                 &object_path,
                 self.linker_override.as_deref(),
             ) {
-                Ok((codegen, libs)) => (format!("{} (split failed: {})", codegen, split_err), libs),
+                Ok((codegen, libs)) => {
+                    split_failure_detail = Some(split_err.clone());
+                    (format!("{} (split failed: {})", codegen, split_err), libs)
+                }
                 Err(full_masm_err) => {
                     if let Some(main_method) = find_entry_method(ir) {
                         match emit_masm_print_entry_object(
@@ -130,6 +134,12 @@ impl BackendAdapter for NoopNativeBackend {
                     || link_plan.app_owned_objects.is_empty()
                     || link_plan.runtime_owned_objects.is_empty()
                 {
+                    if let Some(split_err) = &split_failure_detail {
+                        return Err(format!(
+                            "shared output mode requires split runtime/app object emission (split failed: {})",
+                            split_err
+                        ));
+                    }
                     return Err(
                         "shared output mode requires split runtime/app object emission".to_string(),
                     );

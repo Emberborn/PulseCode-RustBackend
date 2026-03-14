@@ -52,6 +52,14 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
 - `Class.runtimeSimpleName(String) -> String`
 - `Class.runtimePackageName(String) -> String`
 - `String.runtimeCharAt(String, int) -> char`
+- `Double.runtimeCharAt(String, int) -> char`
+- `Long.runtimeParse(String) -> long`
+- `Long.runtimeToString(long) -> String`
+- `UInteger.runtimeParse(String) -> uint`
+- `UInteger.runtimeToString(uint) -> String`
+- `ULong.runtimeParse(String) -> ulong`
+- `ULong.runtimeToString(ulong) -> String`
+- floating wrapper parse/format does not add new runtime ABI in F1; `Float` / `Double` text conversion is currently stdlib-owned on top of the shipped numeric/string surface
 - `String.runtimeSubstring(String, int, int) -> String`
 - `String.runtimeFromChar(char) -> String`
 - Collections/array runtime surface:
@@ -99,6 +107,12 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
   - `pulsec_rt_booleanToString`
   - `pulsec_rt_parseInt`
   - `pulsec_rt_parseBoolean`
+  - `pulsec_rt_longToString`
+  - `pulsec_rt_parseLong`
+  - `pulsec_rt_uintToString`
+  - `pulsec_rt_parseUInt`
+  - `pulsec_rt_ulongToString`
+  - `pulsec_rt_parseULong`
   - `pulsec_rt_objectClassName`
   - `pulsec_rt_objectHashCode`
   - `pulsec_rt_classSimpleName`

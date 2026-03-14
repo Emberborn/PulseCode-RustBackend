@@ -53,3 +53,13 @@ Use this when unsigned long values need deterministic comparison results.
 
 Converts a primitive unsigned long into decimal text.
 Use this when formatting Pulse extension `ulong` values.
+
+### ``private static ulong runtimeParse(String text)``
+
+Runtime-backed helper for unsigned long parsing.
+Use this only inside the stdlib `ULong` implementation.
+
+### ``private static String runtimeToString(ulong value)``
+
+Runtime-backed helper for unsigned long formatting.
+Use this only inside the stdlib `ULong` implementation.

@@ -53,3 +53,13 @@ Use this when unsigned integer values need deterministic comparison results.
 
 Converts a primitive unsigned int into decimal text.
 Use this when formatting Pulse extension `uint` values.
+
+### ``private static uint runtimeParse(String text)``
+
+Runtime-backed helper for unsigned integer parsing.
+Use this only inside the stdlib `UInteger` implementation.
+
+### ``private static String runtimeToString(uint value)``
+
+Runtime-backed helper for unsigned integer formatting.
+Use this only inside the stdlib `UInteger` implementation.

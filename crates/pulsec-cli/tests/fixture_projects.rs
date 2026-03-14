@@ -2763,9 +2763,12 @@ fn cli_build_executes_wrapper_integral_text_and_constants_flow() {
         import com.pulse.lang.IO;
         import com.pulse.lang.Byte;
         import com.pulse.lang.Short;
+        import com.pulse.lang.Long;
         import com.pulse.lang.Char;
         import com.pulse.lang.UByte;
         import com.pulse.lang.UShort;
+        import com.pulse.lang.UInteger;
+        import com.pulse.lang.ULong;
         import com.pulse.lang.Integer;
         import com.pulse.lang.Boolean;
 
@@ -2775,12 +2778,19 @@ fn cli_build_executes_wrapper_integral_text_and_constants_flow() {
                 IO.println(Byte.compare(Byte.MIN_VALUE, Byte.MAX_VALUE));
                 IO.println(Short.toString(Short.shortValue(Short.parse("-1234"))));
                 IO.println(Short.compare(Short.MIN_VALUE, Short.MAX_VALUE));
+                IO.println(Long.toString(Long.longValue(Long.parse("-9876543210"))));
+                IO.println(Long.compare(Long.MIN_VALUE, Long.MAX_VALUE));
+                IO.println(Char.toString(Char.charValue(Char.parse("Z"))));
                 IO.println(Char.toString('Z'));
                 IO.println(Char.compare(Char.MIN_VALUE, Char.MAX_VALUE));
                 IO.println(UByte.toString(UByte.ubyteValue(UByte.parse("255"))));
                 IO.println(UShort.toString(UShort.ushortValue(UShort.parse("65535"))));
+                IO.println(UInteger.toString(UInteger.uintValue(UInteger.parse("4000000000"))));
+                IO.println(ULong.toString(ULong.ulongValue(ULong.parse("18446744073709551615"))));
                 IO.println(UByte.compare(UByte.MIN_VALUE, UByte.MAX_VALUE));
                 IO.println(UShort.compare(UShort.MIN_VALUE, UShort.MAX_VALUE));
+                IO.println(UInteger.compare(UInteger.MIN_VALUE, UInteger.MAX_VALUE));
+                IO.println(ULong.compare(ULong.MIN_VALUE, ULong.MAX_VALUE));
                 IO.println(Integer.toString(Integer.MIN_VALUE));
                 IO.println(Boolean.toString(Boolean.TRUE));
             }
@@ -2812,14 +2822,14 @@ fn cli_build_executes_wrapper_integral_text_and_constants_flow() {
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
     assert_eq!(
         out,
-        "127\n-1\n-1234\n-1\nZ\n-1\n255\n65535\n-1\n-1\n-2147483648\ntrue\n"
+        "127\n-1\n-1234\n-1\n-9876543210\n-1\nZ\nZ\n-1\n255\n65535\n4000000000\n18446744073709551615\n-1\n-1\n-1\n-1\n-2147483648\ntrue\n"
     );
 
     let _ = fs::remove_dir_all(root);
 }
 
 #[test]
-fn cli_build_executes_wrapper_unsupported_parse_panics() {
+fn cli_build_executes_wrapper_floating_text_and_compare_flow() {
     let root = unique_temp_root();
     let src_root = root.join("src");
     let entry = src_root.join("app/core/Main.pulse");
@@ -2829,10 +2839,38 @@ fn cli_build_executes_wrapper_unsupported_parse_panics() {
         r#"
         package app.core;
         import com.pulse.lang.Float;
+        import com.pulse.lang.Double;
+        import com.pulse.lang.StringBuilder;
+        import com.pulse.lang.IO;
 
         class Main {
             public static void main() {
-                Float.parse("1.0");
+                Float left = Float.parse("1.25");
+                Float small = Float.parse("0.00125");
+                Float exp = Float.parse("1.25e2");
+                Double right = Double.parse("-12.5");
+                Double tiny = Double.parse("0.000125");
+                Double big = Double.parse("12500000");
+                Double nan = Double.parse("NaN");
+                Double inf = Double.parse("Infinity");
+                Double negInf = Double.parse("-Infinity");
+                StringBuilder sb = new StringBuilder();
+
+                IO.println(Float.toString(Float.floatValue(left)));
+                IO.println(Float.toString(Float.floatValue(small)));
+                IO.println(Float.toString(Float.floatValue(exp)));
+                IO.println(Double.toString(Double.doubleValue(right)));
+                IO.println(Double.toString(Double.doubleValue(tiny)));
+                IO.println(Double.toString(Double.doubleValue(big)));
+                IO.println(Double.toString(Double.doubleValue(nan)));
+                IO.println(Double.toString(Double.doubleValue(inf)));
+                IO.println(Double.toString(Double.doubleValue(negInf)));
+                IO.println(Float.compare(Float.floatValue(left), Float.floatValue(exp)));
+                IO.println(Double.compare(Double.doubleValue(right), Double.doubleValue(tiny)));
+                sb.append(Float.floatValue(left));
+                sb.append('|');
+                sb.append(Double.doubleValue(right));
+                IO.println(sb.toString());
             }
         }
         "#,
@@ -2854,18 +2892,16 @@ fn cli_build_executes_wrapper_unsupported_parse_panics() {
     let exe_path = root.join("build").join("main.exe");
     let run = Command::new(&exe_path).output().expect("run built executable");
     assert!(
-        !run.status.success(),
-        "expected non-zero exit\nstdout:\n{}\nstderr:\n{}",
+        run.status.success(),
+        "expected executable success\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&run.stdout),
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert!(
-        out.starts_with("Float.parse is not supported yet\n"),
-        "unexpected stdout:\n{}",
-        out
+    assert_eq!(
+        out,
+        "1.25\n0.00125\n125.0\n-12.5\n1.25E-4\n1.25E7\nNaN\nInfinity\n-Infinity\n-1\n-1\n1.25|-12.5\n"
     );
-    assert!(out.contains("Stack trace:\n"), "missing stack trace:\n{}", out);
 
     let _ = fs::remove_dir_all(root);
 }

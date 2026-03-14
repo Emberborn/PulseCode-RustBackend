@@ -7,14 +7,13 @@ extrn HeapAlloc:proc
 extrn HeapFree:proc
 extrn pulsec_rt_stringFromBytes:proc
 extrn pulsec_rt_consoleWrite:proc
-extrn pulsec_rt_panic:proc
-extrn pulsec_rt_objectNew:proc
 extrn pulsec_rt_arcRetain:proc
 extrn pulsec_rt_arcRelease:proc
 extrn pulsec_rt_tracePush:proc
 extrn pulsec_rt_traceUpdateTop:proc
 extrn pulsec_rt_tracePop:proc
-extrn pulsec_rt_panic:proc
+extrn pulsec_rt_parseULong:proc
+extrn pulsec_rt_ulongToString:proc
 
 
 .data
@@ -30,40 +29,40 @@ trace_m2 db "com.pulse.lang.ULong.parse"
 trace_m2_len equ $ - trace_m2
 pulsec_com_pulse_lang_ULong_parse__String_trace_s0 db "com.pulse.lang.ULong.parse(ULong.pulse:32)"
 pulsec_com_pulse_lang_ULong_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_parse__String_trace_s0
-pulsec_com_pulse_lang_ULong_parse__String_trace_s1 db "com.pulse.lang.ULong.parse(ULong.pulse:33)"
-pulsec_com_pulse_lang_ULong_parse__String_trace_s1_len equ $ - pulsec_com_pulse_lang_ULong_parse__String_trace_s1
-trace_m5 db "com.pulse.lang.ULong.ulongValue"
-trace_m5_len equ $ - trace_m5
-pulsec_com_pulse_lang_ULong_ulongValue__ULong_trace_s0 db "com.pulse.lang.ULong.ulongValue(ULong.pulse:41)"
+trace_m4 db "com.pulse.lang.ULong.ulongValue"
+trace_m4_len equ $ - trace_m4
+pulsec_com_pulse_lang_ULong_ulongValue__ULong_trace_s0 db "com.pulse.lang.ULong.ulongValue(ULong.pulse:40)"
 pulsec_com_pulse_lang_ULong_ulongValue__ULong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_ulongValue__ULong_trace_s0
-trace_m7 db "com.pulse.lang.ULong.equals"
-trace_m7_len equ $ - trace_m7
-pulsec_com_pulse_lang_ULong_equals__ulong_ulong_trace_s0 db "com.pulse.lang.ULong.equals(ULong.pulse:49)"
+trace_m6 db "com.pulse.lang.ULong.equals"
+trace_m6_len equ $ - trace_m6
+pulsec_com_pulse_lang_ULong_equals__ulong_ulong_trace_s0 db "com.pulse.lang.ULong.equals(ULong.pulse:48)"
 pulsec_com_pulse_lang_ULong_equals__ulong_ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_equals__ulong_ulong_trace_s0
-trace_m9 db "com.pulse.lang.ULong.compare"
-trace_m9_len equ $ - trace_m9
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s0 db "com.pulse.lang.ULong.compare(ULong.pulse:57)"
+trace_m8 db "com.pulse.lang.ULong.compare"
+trace_m8_len equ $ - trace_m8
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s0 db "com.pulse.lang.ULong.compare(ULong.pulse:56)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s0
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s1 db "com.pulse.lang.ULong.compare(ULong.pulse:58)"
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s1 db "com.pulse.lang.ULong.compare(ULong.pulse:57)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s1_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s1
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s2 db "com.pulse.lang.ULong.compare(ULong.pulse:60)"
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s2 db "com.pulse.lang.ULong.compare(ULong.pulse:59)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s2_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s2
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s3 db "com.pulse.lang.ULong.compare(ULong.pulse:61)"
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s3 db "com.pulse.lang.ULong.compare(ULong.pulse:60)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s3_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s3
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s4 db "com.pulse.lang.ULong.compare(ULong.pulse:63)"
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s4 db "com.pulse.lang.ULong.compare(ULong.pulse:62)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s4_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s4
-trace_m15 db "com.pulse.lang.ULong.toString"
-trace_m15_len equ $ - trace_m15
-pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0 db "com.pulse.lang.ULong.toString(ULong.pulse:71)"
+trace_m14 db "com.pulse.lang.ULong.toString"
+trace_m14_len equ $ - trace_m14
+pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0 db "com.pulse.lang.ULong.toString(ULong.pulse:70)"
 pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0
-pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1 db "com.pulse.lang.ULong.toString(ULong.pulse:72)"
-pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1_len equ $ - pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1
-msg0 db "ULong.parse is not supported yet"
+trace_m16 db "com.pulse.lang.ULong.runtimeParse"
+trace_m16_len equ $ - trace_m16
+pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0 db "com.pulse.lang.ULong.runtimeParse(ULong.pulse:78)"
+pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0
+trace_m18 db "com.pulse.lang.ULong.runtimeToString"
+trace_m18_len equ $ - trace_m18
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0 db "com.pulse.lang.ULong.runtimeToString(ULong.pulse:86)"
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0
+msg0 db 0
 msg0_len equ $ - msg0
-msg1 db "ULong.toString is not supported yet"
-msg1_len equ $ - msg1
-msg2 db 0
-msg2_len equ $ - msg2
 
 .code
 pulsec_com_pulse_lang_ULong_valueOf__ulong proc
@@ -113,9 +112,7 @@ pulsec_com_pulse_lang_ULong_parse__String_b0:
     lea rcx, pulsec_com_pulse_lang_ULong_parse__String_trace_s0
     mov edx, pulsec_com_pulse_lang_ULong_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg0
-    mov edx, msg0_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -123,17 +120,16 @@ pulsec_com_pulse_lang_ULong_parse__String_b0:
     mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
+    call pulsec_rt_parseULong
     mov qword ptr [rsp+112], rax
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_ULong_parse__String_trace_s1
-    mov edx, pulsec_com_pulse_lang_ULong_parse__String_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    mov ecx, 40
-    call pulsec_rt_objectNew
+    mov dword ptr [rsp+72], eax
+    mov eax, dword ptr [rsp+72]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_ULong_valueOf__ulong
     jmp pulsec_com_pulse_lang_ULong_parse__String_epilogue
 pulsec_com_pulse_lang_ULong_parse__String_epilogue:
 pulsec_com_pulse_lang_ULong_parse__String_epilogue_post:
@@ -150,8 +146,8 @@ pulsec_com_pulse_lang_ULong_ulongValue__ULong proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m5
-    mov edx, trace_m5_len
+    lea rcx, trace_m4
+    mov edx, trace_m4_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -179,8 +175,8 @@ pulsec_com_pulse_lang_ULong_equals__ulong_ulong proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m7
-    mov edx, trace_m7_len
+    lea rcx, trace_m6
+    mov edx, trace_m6_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -216,8 +212,8 @@ pulsec_com_pulse_lang_ULong_compare__ulong_ulong proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m9
-    mov edx, trace_m9_len
+    lea rcx, trace_m8
+    mov edx, trace_m8_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -299,8 +295,8 @@ pulsec_com_pulse_lang_ULong_toString__ulong proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m15
-    mov edx, trace_m15_len
+    lea rcx, trace_m14
+    mov edx, trace_m14_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -311,28 +307,11 @@ pulsec_com_pulse_lang_ULong_toString__ulong_b0:
     lea rcx, pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0
     mov edx, pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg1
-    mov edx, msg1_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
-    mov qword ptr [rsp+32], rax
-    mov rcx, rax
-    call pulsec_rt_arcRetain
-    mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
-    mov qword ptr [rsp+112], rax
-    mov rax, qword ptr [rsp+72]
-    mov rcx, rax
-    call pulsec_rt_arcRelease
-    mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1
-    mov edx, pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    lea rcx, msg2
-    mov edx, msg2_len
-    call pulsec_rt_stringFromBytes
+    call pulsec_rt_ulongToString
     jmp pulsec_com_pulse_lang_ULong_toString__ulong_epilogue
 pulsec_com_pulse_lang_ULong_toString__ulong_epilogue:
 pulsec_com_pulse_lang_ULong_toString__ulong_epilogue_post:
@@ -342,5 +321,65 @@ pulsec_com_pulse_lang_ULong_toString__ulong_epilogue_post:
     add rsp, 120
     ret
 pulsec_com_pulse_lang_ULong_toString__ulong endp
+
+pulsec_com_pulse_lang_ULong_runtimeParse__String proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m16
+    mov edx, trace_m16_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_ULong_runtimeParse__String_b0:
+    lea rcx, pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0
+    mov edx, pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    jmp pulsec_com_pulse_lang_ULong_runtimeParse__String_epilogue
+pulsec_com_pulse_lang_ULong_runtimeParse__String_epilogue:
+pulsec_com_pulse_lang_ULong_runtimeParse__String_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_ULong_runtimeParse__String endp
+
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m18
+    mov edx, trace_m18_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_b0:
+    lea rcx, pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0
+    mov edx, pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg0
+    mov edx, msg0_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_ULong_runtimeToString__ulong_epilogue
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_epilogue:
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong endp
 
 end

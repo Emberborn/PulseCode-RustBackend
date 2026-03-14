@@ -29,8 +29,7 @@ public final class Long {
      * Use this for textual long conversion at API boundaries.
      */
     public static Long parse(String text) {
-        Intrinsics.panic("Long.parse is not supported yet");
-        return new Long();
+        return valueOf(Long.runtimeParse(text));
     }
 
     /**
@@ -68,7 +67,22 @@ public final class Long {
      * Use this when formatting long values without manual casts.
      */
     public static String toString(long value) {
-        Intrinsics.panic("Long.toString is not supported yet");
+        return Long.runtimeToString(value);
+    }
+
+    /**
+     * Runtime-backed helper for long parsing.
+     * Use this only inside the stdlib `Long` implementation.
+     */
+    private static long runtimeParse(String text) {
+        return 0L;
+    }
+
+    /**
+     * Runtime-backed helper for long formatting.
+     * Use this only inside the stdlib `Long` implementation.
+     */
+    private static String runtimeToString(long value) {
         return "";
     }
 }

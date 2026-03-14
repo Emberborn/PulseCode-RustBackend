@@ -46,6 +46,16 @@ Use this when mixing flag output into a builder chain.
 Appends a character value after converting it to text.
 Use this when mixing individual characters into a builder chain.
 
+### ``public StringBuilder append(float value)``
+
+Appends a float value after converting it to text.
+Use this when mixing single-precision output into a builder chain.
+
+### ``public StringBuilder append(double value)``
+
+Appends a double value after converting it to text.
+Use this when mixing double-precision output into a builder chain.
+
 ### ``public StringBuilder append(Object value)``
 
 Appends an object value after converting it to text.

@@ -53,3 +53,13 @@ Use this when long values need deterministic comparison results.
 
 Converts a primitive long into Java-like decimal text.
 Use this when formatting long values without manual casts.
+
+### ``private static long runtimeParse(String text)``
+
+Runtime-backed helper for long parsing.
+Use this only inside the stdlib `Long` implementation.
+
+### ``private static String runtimeToString(long value)``
+
+Runtime-backed helper for long formatting.
+Use this only inside the stdlib `Long` implementation.

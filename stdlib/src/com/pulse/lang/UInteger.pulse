@@ -29,8 +29,7 @@ public final class UInteger {
      * Use this for textual unsigned conversion at API boundaries.
      */
     public static UInteger parse(String text) {
-        Intrinsics.panic("UInteger.parse is not supported yet");
-        return new UInteger();
+        return valueOf(UInteger.runtimeParse(text));
     }
 
     /**
@@ -68,7 +67,22 @@ public final class UInteger {
      * Use this when formatting Pulse extension `uint` values.
      */
     public static String toString(uint value) {
-        Intrinsics.panic("UInteger.toString is not supported yet");
+        return UInteger.runtimeToString(value);
+    }
+
+    /**
+     * Runtime-backed helper for unsigned integer parsing.
+     * Use this only inside the stdlib `UInteger` implementation.
+     */
+    private static uint runtimeParse(String text) {
+        return (uint) 0;
+    }
+
+    /**
+     * Runtime-backed helper for unsigned integer formatting.
+     * Use this only inside the stdlib `UInteger` implementation.
+     */
+    private static String runtimeToString(uint value) {
         return "";
     }
 }

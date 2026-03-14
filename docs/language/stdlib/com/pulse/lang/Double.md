@@ -16,6 +16,14 @@ public final class Double
 
 ## Members
 
+### ``public static final double MIN_VALUE = Double.buildMinValue();``
+
+Smallest positive non-zero double value in the current baseline.
+
+### ``public static final double MAX_VALUE = Double.buildMaxValue();``
+
+Largest finite double value in the current baseline.
+
 ### ``public static Double valueOf(double value)``
 
 Boxes a primitive double into the wrapper form.
@@ -40,3 +48,8 @@ Use this for helper-style primitive equality checks.
 
 Orders two primitive doubles.
 Use this when double values need deterministic comparison results.
+
+### ``public static String toString(double value)``
+
+Converts a primitive double into Java-close text.
+Use this for wrapper-owned decimal formatting without routing through native CRT helpers.

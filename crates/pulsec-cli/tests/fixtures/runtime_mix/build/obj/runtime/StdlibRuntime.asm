@@ -38,7 +38,7 @@ rt_runtime_init_epoch dd 0
 rt_str_count dd 0
 rt_str_lens_ptr dq 0
 rt_str_data_ptr dq 0
-rt_tmpbuf db 32 dup(0)
+rt_tmpbuf db 256 dup(0)
 rt_tmp_concat db 256 dup(0)
 rt_tmp_concat_len dd 0
 rt_tmp_arr_slot dd 0
@@ -73,7 +73,10 @@ rt_debug_arc_release_err db "Debug allocator: invalid ARC release"
 rt_debug_arc_release_err_len equ $ - rt_debug_arc_release_err
 
 rt_parse_int_err db 'I','n','v','a','l','i','d',' ','i','n','t','e','g','e','r',' ','l','i','t','e','r','a','l'
+rt_parse_long_err db 'I','n','v','a','l','i','d',' ','l','o','n','g',' ','l','i','t','e','r','a','l'
 rt_parse_bool_err db 'I','n','v','a','l','i','d',' ','b','o','o','l','e','a','n',' ','l','i','t','e','r','a','l'
+rt_parse_uint_err db 'I','n','v','a','l','i','d',' ','u','i','n','t',' ','l','i','t','e','r','a','l'
+rt_parse_ulong_err db 'I','n','v','a','l','i','d',' ','u','l','o','n','g',' ','l','i','t','e','r','a','l'
 
 rt_arc_gen_overflow_err db 'A','R','C',' ','g','e','n','e','r','a','t','i','o','n',' ','o','v','e','r','f','l','o','w'
 rt_arc_gen_overflow_err_len equ $ - rt_arc_gen_overflow_err
@@ -4599,6 +4602,51 @@ pulsec_rt_listSize_ok:
     ret
 pulsec_rt_listSize endp
 
+pulsec_rt_longToString proc
+    mov rax, rcx
+    lea r8, rt_tmpbuf
+    add r8, 31
+    xor r9d, r9d
+    xor ecx, ecx
+    cmp rax, 0
+    jne pulsec_rt_longToString_nonzero
+    mov byte ptr [r8], '0'
+    mov rcx, r8
+    mov edx, 1
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_longToString_nonzero:
+    cmp rax, 0
+    jge pulsec_rt_longToString_digit_loop
+    mov r9d, 1
+pulsec_rt_longToString_digit_loop:
+    mov r10, 10
+    cqo
+    idiv r10
+    mov r11, rdx
+    test r11, r11
+    jge pulsec_rt_longToString_positive_rem
+    neg r11
+pulsec_rt_longToString_positive_rem:
+    add r11b, '0'
+    mov byte ptr [r8], r11b
+    sub r8, 1
+    add ecx, 1
+    test rax, rax
+    jne pulsec_rt_longToString_digit_loop
+    cmp r9d, 0
+    je pulsec_rt_longToString_after_sign
+    mov byte ptr [r8], '-'
+    sub r8, 1
+    add ecx, 1
+pulsec_rt_longToString_after_sign:
+    add r8, 1
+    mov rdx, rcx
+    mov rcx, r8
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_longToString endp
+
 pulsec_rt_mapClear proc
     mov r10d, ecx
     cmp r10d, 1
@@ -6006,6 +6054,210 @@ rt_parse_int_stale:
     ret
 pulsec_rt_parseInt endp
 
+pulsec_rt_parseLong proc
+    mov r10d, ecx
+    and r10d, 4294967295
+    mov r8, rcx
+    shr r8, 32
+    cmp r10d, 0
+    jl rt_parse_long_fail
+    cmp r10d, dword ptr [rt_slot_capacity]
+    jg rt_parse_long_fail
+    test r8d, r8d
+    jz rt_parse_long_plain
+    cmp r8d, dword ptr [rt_arc_generation+r10*4]
+    jne rt_parse_long_stale
+rt_parse_long_plain:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je rt_parse_long_stale
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne rt_parse_long_stale
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov r11d, dword ptr [rax+r10*4]
+    cmp r11d, 0
+    je rt_parse_long_fail
+    mov r9, qword ptr [rt_str_data_ptr]
+    mov r8d, r10d
+    imul r8d, 256
+    add r9, r8
+    xor rax, rax
+    xor r8d, r8d
+    mov ecx, 1
+    mov bl, byte ptr [r9]
+    cmp bl, '-'
+    jne rt_parse_long_loop
+    cmp r11d, 1
+    je rt_parse_long_fail
+    mov ecx, -1
+    mov r8d, 1
+rt_parse_long_loop:
+    cmp r8d, r11d
+    jge rt_parse_long_done
+    mov bl, byte ptr [r9+r8]
+    cmp bl, '0'
+    jb rt_parse_long_fail
+    cmp bl, '9'
+    ja rt_parse_long_fail
+    movzx edx, bl
+    sub edx, '0'
+    imul rax, rax, 10
+    add rax, rdx
+    inc r8d
+    jmp rt_parse_long_loop
+rt_parse_long_done:
+    cmp ecx, -1
+    jne rt_parse_long_ret
+    neg rax
+rt_parse_long_ret:
+    ret
+rt_parse_long_fail:
+    lea rcx, rt_parse_long_err
+    mov edx, 20
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+rt_parse_long_stale:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_parseLong endp
+
+pulsec_rt_parseUInt proc
+    mov r10d, ecx
+    and r10d, 4294967295
+    mov r8, rcx
+    shr r8, 32
+    cmp r10d, 0
+    jl rt_parse_uint_fail
+    cmp r10d, dword ptr [rt_slot_capacity]
+    jg rt_parse_uint_fail
+    test r8d, r8d
+    jz rt_parse_uint_plain
+    cmp r8d, dword ptr [rt_arc_generation+r10*4]
+    jne rt_parse_uint_stale
+rt_parse_uint_plain:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je rt_parse_uint_stale
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne rt_parse_uint_stale
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov r11d, dword ptr [rax+r10*4]
+    cmp r11d, 0
+    je rt_parse_uint_fail
+    mov r9, qword ptr [rt_str_data_ptr]
+    mov r8d, r10d
+    imul r8d, 256
+    add r9, r8
+    xor eax, eax
+    xor r8d, r8d
+rt_parse_uint_loop:
+    cmp r8d, r11d
+    jge rt_parse_uint_ret
+    mov bl, byte ptr [r9+r8]
+    cmp bl, '0'
+    jb rt_parse_uint_fail
+    cmp bl, '9'
+    ja rt_parse_uint_fail
+    movzx ecx, bl
+    sub ecx, '0'
+    imul eax, eax, 10
+    add eax, ecx
+    inc r8d
+    jmp rt_parse_uint_loop
+rt_parse_uint_ret:
+    ret
+rt_parse_uint_fail:
+    lea rcx, rt_parse_uint_err
+    mov edx, 20
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+rt_parse_uint_stale:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_parseUInt endp
+
+pulsec_rt_parseULong proc
+    mov r10d, ecx
+    and r10d, 4294967295
+    mov r8, rcx
+    shr r8, 32
+    cmp r10d, 0
+    jl rt_parse_ulong_fail
+    cmp r10d, dword ptr [rt_slot_capacity]
+    jg rt_parse_ulong_fail
+    test r8d, r8d
+    jz rt_parse_ulong_plain
+    cmp r8d, dword ptr [rt_arc_generation+r10*4]
+    jne rt_parse_ulong_stale
+rt_parse_ulong_plain:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je rt_parse_ulong_stale
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne rt_parse_ulong_stale
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov r11d, dword ptr [rax+r10*4]
+    cmp r11d, 0
+    je rt_parse_ulong_fail
+    mov r9, qword ptr [rt_str_data_ptr]
+    mov r8d, r10d
+    imul r8d, 256
+    add r9, r8
+    xor rax, rax
+    xor r8d, r8d
+rt_parse_ulong_loop:
+    cmp r8d, r11d
+    jge rt_parse_ulong_ret
+    mov bl, byte ptr [r9+r8]
+    cmp bl, '0'
+    jb rt_parse_ulong_fail
+    cmp bl, '9'
+    ja rt_parse_ulong_fail
+    movzx edx, bl
+    sub edx, '0'
+    imul rax, rax, 10
+    add rax, rdx
+    inc r8d
+    jmp rt_parse_ulong_loop
+rt_parse_ulong_ret:
+    ret
+rt_parse_ulong_fail:
+    lea rcx, rt_parse_ulong_err
+    mov edx, 21
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+rt_parse_ulong_stale:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_parseULong endp
+
 pulsec_rt_stringCharAt proc
     mov r9d, edx
     mov r10d, ecx
@@ -6282,6 +6534,66 @@ pulsec_rt_stringSubstring_fail:
     xor eax, eax
     ret
 pulsec_rt_stringSubstring endp
+
+pulsec_rt_uintToString proc
+    mov eax, ecx
+    lea r8, rt_tmpbuf
+    add r8, 31
+    xor ecx, ecx
+    cmp eax, 0
+    jne pulsec_rt_uintToString_nonzero
+    mov byte ptr [r8], '0'
+    mov rcx, r8
+    mov edx, 1
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_uintToString_nonzero:
+    mov r10d, 10
+pulsec_rt_uintToString_digit_loop:
+    xor edx, edx
+    div r10d
+    add dl, '0'
+    mov byte ptr [r8], dl
+    sub r8, 1
+    add ecx, 1
+    test eax, eax
+    jne pulsec_rt_uintToString_digit_loop
+    add r8, 1
+    mov rdx, rcx
+    mov rcx, r8
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_uintToString endp
+
+pulsec_rt_ulongToString proc
+    mov rax, rcx
+    lea r8, rt_tmpbuf
+    add r8, 31
+    xor ecx, ecx
+    cmp rax, 0
+    jne pulsec_rt_ulongToString_nonzero
+    mov byte ptr [r8], '0'
+    mov rcx, r8
+    mov edx, 1
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_ulongToString_nonzero:
+    mov r10, 10
+pulsec_rt_ulongToString_digit_loop:
+    xor edx, edx
+    div r10
+    add dl, '0'
+    mov byte ptr [r8], dl
+    sub r8, 1
+    add ecx, 1
+    test rax, rax
+    jne pulsec_rt_ulongToString_digit_loop
+    add r8, 1
+    mov rdx, rcx
+    mov rcx, r8
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_ulongToString endp
 
 pulsec_rt_weakClear proc
     cmp ecx, 0

@@ -31,6 +31,14 @@ pub(crate) fn default_backend_contract() -> BackendContract {
             "com.pulse.lang.String.runtimeCharAt",
             "com.pulse.lang.String.runtimeSubstring",
             "com.pulse.lang.String.runtimeFromChar",
+            "com.pulse.lang.Char.runtimeCharAt",
+            "com.pulse.lang.Double.runtimeCharAt",
+            "com.pulse.lang.Long.runtimeParse",
+            "com.pulse.lang.Long.runtimeToString",
+            "com.pulse.lang.UInteger.runtimeParse",
+            "com.pulse.lang.UInteger.runtimeToString",
+            "com.pulse.lang.ULong.runtimeParse",
+            "com.pulse.lang.ULong.runtimeToString",
             "com.pulse.rt.Intrinsics.pushExceptionHandler",
             "com.pulse.rt.Intrinsics.popExceptionHandler",
             "com.pulse.rt.Intrinsics.takePendingException",
@@ -166,6 +174,38 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("String".to_string(), "runtimeFromChar".to_string()),
         CHAR_TO_STRING_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Char".to_string(), "runtimeCharAt".to_string()),
+        CHAR_RUNTIME_CHAR_AT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Double".to_string(), "runtimeCharAt".to_string()),
+        STRING_CHAR_AT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Long".to_string(), "runtimeParse".to_string()),
+        PARSE_LONG_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Long".to_string(), "runtimeToString".to_string()),
+        LONG_TO_STRING_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("UInteger".to_string(), "runtimeParse".to_string()),
+        PARSE_UINT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("UInteger".to_string(), "runtimeToString".to_string()),
+        UINT_TO_STRING_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("ULong".to_string(), "runtimeParse".to_string()),
+        PARSE_ULONG_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("ULong".to_string(), "runtimeToString".to_string()),
+        ULONG_TO_STRING_SYMBOL.to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "arrayNew".to_string()),
@@ -349,6 +389,10 @@ pub(crate) fn normalize_stdlib_owner(owner: &str) -> &str {
         "com.pulse.lang.IO" => "IO",
         "com.pulse.lang.Class" => "Class",
         "com.pulse.lang.String" => "String",
+        "com.pulse.lang.Char" => "Char",
+        "com.pulse.lang.Long" => "Long",
+        "com.pulse.lang.UInteger" => "UInteger",
+        "com.pulse.lang.ULong" => "ULong",
         "com.pulse.rt.Intrinsics" => "Intrinsics",
         "System.out" => "IO",
         other => other,

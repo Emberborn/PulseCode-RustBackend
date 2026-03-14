@@ -36,11 +36,12 @@ class com.pulse.lang.Char
   field char static MIN_VALUE
   field char static MAX_VALUE
   method Char valueOf(char value) blocks=1 values=1
-  method Char parse(String text) blocks=1 values=5
+  method Char parse(String text) blocks=4 values=22
   method char charValue(Char value) blocks=1 values=1
   method boolean equals(char left, char right) blocks=1 values=3
   method int compare(char left, char right) blocks=7 values=10
   method String toString(char value) blocks=1 values=4
+  method char runtimeCharAt(String value, int index) blocks=1 values=1
 class com.pulse.lang.Class
   field String name
   method ctor Class(String name) blocks=1 values=3
@@ -60,11 +61,29 @@ class com.pulse.lang.ConsoleWriter
   method void print(int value) blocks=1 values=0
   method void print(boolean value) blocks=1 values=0
 class com.pulse.lang.Double
+  field double static MIN_VALUE
+  field double static MAX_VALUE
   method Double valueOf(double value) blocks=1 values=1
-  method Double parse(String text) blocks=1 values=5
+  method Double parse(String text) blocks=1 values=6
   method double doubleValue(Double value) blocks=1 values=1
   method boolean equals(double left, double right) blocks=1 values=3
   method int compare(double left, double right) blocks=16 values=28
+  method String toString(double value) blocks=25 values=62
+  method double parsePrimitive(String text) blocks=85 values=336
+  method String formatFiniteWithSign(boolean negative, double magnitude, int precision) blocks=13 values=74
+  method String formatFixedDigits(boolean negative, String digits, int exponent) blocks=31 values=135
+  method String formatScientificDigits(boolean negative, String digits, int exponent) blocks=10 values=59
+  method int lastNonZeroIndex(String digits) blocks=4 values=23
+  method boolean matchesNaN(String text, int start, int end) blocks=4 values=35
+  method boolean matchesInfinity(String text, int start, int end) blocks=4 values=90
+  method char runtimeCharAt(String value, int index) blocks=1 values=1
+  method boolean isDigit(char value) blocks=1 values=8
+  method boolean isNaN(double value) blocks=1 values=3
+  method boolean isInfinite(double value) blocks=1 values=15
+  method boolean isNegativeZero(double value) blocks=1 values=10
+  method double buildMinValue() blocks=4 values=14
+  method double buildMaxValue() blocks=4 values=14
+  method void invalidLiteral() blocks=1 values=5
 class com.pulse.lang.Enum
   method ctor Enum() blocks=1 values=0
 class com.pulse.lang.Exception
@@ -72,11 +91,16 @@ class com.pulse.lang.Exception
   method ctor Exception(String message) blocks=1 values=6
   method ctor Exception(String message, Throwable cause) blocks=1 values=6
 class com.pulse.lang.Float
+  field float static MIN_VALUE
+  field float static MAX_VALUE
   method Float valueOf(float value) blocks=1 values=1
-  method Float parse(String text) blocks=1 values=5
+  method Float parse(String text) blocks=1 values=10
   method float floatValue(Float value) blocks=1 values=1
   method boolean equals(float left, float right) blocks=1 values=3
   method int compare(float left, float right) blocks=16 values=28
+  method String toString(float value) blocks=70 values=318
+  method float buildMinValue() blocks=4 values=14
+  method float buildMaxValue() blocks=4 values=14
 class com.pulse.lang.IO
   method void println(String value) blocks=1 values=4
   method void println(int value) blocks=1 values=4
@@ -114,11 +138,13 @@ class com.pulse.lang.Long
   field long static MIN_VALUE
   field long static MAX_VALUE
   method Long valueOf(long value) blocks=1 values=1
-  method Long parse(String text) blocks=1 values=5
+  method Long parse(String text) blocks=1 values=6
   method long longValue(Long value) blocks=1 values=1
   method boolean equals(long left, long right) blocks=1 values=3
   method int compare(long left, long right) blocks=7 values=10
-  method String toString(long value) blocks=1 values=5
+  method String toString(long value) blocks=1 values=4
+  method long runtimeParse(String text) blocks=1 values=1
+  method String runtimeToString(long value) blocks=1 values=1
 class com.pulse.lang.NotNull
 class com.pulse.lang.NullPointerException
   method ctor NullPointerException() blocks=1 values=6
@@ -171,6 +197,8 @@ class com.pulse.lang.String
   method String valueOf(int value) blocks=1 values=4
   method String valueOf(boolean value) blocks=1 values=4
   method String valueOf(char value) blocks=1 values=4
+  method String valueOf(float value) blocks=1 values=4
+  method String valueOf(double value) blocks=1 values=4
   method String valueOf(Object value) blocks=4 values=7
   method char runtimeCharAt(String value, int index) blocks=1 values=1
   method String runtimeSubstring(String value, int beginIndex, int endIndex) blocks=1 values=1
@@ -183,6 +211,8 @@ class com.pulse.lang.StringBuilder
   method StringBuilder append(int number) blocks=1 values=11
   method StringBuilder append(boolean flag) blocks=1 values=11
   method StringBuilder append(char value) blocks=1 values=11
+  method StringBuilder append(float value) blocks=1 values=11
+  method StringBuilder append(double value) blocks=1 values=11
   method StringBuilder append(Object value) blocks=1 values=11
   method int length() blocks=1 values=4
   method void clear() blocks=1 values=3
@@ -221,20 +251,24 @@ class com.pulse.lang.UInteger
   field uint static MIN_VALUE
   field uint static MAX_VALUE
   method UInteger valueOf(uint value) blocks=1 values=1
-  method UInteger parse(String text) blocks=1 values=5
+  method UInteger parse(String text) blocks=1 values=6
   method uint uintValue(UInteger value) blocks=1 values=1
   method boolean equals(uint left, uint right) blocks=1 values=3
   method int compare(uint left, uint right) blocks=7 values=10
-  method String toString(uint value) blocks=1 values=5
+  method String toString(uint value) blocks=1 values=4
+  method uint runtimeParse(String text) blocks=1 values=2
+  method String runtimeToString(uint value) blocks=1 values=1
 class com.pulse.lang.ULong
   field ulong static MIN_VALUE
   field ulong static MAX_VALUE
   method ULong valueOf(ulong value) blocks=1 values=1
-  method ULong parse(String text) blocks=1 values=5
+  method ULong parse(String text) blocks=1 values=6
   method ulong ulongValue(ULong value) blocks=1 values=1
   method boolean equals(ulong left, ulong right) blocks=1 values=3
   method int compare(ulong left, ulong right) blocks=7 values=10
-  method String toString(ulong value) blocks=1 values=5
+  method String toString(ulong value) blocks=1 values=4
+  method ulong runtimeParse(String text) blocks=1 values=2
+  method String runtimeToString(ulong value) blocks=1 values=1
 class com.pulse.lang.UShort
   field ushort static MIN_VALUE
   field ushort static MAX_VALUE

@@ -16,6 +16,14 @@ public final class Float
 
 ## Members
 
+### ``public static final float MIN_VALUE = Float.buildMinValue();``
+
+Smallest positive non-zero float value in the current baseline.
+
+### ``public static final float MAX_VALUE = Float.buildMaxValue();``
+
+Largest finite float value in the current baseline.
+
 ### ``public static Float valueOf(float value)``
 
 Boxes a primitive float into the wrapper form.
@@ -40,3 +48,8 @@ Use this for helper-style primitive equality checks.
 
 Orders two primitive floats.
 Use this when float values need deterministic comparison results.
+
+### ``public static String toString(float value)``
+
+Converts a primitive float into Java-close text.
+Use this for wrapper-owned decimal formatting with float-appropriate precision.

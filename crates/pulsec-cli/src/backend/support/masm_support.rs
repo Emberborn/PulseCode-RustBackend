@@ -145,7 +145,7 @@ pub(crate) fn emit_runtime_data_tables(out: &mut String) {
     out.push_str("rt_str_count dd 0\n");
     out.push_str("rt_str_lens_ptr dq 0\n");
     out.push_str("rt_str_data_ptr dq 0\n");
-    out.push_str("rt_tmpbuf db 32 dup(0)\n");
+    out.push_str("rt_tmpbuf db 256 dup(0)\n");
     out.push_str("rt_tmp_concat db 256 dup(0)\n");
     out.push_str("rt_tmp_concat_len dd 0\n");
     out.push_str("rt_tmp_arr_slot dd 0\n");
@@ -182,7 +182,10 @@ pub(crate) fn emit_runtime_data_tables(out: &mut String) {
     out.push_str("rt_debug_arc_release_err db \"Debug allocator: invalid ARC release\"\n");
     out.push_str("rt_debug_arc_release_err_len equ $ - rt_debug_arc_release_err\n\n");
     out.push_str("rt_parse_int_err db 'I','n','v','a','l','i','d',' ','i','n','t','e','g','e','r',' ','l','i','t','e','r','a','l'\n");
-    out.push_str("rt_parse_bool_err db 'I','n','v','a','l','i','d',' ','b','o','o','l','e','a','n',' ','l','i','t','e','r','a','l'\n\n");
+    out.push_str("rt_parse_long_err db 'I','n','v','a','l','i','d',' ','l','o','n','g',' ','l','i','t','e','r','a','l'\n");
+    out.push_str("rt_parse_bool_err db 'I','n','v','a','l','i','d',' ','b','o','o','l','e','a','n',' ','l','i','t','e','r','a','l'\n");
+    out.push_str("rt_parse_uint_err db 'I','n','v','a','l','i','d',' ','u','i','n','t',' ','l','i','t','e','r','a','l'\n");
+    out.push_str("rt_parse_ulong_err db 'I','n','v','a','l','i','d',' ','u','l','o','n','g',' ','l','i','t','e','r','a','l'\n\n");
     out.push_str("rt_arc_gen_overflow_err db 'A','R','C',' ','g','e','n','e','r','a','t','i','o','n',' ','o','v','e','r','f','l','o','w'\n");
     out.push_str("rt_arc_gen_overflow_err_len equ $ - rt_arc_gen_overflow_err\n");
     out.push_str("rt_weak_generation_overflow_err db 'W','e','a','k',' ','g','e','n','e','r','a','t','i','o','n',' ','o','v','e','r','f','l','o','w'\n");

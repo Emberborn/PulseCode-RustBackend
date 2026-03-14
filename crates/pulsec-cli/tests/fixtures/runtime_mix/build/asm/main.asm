@@ -25,7 +25,7 @@ rt_runtime_init_epoch dd 0
 rt_str_count dd 0
 rt_str_lens_ptr dq 0
 rt_str_data_ptr dq 0
-rt_tmpbuf db 32 dup(0)
+rt_tmpbuf db 256 dup(0)
 rt_tmp_concat db 256 dup(0)
 rt_tmp_concat_len dd 0
 rt_tmp_arr_slot dd 0
@@ -60,7 +60,10 @@ rt_debug_arc_release_err db "Debug allocator: invalid ARC release"
 rt_debug_arc_release_err_len equ $ - rt_debug_arc_release_err
 
 rt_parse_int_err db 'I','n','v','a','l','i','d',' ','i','n','t','e','g','e','r',' ','l','i','t','e','r','a','l'
+rt_parse_long_err db 'I','n','v','a','l','i','d',' ','l','o','n','g',' ','l','i','t','e','r','a','l'
 rt_parse_bool_err db 'I','n','v','a','l','i','d',' ','b','o','o','l','e','a','n',' ','l','i','t','e','r','a','l'
+rt_parse_uint_err db 'I','n','v','a','l','i','d',' ','u','i','n','t',' ','l','i','t','e','r','a','l'
+rt_parse_ulong_err db 'I','n','v','a','l','i','d',' ','u','l','o','n','g',' ','l','i','t','e','r','a','l'
 
 rt_arc_gen_overflow_err db 'A','R','C',' ','g','e','n','e','r','a','t','i','o','n',' ','o','v','e','r','f','l','o','w'
 rt_arc_gen_overflow_err_len equ $ - rt_arc_gen_overflow_err
@@ -220,9 +223,13 @@ pulsec_fld_com_pulse_lang_Class_name_heap_owned dd 0
 pulsec_objc_com_pulse_lang_Comparable dd 0
 pulsec_objc_com_pulse_lang_ConsoleWriter dd 0
 pulsec_objc_com_pulse_lang_Double dd 0
+pulsec_fld_com_pulse_lang_Double_MIN_VALUE dq 0
+pulsec_fld_com_pulse_lang_Double_MAX_VALUE dq 0
 pulsec_objc_com_pulse_lang_Enum dd 0
 pulsec_objc_com_pulse_lang_Exception dd 0
 pulsec_objc_com_pulse_lang_Float dd 0
+pulsec_fld_com_pulse_lang_Float_MIN_VALUE dq 0
+pulsec_fld_com_pulse_lang_Float_MAX_VALUE dq 0
 pulsec_objc_com_pulse_lang_IO dd 0
 pulsec_objc_com_pulse_lang_IllegalArgumentException dd 0
 pulsec_objc_com_pulse_lang_IllegalStateException dd 0
@@ -394,256 +401,910 @@ pulsec_com_pulse_lang_Char_parse__String_trace_s0 db "com.pulse.lang.Char.parse(
 pulsec_com_pulse_lang_Char_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Char_parse__String_trace_s0
 pulsec_com_pulse_lang_Char_parse__String_trace_s1 db "com.pulse.lang.Char.parse(Char.pulse:33)"
 pulsec_com_pulse_lang_Char_parse__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Char_parse__String_trace_s1
-trace_m57 db "com.pulse.lang.Char.charValue"
-trace_m57_len equ $ - trace_m57
-pulsec_com_pulse_lang_Char_charValue__Char_trace_s0 db "com.pulse.lang.Char.charValue(Char.pulse:41)"
+pulsec_com_pulse_lang_Char_parse__String_trace_s2 db "com.pulse.lang.Char.parse(Char.pulse:35)"
+pulsec_com_pulse_lang_Char_parse__String_trace_s2_len equ $ - pulsec_com_pulse_lang_Char_parse__String_trace_s2
+trace_m58 db "com.pulse.lang.Char.charValue"
+trace_m58_len equ $ - trace_m58
+pulsec_com_pulse_lang_Char_charValue__Char_trace_s0 db "com.pulse.lang.Char.charValue(Char.pulse:43)"
 pulsec_com_pulse_lang_Char_charValue__Char_trace_s0_len equ $ - pulsec_com_pulse_lang_Char_charValue__Char_trace_s0
-trace_m59 db "com.pulse.lang.Char.equals"
-trace_m59_len equ $ - trace_m59
-pulsec_com_pulse_lang_Char_equals__char_char_trace_s0 db "com.pulse.lang.Char.equals(Char.pulse:49)"
+trace_m60 db "com.pulse.lang.Char.equals"
+trace_m60_len equ $ - trace_m60
+pulsec_com_pulse_lang_Char_equals__char_char_trace_s0 db "com.pulse.lang.Char.equals(Char.pulse:51)"
 pulsec_com_pulse_lang_Char_equals__char_char_trace_s0_len equ $ - pulsec_com_pulse_lang_Char_equals__char_char_trace_s0
-trace_m61 db "com.pulse.lang.Char.compare"
-trace_m61_len equ $ - trace_m61
-pulsec_com_pulse_lang_Char_compare__char_char_trace_s0 db "com.pulse.lang.Char.compare(Char.pulse:57)"
+trace_m62 db "com.pulse.lang.Char.compare"
+trace_m62_len equ $ - trace_m62
+pulsec_com_pulse_lang_Char_compare__char_char_trace_s0 db "com.pulse.lang.Char.compare(Char.pulse:59)"
 pulsec_com_pulse_lang_Char_compare__char_char_trace_s0_len equ $ - pulsec_com_pulse_lang_Char_compare__char_char_trace_s0
-pulsec_com_pulse_lang_Char_compare__char_char_trace_s1 db "com.pulse.lang.Char.compare(Char.pulse:58)"
+pulsec_com_pulse_lang_Char_compare__char_char_trace_s1 db "com.pulse.lang.Char.compare(Char.pulse:60)"
 pulsec_com_pulse_lang_Char_compare__char_char_trace_s1_len equ $ - pulsec_com_pulse_lang_Char_compare__char_char_trace_s1
-pulsec_com_pulse_lang_Char_compare__char_char_trace_s2 db "com.pulse.lang.Char.compare(Char.pulse:60)"
+pulsec_com_pulse_lang_Char_compare__char_char_trace_s2 db "com.pulse.lang.Char.compare(Char.pulse:62)"
 pulsec_com_pulse_lang_Char_compare__char_char_trace_s2_len equ $ - pulsec_com_pulse_lang_Char_compare__char_char_trace_s2
-pulsec_com_pulse_lang_Char_compare__char_char_trace_s3 db "com.pulse.lang.Char.compare(Char.pulse:61)"
+pulsec_com_pulse_lang_Char_compare__char_char_trace_s3 db "com.pulse.lang.Char.compare(Char.pulse:63)"
 pulsec_com_pulse_lang_Char_compare__char_char_trace_s3_len equ $ - pulsec_com_pulse_lang_Char_compare__char_char_trace_s3
-pulsec_com_pulse_lang_Char_compare__char_char_trace_s4 db "com.pulse.lang.Char.compare(Char.pulse:63)"
+pulsec_com_pulse_lang_Char_compare__char_char_trace_s4 db "com.pulse.lang.Char.compare(Char.pulse:65)"
 pulsec_com_pulse_lang_Char_compare__char_char_trace_s4_len equ $ - pulsec_com_pulse_lang_Char_compare__char_char_trace_s4
-trace_m67 db "com.pulse.lang.Char.toString"
-trace_m67_len equ $ - trace_m67
-pulsec_com_pulse_lang_Char_toString__char_trace_s0 db "com.pulse.lang.Char.toString(Char.pulse:71)"
+trace_m68 db "com.pulse.lang.Char.toString"
+trace_m68_len equ $ - trace_m68
+pulsec_com_pulse_lang_Char_toString__char_trace_s0 db "com.pulse.lang.Char.toString(Char.pulse:73)"
 pulsec_com_pulse_lang_Char_toString__char_trace_s0_len equ $ - pulsec_com_pulse_lang_Char_toString__char_trace_s0
-trace_m69 db "com.pulse.lang.Class.Class"
-trace_m69_len equ $ - trace_m69
+trace_m70 db "com.pulse.lang.Char.runtimeCharAt"
+trace_m70_len equ $ - trace_m70
+pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_trace_s0 db "com.pulse.lang.Char.runtimeCharAt(Char.pulse:81)"
+pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_trace_s0
+trace_m72 db "com.pulse.lang.Class.Class"
+trace_m72_len equ $ - trace_m72
 pulsec_com_pulse_lang_Class_Class__String_trace_s0 db "com.pulse.lang.Class.Class(Class.pulse:14)"
 pulsec_com_pulse_lang_Class_Class__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_Class__String_trace_s0
-trace_m71 db "com.pulse.lang.Class.getName"
-trace_m71_len equ $ - trace_m71
+trace_m74 db "com.pulse.lang.Class.getName"
+trace_m74_len equ $ - trace_m74
 pulsec_com_pulse_lang_Class_getName_trace_s0 db "com.pulse.lang.Class.getName(Class.pulse:22)"
 pulsec_com_pulse_lang_Class_getName_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_getName_trace_s0
-trace_m73 db "com.pulse.lang.Class.getSimpleName"
-trace_m73_len equ $ - trace_m73
+trace_m76 db "com.pulse.lang.Class.getSimpleName"
+trace_m76_len equ $ - trace_m76
 pulsec_com_pulse_lang_Class_getSimpleName_trace_s0 db "com.pulse.lang.Class.getSimpleName(Class.pulse:30)"
 pulsec_com_pulse_lang_Class_getSimpleName_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_getSimpleName_trace_s0
-trace_m75 db "com.pulse.lang.Class.getPackageName"
-trace_m75_len equ $ - trace_m75
+trace_m78 db "com.pulse.lang.Class.getPackageName"
+trace_m78_len equ $ - trace_m78
 pulsec_com_pulse_lang_Class_getPackageName_trace_s0 db "com.pulse.lang.Class.getPackageName(Class.pulse:38)"
 pulsec_com_pulse_lang_Class_getPackageName_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_getPackageName_trace_s0
-trace_m77 db "com.pulse.lang.Class.toString"
-trace_m77_len equ $ - trace_m77
+trace_m80 db "com.pulse.lang.Class.toString"
+trace_m80_len equ $ - trace_m80
 pulsec_com_pulse_lang_Class_toString_trace_s0 db "com.pulse.lang.Class.toString(Class.pulse:46)"
 pulsec_com_pulse_lang_Class_toString_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_toString_trace_s0
-trace_m79 db "com.pulse.lang.Class.runtimeSimpleName"
-trace_m79_len equ $ - trace_m79
+trace_m82 db "com.pulse.lang.Class.runtimeSimpleName"
+trace_m82_len equ $ - trace_m82
 pulsec_com_pulse_lang_Class_runtimeSimpleName__String_trace_s0 db "com.pulse.lang.Class.runtimeSimpleName(Class.pulse:54)"
 pulsec_com_pulse_lang_Class_runtimeSimpleName__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_runtimeSimpleName__String_trace_s0
-trace_m81 db "com.pulse.lang.Class.runtimePackageName"
-trace_m81_len equ $ - trace_m81
+trace_m84 db "com.pulse.lang.Class.runtimePackageName"
+trace_m84_len equ $ - trace_m84
 pulsec_com_pulse_lang_Class_runtimePackageName__String_trace_s0 db "com.pulse.lang.Class.runtimePackageName(Class.pulse:62)"
 pulsec_com_pulse_lang_Class_runtimePackageName__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_runtimePackageName__String_trace_s0
-trace_m83 db "com.pulse.lang.Comparable.compareTo"
-trace_m83_len equ $ - trace_m83
-trace_m84 db "com.pulse.lang.ConsoleWriter.println"
-trace_m84_len equ $ - trace_m84
-trace_m85 db "com.pulse.lang.ConsoleWriter.println"
-trace_m85_len equ $ - trace_m85
-trace_m86 db "com.pulse.lang.ConsoleWriter.println"
+trace_m86 db "com.pulse.lang.Comparable.compareTo"
 trace_m86_len equ $ - trace_m86
-trace_m87 db "com.pulse.lang.ConsoleWriter.print"
+trace_m87 db "com.pulse.lang.ConsoleWriter.println"
 trace_m87_len equ $ - trace_m87
-trace_m88 db "com.pulse.lang.ConsoleWriter.print"
+trace_m88 db "com.pulse.lang.ConsoleWriter.println"
 trace_m88_len equ $ - trace_m88
-trace_m89 db "com.pulse.lang.ConsoleWriter.print"
+trace_m89 db "com.pulse.lang.ConsoleWriter.println"
 trace_m89_len equ $ - trace_m89
-trace_m90 db "com.pulse.lang.Double.valueOf"
+trace_m90 db "com.pulse.lang.ConsoleWriter.print"
 trace_m90_len equ $ - trace_m90
-pulsec_com_pulse_lang_Double_valueOf__double_trace_s0 db "com.pulse.lang.Double.valueOf(Double.pulse:14)"
-pulsec_com_pulse_lang_Double_valueOf__double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_valueOf__double_trace_s0
-trace_m92 db "com.pulse.lang.Double.parse"
+trace_m91 db "com.pulse.lang.ConsoleWriter.print"
+trace_m91_len equ $ - trace_m91
+trace_m92 db "com.pulse.lang.ConsoleWriter.print"
 trace_m92_len equ $ - trace_m92
-pulsec_com_pulse_lang_Double_parse__String_trace_s0 db "com.pulse.lang.Double.parse(Double.pulse:22)"
-pulsec_com_pulse_lang_Double_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_parse__String_trace_s0
-pulsec_com_pulse_lang_Double_parse__String_trace_s1 db "com.pulse.lang.Double.parse(Double.pulse:23)"
-pulsec_com_pulse_lang_Double_parse__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_parse__String_trace_s1
-trace_m95 db "com.pulse.lang.Double.doubleValue"
+trace_m93 db "com.pulse.lang.Double.valueOf"
+trace_m93_len equ $ - trace_m93
+pulsec_com_pulse_lang_Double_valueOf__double_trace_s0 db "com.pulse.lang.Double.valueOf(Double.pulse:24)"
+pulsec_com_pulse_lang_Double_valueOf__double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_valueOf__double_trace_s0
+trace_m95 db "com.pulse.lang.Double.parse"
 trace_m95_len equ $ - trace_m95
-pulsec_com_pulse_lang_Double_doubleValue__Double_trace_s0 db "com.pulse.lang.Double.doubleValue(Double.pulse:31)"
-pulsec_com_pulse_lang_Double_doubleValue__Double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_doubleValue__Double_trace_s0
-trace_m97 db "com.pulse.lang.Double.equals"
+pulsec_com_pulse_lang_Double_parse__String_trace_s0 db "com.pulse.lang.Double.parse(Double.pulse:32)"
+pulsec_com_pulse_lang_Double_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_parse__String_trace_s0
+trace_m97 db "com.pulse.lang.Double.doubleValue"
 trace_m97_len equ $ - trace_m97
-pulsec_com_pulse_lang_Double_equals__double_double_trace_s0 db "com.pulse.lang.Double.equals(Double.pulse:39)"
-pulsec_com_pulse_lang_Double_equals__double_double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_equals__double_double_trace_s0
-trace_m99 db "com.pulse.lang.Double.compare"
+pulsec_com_pulse_lang_Double_doubleValue__Double_trace_s0 db "com.pulse.lang.Double.doubleValue(Double.pulse:40)"
+pulsec_com_pulse_lang_Double_doubleValue__Double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_doubleValue__Double_trace_s0
+trace_m99 db "com.pulse.lang.Double.equals"
 trace_m99_len equ $ - trace_m99
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s0 db "com.pulse.lang.Double.compare(Double.pulse:47)"
+pulsec_com_pulse_lang_Double_equals__double_double_trace_s0 db "com.pulse.lang.Double.equals(Double.pulse:48)"
+pulsec_com_pulse_lang_Double_equals__double_double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_equals__double_double_trace_s0
+trace_m101 db "com.pulse.lang.Double.compare"
+trace_m101_len equ $ - trace_m101
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s0 db "com.pulse.lang.Double.compare(Double.pulse:56)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s0
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s1 db "com.pulse.lang.Double.compare(Double.pulse:48)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s1 db "com.pulse.lang.Double.compare(Double.pulse:57)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s1
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s2 db "com.pulse.lang.Double.compare(Double.pulse:50)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s2 db "com.pulse.lang.Double.compare(Double.pulse:59)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s2
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s3 db "com.pulse.lang.Double.compare(Double.pulse:51)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s3 db "com.pulse.lang.Double.compare(Double.pulse:60)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s3
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s4 db "com.pulse.lang.Double.compare(Double.pulse:53)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s4 db "com.pulse.lang.Double.compare(Double.pulse:62)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s4_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s4
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s5 db "com.pulse.lang.Double.compare(Double.pulse:54)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s5 db "com.pulse.lang.Double.compare(Double.pulse:63)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s5_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s5
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s6 db "com.pulse.lang.Double.compare(Double.pulse:56)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s6 db "com.pulse.lang.Double.compare(Double.pulse:65)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s6_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s6
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s7 db "com.pulse.lang.Double.compare(Double.pulse:57)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s7 db "com.pulse.lang.Double.compare(Double.pulse:66)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s7_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s7
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s8 db "com.pulse.lang.Double.compare(Double.pulse:58)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s8 db "com.pulse.lang.Double.compare(Double.pulse:67)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s8_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s8
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s9 db "com.pulse.lang.Double.compare(Double.pulse:59)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s9 db "com.pulse.lang.Double.compare(Double.pulse:68)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s9_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s9
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s10 db "com.pulse.lang.Double.compare(Double.pulse:61)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s10 db "com.pulse.lang.Double.compare(Double.pulse:70)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s10_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s10
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s11 db "com.pulse.lang.Double.compare(Double.pulse:62)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s11 db "com.pulse.lang.Double.compare(Double.pulse:71)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s11_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s11
-pulsec_com_pulse_lang_Double_compare__double_double_trace_s12 db "com.pulse.lang.Double.compare(Double.pulse:64)"
+pulsec_com_pulse_lang_Double_compare__double_double_trace_s12 db "com.pulse.lang.Double.compare(Double.pulse:73)"
 pulsec_com_pulse_lang_Double_compare__double_double_trace_s12_len equ $ - pulsec_com_pulse_lang_Double_compare__double_double_trace_s12
-trace_m113 db "com.pulse.lang.Enum.Enum"
-trace_m113_len equ $ - trace_m113
-trace_m114 db "com.pulse.lang.Exception.Exception"
-trace_m114_len equ $ - trace_m114
+trace_m115 db "com.pulse.lang.Double.toString"
+trace_m115_len equ $ - trace_m115
+pulsec_com_pulse_lang_Double_toString__double_trace_s0 db "com.pulse.lang.Double.toString(Double.pulse:81)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s0
+pulsec_com_pulse_lang_Double_toString__double_trace_s1 db "com.pulse.lang.Double.toString(Double.pulse:82)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s1
+pulsec_com_pulse_lang_Double_toString__double_trace_s2 db "com.pulse.lang.Double.toString(Double.pulse:84)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s2
+pulsec_com_pulse_lang_Double_toString__double_trace_s3 db "com.pulse.lang.Double.toString(Double.pulse:85)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s3
+pulsec_com_pulse_lang_Double_toString__double_trace_s4 db "com.pulse.lang.Double.toString(Double.pulse:86)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s4_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s4
+pulsec_com_pulse_lang_Double_toString__double_trace_s5 db "com.pulse.lang.Double.toString(Double.pulse:88)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s5_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s5
+pulsec_com_pulse_lang_Double_toString__double_trace_s6 db "com.pulse.lang.Double.toString(Double.pulse:90)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s6_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s6
+pulsec_com_pulse_lang_Double_toString__double_trace_s7 db "com.pulse.lang.Double.toString(Double.pulse:91)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s7_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s7
+pulsec_com_pulse_lang_Double_toString__double_trace_s8 db "com.pulse.lang.Double.toString(Double.pulse:92)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s8_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s8
+pulsec_com_pulse_lang_Double_toString__double_trace_s9 db "com.pulse.lang.Double.toString(Double.pulse:94)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s9_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s9
+pulsec_com_pulse_lang_Double_toString__double_trace_s10 db "com.pulse.lang.Double.toString(Double.pulse:97)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s10_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s10
+pulsec_com_pulse_lang_Double_toString__double_trace_s11 db "com.pulse.lang.Double.toString(Double.pulse:98)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s11_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s11
+pulsec_com_pulse_lang_Double_toString__double_trace_s12 db "com.pulse.lang.Double.toString(Double.pulse:99)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s12_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s12
+pulsec_com_pulse_lang_Double_toString__double_trace_s13 db "com.pulse.lang.Double.toString(Double.pulse:100)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s13_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s13
+pulsec_com_pulse_lang_Double_toString__double_trace_s14 db "com.pulse.lang.Double.toString(Double.pulse:103)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s14_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s14
+pulsec_com_pulse_lang_Double_toString__double_trace_s15 db "com.pulse.lang.Double.toString(Double.pulse:104)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s15_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s15
+pulsec_com_pulse_lang_Double_toString__double_trace_s16 db "com.pulse.lang.Double.toString(Double.pulse:105)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s16_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s16
+pulsec_com_pulse_lang_Double_toString__double_trace_s17 db "com.pulse.lang.Double.toString(Double.pulse:106)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s17_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s17
+pulsec_com_pulse_lang_Double_toString__double_trace_s18 db "com.pulse.lang.Double.toString(Double.pulse:107)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s18_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s18
+pulsec_com_pulse_lang_Double_toString__double_trace_s19 db "com.pulse.lang.Double.toString(Double.pulse:108)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s19_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s19
+pulsec_com_pulse_lang_Double_toString__double_trace_s20 db "com.pulse.lang.Double.toString(Double.pulse:109)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s20_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s20
+pulsec_com_pulse_lang_Double_toString__double_trace_s21 db "com.pulse.lang.Double.toString(Double.pulse:111)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s21_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s21
+pulsec_com_pulse_lang_Double_toString__double_trace_s22 db "com.pulse.lang.Double.toString(Double.pulse:114)"
+pulsec_com_pulse_lang_Double_toString__double_trace_s22_len equ $ - pulsec_com_pulse_lang_Double_toString__double_trace_s22
+trace_m139 db "com.pulse.lang.Double.parsePrimitive"
+trace_m139_len equ $ - trace_m139
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s0 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:118)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s0
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s1 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:119)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s1
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s2 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:121)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s2
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s3 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:122)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s3
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s4 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:123)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s4_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s4
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s5 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:124)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s5_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s5
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s6 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:125)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s6_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s6
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s7 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:126)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s7_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s7
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s8 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:128)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s8_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s8
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:131)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s10 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:132)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s10_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s10
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s11 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:133)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s11_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s11
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s12 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:134)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s12_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s12
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s13 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:136)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s13_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s13
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s14 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:139)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s14_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s14
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s15 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:140)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s15_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s15
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s16 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:142)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s16_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s16
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s17 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:143)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s17_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s17
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s18 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:146)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s18_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s18
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s19 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:147)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s19_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s19
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s20 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:148)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s20_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s20
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:149)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s22 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:150)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s22_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s22
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s23 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:151)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s23_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s23
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s24 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:152)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s24_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s24
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s25 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:153)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s25_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s25
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s26 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:157)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s26_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s26
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s27 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:158)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s27_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s27
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s28 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:159)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s28_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s28
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s29 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:161)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s29_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s29
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s30 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:164)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s30_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s30
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s31 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:165)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s31_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s31
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:166)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s33 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:167)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s33_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s33
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s34 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:168)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s34_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s34
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s35 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:169)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s35_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s35
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s36 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:171)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s36_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s36
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s37 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:172)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s37_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s37
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s38 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:173)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s38_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s38
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:176)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s40 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:177)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s40_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s40
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s41 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:178)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s41_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s41
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:179)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s43 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:180)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s43_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s43
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s44 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:181)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s44_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s44
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s45 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:182)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s45_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s45
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s46 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:184)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s46_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s46
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s47 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:185)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s47_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s47
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s48 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:186)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s48_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s48
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s49 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:187)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s49_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s49
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s50 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:191)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s50_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s50
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s51 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:192)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s51_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s51
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s52 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:195)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s52_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s52
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s53 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:196)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s53_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s53
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:197)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s55 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:198)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s55_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s55
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:199)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s57 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:200)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s57_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s57
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s58 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:201)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s58_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s58
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s59 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:202)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s59_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s59
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s60 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:204)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s60_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s60
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s61 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:205)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s61_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s61
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s62 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:206)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s62_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s62
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s63 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:207)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s63_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s63
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s64 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:209)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s64_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s64
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s65 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:210)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s65_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s65
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s66 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:211)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s66_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s66
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s67 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:212)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s67_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s67
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s68 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:213)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s68_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s68
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s69 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:215)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s69_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s69
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s70 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:216)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s70_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s70
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s71 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:217)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s71_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s71
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s72 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:219)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s72_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s72
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s73 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:220)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s73_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s73
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s74 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:225)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s74_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s74
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s75 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:226)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s75_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s75
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s76 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:229)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s76_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s76
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:230)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s78 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:231)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s78_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s78
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s79 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:233)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s79_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s79
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s80 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:235)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s80_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s80
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s81 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:238)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s81_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s81
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s82 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:239)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s82_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s82
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s83 db "com.pulse.lang.Double.parsePrimitive(Double.pulse:241)"
+pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s83_len equ $ - pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s83
+trace_m224 db "com.pulse.lang.Double.formatFiniteWithSign"
+trace_m224_len equ $ - trace_m224
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s0 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:245)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s0
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s1 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:246)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s1
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s2 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:247)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s2
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s3 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:248)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s3
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s4 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:249)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s4_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s4
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s5 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:251)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s5_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s5
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s6 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:252)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s6_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s6
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s7 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:253)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s7_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s7
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s8 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:256)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s8_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s8
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s9 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:257)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s9_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s9
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s10 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:258)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s10_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s10
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s11 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:259)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s11_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s11
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s12 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:260)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s12_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s12
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s13 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:261)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s13_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s13
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s14 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:262)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s14_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s14
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s15 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:265)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s15_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s15
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s16 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:266)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s16_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s16
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s17 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:267)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s17_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s17
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s18 db "com.pulse.lang.Double.formatFiniteWithSign(Double.pulse:269)"
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s18_len equ $ - pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s18
+trace_m244 db "com.pulse.lang.Double.formatFixedDigits"
+trace_m244_len equ $ - trace_m244
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s0 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:273)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s0
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s1 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:274)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s1
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s2 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:275)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s2
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s3 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:277)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s3
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s4 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:278)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s4_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s4
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s5 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:279)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s5_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s5
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s6 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:280)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s6_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s6
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:281)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s8 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:282)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s8_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s8
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s9 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:283)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s9_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s9
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s10 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:284)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s10_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s10
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s11 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:286)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s11_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s11
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s12 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:287)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s12_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s12
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s13 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:289)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s13_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s13
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s14 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:290)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s14_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s14
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s15 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:291)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s15_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s15
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s16 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:292)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s16_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s16
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:294)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s18 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:295)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s18_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s18
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s19 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:297)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s19_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s19
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:298)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s21 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:299)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s21_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s21
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s22 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:300)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s22_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s22
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s23 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:303)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s23_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s23
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s24 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:306)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s24_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s24
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s25 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:307)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s25_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s25
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s26 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:308)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s26_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s26
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:309)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s28 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:310)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s28_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s28
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s29 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:311)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s29_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s29
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s30 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:313)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s30_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s30
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s31 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:314)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s31_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s31
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s32 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:315)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s32_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s32
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s33 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:316)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s33_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s33
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s34 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:318)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s34_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s34
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s35 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:319)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s35_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s35
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s36 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:320)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s36_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s36
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s37 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:321)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s37_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s37
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s38 db "com.pulse.lang.Double.formatFixedDigits(Double.pulse:323)"
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s38_len equ $ - pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s38
+trace_m284 db "com.pulse.lang.Double.formatScientificDigits"
+trace_m284_len equ $ - trace_m284
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s0 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:327)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s0
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s1 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:328)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s1
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s2 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:329)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s2
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s3 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:331)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s3
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s4 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:332)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s4_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s4
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s5 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:333)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s5_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s5
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:334)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s7 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:335)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s7_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s7
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s8 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:337)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s8_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s8
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:338)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s10 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:339)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s10_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s10
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s11 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:340)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s11_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s11
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s12 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:343)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s12_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s12
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s13 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:344)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s13_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s13
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s14 db "com.pulse.lang.Double.formatScientificDigits(Double.pulse:345)"
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s14_len equ $ - pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s14
+trace_m300 db "com.pulse.lang.Double.lastNonZeroIndex"
+trace_m300_len equ $ - trace_m300
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s0 db "com.pulse.lang.Double.lastNonZeroIndex(Double.pulse:349)"
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s0
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s1 db "com.pulse.lang.Double.lastNonZeroIndex(Double.pulse:350)"
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s1
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s2 db "com.pulse.lang.Double.lastNonZeroIndex(Double.pulse:351)"
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s2
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s3 db "com.pulse.lang.Double.lastNonZeroIndex(Double.pulse:353)"
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s3
+trace_m305 db "com.pulse.lang.Double.matchesNaN"
+trace_m305_len equ $ - trace_m305
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s0 db "com.pulse.lang.Double.matchesNaN(Double.pulse:357)"
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s0
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s1 db "com.pulse.lang.Double.matchesNaN(Double.pulse:358)"
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s1
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s2 db "com.pulse.lang.Double.matchesNaN(Double.pulse:360)"
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s2
+trace_m309 db "com.pulse.lang.Double.matchesInfinity"
+trace_m309_len equ $ - trace_m309
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s0 db "com.pulse.lang.Double.matchesInfinity(Double.pulse:366)"
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s0
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s1 db "com.pulse.lang.Double.matchesInfinity(Double.pulse:367)"
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s1
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s2 db "com.pulse.lang.Double.matchesInfinity(Double.pulse:369)"
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s2
+trace_m313 db "com.pulse.lang.Double.runtimeCharAt"
+trace_m313_len equ $ - trace_m313
+pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_trace_s0 db "com.pulse.lang.Double.runtimeCharAt(Double.pulse:380)"
+pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_trace_s0
+trace_m315 db "com.pulse.lang.Double.isDigit"
+trace_m315_len equ $ - trace_m315
+pulsec_com_pulse_lang_Double_isDigit__char_trace_s0 db "com.pulse.lang.Double.isDigit(Double.pulse:384)"
+pulsec_com_pulse_lang_Double_isDigit__char_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_isDigit__char_trace_s0
+trace_m317 db "com.pulse.lang.Double.isNaN"
+trace_m317_len equ $ - trace_m317
+pulsec_com_pulse_lang_Double_isNaN__double_trace_s0 db "com.pulse.lang.Double.isNaN(Double.pulse:388)"
+pulsec_com_pulse_lang_Double_isNaN__double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_isNaN__double_trace_s0
+trace_m319 db "com.pulse.lang.Double.isInfinite"
+trace_m319_len equ $ - trace_m319
+pulsec_com_pulse_lang_Double_isInfinite__double_trace_s0 db "com.pulse.lang.Double.isInfinite(Double.pulse:392)"
+pulsec_com_pulse_lang_Double_isInfinite__double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_isInfinite__double_trace_s0
+trace_m321 db "com.pulse.lang.Double.isNegativeZero"
+trace_m321_len equ $ - trace_m321
+pulsec_com_pulse_lang_Double_isNegativeZero__double_trace_s0 db "com.pulse.lang.Double.isNegativeZero(Double.pulse:396)"
+pulsec_com_pulse_lang_Double_isNegativeZero__double_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_isNegativeZero__double_trace_s0
+trace_m323 db "com.pulse.lang.Double.buildMinValue"
+trace_m323_len equ $ - trace_m323
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s0 db "com.pulse.lang.Double.buildMinValue(Double.pulse:400)"
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_buildMinValue_trace_s0
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s1 db "com.pulse.lang.Double.buildMinValue(Double.pulse:401)"
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_buildMinValue_trace_s1
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s2 db "com.pulse.lang.Double.buildMinValue(Double.pulse:402)"
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_buildMinValue_trace_s2
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s3 db "com.pulse.lang.Double.buildMinValue(Double.pulse:403)"
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_buildMinValue_trace_s3
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s4 db "com.pulse.lang.Double.buildMinValue(Double.pulse:404)"
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s4_len equ $ - pulsec_com_pulse_lang_Double_buildMinValue_trace_s4
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s5 db "com.pulse.lang.Double.buildMinValue(Double.pulse:406)"
+pulsec_com_pulse_lang_Double_buildMinValue_trace_s5_len equ $ - pulsec_com_pulse_lang_Double_buildMinValue_trace_s5
+trace_m330 db "com.pulse.lang.Double.buildMaxValue"
+trace_m330_len equ $ - trace_m330
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s0 db "com.pulse.lang.Double.buildMaxValue(Double.pulse:410)"
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_buildMaxValue_trace_s0
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s1 db "com.pulse.lang.Double.buildMaxValue(Double.pulse:411)"
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_buildMaxValue_trace_s1
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s2 db "com.pulse.lang.Double.buildMaxValue(Double.pulse:412)"
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s2_len equ $ - pulsec_com_pulse_lang_Double_buildMaxValue_trace_s2
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s3 db "com.pulse.lang.Double.buildMaxValue(Double.pulse:413)"
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s3_len equ $ - pulsec_com_pulse_lang_Double_buildMaxValue_trace_s3
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s4 db "com.pulse.lang.Double.buildMaxValue(Double.pulse:414)"
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s4_len equ $ - pulsec_com_pulse_lang_Double_buildMaxValue_trace_s4
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s5 db "com.pulse.lang.Double.buildMaxValue(Double.pulse:416)"
+pulsec_com_pulse_lang_Double_buildMaxValue_trace_s5_len equ $ - pulsec_com_pulse_lang_Double_buildMaxValue_trace_s5
+trace_m337 db "com.pulse.lang.Double.invalidLiteral"
+trace_m337_len equ $ - trace_m337
+pulsec_com_pulse_lang_Double_invalidLiteral_trace_s0 db "com.pulse.lang.Double.invalidLiteral(Double.pulse:420)"
+pulsec_com_pulse_lang_Double_invalidLiteral_trace_s0_len equ $ - pulsec_com_pulse_lang_Double_invalidLiteral_trace_s0
+pulsec_com_pulse_lang_Double_invalidLiteral_trace_s1 db "com.pulse.lang.Double.invalidLiteral(Double.pulse:421)"
+pulsec_com_pulse_lang_Double_invalidLiteral_trace_s1_len equ $ - pulsec_com_pulse_lang_Double_invalidLiteral_trace_s1
+trace_m340 db "com.pulse.lang.Enum.Enum"
+trace_m340_len equ $ - trace_m340
+trace_m341 db "com.pulse.lang.Exception.Exception"
+trace_m341_len equ $ - trace_m341
 pulsec_com_pulse_lang_Exception_Exception_trace_s0 db "com.pulse.lang.Exception.Exception(Exception.pulse:12)"
 pulsec_com_pulse_lang_Exception_Exception_trace_s0_len equ $ - pulsec_com_pulse_lang_Exception_Exception_trace_s0
-trace_m116 db "com.pulse.lang.Exception.Exception"
-trace_m116_len equ $ - trace_m116
+trace_m343 db "com.pulse.lang.Exception.Exception"
+trace_m343_len equ $ - trace_m343
 pulsec_com_pulse_lang_Exception_Exception__String_trace_s0 db "com.pulse.lang.Exception.Exception(Exception.pulse:20)"
 pulsec_com_pulse_lang_Exception_Exception__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Exception_Exception__String_trace_s0
-trace_m118 db "com.pulse.lang.Exception.Exception"
-trace_m118_len equ $ - trace_m118
+trace_m345 db "com.pulse.lang.Exception.Exception"
+trace_m345_len equ $ - trace_m345
 pulsec_com_pulse_lang_Exception_Exception__String_Throwable_trace_s0 db "com.pulse.lang.Exception.Exception(Exception.pulse:28)"
 pulsec_com_pulse_lang_Exception_Exception__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Exception_Exception__String_Throwable_trace_s0
-trace_m120 db "com.pulse.lang.Float.valueOf"
-trace_m120_len equ $ - trace_m120
-pulsec_com_pulse_lang_Float_valueOf__float_trace_s0 db "com.pulse.lang.Float.valueOf(Float.pulse:14)"
+trace_m347 db "com.pulse.lang.Float.valueOf"
+trace_m347_len equ $ - trace_m347
+pulsec_com_pulse_lang_Float_valueOf__float_trace_s0 db "com.pulse.lang.Float.valueOf(Float.pulse:22)"
 pulsec_com_pulse_lang_Float_valueOf__float_trace_s0_len equ $ - pulsec_com_pulse_lang_Float_valueOf__float_trace_s0
-trace_m122 db "com.pulse.lang.Float.parse"
-trace_m122_len equ $ - trace_m122
-pulsec_com_pulse_lang_Float_parse__String_trace_s0 db "com.pulse.lang.Float.parse(Float.pulse:22)"
+trace_m349 db "com.pulse.lang.Float.parse"
+trace_m349_len equ $ - trace_m349
+pulsec_com_pulse_lang_Float_parse__String_trace_s0 db "com.pulse.lang.Float.parse(Float.pulse:30)"
 pulsec_com_pulse_lang_Float_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Float_parse__String_trace_s0
-pulsec_com_pulse_lang_Float_parse__String_trace_s1 db "com.pulse.lang.Float.parse(Float.pulse:23)"
-pulsec_com_pulse_lang_Float_parse__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Float_parse__String_trace_s1
-trace_m125 db "com.pulse.lang.Float.floatValue"
-trace_m125_len equ $ - trace_m125
-pulsec_com_pulse_lang_Float_floatValue__Float_trace_s0 db "com.pulse.lang.Float.floatValue(Float.pulse:31)"
+trace_m351 db "com.pulse.lang.Float.floatValue"
+trace_m351_len equ $ - trace_m351
+pulsec_com_pulse_lang_Float_floatValue__Float_trace_s0 db "com.pulse.lang.Float.floatValue(Float.pulse:38)"
 pulsec_com_pulse_lang_Float_floatValue__Float_trace_s0_len equ $ - pulsec_com_pulse_lang_Float_floatValue__Float_trace_s0
-trace_m127 db "com.pulse.lang.Float.equals"
-trace_m127_len equ $ - trace_m127
-pulsec_com_pulse_lang_Float_equals__float_float_trace_s0 db "com.pulse.lang.Float.equals(Float.pulse:39)"
+trace_m353 db "com.pulse.lang.Float.equals"
+trace_m353_len equ $ - trace_m353
+pulsec_com_pulse_lang_Float_equals__float_float_trace_s0 db "com.pulse.lang.Float.equals(Float.pulse:46)"
 pulsec_com_pulse_lang_Float_equals__float_float_trace_s0_len equ $ - pulsec_com_pulse_lang_Float_equals__float_float_trace_s0
-trace_m129 db "com.pulse.lang.Float.compare"
-trace_m129_len equ $ - trace_m129
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s0 db "com.pulse.lang.Float.compare(Float.pulse:47)"
+trace_m355 db "com.pulse.lang.Float.compare"
+trace_m355_len equ $ - trace_m355
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s0 db "com.pulse.lang.Float.compare(Float.pulse:54)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s0_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s0
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s1 db "com.pulse.lang.Float.compare(Float.pulse:48)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s1 db "com.pulse.lang.Float.compare(Float.pulse:55)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s1_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s1
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s2 db "com.pulse.lang.Float.compare(Float.pulse:50)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s2 db "com.pulse.lang.Float.compare(Float.pulse:57)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s2_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s2
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s3 db "com.pulse.lang.Float.compare(Float.pulse:51)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s3 db "com.pulse.lang.Float.compare(Float.pulse:58)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s3_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s3
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s4 db "com.pulse.lang.Float.compare(Float.pulse:53)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s4 db "com.pulse.lang.Float.compare(Float.pulse:60)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s4_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s4
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s5 db "com.pulse.lang.Float.compare(Float.pulse:54)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s5 db "com.pulse.lang.Float.compare(Float.pulse:61)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s5_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s5
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s6 db "com.pulse.lang.Float.compare(Float.pulse:56)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s6 db "com.pulse.lang.Float.compare(Float.pulse:63)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s6_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s6
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s7 db "com.pulse.lang.Float.compare(Float.pulse:57)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s7 db "com.pulse.lang.Float.compare(Float.pulse:64)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s7_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s7
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s8 db "com.pulse.lang.Float.compare(Float.pulse:58)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s8 db "com.pulse.lang.Float.compare(Float.pulse:65)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s8_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s8
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s9 db "com.pulse.lang.Float.compare(Float.pulse:59)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s9 db "com.pulse.lang.Float.compare(Float.pulse:66)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s9_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s9
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s10 db "com.pulse.lang.Float.compare(Float.pulse:61)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s10 db "com.pulse.lang.Float.compare(Float.pulse:68)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s10_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s10
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s11 db "com.pulse.lang.Float.compare(Float.pulse:62)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s11 db "com.pulse.lang.Float.compare(Float.pulse:69)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s11_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s11
-pulsec_com_pulse_lang_Float_compare__float_float_trace_s12 db "com.pulse.lang.Float.compare(Float.pulse:64)"
+pulsec_com_pulse_lang_Float_compare__float_float_trace_s12 db "com.pulse.lang.Float.compare(Float.pulse:71)"
 pulsec_com_pulse_lang_Float_compare__float_float_trace_s12_len equ $ - pulsec_com_pulse_lang_Float_compare__float_float_trace_s12
-trace_m143 db "com.pulse.lang.IO.println"
-trace_m143_len equ $ - trace_m143
+trace_m369 db "com.pulse.lang.Float.toString"
+trace_m369_len equ $ - trace_m369
+pulsec_com_pulse_lang_Float_toString__float_trace_s0 db "com.pulse.lang.Float.toString(Float.pulse:79)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s0_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s0
+pulsec_com_pulse_lang_Float_toString__float_trace_s1 db "com.pulse.lang.Float.toString(Float.pulse:80)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s1_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s1
+pulsec_com_pulse_lang_Float_toString__float_trace_s2 db "com.pulse.lang.Float.toString(Float.pulse:81)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s2_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s2
+pulsec_com_pulse_lang_Float_toString__float_trace_s3 db "com.pulse.lang.Float.toString(Float.pulse:83)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s3_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s3
+pulsec_com_pulse_lang_Float_toString__float_trace_s4 db "com.pulse.lang.Float.toString(Float.pulse:84)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s4_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s4
+pulsec_com_pulse_lang_Float_toString__float_trace_s5 db "com.pulse.lang.Float.toString(Float.pulse:85)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s5_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s5
+pulsec_com_pulse_lang_Float_toString__float_trace_s6 db "com.pulse.lang.Float.toString(Float.pulse:87)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s6_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s6
+pulsec_com_pulse_lang_Float_toString__float_trace_s7 db "com.pulse.lang.Float.toString(Float.pulse:89)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s7_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s7
+pulsec_com_pulse_lang_Float_toString__float_trace_s8 db "com.pulse.lang.Float.toString(Float.pulse:90)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s8_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s8
+pulsec_com_pulse_lang_Float_toString__float_trace_s9 db "com.pulse.lang.Float.toString(Float.pulse:91)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s9_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s9
+pulsec_com_pulse_lang_Float_toString__float_trace_s10 db "com.pulse.lang.Float.toString(Float.pulse:93)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s10_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s10
+pulsec_com_pulse_lang_Float_toString__float_trace_s11 db "com.pulse.lang.Float.toString(Float.pulse:94)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s11_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s11
+pulsec_com_pulse_lang_Float_toString__float_trace_s12 db "com.pulse.lang.Float.toString(Float.pulse:95)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s12_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s12
+pulsec_com_pulse_lang_Float_toString__float_trace_s13 db "com.pulse.lang.Float.toString(Float.pulse:96)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s13_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s13
+pulsec_com_pulse_lang_Float_toString__float_trace_s14 db "com.pulse.lang.Float.toString(Float.pulse:97)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s14_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s14
+pulsec_com_pulse_lang_Float_toString__float_trace_s15 db "com.pulse.lang.Float.toString(Float.pulse:98)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s15_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s15
+pulsec_com_pulse_lang_Float_toString__float_trace_s16 db "com.pulse.lang.Float.toString(Float.pulse:99)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s16_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s16
+pulsec_com_pulse_lang_Float_toString__float_trace_s17 db "com.pulse.lang.Float.toString(Float.pulse:101)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s17_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s17
+pulsec_com_pulse_lang_Float_toString__float_trace_s18 db "com.pulse.lang.Float.toString(Float.pulse:104)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s18_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s18
+pulsec_com_pulse_lang_Float_toString__float_trace_s19 db "com.pulse.lang.Float.toString(Float.pulse:105)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s19_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s19
+pulsec_com_pulse_lang_Float_toString__float_trace_s20 db "com.pulse.lang.Float.toString(Float.pulse:106)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s20_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s20
+pulsec_com_pulse_lang_Float_toString__float_trace_s21 db "com.pulse.lang.Float.toString(Float.pulse:107)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s21_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s21
+pulsec_com_pulse_lang_Float_toString__float_trace_s22 db "com.pulse.lang.Float.toString(Float.pulse:109)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s22_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s22
+pulsec_com_pulse_lang_Float_toString__float_trace_s23 db "com.pulse.lang.Float.toString(Float.pulse:110)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s23_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s23
+pulsec_com_pulse_lang_Float_toString__float_trace_s24 db "com.pulse.lang.Float.toString(Float.pulse:111)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s24_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s24
+pulsec_com_pulse_lang_Float_toString__float_trace_s25 db "com.pulse.lang.Float.toString(Float.pulse:114)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s25_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s25
+pulsec_com_pulse_lang_Float_toString__float_trace_s26 db "com.pulse.lang.Float.toString(Float.pulse:115)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s26_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s26
+pulsec_com_pulse_lang_Float_toString__float_trace_s27 db "com.pulse.lang.Float.toString(Float.pulse:116)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s27_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s27
+pulsec_com_pulse_lang_Float_toString__float_trace_s28 db "com.pulse.lang.Float.toString(Float.pulse:117)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s28_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s28
+pulsec_com_pulse_lang_Float_toString__float_trace_s29 db "com.pulse.lang.Float.toString(Float.pulse:118)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s29_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s29
+pulsec_com_pulse_lang_Float_toString__float_trace_s30 db "com.pulse.lang.Float.toString(Float.pulse:119)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s30_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s30
+pulsec_com_pulse_lang_Float_toString__float_trace_s31 db "com.pulse.lang.Float.toString(Float.pulse:120)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s31_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s31
+pulsec_com_pulse_lang_Float_toString__float_trace_s32 db "com.pulse.lang.Float.toString(Float.pulse:121)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s32_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s32
+pulsec_com_pulse_lang_Float_toString__float_trace_s33 db "com.pulse.lang.Float.toString(Float.pulse:124)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s33_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s33
+pulsec_com_pulse_lang_Float_toString__float_trace_s34 db "com.pulse.lang.Float.toString(Float.pulse:125)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s34_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s34
+pulsec_com_pulse_lang_Float_toString__float_trace_s35 db "com.pulse.lang.Float.toString(Float.pulse:126)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s35_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s35
+pulsec_com_pulse_lang_Float_toString__float_trace_s36 db "com.pulse.lang.Float.toString(Float.pulse:127)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s36_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s36
+pulsec_com_pulse_lang_Float_toString__float_trace_s37 db "com.pulse.lang.Float.toString(Float.pulse:129)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s37_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s37
+pulsec_com_pulse_lang_Float_toString__float_trace_s38 db "com.pulse.lang.Float.toString(Float.pulse:130)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s38_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s38
+pulsec_com_pulse_lang_Float_toString__float_trace_s39 db "com.pulse.lang.Float.toString(Float.pulse:131)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s39_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s39
+pulsec_com_pulse_lang_Float_toString__float_trace_s40 db "com.pulse.lang.Float.toString(Float.pulse:132)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s40_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s40
+pulsec_com_pulse_lang_Float_toString__float_trace_s41 db "com.pulse.lang.Float.toString(Float.pulse:133)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s41_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s41
+pulsec_com_pulse_lang_Float_toString__float_trace_s42 db "com.pulse.lang.Float.toString(Float.pulse:134)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s42_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s42
+pulsec_com_pulse_lang_Float_toString__float_trace_s43 db "com.pulse.lang.Float.toString(Float.pulse:135)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s43_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s43
+pulsec_com_pulse_lang_Float_toString__float_trace_s44 db "com.pulse.lang.Float.toString(Float.pulse:136)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s44_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s44
+pulsec_com_pulse_lang_Float_toString__float_trace_s45 db "com.pulse.lang.Float.toString(Float.pulse:138)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s45_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s45
+pulsec_com_pulse_lang_Float_toString__float_trace_s46 db "com.pulse.lang.Float.toString(Float.pulse:139)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s46_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s46
+pulsec_com_pulse_lang_Float_toString__float_trace_s47 db "com.pulse.lang.Float.toString(Float.pulse:141)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s47_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s47
+pulsec_com_pulse_lang_Float_toString__float_trace_s48 db "com.pulse.lang.Float.toString(Float.pulse:142)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s48_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s48
+pulsec_com_pulse_lang_Float_toString__float_trace_s49 db "com.pulse.lang.Float.toString(Float.pulse:143)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s49_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s49
+pulsec_com_pulse_lang_Float_toString__float_trace_s50 db "com.pulse.lang.Float.toString(Float.pulse:144)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s50_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s50
+pulsec_com_pulse_lang_Float_toString__float_trace_s51 db "com.pulse.lang.Float.toString(Float.pulse:146)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s51_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s51
+pulsec_com_pulse_lang_Float_toString__float_trace_s52 db "com.pulse.lang.Float.toString(Float.pulse:147)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s52_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s52
+pulsec_com_pulse_lang_Float_toString__float_trace_s53 db "com.pulse.lang.Float.toString(Float.pulse:149)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s53_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s53
+pulsec_com_pulse_lang_Float_toString__float_trace_s54 db "com.pulse.lang.Float.toString(Float.pulse:150)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s54_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s54
+pulsec_com_pulse_lang_Float_toString__float_trace_s55 db "com.pulse.lang.Float.toString(Float.pulse:151)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s55_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s55
+pulsec_com_pulse_lang_Float_toString__float_trace_s56 db "com.pulse.lang.Float.toString(Float.pulse:152)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s56_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s56
+pulsec_com_pulse_lang_Float_toString__float_trace_s57 db "com.pulse.lang.Float.toString(Float.pulse:155)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s57_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s57
+pulsec_com_pulse_lang_Float_toString__float_trace_s58 db "com.pulse.lang.Float.toString(Float.pulse:158)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s58_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s58
+pulsec_com_pulse_lang_Float_toString__float_trace_s59 db "com.pulse.lang.Float.toString(Float.pulse:159)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s59_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s59
+pulsec_com_pulse_lang_Float_toString__float_trace_s60 db "com.pulse.lang.Float.toString(Float.pulse:160)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s60_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s60
+pulsec_com_pulse_lang_Float_toString__float_trace_s61 db "com.pulse.lang.Float.toString(Float.pulse:161)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s61_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s61
+pulsec_com_pulse_lang_Float_toString__float_trace_s62 db "com.pulse.lang.Float.toString(Float.pulse:162)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s62_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s62
+pulsec_com_pulse_lang_Float_toString__float_trace_s63 db "com.pulse.lang.Float.toString(Float.pulse:163)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s63_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s63
+pulsec_com_pulse_lang_Float_toString__float_trace_s64 db "com.pulse.lang.Float.toString(Float.pulse:165)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s64_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s64
+pulsec_com_pulse_lang_Float_toString__float_trace_s65 db "com.pulse.lang.Float.toString(Float.pulse:166)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s65_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s65
+pulsec_com_pulse_lang_Float_toString__float_trace_s66 db "com.pulse.lang.Float.toString(Float.pulse:167)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s66_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s66
+pulsec_com_pulse_lang_Float_toString__float_trace_s67 db "com.pulse.lang.Float.toString(Float.pulse:169)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s67_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s67
+pulsec_com_pulse_lang_Float_toString__float_trace_s68 db "com.pulse.lang.Float.toString(Float.pulse:170)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s68_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s68
+pulsec_com_pulse_lang_Float_toString__float_trace_s69 db "com.pulse.lang.Float.toString(Float.pulse:171)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s69_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s69
+pulsec_com_pulse_lang_Float_toString__float_trace_s70 db "com.pulse.lang.Float.toString(Float.pulse:172)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s70_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s70
+pulsec_com_pulse_lang_Float_toString__float_trace_s71 db "com.pulse.lang.Float.toString(Float.pulse:174)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s71_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s71
+pulsec_com_pulse_lang_Float_toString__float_trace_s72 db "com.pulse.lang.Float.toString(Float.pulse:177)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s72_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s72
+pulsec_com_pulse_lang_Float_toString__float_trace_s73 db "com.pulse.lang.Float.toString(Float.pulse:178)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s73_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s73
+pulsec_com_pulse_lang_Float_toString__float_trace_s74 db "com.pulse.lang.Float.toString(Float.pulse:179)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s74_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s74
+pulsec_com_pulse_lang_Float_toString__float_trace_s75 db "com.pulse.lang.Float.toString(Float.pulse:180)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s75_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s75
+pulsec_com_pulse_lang_Float_toString__float_trace_s76 db "com.pulse.lang.Float.toString(Float.pulse:181)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s76_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s76
+pulsec_com_pulse_lang_Float_toString__float_trace_s77 db "com.pulse.lang.Float.toString(Float.pulse:183)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s77_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s77
+pulsec_com_pulse_lang_Float_toString__float_trace_s78 db "com.pulse.lang.Float.toString(Float.pulse:184)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s78_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s78
+pulsec_com_pulse_lang_Float_toString__float_trace_s79 db "com.pulse.lang.Float.toString(Float.pulse:186)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s79_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s79
+pulsec_com_pulse_lang_Float_toString__float_trace_s80 db "com.pulse.lang.Float.toString(Float.pulse:187)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s80_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s80
+pulsec_com_pulse_lang_Float_toString__float_trace_s81 db "com.pulse.lang.Float.toString(Float.pulse:188)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s81_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s81
+pulsec_com_pulse_lang_Float_toString__float_trace_s82 db "com.pulse.lang.Float.toString(Float.pulse:189)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s82_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s82
+pulsec_com_pulse_lang_Float_toString__float_trace_s83 db "com.pulse.lang.Float.toString(Float.pulse:192)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s83_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s83
+pulsec_com_pulse_lang_Float_toString__float_trace_s84 db "com.pulse.lang.Float.toString(Float.pulse:193)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s84_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s84
+pulsec_com_pulse_lang_Float_toString__float_trace_s85 db "com.pulse.lang.Float.toString(Float.pulse:194)"
+pulsec_com_pulse_lang_Float_toString__float_trace_s85_len equ $ - pulsec_com_pulse_lang_Float_toString__float_trace_s85
+trace_m456 db "com.pulse.lang.Float.buildMinValue"
+trace_m456_len equ $ - trace_m456
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s0 db "com.pulse.lang.Float.buildMinValue(Float.pulse:198)"
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s0_len equ $ - pulsec_com_pulse_lang_Float_buildMinValue_trace_s0
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s1 db "com.pulse.lang.Float.buildMinValue(Float.pulse:199)"
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s1_len equ $ - pulsec_com_pulse_lang_Float_buildMinValue_trace_s1
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s2 db "com.pulse.lang.Float.buildMinValue(Float.pulse:200)"
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s2_len equ $ - pulsec_com_pulse_lang_Float_buildMinValue_trace_s2
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s3 db "com.pulse.lang.Float.buildMinValue(Float.pulse:201)"
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s3_len equ $ - pulsec_com_pulse_lang_Float_buildMinValue_trace_s3
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s4 db "com.pulse.lang.Float.buildMinValue(Float.pulse:202)"
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s4_len equ $ - pulsec_com_pulse_lang_Float_buildMinValue_trace_s4
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s5 db "com.pulse.lang.Float.buildMinValue(Float.pulse:204)"
+pulsec_com_pulse_lang_Float_buildMinValue_trace_s5_len equ $ - pulsec_com_pulse_lang_Float_buildMinValue_trace_s5
+trace_m463 db "com.pulse.lang.Float.buildMaxValue"
+trace_m463_len equ $ - trace_m463
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s0 db "com.pulse.lang.Float.buildMaxValue(Float.pulse:208)"
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s0_len equ $ - pulsec_com_pulse_lang_Float_buildMaxValue_trace_s0
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s1 db "com.pulse.lang.Float.buildMaxValue(Float.pulse:209)"
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s1_len equ $ - pulsec_com_pulse_lang_Float_buildMaxValue_trace_s1
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s2 db "com.pulse.lang.Float.buildMaxValue(Float.pulse:210)"
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s2_len equ $ - pulsec_com_pulse_lang_Float_buildMaxValue_trace_s2
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s3 db "com.pulse.lang.Float.buildMaxValue(Float.pulse:211)"
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s3_len equ $ - pulsec_com_pulse_lang_Float_buildMaxValue_trace_s3
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s4 db "com.pulse.lang.Float.buildMaxValue(Float.pulse:212)"
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s4_len equ $ - pulsec_com_pulse_lang_Float_buildMaxValue_trace_s4
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s5 db "com.pulse.lang.Float.buildMaxValue(Float.pulse:214)"
+pulsec_com_pulse_lang_Float_buildMaxValue_trace_s5_len equ $ - pulsec_com_pulse_lang_Float_buildMaxValue_trace_s5
+trace_m470 db "com.pulse.lang.IO.println"
+trace_m470_len equ $ - trace_m470
 pulsec_com_pulse_lang_IO_println__String_trace_s0 db "com.pulse.lang.IO.println(IO.pulse:14)"
 pulsec_com_pulse_lang_IO_println__String_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_println__String_trace_s0
-trace_m145 db "com.pulse.lang.IO.println"
-trace_m145_len equ $ - trace_m145
+trace_m472 db "com.pulse.lang.IO.println"
+trace_m472_len equ $ - trace_m472
 pulsec_com_pulse_lang_IO_println__int_trace_s0 db "com.pulse.lang.IO.println(IO.pulse:22)"
 pulsec_com_pulse_lang_IO_println__int_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_println__int_trace_s0
-trace_m147 db "com.pulse.lang.IO.println"
-trace_m147_len equ $ - trace_m147
+trace_m474 db "com.pulse.lang.IO.println"
+trace_m474_len equ $ - trace_m474
 pulsec_com_pulse_lang_IO_println__boolean_trace_s0 db "com.pulse.lang.IO.println(IO.pulse:30)"
 pulsec_com_pulse_lang_IO_println__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_println__boolean_trace_s0
-trace_m149 db "com.pulse.lang.IO.print"
-trace_m149_len equ $ - trace_m149
+trace_m476 db "com.pulse.lang.IO.print"
+trace_m476_len equ $ - trace_m476
 pulsec_com_pulse_lang_IO_print__String_trace_s0 db "com.pulse.lang.IO.print(IO.pulse:38)"
 pulsec_com_pulse_lang_IO_print__String_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_print__String_trace_s0
-trace_m151 db "com.pulse.lang.IO.print"
-trace_m151_len equ $ - trace_m151
+trace_m478 db "com.pulse.lang.IO.print"
+trace_m478_len equ $ - trace_m478
 pulsec_com_pulse_lang_IO_print__int_trace_s0 db "com.pulse.lang.IO.print(IO.pulse:46)"
 pulsec_com_pulse_lang_IO_print__int_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_print__int_trace_s0
-trace_m153 db "com.pulse.lang.IO.print"
-trace_m153_len equ $ - trace_m153
+trace_m480 db "com.pulse.lang.IO.print"
+trace_m480_len equ $ - trace_m480
 pulsec_com_pulse_lang_IO_print__boolean_trace_s0 db "com.pulse.lang.IO.print(IO.pulse:54)"
 pulsec_com_pulse_lang_IO_print__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_print__boolean_trace_s0
-trace_m155 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException"
-trace_m155_len equ $ - trace_m155
+trace_m482 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException"
+trace_m482_len equ $ - trace_m482
 pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException_trace_s0 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException(IllegalArgumentException.pulse:12)"
 pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException_trace_s0_len equ $ - pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException_trace_s0
-trace_m157 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException"
-trace_m157_len equ $ - trace_m157
+trace_m484 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException"
+trace_m484_len equ $ - trace_m484
 pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_trace_s0 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException(IllegalArgumentException.pulse:20)"
 pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_trace_s0_len equ $ - pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_trace_s0
-trace_m159 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException"
-trace_m159_len equ $ - trace_m159
+trace_m486 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException"
+trace_m486_len equ $ - trace_m486
 pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_Throwable_trace_s0 db "com.pulse.lang.IllegalArgumentException.IllegalArgumentException(IllegalArgumentException.pulse:28)"
 pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_Throwable_trace_s0
-trace_m161 db "com.pulse.lang.IllegalStateException.IllegalStateException"
-trace_m161_len equ $ - trace_m161
+trace_m488 db "com.pulse.lang.IllegalStateException.IllegalStateException"
+trace_m488_len equ $ - trace_m488
 pulsec_com_pulse_lang_IllegalStateException_IllegalStateException_trace_s0 db "com.pulse.lang.IllegalStateException.IllegalStateException(IllegalStateException.pulse:12)"
 pulsec_com_pulse_lang_IllegalStateException_IllegalStateException_trace_s0_len equ $ - pulsec_com_pulse_lang_IllegalStateException_IllegalStateException_trace_s0
-trace_m163 db "com.pulse.lang.IllegalStateException.IllegalStateException"
-trace_m163_len equ $ - trace_m163
+trace_m490 db "com.pulse.lang.IllegalStateException.IllegalStateException"
+trace_m490_len equ $ - trace_m490
 pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_trace_s0 db "com.pulse.lang.IllegalStateException.IllegalStateException(IllegalStateException.pulse:20)"
 pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_trace_s0_len equ $ - pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_trace_s0
-trace_m165 db "com.pulse.lang.IllegalStateException.IllegalStateException"
-trace_m165_len equ $ - trace_m165
+trace_m492 db "com.pulse.lang.IllegalStateException.IllegalStateException"
+trace_m492_len equ $ - trace_m492
 pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_Throwable_trace_s0 db "com.pulse.lang.IllegalStateException.IllegalStateException(IllegalStateException.pulse:28)"
 pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_Throwable_trace_s0
-trace_m167 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException"
-trace_m167_len equ $ - trace_m167
+trace_m494 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException"
+trace_m494_len equ $ - trace_m494
 pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException_trace_s0 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException(IndexOutOfBoundsException.pulse:12)"
 pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException_trace_s0_len equ $ - pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException_trace_s0
-trace_m169 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException"
-trace_m169_len equ $ - trace_m169
+trace_m496 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException"
+trace_m496_len equ $ - trace_m496
 pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_trace_s0 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException(IndexOutOfBoundsException.pulse:20)"
 pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_trace_s0_len equ $ - pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_trace_s0
-trace_m171 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException"
-trace_m171_len equ $ - trace_m171
+trace_m498 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException"
+trace_m498_len equ $ - trace_m498
 pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_Throwable_trace_s0 db "com.pulse.lang.IndexOutOfBoundsException.IndexOutOfBoundsException(IndexOutOfBoundsException.pulse:28)"
 pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_Throwable_trace_s0
-trace_m173 db "com.pulse.lang.Integer.valueOf"
-trace_m173_len equ $ - trace_m173
+trace_m500 db "com.pulse.lang.Integer.valueOf"
+trace_m500_len equ $ - trace_m500
 pulsec_com_pulse_lang_Integer_valueOf__int_trace_s0 db "com.pulse.lang.Integer.valueOf(Integer.pulse:24)"
 pulsec_com_pulse_lang_Integer_valueOf__int_trace_s0_len equ $ - pulsec_com_pulse_lang_Integer_valueOf__int_trace_s0
-trace_m175 db "com.pulse.lang.Integer.parse"
-trace_m175_len equ $ - trace_m175
+trace_m502 db "com.pulse.lang.Integer.parse"
+trace_m502_len equ $ - trace_m502
 pulsec_com_pulse_lang_Integer_parse__String_trace_s0 db "com.pulse.lang.Integer.parse(Integer.pulse:32)"
 pulsec_com_pulse_lang_Integer_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Integer_parse__String_trace_s0
-trace_m177 db "com.pulse.lang.Integer.intValue"
-trace_m177_len equ $ - trace_m177
+trace_m504 db "com.pulse.lang.Integer.intValue"
+trace_m504_len equ $ - trace_m504
 pulsec_com_pulse_lang_Integer_intValue__Integer_trace_s0 db "com.pulse.lang.Integer.intValue(Integer.pulse:40)"
 pulsec_com_pulse_lang_Integer_intValue__Integer_trace_s0_len equ $ - pulsec_com_pulse_lang_Integer_intValue__Integer_trace_s0
-trace_m179 db "com.pulse.lang.Integer.equals"
-trace_m179_len equ $ - trace_m179
+trace_m506 db "com.pulse.lang.Integer.equals"
+trace_m506_len equ $ - trace_m506
 pulsec_com_pulse_lang_Integer_equals__int_int_trace_s0 db "com.pulse.lang.Integer.equals(Integer.pulse:48)"
 pulsec_com_pulse_lang_Integer_equals__int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Integer_equals__int_int_trace_s0
-trace_m181 db "com.pulse.lang.Integer.compare"
-trace_m181_len equ $ - trace_m181
+trace_m508 db "com.pulse.lang.Integer.compare"
+trace_m508_len equ $ - trace_m508
 pulsec_com_pulse_lang_Integer_compare__int_int_trace_s0 db "com.pulse.lang.Integer.compare(Integer.pulse:56)"
 pulsec_com_pulse_lang_Integer_compare__int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_Integer_compare__int_int_trace_s0
 pulsec_com_pulse_lang_Integer_compare__int_int_trace_s1 db "com.pulse.lang.Integer.compare(Integer.pulse:57)"
@@ -654,134 +1315,138 @@ pulsec_com_pulse_lang_Integer_compare__int_int_trace_s3 db "com.pulse.lang.Integ
 pulsec_com_pulse_lang_Integer_compare__int_int_trace_s3_len equ $ - pulsec_com_pulse_lang_Integer_compare__int_int_trace_s3
 pulsec_com_pulse_lang_Integer_compare__int_int_trace_s4 db "com.pulse.lang.Integer.compare(Integer.pulse:62)"
 pulsec_com_pulse_lang_Integer_compare__int_int_trace_s4_len equ $ - pulsec_com_pulse_lang_Integer_compare__int_int_trace_s4
-trace_m187 db "com.pulse.lang.Integer.toString"
-trace_m187_len equ $ - trace_m187
+trace_m514 db "com.pulse.lang.Integer.toString"
+trace_m514_len equ $ - trace_m514
 pulsec_com_pulse_lang_Integer_toString__int_trace_s0 db "com.pulse.lang.Integer.toString(Integer.pulse:70)"
 pulsec_com_pulse_lang_Integer_toString__int_trace_s0_len equ $ - pulsec_com_pulse_lang_Integer_toString__int_trace_s0
-trace_m189 db "com.pulse.lang.Iterable.iterator"
-trace_m189_len equ $ - trace_m189
-trace_m190 db "com.pulse.lang.Iterator.hasNext"
-trace_m190_len equ $ - trace_m190
-trace_m191 db "com.pulse.lang.Iterator.next"
-trace_m191_len equ $ - trace_m191
-trace_m192 db "com.pulse.lang.Long.valueOf"
-trace_m192_len equ $ - trace_m192
+trace_m516 db "com.pulse.lang.Iterable.iterator"
+trace_m516_len equ $ - trace_m516
+trace_m517 db "com.pulse.lang.Iterator.hasNext"
+trace_m517_len equ $ - trace_m517
+trace_m518 db "com.pulse.lang.Iterator.next"
+trace_m518_len equ $ - trace_m518
+trace_m519 db "com.pulse.lang.Long.valueOf"
+trace_m519_len equ $ - trace_m519
 pulsec_com_pulse_lang_Long_valueOf__long_trace_s0 db "com.pulse.lang.Long.valueOf(Long.pulse:24)"
 pulsec_com_pulse_lang_Long_valueOf__long_trace_s0_len equ $ - pulsec_com_pulse_lang_Long_valueOf__long_trace_s0
-trace_m194 db "com.pulse.lang.Long.parse"
-trace_m194_len equ $ - trace_m194
+trace_m521 db "com.pulse.lang.Long.parse"
+trace_m521_len equ $ - trace_m521
 pulsec_com_pulse_lang_Long_parse__String_trace_s0 db "com.pulse.lang.Long.parse(Long.pulse:32)"
 pulsec_com_pulse_lang_Long_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Long_parse__String_trace_s0
-pulsec_com_pulse_lang_Long_parse__String_trace_s1 db "com.pulse.lang.Long.parse(Long.pulse:33)"
-pulsec_com_pulse_lang_Long_parse__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Long_parse__String_trace_s1
-trace_m197 db "com.pulse.lang.Long.longValue"
-trace_m197_len equ $ - trace_m197
-pulsec_com_pulse_lang_Long_longValue__Long_trace_s0 db "com.pulse.lang.Long.longValue(Long.pulse:41)"
+trace_m523 db "com.pulse.lang.Long.longValue"
+trace_m523_len equ $ - trace_m523
+pulsec_com_pulse_lang_Long_longValue__Long_trace_s0 db "com.pulse.lang.Long.longValue(Long.pulse:40)"
 pulsec_com_pulse_lang_Long_longValue__Long_trace_s0_len equ $ - pulsec_com_pulse_lang_Long_longValue__Long_trace_s0
-trace_m199 db "com.pulse.lang.Long.equals"
-trace_m199_len equ $ - trace_m199
-pulsec_com_pulse_lang_Long_equals__long_long_trace_s0 db "com.pulse.lang.Long.equals(Long.pulse:49)"
+trace_m525 db "com.pulse.lang.Long.equals"
+trace_m525_len equ $ - trace_m525
+pulsec_com_pulse_lang_Long_equals__long_long_trace_s0 db "com.pulse.lang.Long.equals(Long.pulse:48)"
 pulsec_com_pulse_lang_Long_equals__long_long_trace_s0_len equ $ - pulsec_com_pulse_lang_Long_equals__long_long_trace_s0
-trace_m201 db "com.pulse.lang.Long.compare"
-trace_m201_len equ $ - trace_m201
-pulsec_com_pulse_lang_Long_compare__long_long_trace_s0 db "com.pulse.lang.Long.compare(Long.pulse:57)"
+trace_m527 db "com.pulse.lang.Long.compare"
+trace_m527_len equ $ - trace_m527
+pulsec_com_pulse_lang_Long_compare__long_long_trace_s0 db "com.pulse.lang.Long.compare(Long.pulse:56)"
 pulsec_com_pulse_lang_Long_compare__long_long_trace_s0_len equ $ - pulsec_com_pulse_lang_Long_compare__long_long_trace_s0
-pulsec_com_pulse_lang_Long_compare__long_long_trace_s1 db "com.pulse.lang.Long.compare(Long.pulse:58)"
+pulsec_com_pulse_lang_Long_compare__long_long_trace_s1 db "com.pulse.lang.Long.compare(Long.pulse:57)"
 pulsec_com_pulse_lang_Long_compare__long_long_trace_s1_len equ $ - pulsec_com_pulse_lang_Long_compare__long_long_trace_s1
-pulsec_com_pulse_lang_Long_compare__long_long_trace_s2 db "com.pulse.lang.Long.compare(Long.pulse:60)"
+pulsec_com_pulse_lang_Long_compare__long_long_trace_s2 db "com.pulse.lang.Long.compare(Long.pulse:59)"
 pulsec_com_pulse_lang_Long_compare__long_long_trace_s2_len equ $ - pulsec_com_pulse_lang_Long_compare__long_long_trace_s2
-pulsec_com_pulse_lang_Long_compare__long_long_trace_s3 db "com.pulse.lang.Long.compare(Long.pulse:61)"
+pulsec_com_pulse_lang_Long_compare__long_long_trace_s3 db "com.pulse.lang.Long.compare(Long.pulse:60)"
 pulsec_com_pulse_lang_Long_compare__long_long_trace_s3_len equ $ - pulsec_com_pulse_lang_Long_compare__long_long_trace_s3
-pulsec_com_pulse_lang_Long_compare__long_long_trace_s4 db "com.pulse.lang.Long.compare(Long.pulse:63)"
+pulsec_com_pulse_lang_Long_compare__long_long_trace_s4 db "com.pulse.lang.Long.compare(Long.pulse:62)"
 pulsec_com_pulse_lang_Long_compare__long_long_trace_s4_len equ $ - pulsec_com_pulse_lang_Long_compare__long_long_trace_s4
-trace_m207 db "com.pulse.lang.Long.toString"
-trace_m207_len equ $ - trace_m207
-pulsec_com_pulse_lang_Long_toString__long_trace_s0 db "com.pulse.lang.Long.toString(Long.pulse:71)"
+trace_m533 db "com.pulse.lang.Long.toString"
+trace_m533_len equ $ - trace_m533
+pulsec_com_pulse_lang_Long_toString__long_trace_s0 db "com.pulse.lang.Long.toString(Long.pulse:70)"
 pulsec_com_pulse_lang_Long_toString__long_trace_s0_len equ $ - pulsec_com_pulse_lang_Long_toString__long_trace_s0
-pulsec_com_pulse_lang_Long_toString__long_trace_s1 db "com.pulse.lang.Long.toString(Long.pulse:72)"
-pulsec_com_pulse_lang_Long_toString__long_trace_s1_len equ $ - pulsec_com_pulse_lang_Long_toString__long_trace_s1
-trace_m210 db "com.pulse.lang.NullPointerException.NullPointerException"
-trace_m210_len equ $ - trace_m210
+trace_m535 db "com.pulse.lang.Long.runtimeParse"
+trace_m535_len equ $ - trace_m535
+pulsec_com_pulse_lang_Long_runtimeParse__String_trace_s0 db "com.pulse.lang.Long.runtimeParse(Long.pulse:78)"
+pulsec_com_pulse_lang_Long_runtimeParse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Long_runtimeParse__String_trace_s0
+trace_m537 db "com.pulse.lang.Long.runtimeToString"
+trace_m537_len equ $ - trace_m537
+pulsec_com_pulse_lang_Long_runtimeToString__long_trace_s0 db "com.pulse.lang.Long.runtimeToString(Long.pulse:86)"
+pulsec_com_pulse_lang_Long_runtimeToString__long_trace_s0_len equ $ - pulsec_com_pulse_lang_Long_runtimeToString__long_trace_s0
+trace_m539 db "com.pulse.lang.NullPointerException.NullPointerException"
+trace_m539_len equ $ - trace_m539
 pulsec_com_pulse_lang_NullPointerException_NullPointerException_trace_s0 db "com.pulse.lang.NullPointerException.NullPointerException(NullPointerException.pulse:12)"
 pulsec_com_pulse_lang_NullPointerException_NullPointerException_trace_s0_len equ $ - pulsec_com_pulse_lang_NullPointerException_NullPointerException_trace_s0
-trace_m212 db "com.pulse.lang.NullPointerException.NullPointerException"
-trace_m212_len equ $ - trace_m212
+trace_m541 db "com.pulse.lang.NullPointerException.NullPointerException"
+trace_m541_len equ $ - trace_m541
 pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_trace_s0 db "com.pulse.lang.NullPointerException.NullPointerException(NullPointerException.pulse:20)"
 pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_trace_s0_len equ $ - pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_trace_s0
-trace_m214 db "com.pulse.lang.NullPointerException.NullPointerException"
-trace_m214_len equ $ - trace_m214
+trace_m543 db "com.pulse.lang.NullPointerException.NullPointerException"
+trace_m543_len equ $ - trace_m543
 pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_Throwable_trace_s0 db "com.pulse.lang.NullPointerException.NullPointerException(NullPointerException.pulse:28)"
 pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_Throwable_trace_s0
-trace_m216 db "com.pulse.lang.NumberFormatException.NumberFormatException"
-trace_m216_len equ $ - trace_m216
+trace_m545 db "com.pulse.lang.NumberFormatException.NumberFormatException"
+trace_m545_len equ $ - trace_m545
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0 db "com.pulse.lang.NumberFormatException.NumberFormatException(NumberFormatException.pulse:12)"
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0_len equ $ - pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0
-trace_m218 db "com.pulse.lang.NumberFormatException.NumberFormatException"
-trace_m218_len equ $ - trace_m218
+trace_m547 db "com.pulse.lang.NumberFormatException.NumberFormatException"
+trace_m547_len equ $ - trace_m547
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0 db "com.pulse.lang.NumberFormatException.NumberFormatException(NumberFormatException.pulse:20)"
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0_len equ $ - pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0
-trace_m220 db "com.pulse.lang.NumberFormatException.NumberFormatException"
-trace_m220_len equ $ - trace_m220
+trace_m549 db "com.pulse.lang.NumberFormatException.NumberFormatException"
+trace_m549_len equ $ - trace_m549
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0 db "com.pulse.lang.NumberFormatException.NumberFormatException(NumberFormatException.pulse:28)"
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0
-trace_m222 db "com.pulse.lang.Object.hashCode"
-trace_m222_len equ $ - trace_m222
+trace_m551 db "com.pulse.lang.Object.hashCode"
+trace_m551_len equ $ - trace_m551
 pulsec_com_pulse_lang_Object_hashCode_trace_s0 db "com.pulse.lang.Object.hashCode(Object.pulse:14)"
 pulsec_com_pulse_lang_Object_hashCode_trace_s0_len equ $ - pulsec_com_pulse_lang_Object_hashCode_trace_s0
-trace_m224 db "com.pulse.lang.Object.toString"
-trace_m224_len equ $ - trace_m224
+trace_m553 db "com.pulse.lang.Object.toString"
+trace_m553_len equ $ - trace_m553
 pulsec_com_pulse_lang_Object_toString_trace_s0 db "com.pulse.lang.Object.toString(Object.pulse:22)"
 pulsec_com_pulse_lang_Object_toString_trace_s0_len equ $ - pulsec_com_pulse_lang_Object_toString_trace_s0
-trace_m226 db "com.pulse.lang.Object.equals"
-trace_m226_len equ $ - trace_m226
+trace_m555 db "com.pulse.lang.Object.equals"
+trace_m555_len equ $ - trace_m555
 pulsec_com_pulse_lang_Object_equals__Object_trace_s0 db "com.pulse.lang.Object.equals(Object.pulse:30)"
 pulsec_com_pulse_lang_Object_equals__Object_trace_s0_len equ $ - pulsec_com_pulse_lang_Object_equals__Object_trace_s0
-trace_m228 db "com.pulse.lang.Object.getClass"
-trace_m228_len equ $ - trace_m228
+trace_m557 db "com.pulse.lang.Object.getClass"
+trace_m557_len equ $ - trace_m557
 pulsec_com_pulse_lang_Object_getClass_trace_s0 db "com.pulse.lang.Object.getClass(Object.pulse:38)"
 pulsec_com_pulse_lang_Object_getClass_trace_s0_len equ $ - pulsec_com_pulse_lang_Object_getClass_trace_s0
-trace_m230 db "com.pulse.lang.PrintStream.println"
-trace_m230_len equ $ - trace_m230
+trace_m559 db "com.pulse.lang.PrintStream.println"
+trace_m559_len equ $ - trace_m559
 pulsec_com_pulse_lang_PrintStream_println__String_trace_s0 db "com.pulse.lang.PrintStream.println(PrintStream.pulse:14)"
 pulsec_com_pulse_lang_PrintStream_println__String_trace_s0_len equ $ - pulsec_com_pulse_lang_PrintStream_println__String_trace_s0
-trace_m232 db "com.pulse.lang.PrintStream.println"
-trace_m232_len equ $ - trace_m232
+trace_m561 db "com.pulse.lang.PrintStream.println"
+trace_m561_len equ $ - trace_m561
 pulsec_com_pulse_lang_PrintStream_println__int_trace_s0 db "com.pulse.lang.PrintStream.println(PrintStream.pulse:22)"
 pulsec_com_pulse_lang_PrintStream_println__int_trace_s0_len equ $ - pulsec_com_pulse_lang_PrintStream_println__int_trace_s0
-trace_m234 db "com.pulse.lang.PrintStream.println"
-trace_m234_len equ $ - trace_m234
+trace_m563 db "com.pulse.lang.PrintStream.println"
+trace_m563_len equ $ - trace_m563
 pulsec_com_pulse_lang_PrintStream_println__boolean_trace_s0 db "com.pulse.lang.PrintStream.println(PrintStream.pulse:30)"
 pulsec_com_pulse_lang_PrintStream_println__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_PrintStream_println__boolean_trace_s0
-trace_m236 db "com.pulse.lang.PrintStream.print"
-trace_m236_len equ $ - trace_m236
+trace_m565 db "com.pulse.lang.PrintStream.print"
+trace_m565_len equ $ - trace_m565
 pulsec_com_pulse_lang_PrintStream_print__String_trace_s0 db "com.pulse.lang.PrintStream.print(PrintStream.pulse:38)"
 pulsec_com_pulse_lang_PrintStream_print__String_trace_s0_len equ $ - pulsec_com_pulse_lang_PrintStream_print__String_trace_s0
-trace_m238 db "com.pulse.lang.PrintStream.print"
-trace_m238_len equ $ - trace_m238
+trace_m567 db "com.pulse.lang.PrintStream.print"
+trace_m567_len equ $ - trace_m567
 pulsec_com_pulse_lang_PrintStream_print__int_trace_s0 db "com.pulse.lang.PrintStream.print(PrintStream.pulse:46)"
 pulsec_com_pulse_lang_PrintStream_print__int_trace_s0_len equ $ - pulsec_com_pulse_lang_PrintStream_print__int_trace_s0
-trace_m240 db "com.pulse.lang.PrintStream.print"
-trace_m240_len equ $ - trace_m240
+trace_m569 db "com.pulse.lang.PrintStream.print"
+trace_m569_len equ $ - trace_m569
 pulsec_com_pulse_lang_PrintStream_print__boolean_trace_s0 db "com.pulse.lang.PrintStream.print(PrintStream.pulse:54)"
 pulsec_com_pulse_lang_PrintStream_print__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_PrintStream_print__boolean_trace_s0
-trace_m242 db "com.pulse.lang.RuntimeException.RuntimeException"
-trace_m242_len equ $ - trace_m242
+trace_m571 db "com.pulse.lang.RuntimeException.RuntimeException"
+trace_m571_len equ $ - trace_m571
 pulsec_com_pulse_lang_RuntimeException_RuntimeException_trace_s0 db "com.pulse.lang.RuntimeException.RuntimeException(RuntimeException.pulse:12)"
 pulsec_com_pulse_lang_RuntimeException_RuntimeException_trace_s0_len equ $ - pulsec_com_pulse_lang_RuntimeException_RuntimeException_trace_s0
-trace_m244 db "com.pulse.lang.RuntimeException.RuntimeException"
-trace_m244_len equ $ - trace_m244
+trace_m573 db "com.pulse.lang.RuntimeException.RuntimeException"
+trace_m573_len equ $ - trace_m573
 pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_trace_s0 db "com.pulse.lang.RuntimeException.RuntimeException(RuntimeException.pulse:20)"
 pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_trace_s0_len equ $ - pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_trace_s0
-trace_m246 db "com.pulse.lang.RuntimeException.RuntimeException"
-trace_m246_len equ $ - trace_m246
+trace_m575 db "com.pulse.lang.RuntimeException.RuntimeException"
+trace_m575_len equ $ - trace_m575
 pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_Throwable_trace_s0 db "com.pulse.lang.RuntimeException.RuntimeException(RuntimeException.pulse:28)"
 pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_Throwable_trace_s0
-trace_m248 db "com.pulse.lang.Short.valueOf"
-trace_m248_len equ $ - trace_m248
+trace_m577 db "com.pulse.lang.Short.valueOf"
+trace_m577_len equ $ - trace_m577
 pulsec_com_pulse_lang_Short_valueOf__short_trace_s0 db "com.pulse.lang.Short.valueOf(Short.pulse:24)"
 pulsec_com_pulse_lang_Short_valueOf__short_trace_s0_len equ $ - pulsec_com_pulse_lang_Short_valueOf__short_trace_s0
-trace_m250 db "com.pulse.lang.Short.parse"
-trace_m250_len equ $ - trace_m250
+trace_m579 db "com.pulse.lang.Short.parse"
+trace_m579_len equ $ - trace_m579
 pulsec_com_pulse_lang_Short_parse__String_trace_s0 db "com.pulse.lang.Short.parse(Short.pulse:32)"
 pulsec_com_pulse_lang_Short_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Short_parse__String_trace_s0
 pulsec_com_pulse_lang_Short_parse__String_trace_s1 db "com.pulse.lang.Short.parse(Short.pulse:33)"
@@ -790,16 +1455,16 @@ pulsec_com_pulse_lang_Short_parse__String_trace_s2 db "com.pulse.lang.Short.pars
 pulsec_com_pulse_lang_Short_parse__String_trace_s2_len equ $ - pulsec_com_pulse_lang_Short_parse__String_trace_s2
 pulsec_com_pulse_lang_Short_parse__String_trace_s3 db "com.pulse.lang.Short.parse(Short.pulse:36)"
 pulsec_com_pulse_lang_Short_parse__String_trace_s3_len equ $ - pulsec_com_pulse_lang_Short_parse__String_trace_s3
-trace_m255 db "com.pulse.lang.Short.shortValue"
-trace_m255_len equ $ - trace_m255
+trace_m584 db "com.pulse.lang.Short.shortValue"
+trace_m584_len equ $ - trace_m584
 pulsec_com_pulse_lang_Short_shortValue__Short_trace_s0 db "com.pulse.lang.Short.shortValue(Short.pulse:44)"
 pulsec_com_pulse_lang_Short_shortValue__Short_trace_s0_len equ $ - pulsec_com_pulse_lang_Short_shortValue__Short_trace_s0
-trace_m257 db "com.pulse.lang.Short.equals"
-trace_m257_len equ $ - trace_m257
+trace_m586 db "com.pulse.lang.Short.equals"
+trace_m586_len equ $ - trace_m586
 pulsec_com_pulse_lang_Short_equals__short_short_trace_s0 db "com.pulse.lang.Short.equals(Short.pulse:52)"
 pulsec_com_pulse_lang_Short_equals__short_short_trace_s0_len equ $ - pulsec_com_pulse_lang_Short_equals__short_short_trace_s0
-trace_m259 db "com.pulse.lang.Short.compare"
-trace_m259_len equ $ - trace_m259
+trace_m588 db "com.pulse.lang.Short.compare"
+trace_m588_len equ $ - trace_m588
 pulsec_com_pulse_lang_Short_compare__short_short_trace_s0 db "com.pulse.lang.Short.compare(Short.pulse:60)"
 pulsec_com_pulse_lang_Short_compare__short_short_trace_s0_len equ $ - pulsec_com_pulse_lang_Short_compare__short_short_trace_s0
 pulsec_com_pulse_lang_Short_compare__short_short_trace_s1 db "com.pulse.lang.Short.compare(Short.pulse:61)"
@@ -810,36 +1475,36 @@ pulsec_com_pulse_lang_Short_compare__short_short_trace_s3 db "com.pulse.lang.Sho
 pulsec_com_pulse_lang_Short_compare__short_short_trace_s3_len equ $ - pulsec_com_pulse_lang_Short_compare__short_short_trace_s3
 pulsec_com_pulse_lang_Short_compare__short_short_trace_s4 db "com.pulse.lang.Short.compare(Short.pulse:66)"
 pulsec_com_pulse_lang_Short_compare__short_short_trace_s4_len equ $ - pulsec_com_pulse_lang_Short_compare__short_short_trace_s4
-trace_m265 db "com.pulse.lang.Short.toString"
-trace_m265_len equ $ - trace_m265
+trace_m594 db "com.pulse.lang.Short.toString"
+trace_m594_len equ $ - trace_m594
 pulsec_com_pulse_lang_Short_toString__short_trace_s0 db "com.pulse.lang.Short.toString(Short.pulse:74)"
 pulsec_com_pulse_lang_Short_toString__short_trace_s0_len equ $ - pulsec_com_pulse_lang_Short_toString__short_trace_s0
-trace_m267 db "com.pulse.lang.String.length"
-trace_m267_len equ $ - trace_m267
+trace_m596 db "com.pulse.lang.String.length"
+trace_m596_len equ $ - trace_m596
 pulsec_com_pulse_lang_String_length_trace_s0 db "com.pulse.lang.String.length(String.pulse:13)"
 pulsec_com_pulse_lang_String_length_trace_s0_len equ $ - pulsec_com_pulse_lang_String_length_trace_s0
-trace_m269 db "com.pulse.lang.String.isEmpty"
-trace_m269_len equ $ - trace_m269
+trace_m598 db "com.pulse.lang.String.isEmpty"
+trace_m598_len equ $ - trace_m598
 pulsec_com_pulse_lang_String_isEmpty_trace_s0 db "com.pulse.lang.String.isEmpty(String.pulse:21)"
 pulsec_com_pulse_lang_String_isEmpty_trace_s0_len equ $ - pulsec_com_pulse_lang_String_isEmpty_trace_s0
-trace_m271 db "com.pulse.lang.String.concat"
-trace_m271_len equ $ - trace_m271
+trace_m600 db "com.pulse.lang.String.concat"
+trace_m600_len equ $ - trace_m600
 pulsec_com_pulse_lang_String_concat__String_trace_s0 db "com.pulse.lang.String.concat(String.pulse:29)"
 pulsec_com_pulse_lang_String_concat__String_trace_s0_len equ $ - pulsec_com_pulse_lang_String_concat__String_trace_s0
-trace_m273 db "com.pulse.lang.String.charAt"
-trace_m273_len equ $ - trace_m273
+trace_m602 db "com.pulse.lang.String.charAt"
+trace_m602_len equ $ - trace_m602
 pulsec_com_pulse_lang_String_charAt__int_trace_s0 db "com.pulse.lang.String.charAt(String.pulse:37)"
 pulsec_com_pulse_lang_String_charAt__int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_charAt__int_trace_s0
-trace_m275 db "com.pulse.lang.String.substring"
-trace_m275_len equ $ - trace_m275
+trace_m604 db "com.pulse.lang.String.substring"
+trace_m604_len equ $ - trace_m604
 pulsec_com_pulse_lang_String_substring__int_trace_s0 db "com.pulse.lang.String.substring(String.pulse:45)"
 pulsec_com_pulse_lang_String_substring__int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_substring__int_trace_s0
-trace_m277 db "com.pulse.lang.String.substring"
-trace_m277_len equ $ - trace_m277
+trace_m606 db "com.pulse.lang.String.substring"
+trace_m606_len equ $ - trace_m606
 pulsec_com_pulse_lang_String_substring__int_int_trace_s0 db "com.pulse.lang.String.substring(String.pulse:53)"
 pulsec_com_pulse_lang_String_substring__int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_substring__int_int_trace_s0
-trace_m279 db "com.pulse.lang.String.equals"
-trace_m279_len equ $ - trace_m279
+trace_m608 db "com.pulse.lang.String.equals"
+trace_m608_len equ $ - trace_m608
 pulsec_com_pulse_lang_String_equals__Object_trace_s0 db "com.pulse.lang.String.equals(String.pulse:61)"
 pulsec_com_pulse_lang_String_equals__Object_trace_s0_len equ $ - pulsec_com_pulse_lang_String_equals__Object_trace_s0
 pulsec_com_pulse_lang_String_equals__Object_trace_s1 db "com.pulse.lang.String.equals(String.pulse:62)"
@@ -862,12 +1527,12 @@ pulsec_com_pulse_lang_String_equals__Object_trace_s9 db "com.pulse.lang.String.e
 pulsec_com_pulse_lang_String_equals__Object_trace_s9_len equ $ - pulsec_com_pulse_lang_String_equals__Object_trace_s9
 pulsec_com_pulse_lang_String_equals__Object_trace_s10 db "com.pulse.lang.String.equals(String.pulse:75)"
 pulsec_com_pulse_lang_String_equals__Object_trace_s10_len equ $ - pulsec_com_pulse_lang_String_equals__Object_trace_s10
-trace_m291 db "com.pulse.lang.String.startsWith"
-trace_m291_len equ $ - trace_m291
+trace_m620 db "com.pulse.lang.String.startsWith"
+trace_m620_len equ $ - trace_m620
 pulsec_com_pulse_lang_String_startsWith__String_trace_s0 db "com.pulse.lang.String.startsWith(String.pulse:83)"
 pulsec_com_pulse_lang_String_startsWith__String_trace_s0_len equ $ - pulsec_com_pulse_lang_String_startsWith__String_trace_s0
-trace_m293 db "com.pulse.lang.String.endsWith"
-trace_m293_len equ $ - trace_m293
+trace_m622 db "com.pulse.lang.String.endsWith"
+trace_m622_len equ $ - trace_m622
 pulsec_com_pulse_lang_String_endsWith__String_trace_s0 db "com.pulse.lang.String.endsWith(String.pulse:91)"
 pulsec_com_pulse_lang_String_endsWith__String_trace_s0_len equ $ - pulsec_com_pulse_lang_String_endsWith__String_trace_s0
 pulsec_com_pulse_lang_String_endsWith__String_trace_s1 db "com.pulse.lang.String.endsWith(String.pulse:92)"
@@ -882,12 +1547,12 @@ pulsec_com_pulse_lang_String_endsWith__String_trace_s5 db "com.pulse.lang.String
 pulsec_com_pulse_lang_String_endsWith__String_trace_s5_len equ $ - pulsec_com_pulse_lang_String_endsWith__String_trace_s5
 pulsec_com_pulse_lang_String_endsWith__String_trace_s6 db "com.pulse.lang.String.endsWith(String.pulse:98)"
 pulsec_com_pulse_lang_String_endsWith__String_trace_s6_len equ $ - pulsec_com_pulse_lang_String_endsWith__String_trace_s6
-trace_m301 db "com.pulse.lang.String.contains"
-trace_m301_len equ $ - trace_m301
+trace_m630 db "com.pulse.lang.String.contains"
+trace_m630_len equ $ - trace_m630
 pulsec_com_pulse_lang_String_contains__String_trace_s0 db "com.pulse.lang.String.contains(String.pulse:106)"
 pulsec_com_pulse_lang_String_contains__String_trace_s0_len equ $ - pulsec_com_pulse_lang_String_contains__String_trace_s0
-trace_m303 db "com.pulse.lang.String.indexOf"
-trace_m303_len equ $ - trace_m303
+trace_m632 db "com.pulse.lang.String.indexOf"
+trace_m632_len equ $ - trace_m632
 pulsec_com_pulse_lang_String_indexOf__String_trace_s0 db "com.pulse.lang.String.indexOf(String.pulse:114)"
 pulsec_com_pulse_lang_String_indexOf__String_trace_s0_len equ $ - pulsec_com_pulse_lang_String_indexOf__String_trace_s0
 pulsec_com_pulse_lang_String_indexOf__String_trace_s1 db "com.pulse.lang.String.indexOf(String.pulse:115)"
@@ -928,8 +1593,8 @@ pulsec_com_pulse_lang_String_indexOf__String_trace_s18 db "com.pulse.lang.String
 pulsec_com_pulse_lang_String_indexOf__String_trace_s18_len equ $ - pulsec_com_pulse_lang_String_indexOf__String_trace_s18
 pulsec_com_pulse_lang_String_indexOf__String_trace_s19 db "com.pulse.lang.String.indexOf(String.pulse:140)"
 pulsec_com_pulse_lang_String_indexOf__String_trace_s19_len equ $ - pulsec_com_pulse_lang_String_indexOf__String_trace_s19
-trace_m324 db "com.pulse.lang.String.lastIndexOf"
-trace_m324_len equ $ - trace_m324
+trace_m653 db "com.pulse.lang.String.lastIndexOf"
+trace_m653_len equ $ - trace_m653
 pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s0 db "com.pulse.lang.String.lastIndexOf(String.pulse:148)"
 pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s0_len equ $ - pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s0
 pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s1 db "com.pulse.lang.String.lastIndexOf(String.pulse:149)"
@@ -968,8 +1633,8 @@ pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s17 db "com.pulse.lang.St
 pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s17_len equ $ - pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s17
 pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s18 db "com.pulse.lang.String.lastIndexOf(String.pulse:173)"
 pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s18_len equ $ - pulsec_com_pulse_lang_String_lastIndexOf__String_trace_s18
-trace_m344 db "com.pulse.lang.String.trim"
-trace_m344_len equ $ - trace_m344
+trace_m673 db "com.pulse.lang.String.trim"
+trace_m673_len equ $ - trace_m673
 pulsec_com_pulse_lang_String_trim_trace_s0 db "com.pulse.lang.String.trim(String.pulse:181)"
 pulsec_com_pulse_lang_String_trim_trace_s0_len equ $ - pulsec_com_pulse_lang_String_trim_trace_s0
 pulsec_com_pulse_lang_String_trim_trace_s1 db "com.pulse.lang.String.trim(String.pulse:182)"
@@ -996,168 +1661,188 @@ pulsec_com_pulse_lang_String_trim_trace_s11 db "com.pulse.lang.String.trim(Strin
 pulsec_com_pulse_lang_String_trim_trace_s11_len equ $ - pulsec_com_pulse_lang_String_trim_trace_s11
 pulsec_com_pulse_lang_String_trim_trace_s12 db "com.pulse.lang.String.trim(String.pulse:199)"
 pulsec_com_pulse_lang_String_trim_trace_s12_len equ $ - pulsec_com_pulse_lang_String_trim_trace_s12
-trace_m358 db "com.pulse.lang.String.valueOf"
-trace_m358_len equ $ - trace_m358
+trace_m687 db "com.pulse.lang.String.valueOf"
+trace_m687_len equ $ - trace_m687
 pulsec_com_pulse_lang_String_valueOf__int_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:207)"
 pulsec_com_pulse_lang_String_valueOf__int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__int_trace_s0
-trace_m360 db "com.pulse.lang.String.valueOf"
-trace_m360_len equ $ - trace_m360
+trace_m689 db "com.pulse.lang.String.valueOf"
+trace_m689_len equ $ - trace_m689
 pulsec_com_pulse_lang_String_valueOf__boolean_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:215)"
 pulsec_com_pulse_lang_String_valueOf__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__boolean_trace_s0
-trace_m362 db "com.pulse.lang.String.valueOf"
-trace_m362_len equ $ - trace_m362
+trace_m691 db "com.pulse.lang.String.valueOf"
+trace_m691_len equ $ - trace_m691
 pulsec_com_pulse_lang_String_valueOf__char_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:223)"
 pulsec_com_pulse_lang_String_valueOf__char_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__char_trace_s0
-trace_m364 db "com.pulse.lang.String.valueOf"
-trace_m364_len equ $ - trace_m364
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:231)"
+trace_m693 db "com.pulse.lang.String.valueOf"
+trace_m693_len equ $ - trace_m693
+pulsec_com_pulse_lang_String_valueOf__float_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:231)"
+pulsec_com_pulse_lang_String_valueOf__float_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__float_trace_s0
+trace_m695 db "com.pulse.lang.String.valueOf"
+trace_m695_len equ $ - trace_m695
+pulsec_com_pulse_lang_String_valueOf__double_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:239)"
+pulsec_com_pulse_lang_String_valueOf__double_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__double_trace_s0
+trace_m697 db "com.pulse.lang.String.valueOf"
+trace_m697_len equ $ - trace_m697
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:248)"
 pulsec_com_pulse_lang_String_valueOf__Object_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s0
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s1 db "com.pulse.lang.String.valueOf(String.pulse:232)"
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s1 db "com.pulse.lang.String.valueOf(String.pulse:249)"
 pulsec_com_pulse_lang_String_valueOf__Object_trace_s1_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s1
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s2 db "com.pulse.lang.String.valueOf(String.pulse:234)"
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s2 db "com.pulse.lang.String.valueOf(String.pulse:251)"
 pulsec_com_pulse_lang_String_valueOf__Object_trace_s2_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s2
-trace_m368 db "com.pulse.lang.String.runtimeCharAt"
-trace_m368_len equ $ - trace_m368
-pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0 db "com.pulse.lang.String.runtimeCharAt(String.pulse:242)"
+trace_m701 db "com.pulse.lang.String.runtimeCharAt"
+trace_m701_len equ $ - trace_m701
+pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0 db "com.pulse.lang.String.runtimeCharAt(String.pulse:259)"
 pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0
-trace_m370 db "com.pulse.lang.String.runtimeSubstring"
-trace_m370_len equ $ - trace_m370
-pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0 db "com.pulse.lang.String.runtimeSubstring(String.pulse:250)"
+trace_m703 db "com.pulse.lang.String.runtimeSubstring"
+trace_m703_len equ $ - trace_m703
+pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0 db "com.pulse.lang.String.runtimeSubstring(String.pulse:267)"
 pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0
-trace_m372 db "com.pulse.lang.String.runtimeFromChar"
-trace_m372_len equ $ - trace_m372
-pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0 db "com.pulse.lang.String.runtimeFromChar(String.pulse:258)"
+trace_m705 db "com.pulse.lang.String.runtimeFromChar"
+trace_m705_len equ $ - trace_m705
+pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0 db "com.pulse.lang.String.runtimeFromChar(String.pulse:275)"
 pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0_len equ $ - pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0
-trace_m374 db "com.pulse.lang.StringBuilder.StringBuilder"
-trace_m374_len equ $ - trace_m374
+trace_m707 db "com.pulse.lang.StringBuilder.StringBuilder"
+trace_m707_len equ $ - trace_m707
 pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0 db "com.pulse.lang.StringBuilder.StringBuilder(StringBuilder.pulse:14)"
 pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0
-trace_m376 db "com.pulse.lang.StringBuilder.StringBuilder"
-trace_m376_len equ $ - trace_m376
+trace_m709 db "com.pulse.lang.StringBuilder.StringBuilder"
+trace_m709_len equ $ - trace_m709
 pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0 db "com.pulse.lang.StringBuilder.StringBuilder(StringBuilder.pulse:22)"
 pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0
-trace_m378 db "com.pulse.lang.StringBuilder.append"
-trace_m378_len equ $ - trace_m378
+trace_m711 db "com.pulse.lang.StringBuilder.append"
+trace_m711_len equ $ - trace_m711
 pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:30)"
 pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0
 pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:31)"
 pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1
-trace_m381 db "com.pulse.lang.StringBuilder.append"
-trace_m381_len equ $ - trace_m381
+trace_m714 db "com.pulse.lang.StringBuilder.append"
+trace_m714_len equ $ - trace_m714
 pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:39)"
 pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0
 pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:40)"
 pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1
-trace_m384 db "com.pulse.lang.StringBuilder.append"
-trace_m384_len equ $ - trace_m384
+trace_m717 db "com.pulse.lang.StringBuilder.append"
+trace_m717_len equ $ - trace_m717
 pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:48)"
 pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0
 pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:49)"
 pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1
-trace_m387 db "com.pulse.lang.StringBuilder.append"
-trace_m387_len equ $ - trace_m387
+trace_m720 db "com.pulse.lang.StringBuilder.append"
+trace_m720_len equ $ - trace_m720
 pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:57)"
 pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0
 pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:58)"
 pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1
-trace_m390 db "com.pulse.lang.StringBuilder.append"
-trace_m390_len equ $ - trace_m390
-pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:66)"
+trace_m723 db "com.pulse.lang.StringBuilder.append"
+trace_m723_len equ $ - trace_m723
+pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:66)"
+pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:67)"
+pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1
+trace_m726 db "com.pulse.lang.StringBuilder.append"
+trace_m726_len equ $ - trace_m726
+pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:75)"
+pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:76)"
+pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1
+trace_m729 db "com.pulse.lang.StringBuilder.append"
+trace_m729_len equ $ - trace_m729
+pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:85)"
 pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0
-pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:67)"
+pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:86)"
 pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1
-trace_m393 db "com.pulse.lang.StringBuilder.length"
-trace_m393_len equ $ - trace_m393
-pulsec_com_pulse_lang_StringBuilder_length_trace_s0 db "com.pulse.lang.StringBuilder.length(StringBuilder.pulse:75)"
+trace_m732 db "com.pulse.lang.StringBuilder.length"
+trace_m732_len equ $ - trace_m732
+pulsec_com_pulse_lang_StringBuilder_length_trace_s0 db "com.pulse.lang.StringBuilder.length(StringBuilder.pulse:94)"
 pulsec_com_pulse_lang_StringBuilder_length_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_length_trace_s0
-trace_m395 db "com.pulse.lang.StringBuilder.clear"
-trace_m395_len equ $ - trace_m395
-pulsec_com_pulse_lang_StringBuilder_clear_trace_s0 db "com.pulse.lang.StringBuilder.clear(StringBuilder.pulse:83)"
+trace_m734 db "com.pulse.lang.StringBuilder.clear"
+trace_m734_len equ $ - trace_m734
+pulsec_com_pulse_lang_StringBuilder_clear_trace_s0 db "com.pulse.lang.StringBuilder.clear(StringBuilder.pulse:102)"
 pulsec_com_pulse_lang_StringBuilder_clear_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_clear_trace_s0
-trace_m397 db "com.pulse.lang.StringBuilder.insert"
-trace_m397_len equ $ - trace_m397
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:91)"
+trace_m736 db "com.pulse.lang.StringBuilder.insert"
+trace_m736_len equ $ - trace_m736
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:110)"
 pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:92)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:111)"
 pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:93)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:112)"
 pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:94)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:113)"
 pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:95)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:114)"
 pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4
-trace_m403 db "com.pulse.lang.StringBuilder.delete"
-trace_m403_len equ $ - trace_m403
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:103)"
+trace_m742 db "com.pulse.lang.StringBuilder.delete"
+trace_m742_len equ $ - trace_m742
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:122)"
 pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:104)"
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:123)"
 pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:105)"
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:124)"
 pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2_len equ $ - pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:106)"
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:125)"
 pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3_len equ $ - pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3
-trace_m408 db "com.pulse.lang.StringBuilder.setLength"
-trace_m408_len equ $ - trace_m408
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:114)"
+trace_m747 db "com.pulse.lang.StringBuilder.setLength"
+trace_m747_len equ $ - trace_m747
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:133)"
 pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:115)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:134)"
 pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:116)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:135)"
 pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:117)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:136)"
 pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:119)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:138)"
 pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:120)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:139)"
 pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:121)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:140)"
 pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6
-trace_m416 db "com.pulse.lang.StringBuilder.toString"
-trace_m416_len equ $ - trace_m416
-pulsec_com_pulse_lang_StringBuilder_toString_trace_s0 db "com.pulse.lang.StringBuilder.toString(StringBuilder.pulse:130)"
+trace_m755 db "com.pulse.lang.StringBuilder.toString"
+trace_m755_len equ $ - trace_m755
+pulsec_com_pulse_lang_StringBuilder_toString_trace_s0 db "com.pulse.lang.StringBuilder.toString(StringBuilder.pulse:149)"
 pulsec_com_pulse_lang_StringBuilder_toString_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_toString_trace_s0
-trace_m418 db "com.pulse.lang.Throwable.Throwable"
-trace_m418_len equ $ - trace_m418
+trace_m757 db "com.pulse.lang.Throwable.Throwable"
+trace_m757_len equ $ - trace_m757
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s0 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:17)"
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable_trace_s0
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s1 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:18)"
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable_trace_s1
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s2 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:19)"
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable_trace_s2
-trace_m422 db "com.pulse.lang.Throwable.Throwable"
-trace_m422_len equ $ - trace_m422
+trace_m761 db "com.pulse.lang.Throwable.Throwable"
+trace_m761_len equ $ - trace_m761
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:27)"
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:28)"
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:29)"
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2
-trace_m426 db "com.pulse.lang.Throwable.Throwable"
-trace_m426_len equ $ - trace_m426
+trace_m765 db "com.pulse.lang.Throwable.Throwable"
+trace_m765_len equ $ - trace_m765
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:37)"
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:38)"
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:39)"
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2
-trace_m430 db "com.pulse.lang.Throwable.initThrowableState"
-trace_m430_len equ $ - trace_m430
+trace_m769 db "com.pulse.lang.Throwable.initThrowableState"
+trace_m769_len equ $ - trace_m769
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0 db "com.pulse.lang.Throwable.initThrowableState(Throwable.pulse:47)"
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1 db "com.pulse.lang.Throwable.initThrowableState(Throwable.pulse:48)"
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2 db "com.pulse.lang.Throwable.initThrowableState(Throwable.pulse:49)"
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2
-trace_m434 db "com.pulse.lang.Throwable.getMessage"
-trace_m434_len equ $ - trace_m434
+trace_m773 db "com.pulse.lang.Throwable.getMessage"
+trace_m773_len equ $ - trace_m773
 pulsec_com_pulse_lang_Throwable_getMessage_trace_s0 db "com.pulse.lang.Throwable.getMessage(Throwable.pulse:57)"
 pulsec_com_pulse_lang_Throwable_getMessage_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_getMessage_trace_s0
-trace_m436 db "com.pulse.lang.Throwable.getCause"
-trace_m436_len equ $ - trace_m436
+trace_m775 db "com.pulse.lang.Throwable.getCause"
+trace_m775_len equ $ - trace_m775
 pulsec_com_pulse_lang_Throwable_getCause_trace_s0 db "com.pulse.lang.Throwable.getCause(Throwable.pulse:65)"
 pulsec_com_pulse_lang_Throwable_getCause_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_getCause_trace_s0
-trace_m438 db "com.pulse.lang.Throwable.initCause"
-trace_m438_len equ $ - trace_m438
+trace_m777 db "com.pulse.lang.Throwable.initCause"
+trace_m777_len equ $ - trace_m777
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:73)"
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s1 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:74)"
@@ -1170,8 +1855,8 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4 db "com.pulse.lang
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:80)"
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5
-trace_m445 db "com.pulse.lang.Throwable.formatThrowable"
-trace_m445_len equ $ - trace_m445
+trace_m784 db "com.pulse.lang.Throwable.formatThrowable"
+trace_m784_len equ $ - trace_m784
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0 db "com.pulse.lang.Throwable.formatThrowable(Throwable.pulse:88)"
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s1 db "com.pulse.lang.Throwable.formatThrowable(Throwable.pulse:89)"
@@ -1182,8 +1867,8 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3 db "com.pulse.l
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3_len equ $ - pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s4 db "com.pulse.lang.Throwable.formatThrowable(Throwable.pulse:93)"
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s4_len equ $ - pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s4
-trace_m451 db "com.pulse.lang.Throwable.describe"
-trace_m451_len equ $ - trace_m451
+trace_m790 db "com.pulse.lang.Throwable.describe"
+trace_m790_len equ $ - trace_m790
 pulsec_com_pulse_lang_Throwable_describe_trace_s0 db "com.pulse.lang.Throwable.describe(Throwable.pulse:101)"
 pulsec_com_pulse_lang_Throwable_describe_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s0
 pulsec_com_pulse_lang_Throwable_describe_trace_s1 db "com.pulse.lang.Throwable.describe(Throwable.pulse:102)"
@@ -1198,16 +1883,16 @@ pulsec_com_pulse_lang_Throwable_describe_trace_s5 db "com.pulse.lang.Throwable.d
 pulsec_com_pulse_lang_Throwable_describe_trace_s5_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s5
 pulsec_com_pulse_lang_Throwable_describe_trace_s6 db "com.pulse.lang.Throwable.describe(Throwable.pulse:108)"
 pulsec_com_pulse_lang_Throwable_describe_trace_s6_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s6
-trace_m459 db "com.pulse.lang.Throwable.toString"
-trace_m459_len equ $ - trace_m459
+trace_m798 db "com.pulse.lang.Throwable.toString"
+trace_m798_len equ $ - trace_m798
 pulsec_com_pulse_lang_Throwable_toString_trace_s0 db "com.pulse.lang.Throwable.toString(Throwable.pulse:116)"
 pulsec_com_pulse_lang_Throwable_toString_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_toString_trace_s0
-trace_m461 db "com.pulse.lang.UByte.valueOf"
-trace_m461_len equ $ - trace_m461
+trace_m800 db "com.pulse.lang.UByte.valueOf"
+trace_m800_len equ $ - trace_m800
 pulsec_com_pulse_lang_UByte_valueOf__ubyte_trace_s0 db "com.pulse.lang.UByte.valueOf(UByte.pulse:24)"
 pulsec_com_pulse_lang_UByte_valueOf__ubyte_trace_s0_len equ $ - pulsec_com_pulse_lang_UByte_valueOf__ubyte_trace_s0
-trace_m463 db "com.pulse.lang.UByte.parse"
-trace_m463_len equ $ - trace_m463
+trace_m802 db "com.pulse.lang.UByte.parse"
+trace_m802_len equ $ - trace_m802
 pulsec_com_pulse_lang_UByte_parse__String_trace_s0 db "com.pulse.lang.UByte.parse(UByte.pulse:32)"
 pulsec_com_pulse_lang_UByte_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_UByte_parse__String_trace_s0
 pulsec_com_pulse_lang_UByte_parse__String_trace_s1 db "com.pulse.lang.UByte.parse(UByte.pulse:33)"
@@ -1216,16 +1901,16 @@ pulsec_com_pulse_lang_UByte_parse__String_trace_s2 db "com.pulse.lang.UByte.pars
 pulsec_com_pulse_lang_UByte_parse__String_trace_s2_len equ $ - pulsec_com_pulse_lang_UByte_parse__String_trace_s2
 pulsec_com_pulse_lang_UByte_parse__String_trace_s3 db "com.pulse.lang.UByte.parse(UByte.pulse:36)"
 pulsec_com_pulse_lang_UByte_parse__String_trace_s3_len equ $ - pulsec_com_pulse_lang_UByte_parse__String_trace_s3
-trace_m468 db "com.pulse.lang.UByte.ubyteValue"
-trace_m468_len equ $ - trace_m468
+trace_m807 db "com.pulse.lang.UByte.ubyteValue"
+trace_m807_len equ $ - trace_m807
 pulsec_com_pulse_lang_UByte_ubyteValue__UByte_trace_s0 db "com.pulse.lang.UByte.ubyteValue(UByte.pulse:44)"
 pulsec_com_pulse_lang_UByte_ubyteValue__UByte_trace_s0_len equ $ - pulsec_com_pulse_lang_UByte_ubyteValue__UByte_trace_s0
-trace_m470 db "com.pulse.lang.UByte.equals"
-trace_m470_len equ $ - trace_m470
+trace_m809 db "com.pulse.lang.UByte.equals"
+trace_m809_len equ $ - trace_m809
 pulsec_com_pulse_lang_UByte_equals__ubyte_ubyte_trace_s0 db "com.pulse.lang.UByte.equals(UByte.pulse:52)"
 pulsec_com_pulse_lang_UByte_equals__ubyte_ubyte_trace_s0_len equ $ - pulsec_com_pulse_lang_UByte_equals__ubyte_ubyte_trace_s0
-trace_m472 db "com.pulse.lang.UByte.compare"
-trace_m472_len equ $ - trace_m472
+trace_m811 db "com.pulse.lang.UByte.compare"
+trace_m811_len equ $ - trace_m811
 pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s0 db "com.pulse.lang.UByte.compare(UByte.pulse:60)"
 pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s0_len equ $ - pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s0
 pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s1 db "com.pulse.lang.UByte.compare(UByte.pulse:61)"
@@ -1236,88 +1921,96 @@ pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s3 db "com.pulse.lang.UBy
 pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s3_len equ $ - pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s3
 pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s4 db "com.pulse.lang.UByte.compare(UByte.pulse:66)"
 pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s4_len equ $ - pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte_trace_s4
-trace_m478 db "com.pulse.lang.UByte.toString"
-trace_m478_len equ $ - trace_m478
+trace_m817 db "com.pulse.lang.UByte.toString"
+trace_m817_len equ $ - trace_m817
 pulsec_com_pulse_lang_UByte_toString__ubyte_trace_s0 db "com.pulse.lang.UByte.toString(UByte.pulse:74)"
 pulsec_com_pulse_lang_UByte_toString__ubyte_trace_s0_len equ $ - pulsec_com_pulse_lang_UByte_toString__ubyte_trace_s0
-trace_m480 db "com.pulse.lang.UInteger.valueOf"
-trace_m480_len equ $ - trace_m480
+trace_m819 db "com.pulse.lang.UInteger.valueOf"
+trace_m819_len equ $ - trace_m819
 pulsec_com_pulse_lang_UInteger_valueOf__uint_trace_s0 db "com.pulse.lang.UInteger.valueOf(UInteger.pulse:24)"
 pulsec_com_pulse_lang_UInteger_valueOf__uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_valueOf__uint_trace_s0
-trace_m482 db "com.pulse.lang.UInteger.parse"
-trace_m482_len equ $ - trace_m482
+trace_m821 db "com.pulse.lang.UInteger.parse"
+trace_m821_len equ $ - trace_m821
 pulsec_com_pulse_lang_UInteger_parse__String_trace_s0 db "com.pulse.lang.UInteger.parse(UInteger.pulse:32)"
 pulsec_com_pulse_lang_UInteger_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_parse__String_trace_s0
-pulsec_com_pulse_lang_UInteger_parse__String_trace_s1 db "com.pulse.lang.UInteger.parse(UInteger.pulse:33)"
-pulsec_com_pulse_lang_UInteger_parse__String_trace_s1_len equ $ - pulsec_com_pulse_lang_UInteger_parse__String_trace_s1
-trace_m485 db "com.pulse.lang.UInteger.uintValue"
-trace_m485_len equ $ - trace_m485
-pulsec_com_pulse_lang_UInteger_uintValue__UInteger_trace_s0 db "com.pulse.lang.UInteger.uintValue(UInteger.pulse:41)"
+trace_m823 db "com.pulse.lang.UInteger.uintValue"
+trace_m823_len equ $ - trace_m823
+pulsec_com_pulse_lang_UInteger_uintValue__UInteger_trace_s0 db "com.pulse.lang.UInteger.uintValue(UInteger.pulse:40)"
 pulsec_com_pulse_lang_UInteger_uintValue__UInteger_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_uintValue__UInteger_trace_s0
-trace_m487 db "com.pulse.lang.UInteger.equals"
-trace_m487_len equ $ - trace_m487
-pulsec_com_pulse_lang_UInteger_equals__uint_uint_trace_s0 db "com.pulse.lang.UInteger.equals(UInteger.pulse:49)"
+trace_m825 db "com.pulse.lang.UInteger.equals"
+trace_m825_len equ $ - trace_m825
+pulsec_com_pulse_lang_UInteger_equals__uint_uint_trace_s0 db "com.pulse.lang.UInteger.equals(UInteger.pulse:48)"
 pulsec_com_pulse_lang_UInteger_equals__uint_uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_equals__uint_uint_trace_s0
-trace_m489 db "com.pulse.lang.UInteger.compare"
-trace_m489_len equ $ - trace_m489
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s0 db "com.pulse.lang.UInteger.compare(UInteger.pulse:57)"
+trace_m827 db "com.pulse.lang.UInteger.compare"
+trace_m827_len equ $ - trace_m827
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s0 db "com.pulse.lang.UInteger.compare(UInteger.pulse:56)"
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s0
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s1 db "com.pulse.lang.UInteger.compare(UInteger.pulse:58)"
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s1 db "com.pulse.lang.UInteger.compare(UInteger.pulse:57)"
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s1_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s1
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s2 db "com.pulse.lang.UInteger.compare(UInteger.pulse:60)"
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s2 db "com.pulse.lang.UInteger.compare(UInteger.pulse:59)"
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s2_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s2
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s3 db "com.pulse.lang.UInteger.compare(UInteger.pulse:61)"
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s3 db "com.pulse.lang.UInteger.compare(UInteger.pulse:60)"
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s3_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s3
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s4 db "com.pulse.lang.UInteger.compare(UInteger.pulse:63)"
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s4 db "com.pulse.lang.UInteger.compare(UInteger.pulse:62)"
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s4_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s4
-trace_m495 db "com.pulse.lang.UInteger.toString"
-trace_m495_len equ $ - trace_m495
-pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0 db "com.pulse.lang.UInteger.toString(UInteger.pulse:71)"
+trace_m833 db "com.pulse.lang.UInteger.toString"
+trace_m833_len equ $ - trace_m833
+pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0 db "com.pulse.lang.UInteger.toString(UInteger.pulse:70)"
 pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0
-pulsec_com_pulse_lang_UInteger_toString__uint_trace_s1 db "com.pulse.lang.UInteger.toString(UInteger.pulse:72)"
-pulsec_com_pulse_lang_UInteger_toString__uint_trace_s1_len equ $ - pulsec_com_pulse_lang_UInteger_toString__uint_trace_s1
-trace_m498 db "com.pulse.lang.ULong.valueOf"
-trace_m498_len equ $ - trace_m498
+trace_m835 db "com.pulse.lang.UInteger.runtimeParse"
+trace_m835_len equ $ - trace_m835
+pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0 db "com.pulse.lang.UInteger.runtimeParse(UInteger.pulse:78)"
+pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0
+trace_m837 db "com.pulse.lang.UInteger.runtimeToString"
+trace_m837_len equ $ - trace_m837
+pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0 db "com.pulse.lang.UInteger.runtimeToString(UInteger.pulse:86)"
+pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0
+trace_m839 db "com.pulse.lang.ULong.valueOf"
+trace_m839_len equ $ - trace_m839
 pulsec_com_pulse_lang_ULong_valueOf__ulong_trace_s0 db "com.pulse.lang.ULong.valueOf(ULong.pulse:24)"
 pulsec_com_pulse_lang_ULong_valueOf__ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_valueOf__ulong_trace_s0
-trace_m500 db "com.pulse.lang.ULong.parse"
-trace_m500_len equ $ - trace_m500
+trace_m841 db "com.pulse.lang.ULong.parse"
+trace_m841_len equ $ - trace_m841
 pulsec_com_pulse_lang_ULong_parse__String_trace_s0 db "com.pulse.lang.ULong.parse(ULong.pulse:32)"
 pulsec_com_pulse_lang_ULong_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_parse__String_trace_s0
-pulsec_com_pulse_lang_ULong_parse__String_trace_s1 db "com.pulse.lang.ULong.parse(ULong.pulse:33)"
-pulsec_com_pulse_lang_ULong_parse__String_trace_s1_len equ $ - pulsec_com_pulse_lang_ULong_parse__String_trace_s1
-trace_m503 db "com.pulse.lang.ULong.ulongValue"
-trace_m503_len equ $ - trace_m503
-pulsec_com_pulse_lang_ULong_ulongValue__ULong_trace_s0 db "com.pulse.lang.ULong.ulongValue(ULong.pulse:41)"
+trace_m843 db "com.pulse.lang.ULong.ulongValue"
+trace_m843_len equ $ - trace_m843
+pulsec_com_pulse_lang_ULong_ulongValue__ULong_trace_s0 db "com.pulse.lang.ULong.ulongValue(ULong.pulse:40)"
 pulsec_com_pulse_lang_ULong_ulongValue__ULong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_ulongValue__ULong_trace_s0
-trace_m505 db "com.pulse.lang.ULong.equals"
-trace_m505_len equ $ - trace_m505
-pulsec_com_pulse_lang_ULong_equals__ulong_ulong_trace_s0 db "com.pulse.lang.ULong.equals(ULong.pulse:49)"
+trace_m845 db "com.pulse.lang.ULong.equals"
+trace_m845_len equ $ - trace_m845
+pulsec_com_pulse_lang_ULong_equals__ulong_ulong_trace_s0 db "com.pulse.lang.ULong.equals(ULong.pulse:48)"
 pulsec_com_pulse_lang_ULong_equals__ulong_ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_equals__ulong_ulong_trace_s0
-trace_m507 db "com.pulse.lang.ULong.compare"
-trace_m507_len equ $ - trace_m507
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s0 db "com.pulse.lang.ULong.compare(ULong.pulse:57)"
+trace_m847 db "com.pulse.lang.ULong.compare"
+trace_m847_len equ $ - trace_m847
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s0 db "com.pulse.lang.ULong.compare(ULong.pulse:56)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s0
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s1 db "com.pulse.lang.ULong.compare(ULong.pulse:58)"
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s1 db "com.pulse.lang.ULong.compare(ULong.pulse:57)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s1_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s1
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s2 db "com.pulse.lang.ULong.compare(ULong.pulse:60)"
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s2 db "com.pulse.lang.ULong.compare(ULong.pulse:59)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s2_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s2
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s3 db "com.pulse.lang.ULong.compare(ULong.pulse:61)"
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s3 db "com.pulse.lang.ULong.compare(ULong.pulse:60)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s3_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s3
-pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s4 db "com.pulse.lang.ULong.compare(ULong.pulse:63)"
+pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s4 db "com.pulse.lang.ULong.compare(ULong.pulse:62)"
 pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s4_len equ $ - pulsec_com_pulse_lang_ULong_compare__ulong_ulong_trace_s4
-trace_m513 db "com.pulse.lang.ULong.toString"
-trace_m513_len equ $ - trace_m513
-pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0 db "com.pulse.lang.ULong.toString(ULong.pulse:71)"
+trace_m853 db "com.pulse.lang.ULong.toString"
+trace_m853_len equ $ - trace_m853
+pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0 db "com.pulse.lang.ULong.toString(ULong.pulse:70)"
 pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0
-pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1 db "com.pulse.lang.ULong.toString(ULong.pulse:72)"
-pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1_len equ $ - pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1
-trace_m516 db "com.pulse.lang.UShort.valueOf"
-trace_m516_len equ $ - trace_m516
+trace_m855 db "com.pulse.lang.ULong.runtimeParse"
+trace_m855_len equ $ - trace_m855
+pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0 db "com.pulse.lang.ULong.runtimeParse(ULong.pulse:78)"
+pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0
+trace_m857 db "com.pulse.lang.ULong.runtimeToString"
+trace_m857_len equ $ - trace_m857
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0 db "com.pulse.lang.ULong.runtimeToString(ULong.pulse:86)"
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0_len equ $ - pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0
+trace_m859 db "com.pulse.lang.UShort.valueOf"
+trace_m859_len equ $ - trace_m859
 pulsec_com_pulse_lang_UShort_valueOf__ushort_trace_s0 db "com.pulse.lang.UShort.valueOf(UShort.pulse:24)"
 pulsec_com_pulse_lang_UShort_valueOf__ushort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_valueOf__ushort_trace_s0
-trace_m518 db "com.pulse.lang.UShort.parse"
-trace_m518_len equ $ - trace_m518
+trace_m861 db "com.pulse.lang.UShort.parse"
+trace_m861_len equ $ - trace_m861
 pulsec_com_pulse_lang_UShort_parse__String_trace_s0 db "com.pulse.lang.UShort.parse(UShort.pulse:32)"
 pulsec_com_pulse_lang_UShort_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_parse__String_trace_s0
 pulsec_com_pulse_lang_UShort_parse__String_trace_s1 db "com.pulse.lang.UShort.parse(UShort.pulse:33)"
@@ -1326,16 +2019,16 @@ pulsec_com_pulse_lang_UShort_parse__String_trace_s2 db "com.pulse.lang.UShort.pa
 pulsec_com_pulse_lang_UShort_parse__String_trace_s2_len equ $ - pulsec_com_pulse_lang_UShort_parse__String_trace_s2
 pulsec_com_pulse_lang_UShort_parse__String_trace_s3 db "com.pulse.lang.UShort.parse(UShort.pulse:36)"
 pulsec_com_pulse_lang_UShort_parse__String_trace_s3_len equ $ - pulsec_com_pulse_lang_UShort_parse__String_trace_s3
-trace_m523 db "com.pulse.lang.UShort.ushortValue"
-trace_m523_len equ $ - trace_m523
+trace_m866 db "com.pulse.lang.UShort.ushortValue"
+trace_m866_len equ $ - trace_m866
 pulsec_com_pulse_lang_UShort_ushortValue__UShort_trace_s0 db "com.pulse.lang.UShort.ushortValue(UShort.pulse:44)"
 pulsec_com_pulse_lang_UShort_ushortValue__UShort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_ushortValue__UShort_trace_s0
-trace_m525 db "com.pulse.lang.UShort.equals"
-trace_m525_len equ $ - trace_m525
+trace_m868 db "com.pulse.lang.UShort.equals"
+trace_m868_len equ $ - trace_m868
 pulsec_com_pulse_lang_UShort_equals__ushort_ushort_trace_s0 db "com.pulse.lang.UShort.equals(UShort.pulse:52)"
 pulsec_com_pulse_lang_UShort_equals__ushort_ushort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_equals__ushort_ushort_trace_s0
-trace_m527 db "com.pulse.lang.UShort.compare"
-trace_m527_len equ $ - trace_m527
+trace_m870 db "com.pulse.lang.UShort.compare"
+trace_m870_len equ $ - trace_m870
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s0 db "com.pulse.lang.UShort.compare(UShort.pulse:60)"
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s0
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s1 db "com.pulse.lang.UShort.compare(UShort.pulse:61)"
@@ -1346,134 +2039,134 @@ pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s3 db "com.pulse.lang.
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s3_len equ $ - pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s3
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s4 db "com.pulse.lang.UShort.compare(UShort.pulse:66)"
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s4_len equ $ - pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s4
-trace_m533 db "com.pulse.lang.UShort.toString"
-trace_m533_len equ $ - trace_m533
+trace_m876 db "com.pulse.lang.UShort.toString"
+trace_m876_len equ $ - trace_m876
 pulsec_com_pulse_lang_UShort_toString__ushort_trace_s0 db "com.pulse.lang.UShort.toString(UShort.pulse:74)"
 pulsec_com_pulse_lang_UShort_toString__ushort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_toString__ushort_trace_s0
-trace_m535 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException"
-trace_m535_len equ $ - trace_m535
+trace_m878 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException"
+trace_m878_len equ $ - trace_m878
 pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException_trace_s0 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException(UnsupportedOperationException.pulse:12)"
 pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException_trace_s0_len equ $ - pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException_trace_s0
-trace_m537 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException"
-trace_m537_len equ $ - trace_m537
+trace_m880 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException"
+trace_m880_len equ $ - trace_m880
 pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_trace_s0 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException(UnsupportedOperationException.pulse:20)"
 pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_trace_s0_len equ $ - pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_trace_s0
-trace_m539 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException"
-trace_m539_len equ $ - trace_m539
+trace_m882 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException"
+trace_m882_len equ $ - trace_m882
 pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_Throwable_trace_s0 db "com.pulse.lang.UnsupportedOperationException.UnsupportedOperationException(UnsupportedOperationException.pulse:28)"
 pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_Throwable_trace_s0
-trace_m541 db "com.pulse.rt.Intrinsics.consoleWrite"
-trace_m541_len equ $ - trace_m541
-trace_m542 db "com.pulse.rt.Intrinsics.consoleWrite"
-trace_m542_len equ $ - trace_m542
-trace_m543 db "com.pulse.rt.Intrinsics.consoleWrite"
-trace_m543_len equ $ - trace_m543
-trace_m544 db "com.pulse.rt.Intrinsics.consoleWriteLine"
-trace_m544_len equ $ - trace_m544
-trace_m545 db "com.pulse.rt.Intrinsics.consoleWriteLine"
-trace_m545_len equ $ - trace_m545
-trace_m546 db "com.pulse.rt.Intrinsics.consoleWriteLine"
-trace_m546_len equ $ - trace_m546
-trace_m547 db "com.pulse.rt.Intrinsics.panic"
-trace_m547_len equ $ - trace_m547
-trace_m548 db "com.pulse.rt.Intrinsics.stringConcat"
-trace_m548_len equ $ - trace_m548
+trace_m884 db "com.pulse.rt.Intrinsics.consoleWrite"
+trace_m884_len equ $ - trace_m884
+trace_m885 db "com.pulse.rt.Intrinsics.consoleWrite"
+trace_m885_len equ $ - trace_m885
+trace_m886 db "com.pulse.rt.Intrinsics.consoleWrite"
+trace_m886_len equ $ - trace_m886
+trace_m887 db "com.pulse.rt.Intrinsics.consoleWriteLine"
+trace_m887_len equ $ - trace_m887
+trace_m888 db "com.pulse.rt.Intrinsics.consoleWriteLine"
+trace_m888_len equ $ - trace_m888
+trace_m889 db "com.pulse.rt.Intrinsics.consoleWriteLine"
+trace_m889_len equ $ - trace_m889
+trace_m890 db "com.pulse.rt.Intrinsics.panic"
+trace_m890_len equ $ - trace_m890
+trace_m891 db "com.pulse.rt.Intrinsics.stringConcat"
+trace_m891_len equ $ - trace_m891
 pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0 db "com.pulse.rt.Intrinsics.stringConcat(Intrinsics.pulse:61)"
 pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0
-trace_m550 db "com.pulse.rt.Intrinsics.stringLength"
-trace_m550_len equ $ - trace_m550
+trace_m893 db "com.pulse.rt.Intrinsics.stringLength"
+trace_m893_len equ $ - trace_m893
 pulsec_com_pulse_rt_Intrinsics_stringLength__String_trace_s0 db "com.pulse.rt.Intrinsics.stringLength(Intrinsics.pulse:69)"
 pulsec_com_pulse_rt_Intrinsics_stringLength__String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_stringLength__String_trace_s0
-trace_m552 db "com.pulse.rt.Intrinsics.intToString"
-trace_m552_len equ $ - trace_m552
+trace_m895 db "com.pulse.rt.Intrinsics.intToString"
+trace_m895_len equ $ - trace_m895
 pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0 db "com.pulse.rt.Intrinsics.intToString(Intrinsics.pulse:77)"
 pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0
-trace_m554 db "com.pulse.rt.Intrinsics.booleanToString"
-trace_m554_len equ $ - trace_m554
+trace_m897 db "com.pulse.rt.Intrinsics.booleanToString"
+trace_m897_len equ $ - trace_m897
 pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0 db "com.pulse.rt.Intrinsics.booleanToString(Intrinsics.pulse:85)"
 pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0
-trace_m556 db "com.pulse.rt.Intrinsics.parseInt"
-trace_m556_len equ $ - trace_m556
+trace_m899 db "com.pulse.rt.Intrinsics.parseInt"
+trace_m899_len equ $ - trace_m899
 pulsec_com_pulse_rt_Intrinsics_parseInt__String_trace_s0 db "com.pulse.rt.Intrinsics.parseInt(Intrinsics.pulse:93)"
 pulsec_com_pulse_rt_Intrinsics_parseInt__String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_parseInt__String_trace_s0
-trace_m558 db "com.pulse.rt.Intrinsics.parseBoolean"
-trace_m558_len equ $ - trace_m558
+trace_m901 db "com.pulse.rt.Intrinsics.parseBoolean"
+trace_m901_len equ $ - trace_m901
 pulsec_com_pulse_rt_Intrinsics_parseBoolean__String_trace_s0 db "com.pulse.rt.Intrinsics.parseBoolean(Intrinsics.pulse:101)"
 pulsec_com_pulse_rt_Intrinsics_parseBoolean__String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_parseBoolean__String_trace_s0
-trace_m560 db "com.pulse.rt.Intrinsics.objectClassName"
-trace_m560_len equ $ - trace_m560
+trace_m903 db "com.pulse.rt.Intrinsics.objectClassName"
+trace_m903_len equ $ - trace_m903
 pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0 db "com.pulse.rt.Intrinsics.objectClassName(Intrinsics.pulse:109)"
 pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0
-trace_m562 db "com.pulse.rt.Intrinsics.objectHashCode"
-trace_m562_len equ $ - trace_m562
+trace_m905 db "com.pulse.rt.Intrinsics.objectHashCode"
+trace_m905_len equ $ - trace_m905
 pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object_trace_s0 db "com.pulse.rt.Intrinsics.objectHashCode(Intrinsics.pulse:117)"
 pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object_trace_s0
-trace_m564 db "com.pulse.rt.Intrinsics.arrayNew"
-trace_m564_len equ $ - trace_m564
+trace_m907 db "com.pulse.rt.Intrinsics.arrayNew"
+trace_m907_len equ $ - trace_m907
 pulsec_com_pulse_rt_Intrinsics_arrayNew__int_trace_s0 db "com.pulse.rt.Intrinsics.arrayNew(Intrinsics.pulse:125)"
 pulsec_com_pulse_rt_Intrinsics_arrayNew__int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_arrayNew__int_trace_s0
-trace_m566 db "com.pulse.rt.Intrinsics.arrayLength"
-trace_m566_len equ $ - trace_m566
+trace_m909 db "com.pulse.rt.Intrinsics.arrayLength"
+trace_m909_len equ $ - trace_m909
 pulsec_com_pulse_rt_Intrinsics_arrayLength__long_trace_s0 db "com.pulse.rt.Intrinsics.arrayLength(Intrinsics.pulse:133)"
 pulsec_com_pulse_rt_Intrinsics_arrayLength__long_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_arrayLength__long_trace_s0
-trace_m568 db "com.pulse.rt.Intrinsics.arrayGetInt"
-trace_m568_len equ $ - trace_m568
+trace_m911 db "com.pulse.rt.Intrinsics.arrayGetInt"
+trace_m911_len equ $ - trace_m911
 pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int_trace_s0 db "com.pulse.rt.Intrinsics.arrayGetInt(Intrinsics.pulse:141)"
 pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int_trace_s0
-trace_m570 db "com.pulse.rt.Intrinsics.arraySetInt"
-trace_m570_len equ $ - trace_m570
-trace_m571 db "com.pulse.rt.Intrinsics.arrayGetString"
-trace_m571_len equ $ - trace_m571
+trace_m913 db "com.pulse.rt.Intrinsics.arraySetInt"
+trace_m913_len equ $ - trace_m913
+trace_m914 db "com.pulse.rt.Intrinsics.arrayGetString"
+trace_m914_len equ $ - trace_m914
 pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0 db "com.pulse.rt.Intrinsics.arrayGetString(Intrinsics.pulse:156)"
 pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0
-trace_m573 db "com.pulse.rt.Intrinsics.arraySetString"
-trace_m573_len equ $ - trace_m573
-trace_m574 db "com.pulse.rt.Intrinsics.listNew"
-trace_m574_len equ $ - trace_m574
+trace_m916 db "com.pulse.rt.Intrinsics.arraySetString"
+trace_m916_len equ $ - trace_m916
+trace_m917 db "com.pulse.rt.Intrinsics.listNew"
+trace_m917_len equ $ - trace_m917
 pulsec_com_pulse_rt_Intrinsics_listNew_trace_s0 db "com.pulse.rt.Intrinsics.listNew(Intrinsics.pulse:171)"
 pulsec_com_pulse_rt_Intrinsics_listNew_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_listNew_trace_s0
-trace_m576 db "com.pulse.rt.Intrinsics.listSize"
-trace_m576_len equ $ - trace_m576
+trace_m919 db "com.pulse.rt.Intrinsics.listSize"
+trace_m919_len equ $ - trace_m919
 pulsec_com_pulse_rt_Intrinsics_listSize__long_trace_s0 db "com.pulse.rt.Intrinsics.listSize(Intrinsics.pulse:179)"
 pulsec_com_pulse_rt_Intrinsics_listSize__long_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_listSize__long_trace_s0
-trace_m578 db "com.pulse.rt.Intrinsics.listClear"
-trace_m578_len equ $ - trace_m578
-trace_m579 db "com.pulse.rt.Intrinsics.listAddInt"
-trace_m579_len equ $ - trace_m579
-trace_m580 db "com.pulse.rt.Intrinsics.listAddString"
-trace_m580_len equ $ - trace_m580
-trace_m581 db "com.pulse.rt.Intrinsics.listGetInt"
-trace_m581_len equ $ - trace_m581
+trace_m921 db "com.pulse.rt.Intrinsics.listClear"
+trace_m921_len equ $ - trace_m921
+trace_m922 db "com.pulse.rt.Intrinsics.listAddInt"
+trace_m922_len equ $ - trace_m922
+trace_m923 db "com.pulse.rt.Intrinsics.listAddString"
+trace_m923_len equ $ - trace_m923
+trace_m924 db "com.pulse.rt.Intrinsics.listGetInt"
+trace_m924_len equ $ - trace_m924
 pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int_trace_s0 db "com.pulse.rt.Intrinsics.listGetInt(Intrinsics.pulse:208)"
 pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int_trace_s0
-trace_m583 db "com.pulse.rt.Intrinsics.listGetString"
-trace_m583_len equ $ - trace_m583
+trace_m926 db "com.pulse.rt.Intrinsics.listGetString"
+trace_m926_len equ $ - trace_m926
 pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0 db "com.pulse.rt.Intrinsics.listGetString(Intrinsics.pulse:216)"
 pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0
-trace_m585 db "com.pulse.rt.Intrinsics.mapNew"
-trace_m585_len equ $ - trace_m585
+trace_m928 db "com.pulse.rt.Intrinsics.mapNew"
+trace_m928_len equ $ - trace_m928
 pulsec_com_pulse_rt_Intrinsics_mapNew_trace_s0 db "com.pulse.rt.Intrinsics.mapNew(Intrinsics.pulse:224)"
 pulsec_com_pulse_rt_Intrinsics_mapNew_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapNew_trace_s0
-trace_m587 db "com.pulse.rt.Intrinsics.mapSize"
-trace_m587_len equ $ - trace_m587
+trace_m930 db "com.pulse.rt.Intrinsics.mapSize"
+trace_m930_len equ $ - trace_m930
 pulsec_com_pulse_rt_Intrinsics_mapSize__long_trace_s0 db "com.pulse.rt.Intrinsics.mapSize(Intrinsics.pulse:232)"
 pulsec_com_pulse_rt_Intrinsics_mapSize__long_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapSize__long_trace_s0
-trace_m589 db "com.pulse.rt.Intrinsics.mapClear"
-trace_m589_len equ $ - trace_m589
-trace_m590 db "com.pulse.rt.Intrinsics.mapContainsKey"
-trace_m590_len equ $ - trace_m590
+trace_m932 db "com.pulse.rt.Intrinsics.mapClear"
+trace_m932_len equ $ - trace_m932
+trace_m933 db "com.pulse.rt.Intrinsics.mapContainsKey"
+trace_m933_len equ $ - trace_m933
 pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String_trace_s0 db "com.pulse.rt.Intrinsics.mapContainsKey(Intrinsics.pulse:247)"
 pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String_trace_s0
-trace_m592 db "com.pulse.rt.Intrinsics.mapPut"
-trace_m592_len equ $ - trace_m592
-trace_m593 db "com.pulse.rt.Intrinsics.mapPutInt"
-trace_m593_len equ $ - trace_m593
-trace_m594 db "com.pulse.rt.Intrinsics.mapGet"
-trace_m594_len equ $ - trace_m594
+trace_m935 db "com.pulse.rt.Intrinsics.mapPut"
+trace_m935_len equ $ - trace_m935
+trace_m936 db "com.pulse.rt.Intrinsics.mapPutInt"
+trace_m936_len equ $ - trace_m936
+trace_m937 db "com.pulse.rt.Intrinsics.mapGet"
+trace_m937_len equ $ - trace_m937
 pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0 db "com.pulse.rt.Intrinsics.mapGet(Intrinsics.pulse:269)"
 pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0
-trace_m596 db "com.pulse.rt.Intrinsics.mapGetInt"
-trace_m596_len equ $ - trace_m596
+trace_m939 db "com.pulse.rt.Intrinsics.mapGetInt"
+trace_m939_len equ $ - trace_m939
 pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String_trace_s0 db "com.pulse.rt.Intrinsics.mapGetInt(Intrinsics.pulse:277)"
 pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String_trace_s0
 rt_obj_class_name_1 db "app.runtime.GameLoop"
@@ -5013,7 +5706,7 @@ pulsec_com_pulse_lang_Char_valueOf__char_epilogue_post:
 pulsec_com_pulse_lang_Char_valueOf__char endp
 
 pulsec_com_pulse_lang_Char_parse__String proc
-    sub rsp, 120
+    sub rsp, 136
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -5030,34 +5723,103 @@ pulsec_com_pulse_lang_Char_parse__String_b0:
     lea rcx, pulsec_com_pulse_lang_Char_parse__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Char_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg6
-    mov edx, msg6_len
-    call pulsec_rt_stringFromBytes
-    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+64]
+    mov dword ptr [rsp+72], eax
+    xor eax, eax
+    mov edx, eax
+    mov eax, dword ptr [rsp+72]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne Char_parse_ternary_then_0_10
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
-    mov rax, qword ptr [rsp+72]
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
     mov rcx, rax
-    call pulsec_rt_panic
-    mov qword ptr [rsp+112], rax
-    mov rax, qword ptr [rsp+72]
+    call pulsec_rt_stringLength
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
     mov rcx, rax
     call pulsec_rt_arcRelease
-    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+128]
+    mov dword ptr [rsp+80], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    cmp eax, edx
+    setne al
+    movzx eax, al
+    jmp Char_parse_ternary_done_0_10
+Char_parse_ternary_then_0_10:
+    mov eax, 1
+Char_parse_ternary_done_0_10:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Char_parse__String_b1
+    jmp pulsec_com_pulse_lang_Char_parse__String_b2
+pulsec_com_pulse_lang_Char_parse__String_b1:
     lea rcx, pulsec_com_pulse_lang_Char_parse__String_trace_s1
     mov edx, pulsec_com_pulse_lang_Char_parse__String_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov ecx, 9
-    call pulsec_rt_objectNew
+    lea rcx, msg6
+    mov edx, msg6_len
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+88], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call pulsec_rt_panic
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    lea rcx, pulsec_com_pulse_lang_Char_parse__String_trace_s0
+    mov edx, pulsec_com_pulse_lang_Char_parse__String_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Char_parse__String_b3
+pulsec_com_pulse_lang_Char_parse__String_b2:
+    jmp pulsec_com_pulse_lang_Char_parse__String_b3
+pulsec_com_pulse_lang_Char_parse__String_b3:
+    lea rcx, pulsec_com_pulse_lang_Char_parse__String_trace_s2
+    mov edx, pulsec_com_pulse_lang_Char_parse__String_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+88], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov eax, 0
+    mov dword ptr [rsp+96], eax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov dword ptr [rsp+88], eax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Char_valueOf__char
     jmp pulsec_com_pulse_lang_Char_parse__String_epilogue
 pulsec_com_pulse_lang_Char_parse__String_epilogue:
 pulsec_com_pulse_lang_Char_parse__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 136
     ret
 pulsec_com_pulse_lang_Char_parse__String endp
 
@@ -5067,8 +5829,8 @@ pulsec_com_pulse_lang_Char_charValue__Char proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m57
-    mov edx, trace_m57_len
+    lea rcx, trace_m58
+    mov edx, trace_m58_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5096,8 +5858,8 @@ pulsec_com_pulse_lang_Char_equals__char_char proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m59
-    mov edx, trace_m59_len
+    lea rcx, trace_m60
+    mov edx, trace_m60_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5133,8 +5895,8 @@ pulsec_com_pulse_lang_Char_compare__char_char proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m61
-    mov edx, trace_m61_len
+    lea rcx, trace_m62
+    mov edx, trace_m62_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5216,8 +5978,8 @@ pulsec_com_pulse_lang_Char_toString__char proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m67
-    mov edx, trace_m67_len
+    lea rcx, trace_m68
+    mov edx, trace_m68_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5242,6 +6004,36 @@ pulsec_com_pulse_lang_Char_toString__char_epilogue_post:
     add rsp, 120
     ret
 pulsec_com_pulse_lang_Char_toString__char endp
+
+pulsec_com_pulse_lang_Char_runtimeCharAt__String_int proc
+    sub rsp, 136
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m70
+    mov edx, trace_m70_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_b0:
+    lea rcx, pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    jmp pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_epilogue
+pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_epilogue:
+pulsec_com_pulse_lang_Char_runtimeCharAt__String_int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 136
+    ret
+pulsec_com_pulse_lang_Char_runtimeCharAt__String_int endp
 
 pulsec_fcap_com_pulse_lang_Class_ensure proc
     cmp ecx, 1
@@ -5406,8 +6198,8 @@ pulsec_com_pulse_lang_Class_Class__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m69
-    mov edx, trace_m69_len
+    lea rcx, trace_m72
+    mov edx, trace_m72_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5452,8 +6244,8 @@ pulsec_com_pulse_lang_Class_getName proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m71
-    mov edx, trace_m71_len
+    lea rcx, trace_m74
+    mov edx, trace_m74_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5487,8 +6279,8 @@ pulsec_com_pulse_lang_Class_getSimpleName proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m73
-    mov edx, trace_m73_len
+    lea rcx, trace_m76
+    mov edx, trace_m76_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5535,8 +6327,8 @@ pulsec_com_pulse_lang_Class_getPackageName proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m75
-    mov edx, trace_m75_len
+    lea rcx, trace_m78
+    mov edx, trace_m78_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5583,8 +6375,8 @@ pulsec_com_pulse_lang_Class_toString proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m77
-    mov edx, trace_m77_len
+    lea rcx, trace_m80
+    mov edx, trace_m80_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5618,8 +6410,8 @@ pulsec_com_pulse_lang_Class_runtimeSimpleName__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m79
-    mov edx, trace_m79_len
+    lea rcx, trace_m82
+    mov edx, trace_m82_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5649,8 +6441,8 @@ pulsec_com_pulse_lang_Class_runtimePackageName__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m81
-    mov edx, trace_m81_len
+    lea rcx, trace_m84
+    mov edx, trace_m84_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5680,8 +6472,8 @@ pulsec_com_pulse_lang_Comparable_compareTo__Object proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m83
-    mov edx, trace_m83_len
+    lea rcx, trace_m86
+    mov edx, trace_m86_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5707,8 +6499,8 @@ pulsec_com_pulse_lang_ConsoleWriter_println__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m84
-    mov edx, trace_m84_len
+    lea rcx, trace_m87
+    mov edx, trace_m87_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5734,8 +6526,8 @@ pulsec_com_pulse_lang_ConsoleWriter_println__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m85
-    mov edx, trace_m85_len
+    lea rcx, trace_m88
+    mov edx, trace_m88_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5761,8 +6553,8 @@ pulsec_com_pulse_lang_ConsoleWriter_println__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m86
-    mov edx, trace_m86_len
+    lea rcx, trace_m89
+    mov edx, trace_m89_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5788,8 +6580,8 @@ pulsec_com_pulse_lang_ConsoleWriter_print__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m87
-    mov edx, trace_m87_len
+    lea rcx, trace_m90
+    mov edx, trace_m90_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5815,8 +6607,8 @@ pulsec_com_pulse_lang_ConsoleWriter_print__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m88
-    mov edx, trace_m88_len
+    lea rcx, trace_m91
+    mov edx, trace_m91_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5842,8 +6634,8 @@ pulsec_com_pulse_lang_ConsoleWriter_print__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m89
-    mov edx, trace_m89_len
+    lea rcx, trace_m92
+    mov edx, trace_m92_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5869,8 +6661,8 @@ pulsec_com_pulse_lang_Double_valueOf__double proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m90
-    mov edx, trace_m90_len
+    lea rcx, trace_m93
+    mov edx, trace_m93_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5898,8 +6690,8 @@ pulsec_com_pulse_lang_Double_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m92
-    mov edx, trace_m92_len
+    lea rcx, trace_m95
+    mov edx, trace_m95_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5910,9 +6702,7 @@ pulsec_com_pulse_lang_Double_parse__String_b0:
     lea rcx, pulsec_com_pulse_lang_Double_parse__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Double_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg9
-    mov edx, msg9_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -5920,17 +6710,16 @@ pulsec_com_pulse_lang_Double_parse__String_b0:
     mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
+    call pulsec_com_pulse_lang_Double_parsePrimitive__String
     mov qword ptr [rsp+112], rax
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_Double_parse__String_trace_s1
-    mov edx, pulsec_com_pulse_lang_Double_parse__String_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    mov ecx, 13
-    call pulsec_rt_objectNew
+    mov dword ptr [rsp+72], eax
+    mov eax, dword ptr [rsp+72]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Double_valueOf__double
     jmp pulsec_com_pulse_lang_Double_parse__String_epilogue
 pulsec_com_pulse_lang_Double_parse__String_epilogue:
 pulsec_com_pulse_lang_Double_parse__String_epilogue_post:
@@ -5947,8 +6736,8 @@ pulsec_com_pulse_lang_Double_doubleValue__Double proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m95
-    mov edx, trace_m95_len
+    lea rcx, trace_m97
+    mov edx, trace_m97_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -5976,8 +6765,8 @@ pulsec_com_pulse_lang_Double_equals__double_double proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m97
-    mov edx, trace_m97_len
+    lea rcx, trace_m99
+    mov edx, trace_m99_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6020,8 +6809,8 @@ pulsec_com_pulse_lang_Double_compare__double_double proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m99
-    mov edx, trace_m99_len
+    lea rcx, trace_m101
+    mov edx, trace_m101_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6228,14 +7017,4220 @@ pulsec_com_pulse_lang_Double_compare__double_double_epilogue_post:
     ret
 pulsec_com_pulse_lang_Double_compare__double_double endp
 
+pulsec_com_pulse_lang_Double_toString__double proc
+    sub rsp, 216
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m115
+    mov edx, trace_m115_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+112], rcx
+pulsec_com_pulse_lang_Double_toString__double_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Double_isNaN__double
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_toString__double_b1
+    jmp pulsec_com_pulse_lang_Double_toString__double_b2
+pulsec_com_pulse_lang_Double_toString__double_b1:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg9
+    mov edx, msg9_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Double_toString__double_epilogue
+pulsec_com_pulse_lang_Double_toString__double_b2:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_toString__double_b3
+pulsec_com_pulse_lang_Double_toString__double_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Double_isInfinite__double
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_toString__double_b4
+    jmp pulsec_com_pulse_lang_Double_toString__double_b5
+pulsec_com_pulse_lang_Double_toString__double_b4:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+112]
+    movq xmm0, rax
+    movq qword ptr [rsp+120], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+120]
+    ucomisd xmm0, xmm1
+    jp Double_toString_fp_cmp_3_11_unordered
+    setb al
+    jmp Double_toString_fp_cmp_3_11_done
+Double_toString_fp_cmp_3_11_unordered:
+    xor eax, eax
+Double_toString_fp_cmp_3_11_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_toString__double_b7
+    jmp pulsec_com_pulse_lang_Double_toString__double_b8
+pulsec_com_pulse_lang_Double_toString__double_b5:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_toString__double_b6
+pulsec_com_pulse_lang_Double_toString__double_b6:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+112]
+    movq xmm0, rax
+    movq qword ptr [rsp+128], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+128]
+    ucomisd xmm0, xmm1
+    jp Double_toString_fp_cmp_6_16_unordered
+    sete al
+    jmp Double_toString_fp_cmp_6_16_done
+Double_toString_fp_cmp_6_16_unordered:
+    xor eax, eax
+Double_toString_fp_cmp_6_16_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_toString__double_b10
+    jmp pulsec_com_pulse_lang_Double_toString__double_b11
+pulsec_com_pulse_lang_Double_toString__double_b7:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s4
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg10
+    mov edx, msg10_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Double_toString__double_epilogue
+pulsec_com_pulse_lang_Double_toString__double_b8:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_toString__double_b9
+pulsec_com_pulse_lang_Double_toString__double_b9:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s5
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg11
+    mov edx, msg11_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Double_toString__double_epilogue
+pulsec_com_pulse_lang_Double_toString__double_b10:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s7
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Double_isNegativeZero__double
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_toString__double_b13
+    jmp pulsec_com_pulse_lang_Double_toString__double_b14
+pulsec_com_pulse_lang_Double_toString__double_b11:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_toString__double_b12
+pulsec_com_pulse_lang_Double_toString__double_b12:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s10
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s10_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+112]
+    movq xmm0, rax
+    movq qword ptr [rsp+136], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+136]
+    ucomisd xmm0, xmm1
+    jp Double_toString_fp_cmp_10_25_unordered
+    setb al
+    jmp Double_toString_fp_cmp_10_25_done
+Double_toString_fp_cmp_10_25_unordered:
+    xor eax, eax
+Double_toString_fp_cmp_10_25_done:
+    movzx eax, al
+    mov dword ptr [rsp+64], eax
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s11
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s11_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+72], rax
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s12
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s12_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_toString__double_b16
+    jmp pulsec_com_pulse_lang_Double_toString__double_b17
+pulsec_com_pulse_lang_Double_toString__double_b13:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s8
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s8_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg12
+    mov edx, msg12_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Double_toString__double_epilogue
+pulsec_com_pulse_lang_Double_toString__double_b14:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s7
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_toString__double_b15
+pulsec_com_pulse_lang_Double_toString__double_b15:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg13
+    mov edx, msg13_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Double_toString__double_epilogue
+pulsec_com_pulse_lang_Double_toString__double_b16:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s13
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s13_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    movq xmm0, rax
+    movq qword ptr [rsp+144], xmm0
+    mov rax, qword ptr [rsp+72]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+144]
+    subsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+72], rax
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s12
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s12_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_toString__double_b18
+pulsec_com_pulse_lang_Double_toString__double_b17:
+    jmp pulsec_com_pulse_lang_Double_toString__double_b18
+pulsec_com_pulse_lang_Double_toString__double_b18:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s14
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s14_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_rt_fpToLong
+    mov qword ptr [rsp+80], rax
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s15
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s15_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    cvtsi2sd xmm0, rax
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+152], xmm0
+    mov rax, qword ptr [rsp+72]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+152]
+    ucomisd xmm0, xmm1
+    jp Double_toString_fp_cmp_15_37_unordered
+    sete al
+    jmp Double_toString_fp_cmp_15_37_done
+Double_toString_fp_cmp_15_37_unordered:
+    xor eax, eax
+Double_toString_fp_cmp_15_37_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_toString__double_b19
+    jmp pulsec_com_pulse_lang_Double_toString__double_b20
+pulsec_com_pulse_lang_Double_toString__double_b19:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s16
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s16_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Long_toString__long
+    mov qword ptr [rsp+88], rax
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s17
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s17_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_toString__double_b22
+    jmp pulsec_com_pulse_lang_Double_toString__double_b23
+pulsec_com_pulse_lang_Double_toString__double_b20:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s15
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s15_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_toString__double_b21
+pulsec_com_pulse_lang_Double_toString__double_b21:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s22
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s22_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+160], eax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+168], rax
+    mov eax, 15
+    mov dword ptr [rsp+176], eax
+    mov eax, dword ptr [rsp+160]
+    mov ecx, eax
+    mov rax, qword ptr [rsp+168]
+    mov rdx, rax
+    mov eax, dword ptr [rsp+176]
+    mov r8d, eax
+    call pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int
+    jmp pulsec_com_pulse_lang_Double_toString__double_epilogue
+pulsec_com_pulse_lang_Double_toString__double_b22:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s18
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s18_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg14
+    mov edx, msg14_len
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+96], rax
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s19
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s19_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+160], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+160]
+    mov rax, qword ptr [rsp+160]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_concat__String
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s20
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s20_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg15
+    mov edx, msg15_len
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+160], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+160]
+    mov rax, qword ptr [rsp+160]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_concat__String
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    jmp pulsec_com_pulse_lang_Double_toString__double_epilogue
+pulsec_com_pulse_lang_Double_toString__double_b23:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s17
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s17_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_toString__double_b24
+pulsec_com_pulse_lang_Double_toString__double_b24:
+    lea rcx, pulsec_com_pulse_lang_Double_toString__double_trace_s21
+    mov edx, pulsec_com_pulse_lang_Double_toString__double_trace_s21_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg16
+    mov edx, msg16_len
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+160], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+160]
+    mov rax, qword ptr [rsp+160]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_concat__String
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    jmp pulsec_com_pulse_lang_Double_toString__double_epilogue
+pulsec_com_pulse_lang_Double_toString__double_epilogue:
+pulsec_com_pulse_lang_Double_toString__double_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 216
+    ret
+pulsec_com_pulse_lang_Double_toString__double endp
+
+pulsec_com_pulse_lang_Double_parsePrimitive__String proc
+    sub rsp, 680
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m139
+    mov edx, trace_m139_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+152], rcx
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov dword ptr [rsp+160], eax
+    xor eax, eax
+    mov edx, eax
+    mov eax, dword ptr [rsp+160]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b1
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b2
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b1:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_Double_invalidLiteral
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b3
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b2:
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b3
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+64], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_stringLength
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s4
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b4
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b4:
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+168], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+168]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b5
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b6
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b5:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s5
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+176], eax
+    mov eax, 32
+    mov edx, eax
+    mov eax, dword ptr [rsp+176]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_6_26
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+184], eax
+    mov eax, 9
+    mov edx, eax
+    mov eax, dword ptr [rsp+184]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_6_26
+Double_parsePrimitive_ternary_then_6_26:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_6_26:
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_6_31
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+192], eax
+    mov eax, 10
+    mov edx, eax
+    mov eax, dword ptr [rsp+192]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_6_31
+Double_parsePrimitive_ternary_then_6_31:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_6_31:
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_6_36
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+200], eax
+    mov eax, 13
+    mov edx, eax
+    mov eax, dword ptr [rsp+200]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_6_36
+Double_parsePrimitive_ternary_then_6_36:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_6_36:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b7
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b8
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b6:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b10
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b7:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s7
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+208], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+208]
+    add eax, edx
+    mov dword ptr [rsp+64], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b9
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b8:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s8
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s8_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b6
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b9:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s4
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b4
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b10:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+216], eax
+    mov eax, dword ptr [rsp+64]
+    mov edx, eax
+    mov eax, dword ptr [rsp+216]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b11
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b12
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b11:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s10
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s10_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+224], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+224]
+    sub eax, edx
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s11
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s11_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+232], eax
+    mov eax, 32
+    mov edx, eax
+    mov eax, dword ptr [rsp+232]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_11_58
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+240], eax
+    mov eax, 9
+    mov edx, eax
+    mov eax, dword ptr [rsp+240]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_11_58
+Double_parsePrimitive_ternary_then_11_58:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_11_58:
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_11_63
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+248], eax
+    mov eax, 10
+    mov edx, eax
+    mov eax, dword ptr [rsp+248]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_11_63
+Double_parsePrimitive_ternary_then_11_63:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_11_63:
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_11_68
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+256], eax
+    mov eax, 13
+    mov edx, eax
+    mov eax, dword ptr [rsp+256]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_11_68
+Double_parsePrimitive_ternary_then_11_68:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_11_68:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b13
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b14
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b12:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s14
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s14_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+272], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+272]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b16
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b17
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b13:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s12
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s12_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+264], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+264]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s11
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s11_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b15
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b14:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s13
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s13_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b12
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b15:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b10
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b16:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s15
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s15_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_Double_invalidLiteral
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s14
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s14_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b18
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b17:
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b18
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b18:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s16
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s16_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+632], eax
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+640], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    mov eax, dword ptr [rsp+640]
+    mov r8d, eax
+    call pulsec_com_pulse_lang_Double_matchesNaN__String_int_int
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b19
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b20
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b19:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s17
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s17_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    movq xmm0, rax
+    movq qword ptr [rsp+280], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+280]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_epilogue
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b20:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s16
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s16_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b21
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b21:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s18
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s18_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s19
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s19_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+96], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s20
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s20_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+288], eax
+    mov eax, 43
+    mov edx, eax
+    mov eax, dword ptr [rsp+288]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_21_102
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+296], eax
+    mov eax, 45
+    mov edx, eax
+    mov eax, dword ptr [rsp+296]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_21_102
+Double_parsePrimitive_ternary_then_21_102:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_21_102:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b22
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b23
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b22:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s22
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s22_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+304], eax
+    mov eax, 45
+    mov edx, eax
+    mov eax, dword ptr [rsp+304]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    mov dword ptr [rsp+96], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s23
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s23_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+312], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+312]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s24
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s24_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+320], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+320]
+    cmp eax, edx
+    setge al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b25
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b26
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b23:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b24
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b24:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s26
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s26_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+632], eax
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+640], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    mov eax, dword ptr [rsp+640]
+    mov r8d, eax
+    call pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b28
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b29
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b25:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s25
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s25_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_Double_invalidLiteral
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s24
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s24_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b27
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b26:
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b27
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b27:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s21_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b24
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b28:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s27
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s27_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b31
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b32
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b29:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s26
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s26_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b30
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b30:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s30
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s30_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    mov qword ptr [rsp+104], rax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s31
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s31_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+112], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b34
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b31:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s28
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s28_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    movq xmm0, rax
+    movq qword ptr [rsp+336], xmm0
+    mov rax, 4607182418800017408
+    movq xmm0, rax
+    movq qword ptr [rsp+328], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+328]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+336]
+    subsd xmm0, xmm1
+    movq rax, xmm0
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_epilogue
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b32:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s27
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s27_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b33
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b33:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s29
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s29_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 4607182418800017408
+    movq xmm0, rax
+    movq qword ptr [rsp+344], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+344]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_epilogue
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b34:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+352], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+352]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b35
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b36
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b35:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s33
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s33_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s34
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s34_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+624], eax
+    mov eax, dword ptr [rsp+624]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Double_isDigit__char
+    test eax, eax
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b37
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b38
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b36:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+392], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+392]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_39_176
+    mov eax, 0
+    jmp Double_parsePrimitive_ternary_done_39_176
+Double_parsePrimitive_ternary_then_39_176:
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+400], eax
+    mov eax, 46
+    mov edx, eax
+    mov eax, dword ptr [rsp+400]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_parsePrimitive_ternary_done_39_176:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b40
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b41
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b37:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s35
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s35_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b36
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b38:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s34
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s34_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b39
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b39:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s36
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s36_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    movq xmm0, rax
+    movq qword ptr [rsp+360], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+360]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+376], xmm0
+    mov eax, dword ptr [rsp+80]
+    movzx eax, ax
+    mov dword ptr [rsp+368], eax
+    mov eax, 48
+    movzx eax, ax
+    mov edx, eax
+    mov eax, dword ptr [rsp+368]
+    sub eax, edx
+    movsxd rax, eax
+    cvtsi2sd xmm0, rax
+    movq rax, xmm0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+376]
+    addsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+104], rax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s37
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s37_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+384], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+384]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s38
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s38_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 1
+    mov dword ptr [rsp+112], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s32_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b34
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b40:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s40
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s40_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+408], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+408]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s41
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s41_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 4591870180066957722
+    mov qword ptr [rsp+120], rax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b43
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b41:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b42
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b42:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s50
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s50_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+112]
+    test eax, eax
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b49
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b50
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b43:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+416], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+416]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b44
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b45
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b44:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s43
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s43_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s44
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s44_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+624], eax
+    mov eax, dword ptr [rsp+624]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Double_isDigit__char
+    test eax, eax
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b46
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b47
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b45:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s39_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b42
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b46:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s45
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s45_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b45
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b47:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s44
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s44_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b48
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b48:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s46
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s46_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    movq xmm0, rax
+    movq qword ptr [rsp+440], xmm0
+    mov eax, dword ptr [rsp+80]
+    movzx eax, ax
+    mov dword ptr [rsp+424], eax
+    mov eax, 48
+    movzx eax, ax
+    mov edx, eax
+    mov eax, dword ptr [rsp+424]
+    sub eax, edx
+    movsxd rax, eax
+    cvtsi2sd xmm0, rax
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+432], xmm0
+    mov rax, qword ptr [rsp+120]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+432]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+440]
+    addsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+104], rax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s47
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s47_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    movq xmm0, rax
+    movq qword ptr [rsp+448], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+448]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+120], rax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s48
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s48_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+456], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+456]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s49
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s49_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 1
+    mov dword ptr [rsp+112], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s42_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b43
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b49:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s51
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s51_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_Double_invalidLiteral
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s50
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s50_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b51
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b50:
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b51
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b51:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s52
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s52_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+128], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s53
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s53_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+464], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+464]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b52
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b53
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b52:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s55
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s55_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+472], eax
+    mov eax, 101
+    mov edx, eax
+    mov eax, dword ptr [rsp+472]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_56_240
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+480], eax
+    mov eax, 69
+    mov edx, eax
+    mov eax, dword ptr [rsp+480]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_56_240
+Double_parsePrimitive_ternary_then_56_240:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_56_240:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b55
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b56
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b53:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b54
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b54:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s74
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s74_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+576]
+    cmp eax, edx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b73
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b74
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b55:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s57
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s57_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+488], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+488]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s58
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s58_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+496], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+496]
+    cmp eax, edx
+    setge al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b58
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b59
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b56:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b57
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b57:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s54_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b54
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b58:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s59
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s59_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_Double_invalidLiteral
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s58
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s58_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b60
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b59:
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b60
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b60:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s60
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s60_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s61
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s61_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+504], eax
+    mov eax, 43
+    mov edx, eax
+    mov eax, dword ptr [rsp+504]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne Double_parsePrimitive_ternary_then_61_264
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+512], eax
+    mov eax, 45
+    mov edx, eax
+    mov eax, dword ptr [rsp+512]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp Double_parsePrimitive_ternary_done_61_264
+Double_parsePrimitive_ternary_then_61_264:
+    mov eax, 1
+Double_parsePrimitive_ternary_done_61_264:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b61
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b62
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b61:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s62
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s62_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+520], eax
+    mov eax, 45
+    mov edx, eax
+    mov eax, dword ptr [rsp+520]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s63
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s63_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+528], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+528]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s61
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s61_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b63
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b62:
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b63
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b63:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s64
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s64_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+144], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s65
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s65_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b64
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b64:
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+536], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+536]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b65
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b66
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b65:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s66
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s66_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+624], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+624]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+632], eax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+632]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+664], rax
+    mov rax, qword ptr [rsp+624]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+664]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s67
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s67_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+624], eax
+    mov eax, dword ptr [rsp+624]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Double_isDigit__char
+    test eax, eax
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b67
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b68
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b66:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s72
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s72_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+144]
+    test eax, eax
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b70
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b71
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b67:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s68
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s68_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b66
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b68:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s67
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s67_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b69
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b69:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s69
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s69_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+128]
+    mov dword ptr [rsp+544], eax
+    mov eax, 10
+    mov edx, eax
+    mov eax, dword ptr [rsp+544]
+    imul eax, edx
+    mov dword ptr [rsp+560], eax
+    mov eax, dword ptr [rsp+80]
+    movzx eax, ax
+    mov dword ptr [rsp+552], eax
+    mov eax, 48
+    movzx eax, ax
+    mov edx, eax
+    mov eax, dword ptr [rsp+552]
+    sub eax, edx
+    mov edx, eax
+    mov eax, dword ptr [rsp+560]
+    add eax, edx
+    mov dword ptr [rsp+128], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s70
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s70_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+568], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+568]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s71
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s71_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 1
+    mov dword ptr [rsp+144], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s65
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s65_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b64
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b70:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s73
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s73_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_Double_invalidLiteral
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s72
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s72_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b72
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b71:
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b72
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b72:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s56_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b57
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b73:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s75
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s75_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_Double_invalidLiteral
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s74
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s74_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b75
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b74:
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b75
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b75:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s76
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s76_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b76
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b76:
+    mov eax, dword ptr [rsp+128]
+    mov dword ptr [rsp+584], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+584]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b77
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b78
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b77:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b79
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b80
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b78:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s81
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s81_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_parsePrimitive__String_b82
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b83
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b79:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s78
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s78_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    movq xmm0, rax
+    movq qword ptr [rsp+592], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+592]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+104], rax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b81
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b80:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s79
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s79_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    movq xmm0, rax
+    movq qword ptr [rsp+600], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+600]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+104], rax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s77_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b81
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b81:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s80
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s80_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+128]
+    mov dword ptr [rsp+608], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+608]
+    sub eax, edx
+    mov dword ptr [rsp+128], eax
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s76
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s76_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b76
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b82:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s82
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s82_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    movq xmm0, rax
+    movq qword ptr [rsp+616], xmm0
+    mov rax, qword ptr [rsp+104]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+616]
+    subsd xmm0, xmm1
+    movq rax, xmm0
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_epilogue
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b83:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s81
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s81_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_b84
+pulsec_com_pulse_lang_Double_parsePrimitive__String_b84:
+    lea rcx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s83
+    mov edx, pulsec_com_pulse_lang_Double_parsePrimitive__String_trace_s83_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    jmp pulsec_com_pulse_lang_Double_parsePrimitive__String_epilogue
+pulsec_com_pulse_lang_Double_parsePrimitive__String_epilogue:
+pulsec_com_pulse_lang_Double_parsePrimitive__String_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 680
+    ret
+pulsec_com_pulse_lang_Double_parsePrimitive__String endp
+
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int proc
+    sub rsp, 296
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m224
+    mov edx, trace_m224_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov dword ptr [rsp+112], ecx
+    mov qword ptr [rsp+120], rdx
+    mov dword ptr [rsp+128], r8d
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+64], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+72], rax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b1
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b1:
+    mov rax, qword ptr [rsp+72]
+    movq xmm0, rax
+    movq qword ptr [rsp+136], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+136]
+    ucomisd xmm0, xmm1
+    jp Double_formatFiniteWithSign_fp_cmp_2_4_unordered
+    setae al
+    jmp Double_formatFiniteWithSign_fp_cmp_2_4_done
+Double_formatFiniteWithSign_fp_cmp_2_4_unordered:
+    xor eax, eax
+Double_formatFiniteWithSign_fp_cmp_2_4_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b2
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b3
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b2:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    movq xmm0, rax
+    movq qword ptr [rsp+144], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+144]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+72], rax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s4
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+152], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+152]
+    add eax, edx
+    mov dword ptr [rsp+64], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b1
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s5
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b4
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b4:
+    mov rax, qword ptr [rsp+72]
+    movq xmm0, rax
+    movq qword ptr [rsp+160], xmm0
+    mov rax, 4607182418800017408
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+160]
+    ucomisd xmm0, xmm1
+    jp Double_formatFiniteWithSign_fp_cmp_5_15_unordered
+    setb al
+    jmp Double_formatFiniteWithSign_fp_cmp_5_15_done
+Double_formatFiniteWithSign_fp_cmp_5_15_unordered:
+    xor eax, eax
+Double_formatFiniteWithSign_fp_cmp_5_15_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b5
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b6
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b5:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    movq xmm0, rax
+    movq qword ptr [rsp+168], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+168]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+72], rax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s7
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+176], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+176]
+    sub eax, edx
+    mov dword ptr [rsp+64], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s5
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b4
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b6:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s8
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s8_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_StringBuilder_StringBuilder
+    mov qword ptr [rsp+272], rax
+    mov rax, qword ptr [rsp+272]
+    mov qword ptr [rsp+80], rax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s10
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s10_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b7
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b7:
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+184], eax
+    mov eax, dword ptr [rsp+128]
+    mov edx, eax
+    mov eax, dword ptr [rsp+184]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b8
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b9
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b8:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s11
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s11_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_rt_fpToInt
+    mov dword ptr [rsp+96], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s12
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s12_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    movzx eax, ax
+    mov dword ptr [rsp+192], eax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov eax, dword ptr [rsp+192]
+    add eax, edx
+    movzx eax, ax
+    mov dword ptr [rsp+240], eax
+    mov eax, dword ptr [rsp+240]
+    mov edx, eax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_vd_stmt_8_12_2_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_vd_stmt_8_12_2_done
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_vd_stmt_8_12_2_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_vd_stmt_8_12_2_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s13
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s13_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    movq xmm0, rax
+    movq qword ptr [rsp+200], xmm0
+    mov eax, dword ptr [rsp+96]
+    movsxd rax, eax
+    cvtsi2sd xmm0, rax
+    movq rax, xmm0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+200]
+    subsd xmm0, xmm1
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+208], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+208]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+72], rax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s14
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s14_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+216], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+216]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s10
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s10_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b7
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b9:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s15
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s15_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    cmp ecx, 0
+    je Double_formatFiniteWithSign_vd15_52_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Double_formatFiniteWithSign_vd15_52_done
+Double_formatFiniteWithSign_vd15_52_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Double_formatFiniteWithSign_vd15_52_done:
+    mov qword ptr [rsp+104], rax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s16
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s16_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+224], eax
+    mov eax, 3
+    neg eax
+    mov edx, eax
+    mov eax, dword ptr [rsp+224]
+    cmp eax, edx
+    setge al
+    movzx eax, al
+    test rax, rax
+    jne Double_formatFiniteWithSign_ternary_then_16_61
+    mov eax, 0
+    jmp Double_formatFiniteWithSign_ternary_done_16_61
+Double_formatFiniteWithSign_ternary_then_16_61:
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+232], eax
+    mov eax, 7
+    mov edx, eax
+    mov eax, dword ptr [rsp+232]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+Double_formatFiniteWithSign_ternary_done_16_61:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b10
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b11
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b10:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s17
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s17_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+112]
+    mov dword ptr [rsp+240], eax
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+248], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+248]
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+240]
+    mov ecx, eax
+    mov rax, qword ptr [rsp+248]
+    mov rdx, rax
+    mov eax, dword ptr [rsp+256]
+    mov r8d, eax
+    call pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int
+    mov qword ptr [rsp+280], rax
+    mov rax, qword ptr [rsp+248]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+280]
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_epilogue
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b11:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s16
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s16_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b12
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_b12:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s18
+    mov edx, pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_trace_s18_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+112]
+    mov dword ptr [rsp+240], eax
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+248], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+248]
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+240]
+    mov ecx, eax
+    mov rax, qword ptr [rsp+248]
+    mov rdx, rax
+    mov eax, dword ptr [rsp+256]
+    mov r8d, eax
+    call pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int
+    mov qword ptr [rsp+280], rax
+    mov rax, qword ptr [rsp+248]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+280]
+    jmp pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_epilogue
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_epilogue:
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 296
+    ret
+pulsec_com_pulse_lang_Double_formatFiniteWithSign__boolean_double_int endp
+
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int proc
+    sub rsp, 312
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m244
+    mov edx, trace_m244_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov dword ptr [rsp+112], ecx
+    mov qword ptr [rsp+120], rdx
+    mov dword ptr [rsp+128], r8d
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_StringBuilder_StringBuilder
+    mov qword ptr [rsp+288], rax
+    mov rax, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+112]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b1
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b2
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b1:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 45
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_1_2_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_1_2_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_1_2_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_1_2_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b3
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b2:
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b3
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+128]
+    mov dword ptr [rsp+136], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+136]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s4
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+256]
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_rt_stringLength
+    mov qword ptr [rsp+296], rax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+296]
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s5
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+144], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+144]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b4
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b5
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b4:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b7
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b5:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b6
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b6:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s24
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s24_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_6_24_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_6_24_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_6_24_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_6_24_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s25
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s25_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 46
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_6_25_1_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_6_25_1_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_6_25_1_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_6_25_1_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s26
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s26_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b22
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b7:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+152], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+152]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b8
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b9
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b8:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s8
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s8_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+96], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+160], eax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov eax, dword ptr [rsp+160]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b10
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b11
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b9:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s13
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s13_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 46
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_9_13_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_9_13_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_9_13_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_9_13_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s14
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s14_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+256]
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Double_lastNonZeroIndex__String
+    mov qword ptr [rsp+296], rax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+296]
+    mov dword ptr [rsp+104], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s15
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s15_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+104]
+    mov dword ptr [rsp+176], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+176]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b13
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b14
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b10:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s10
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s10_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+256]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+264], eax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+264]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+296], rax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+296]
+    mov dword ptr [rsp+96], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b12
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b11:
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b12
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b12:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s11
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s11_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_12_11_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_12_11_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_12_11_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_12_11_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s12
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s12_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+168], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+168]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b7
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b13:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s16
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s16_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+104], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s15
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s15_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b15
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b14:
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b15
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b15:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+104]
+    mov dword ptr [rsp+184], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+184]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b16
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b17
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b16:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s18
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s18_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_16_18_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_16_18_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_16_18_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_16_18_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b18
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b17:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s19
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s19_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b19
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b18:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s23
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s23_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je Double_formatFixedDigits_vd23_77_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Double_formatFixedDigits_vd23_77_done
+Double_formatFixedDigits_vd23_77_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Double_formatFixedDigits_vd23_77_done:
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_epilogue
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b19:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+192], eax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov eax, dword ptr [rsp+192]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b20
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b21
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b20:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s21
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s21_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+256]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+264], eax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+264]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+296], rax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+296]
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_20_21_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_20_21_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_20_21_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_20_21_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s22
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s22_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+200], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+200]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s20_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b19
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b21:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s17_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b18
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b22:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+216], eax
+    mov eax, 0
+    mov dword ptr [rsp+208], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+208]
+    sub eax, edx
+    mov edx, eax
+    mov eax, dword ptr [rsp+216]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b23
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b24
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b23:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s28
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s28_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_23_28_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_23_28_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_23_28_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_23_28_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s29
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s29_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+224], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+224]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s27_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b22
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b24:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s30
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s30_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+256]
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Double_lastNonZeroIndex__String
+    mov qword ptr [rsp+296], rax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+296]
+    mov dword ptr [rsp+104], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s31
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s31_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+104]
+    mov dword ptr [rsp+232], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+232]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b25
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b26
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b25:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s32
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s32_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_25_32_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_25_32_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_25_32_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_25_32_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s33
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s33_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je Double_formatFixedDigits_vd33_114_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Double_formatFixedDigits_vd33_114_done
+Double_formatFixedDigits_vd33_114_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Double_formatFixedDigits_vd33_114_done:
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_epilogue
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b26:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s31
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s31_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b27
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b27:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s34
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s34_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s35
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s35_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b28
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b28:
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+240], eax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov eax, dword ptr [rsp+240]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b29
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b30
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b29:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s36
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s36_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+256]
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+264], eax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+264]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+296], rax
+    mov rax, qword ptr [rsp+256]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+296]
+    mov dword ptr [rsp+256], eax
+    mov eax, dword ptr [rsp+256]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_29_36_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_29_36_0_done
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_29_36_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_vd_stmt_29_36_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s37
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s37_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+248], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+248]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s35
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s35_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b28
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_b30:
+    lea rcx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s38
+    mov edx, pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_trace_s38_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je Double_formatFixedDigits_vd38_134_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Double_formatFixedDigits_vd38_134_done
+Double_formatFixedDigits_vd38_134_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Double_formatFixedDigits_vd38_134_done:
+    jmp pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_epilogue
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_epilogue:
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 312
+    ret
+pulsec_com_pulse_lang_Double_formatFixedDigits__boolean_String_int endp
+
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int proc
+    sub rsp, 184
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m284
+    mov edx, trace_m284_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov dword ptr [rsp+88], ecx
+    mov qword ptr [rsp+96], rdx
+    mov dword ptr [rsp+104], r8d
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_StringBuilder_StringBuilder
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b1
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b2
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b1:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 45
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_1_2_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_1_2_0_done
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_1_2_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_1_2_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b3
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b2:
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b3
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+136], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+136]
+    mov eax, 0
+    mov dword ptr [rsp+144], eax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+144]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+176]
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_3_3_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_3_3_0_done
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_3_3_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_3_3_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s4
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 46
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_3_4_1_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_3_4_1_done
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_3_4_1_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_3_4_1_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s5
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+136], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+136]
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Double_lastNonZeroIndex__String
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+176]
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+112], eax
+    mov eax, 2
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b4
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b5
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b4:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s7
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_4_7_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_4_7_0_done
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_4_7_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_4_7_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b6
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b5:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s8
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s8_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 1
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b7
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b6:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s12
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s12_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 69
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_6_12_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_6_12_0_done
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_6_12_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_6_12_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s13
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s13_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+104]
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+136]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Integer_toString__int
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_6_13_1_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_6_13_1_done
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_6_13_1_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_6_13_1_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s14
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s14_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je Double_formatScientificDigits_vd14_58_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Double_formatScientificDigits_vd14_58_done
+Double_formatScientificDigits_vd14_58_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Double_formatScientificDigits_vd14_58_done:
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_epilogue
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b7:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+120], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b8
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b9
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b8:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s10
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s10_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+136], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+136]
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+144], eax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+144]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+176]
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_8_10_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_8_10_0_done
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_8_10_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_vd_stmt_8_10_0_done:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s11
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s11_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+128], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    add eax, edx
+    mov dword ptr [rsp+80], eax
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b7
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b9:
+    lea rcx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6
+    mov edx, pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_b6
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_epilogue:
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 184
+    ret
+pulsec_com_pulse_lang_Double_formatScientificDigits__boolean_String_int endp
+
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String proc
+    sub rsp, 168
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m300
+    mov edx, trace_m300_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+72], rcx
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+112], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call pulsec_rt_stringLength
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov dword ptr [rsp+64], eax
+    lea rcx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_b1
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_b1:
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+80], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test rax, rax
+    jne Double_lastNonZeroIndex_ternary_then_1_17
+    mov eax, 0
+    jmp Double_lastNonZeroIndex_ternary_done_1_17
+Double_lastNonZeroIndex_ternary_then_1_17:
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+112], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+88], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+88]
+    sub eax, edx
+    mov dword ptr [rsp+120], eax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+120]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov dword ptr [rsp+96], eax
+    mov eax, 48
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_lastNonZeroIndex_ternary_done_1_17:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_b2
+    jmp pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_b3
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_b2:
+    lea rcx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+104], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    sub eax, edx
+    mov dword ptr [rsp+64], eax
+    lea rcx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_b1
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    jmp pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_epilogue
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_epilogue:
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 168
+    ret
+pulsec_com_pulse_lang_Double_lastNonZeroIndex__String endp
+
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int proc
+    sub rsp, 200
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m305
+    mov edx, trace_m305_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+88], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+88]
+    sub eax, edx
+    mov dword ptr [rsp+96], eax
+    mov eax, 3
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    cmp eax, edx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_b1
+    jmp pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_b2
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_b1:
+    lea rcx, pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    jmp pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_epilogue
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_b2:
+    lea rcx, pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_b3
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+144]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+152], eax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+152]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov dword ptr [rsp+104], eax
+    mov eax, 78
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne Double_matchesNaN_ternary_then_2_23
+    mov eax, 0
+    jmp Double_matchesNaN_ternary_done_2_23
+Double_matchesNaN_ternary_then_2_23:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+144]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+112], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    add eax, edx
+    mov dword ptr [rsp+152], eax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+152]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov dword ptr [rsp+120], eax
+    mov eax, 97
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesNaN_ternary_done_2_23:
+    test rax, rax
+    jne Double_matchesNaN_ternary_then_2_34
+    mov eax, 0
+    jmp Double_matchesNaN_ternary_done_2_34
+Double_matchesNaN_ternary_then_2_34:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+144]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+128], eax
+    mov eax, 2
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    add eax, edx
+    mov dword ptr [rsp+152], eax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+152]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov dword ptr [rsp+136], eax
+    mov eax, 78
+    mov edx, eax
+    mov eax, dword ptr [rsp+136]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesNaN_ternary_done_2_34:
+    jmp pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_epilogue
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_epilogue:
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 200
+    ret
+pulsec_com_pulse_lang_Double_matchesNaN__String_int_int endp
+
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int proc
+    sub rsp, 280
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m309
+    mov edx, trace_m309_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+88], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+88]
+    sub eax, edx
+    mov dword ptr [rsp+96], eax
+    mov eax, 8
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    cmp eax, edx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_b1
+    jmp pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_b2
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_b1:
+    lea rcx, pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    jmp pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_epilogue
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_b2:
+    lea rcx, pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_b3
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+224]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+232], eax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+232]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+264], rax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+264]
+    mov dword ptr [rsp+104], eax
+    mov eax, 73
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne Double_matchesInfinity_ternary_then_2_23
+    mov eax, 0
+    jmp Double_matchesInfinity_ternary_done_2_23
+Double_matchesInfinity_ternary_then_2_23:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+224]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+112], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    add eax, edx
+    mov dword ptr [rsp+232], eax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+232]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+264], rax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+264]
+    mov dword ptr [rsp+120], eax
+    mov eax, 110
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesInfinity_ternary_done_2_23:
+    test rax, rax
+    jne Double_matchesInfinity_ternary_then_2_34
+    mov eax, 0
+    jmp Double_matchesInfinity_ternary_done_2_34
+Double_matchesInfinity_ternary_then_2_34:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+224]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+128], eax
+    mov eax, 2
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    add eax, edx
+    mov dword ptr [rsp+232], eax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+232]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+264], rax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+264]
+    mov dword ptr [rsp+136], eax
+    mov eax, 102
+    mov edx, eax
+    mov eax, dword ptr [rsp+136]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesInfinity_ternary_done_2_34:
+    test rax, rax
+    jne Double_matchesInfinity_ternary_then_2_45
+    mov eax, 0
+    jmp Double_matchesInfinity_ternary_done_2_45
+Double_matchesInfinity_ternary_then_2_45:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+224]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+144], eax
+    mov eax, 3
+    mov edx, eax
+    mov eax, dword ptr [rsp+144]
+    add eax, edx
+    mov dword ptr [rsp+232], eax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+232]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+264], rax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+264]
+    mov dword ptr [rsp+152], eax
+    mov eax, 105
+    mov edx, eax
+    mov eax, dword ptr [rsp+152]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesInfinity_ternary_done_2_45:
+    test rax, rax
+    jne Double_matchesInfinity_ternary_then_2_56
+    mov eax, 0
+    jmp Double_matchesInfinity_ternary_done_2_56
+Double_matchesInfinity_ternary_then_2_56:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+224]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+160], eax
+    mov eax, 4
+    mov edx, eax
+    mov eax, dword ptr [rsp+160]
+    add eax, edx
+    mov dword ptr [rsp+232], eax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+232]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+264], rax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+264]
+    mov dword ptr [rsp+168], eax
+    mov eax, 110
+    mov edx, eax
+    mov eax, dword ptr [rsp+168]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesInfinity_ternary_done_2_56:
+    test rax, rax
+    jne Double_matchesInfinity_ternary_then_2_67
+    mov eax, 0
+    jmp Double_matchesInfinity_ternary_done_2_67
+Double_matchesInfinity_ternary_then_2_67:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+224]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+176], eax
+    mov eax, 5
+    mov edx, eax
+    mov eax, dword ptr [rsp+176]
+    add eax, edx
+    mov dword ptr [rsp+232], eax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+232]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+264], rax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+264]
+    mov dword ptr [rsp+184], eax
+    mov eax, 105
+    mov edx, eax
+    mov eax, dword ptr [rsp+184]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesInfinity_ternary_done_2_67:
+    test rax, rax
+    jne Double_matchesInfinity_ternary_then_2_78
+    mov eax, 0
+    jmp Double_matchesInfinity_ternary_done_2_78
+Double_matchesInfinity_ternary_then_2_78:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+224]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+192], eax
+    mov eax, 6
+    mov edx, eax
+    mov eax, dword ptr [rsp+192]
+    add eax, edx
+    mov dword ptr [rsp+232], eax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+232]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+264], rax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+264]
+    mov dword ptr [rsp+200], eax
+    mov eax, 116
+    mov edx, eax
+    mov eax, dword ptr [rsp+200]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesInfinity_ternary_done_2_78:
+    test rax, rax
+    jne Double_matchesInfinity_ternary_then_2_89
+    mov eax, 0
+    jmp Double_matchesInfinity_ternary_done_2_89
+Double_matchesInfinity_ternary_then_2_89:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+224]
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+208], eax
+    mov eax, 7
+    mov edx, eax
+    mov eax, dword ptr [rsp+208]
+    add eax, edx
+    mov dword ptr [rsp+232], eax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+232]
+    mov edx, eax
+    call pulsec_rt_stringCharAt
+    mov qword ptr [rsp+264], rax
+    mov rax, qword ptr [rsp+224]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+264]
+    mov dword ptr [rsp+216], eax
+    mov eax, 121
+    mov edx, eax
+    mov eax, dword ptr [rsp+216]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Double_matchesInfinity_ternary_done_2_89:
+    jmp pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_epilogue
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_epilogue:
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 280
+    ret
+pulsec_com_pulse_lang_Double_matchesInfinity__String_int_int endp
+
+pulsec_com_pulse_lang_Double_runtimeCharAt__String_int proc
+    sub rsp, 136
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m313
+    mov edx, trace_m313_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    jmp pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_epilogue
+pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_epilogue:
+pulsec_com_pulse_lang_Double_runtimeCharAt__String_int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 136
+    ret
+pulsec_com_pulse_lang_Double_runtimeCharAt__String_int endp
+
+pulsec_com_pulse_lang_Double_isDigit__char proc
+    sub rsp, 136
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m315
+    mov edx, trace_m315_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov dword ptr [rsp+64], ecx
+pulsec_com_pulse_lang_Double_isDigit__char_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_isDigit__char_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_isDigit__char_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+72], eax
+    mov eax, 48
+    mov edx, eax
+    mov eax, dword ptr [rsp+72]
+    cmp eax, edx
+    setge al
+    movzx eax, al
+    test rax, rax
+    jne Double_isDigit_ternary_then_0_7
+    mov eax, 0
+    jmp Double_isDigit_ternary_done_0_7
+Double_isDigit_ternary_then_0_7:
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+80], eax
+    mov eax, 57
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    cmp eax, edx
+    setle al
+    movzx eax, al
+Double_isDigit_ternary_done_0_7:
+    jmp pulsec_com_pulse_lang_Double_isDigit__char_epilogue
+pulsec_com_pulse_lang_Double_isDigit__char_epilogue:
+pulsec_com_pulse_lang_Double_isDigit__char_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 136
+    ret
+pulsec_com_pulse_lang_Double_isDigit__char endp
+
+pulsec_com_pulse_lang_Double_isNaN__double proc
+    sub rsp, 136
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m317
+    mov edx, trace_m317_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_Double_isNaN__double_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_isNaN__double_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_isNaN__double_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+72], xmm0
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+72]
+    ucomisd xmm0, xmm1
+    jp Double_isNaN_fp_cmp_0_2_unordered
+    setne al
+    jmp Double_isNaN_fp_cmp_0_2_done
+Double_isNaN_fp_cmp_0_2_unordered:
+    mov al, 1
+Double_isNaN_fp_cmp_0_2_done:
+    movzx eax, al
+    jmp pulsec_com_pulse_lang_Double_isNaN__double_epilogue
+pulsec_com_pulse_lang_Double_isNaN__double_epilogue:
+pulsec_com_pulse_lang_Double_isNaN__double_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 136
+    ret
+pulsec_com_pulse_lang_Double_isNaN__double endp
+
+pulsec_com_pulse_lang_Double_isInfinite__double proc
+    sub rsp, 152
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m319
+    mov edx, trace_m319_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_Double_isInfinite__double_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_isInfinite__double_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_isInfinite__double_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+72], xmm0
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+72]
+    ucomisd xmm0, xmm1
+    jp Double_isInfinite_fp_cmp_0_2_unordered
+    sete al
+    jmp Double_isInfinite_fp_cmp_0_2_done
+Double_isInfinite_fp_cmp_0_2_unordered:
+    xor eax, eax
+Double_isInfinite_fp_cmp_0_2_done:
+    movzx eax, al
+    test rax, rax
+    jne Double_isInfinite_ternary_then_0_7
+    mov eax, 0
+    jmp Double_isInfinite_ternary_done_0_7
+Double_isInfinite_ternary_then_0_7:
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+80], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+80]
+    ucomisd xmm0, xmm1
+    jp Double_isInfinite_fp_cmp_0_5_unordered
+    setne al
+    jmp Double_isInfinite_fp_cmp_0_5_done
+Double_isInfinite_fp_cmp_0_5_unordered:
+    mov al, 1
+Double_isInfinite_fp_cmp_0_5_done:
+    movzx eax, al
+Double_isInfinite_ternary_done_0_7:
+    test rax, rax
+    jne Double_isInfinite_ternary_then_0_14
+    mov eax, 0
+    jmp Double_isInfinite_ternary_done_0_14
+Double_isInfinite_ternary_then_0_14:
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+88], xmm0
+    mov rax, 4602678819172646912
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+88]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+96], xmm0
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+96]
+    ucomisd xmm0, xmm1
+    jp Double_isInfinite_fp_cmp_0_12_unordered
+    sete al
+    jmp Double_isInfinite_fp_cmp_0_12_done
+Double_isInfinite_fp_cmp_0_12_unordered:
+    xor eax, eax
+Double_isInfinite_fp_cmp_0_12_done:
+    movzx eax, al
+Double_isInfinite_ternary_done_0_14:
+    jmp pulsec_com_pulse_lang_Double_isInfinite__double_epilogue
+pulsec_com_pulse_lang_Double_isInfinite__double_epilogue:
+pulsec_com_pulse_lang_Double_isInfinite__double_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 152
+    ret
+pulsec_com_pulse_lang_Double_isInfinite__double endp
+
+pulsec_com_pulse_lang_Double_isNegativeZero__double proc
+    sub rsp, 152
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m321
+    mov edx, trace_m321_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_Double_isNegativeZero__double_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_isNegativeZero__double_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_isNegativeZero__double_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+72], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+72]
+    ucomisd xmm0, xmm1
+    jp Double_isNegativeZero_fp_cmp_0_2_unordered
+    sete al
+    jmp Double_isNegativeZero_fp_cmp_0_2_done
+Double_isNegativeZero_fp_cmp_0_2_unordered:
+    xor eax, eax
+Double_isNegativeZero_fp_cmp_0_2_done:
+    movzx eax, al
+    test rax, rax
+    jne Double_isNegativeZero_ternary_then_0_9
+    mov eax, 0
+    jmp Double_isNegativeZero_ternary_done_0_9
+Double_isNegativeZero_ternary_then_0_9:
+    mov rax, 4607182418800017408
+    movq xmm0, rax
+    movq qword ptr [rsp+80], xmm0
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+80]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+88], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+88]
+    ucomisd xmm0, xmm1
+    jp Double_isNegativeZero_fp_cmp_0_7_unordered
+    setb al
+    jmp Double_isNegativeZero_fp_cmp_0_7_done
+Double_isNegativeZero_fp_cmp_0_7_unordered:
+    xor eax, eax
+Double_isNegativeZero_fp_cmp_0_7_done:
+    movzx eax, al
+Double_isNegativeZero_ternary_done_0_9:
+    jmp pulsec_com_pulse_lang_Double_isNegativeZero__double_epilogue
+pulsec_com_pulse_lang_Double_isNegativeZero__double_epilogue:
+pulsec_com_pulse_lang_Double_isNegativeZero__double_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 152
+    ret
+pulsec_com_pulse_lang_Double_isNegativeZero__double endp
+
+pulsec_com_pulse_lang_Double_buildMinValue proc
+    sub rsp, 152
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m323
+    mov edx, trace_m323_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+pulsec_com_pulse_lang_Double_buildMinValue_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 4617248703073655907
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_buildMinValue_b1
+pulsec_com_pulse_lang_Double_buildMinValue_b1:
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+80], eax
+    mov eax, 324
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_buildMinValue_b2
+    jmp pulsec_com_pulse_lang_Double_buildMinValue_b3
+pulsec_com_pulse_lang_Double_buildMinValue_b2:
+    lea rcx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+88], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+88]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s4
+    mov edx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_buildMinValue_b1
+pulsec_com_pulse_lang_Double_buildMinValue_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s5
+    mov edx, pulsec_com_pulse_lang_Double_buildMinValue_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    jmp pulsec_com_pulse_lang_Double_buildMinValue_epilogue
+pulsec_com_pulse_lang_Double_buildMinValue_epilogue:
+pulsec_com_pulse_lang_Double_buildMinValue_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 152
+    ret
+pulsec_com_pulse_lang_Double_buildMinValue endp
+
+pulsec_com_pulse_lang_Double_buildMaxValue proc
+    sub rsp, 152
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m330
+    mov edx, trace_m330_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+pulsec_com_pulse_lang_Double_buildMaxValue_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 4610774909304939336
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_buildMaxValue_b1
+pulsec_com_pulse_lang_Double_buildMaxValue_b1:
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+80], eax
+    mov eax, 308
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Double_buildMaxValue_b2
+    jmp pulsec_com_pulse_lang_Double_buildMaxValue_b3
+pulsec_com_pulse_lang_Double_buildMaxValue_b2:
+    lea rcx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s3
+    mov edx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+88], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+88]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s4
+    mov edx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s2
+    mov edx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Double_buildMaxValue_b1
+pulsec_com_pulse_lang_Double_buildMaxValue_b3:
+    lea rcx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s5
+    mov edx, pulsec_com_pulse_lang_Double_buildMaxValue_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    jmp pulsec_com_pulse_lang_Double_buildMaxValue_epilogue
+pulsec_com_pulse_lang_Double_buildMaxValue_epilogue:
+pulsec_com_pulse_lang_Double_buildMaxValue_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 152
+    ret
+pulsec_com_pulse_lang_Double_buildMaxValue endp
+
+pulsec_com_pulse_lang_Double_invalidLiteral proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m337
+    mov edx, trace_m337_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+pulsec_com_pulse_lang_Double_invalidLiteral_b0:
+    lea rcx, pulsec_com_pulse_lang_Double_invalidLiteral_trace_s0
+    mov edx, pulsec_com_pulse_lang_Double_invalidLiteral_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg17
+    mov edx, msg17_len
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+72], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+72]
+    mov rdx, rax
+    call pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Double_invalidLiteral_trace_s1
+    mov edx, pulsec_com_pulse_lang_Double_invalidLiteral_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Double_invalidLiteral_vd_stmt_0_1_2_null
+    call pulsec_com_pulse_lang_Throwable_panic
+    jmp pulsec_com_pulse_lang_Double_invalidLiteral_vd_stmt_0_1_2_done
+pulsec_com_pulse_lang_Double_invalidLiteral_vd_stmt_0_1_2_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Double_invalidLiteral_vd_stmt_0_1_2_done:
+    xor eax, eax
+    jmp pulsec_com_pulse_lang_Double_invalidLiteral_epilogue
+pulsec_com_pulse_lang_Double_invalidLiteral_epilogue:
+pulsec_com_pulse_lang_Double_invalidLiteral_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_Double_invalidLiteral endp
+
 pulsec_com_pulse_lang_Enum_Enum proc
     sub rsp, 120
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m113
-    mov edx, trace_m113_len
+    lea rcx, trace_m340
+    mov edx, trace_m340_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6264,8 +11259,8 @@ pulsec_com_pulse_lang_Exception_Exception proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m114
-    mov edx, trace_m114_len
+    lea rcx, trace_m341
+    mov edx, trace_m341_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6280,8 +11275,8 @@ pulsec_com_pulse_lang_Exception_Exception_b0:
     lea rcx, pulsec_com_pulse_lang_Exception_Exception_trace_s0
     mov edx, pulsec_com_pulse_lang_Exception_Exception_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg10
-    mov edx, msg10_len
+    lea rcx, msg18
+    mov edx, msg18_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
@@ -6328,8 +11323,8 @@ pulsec_com_pulse_lang_Exception_Exception__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m116
-    mov edx, trace_m116_len
+    lea rcx, trace_m343
+    mov edx, trace_m343_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6345,8 +11340,8 @@ pulsec_com_pulse_lang_Exception_Exception__String_b0:
     lea rcx, pulsec_com_pulse_lang_Exception_Exception__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Exception_Exception__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg11
-    mov edx, msg11_len
+    lea rcx, msg19
+    mov edx, msg19_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
@@ -6400,8 +11395,8 @@ pulsec_com_pulse_lang_Exception_Exception__String_Throwable proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m118
-    mov edx, trace_m118_len
+    lea rcx, trace_m345
+    mov edx, trace_m345_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6418,8 +11413,8 @@ pulsec_com_pulse_lang_Exception_Exception__String_Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_Exception_Exception__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_Exception_Exception__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg12
-    mov edx, msg12_len
+    lea rcx, msg20
+    mov edx, msg20_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
@@ -6480,8 +11475,8 @@ pulsec_com_pulse_lang_Float_valueOf__float proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m120
-    mov edx, trace_m120_len
+    lea rcx, trace_m347
+    mov edx, trace_m347_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6509,8 +11504,8 @@ pulsec_com_pulse_lang_Float_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m122
-    mov edx, trace_m122_len
+    lea rcx, trace_m349
+    mov edx, trace_m349_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6521,9 +11516,7 @@ pulsec_com_pulse_lang_Float_parse__String_b0:
     lea rcx, pulsec_com_pulse_lang_Float_parse__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Float_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg13
-    mov edx, msg13_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -6531,17 +11524,24 @@ pulsec_com_pulse_lang_Float_parse__String_b0:
     mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
+    call pulsec_com_pulse_lang_Double_parse__String
     mov qword ptr [rsp+112], rax
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_Float_parse__String_trace_s1
-    mov edx, pulsec_com_pulse_lang_Float_parse__String_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    mov ecx, 16
-    call pulsec_rt_objectNew
+    mov dword ptr [rsp+72], eax
+    mov eax, dword ptr [rsp+72]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Double_doubleValue__Double
+    cvtsi2sd xmm0, rax
+    cvtsd2ss xmm0, xmm0
+    cvtss2sd xmm0, xmm0
+    movq rax, xmm0
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Float_valueOf__float
     jmp pulsec_com_pulse_lang_Float_parse__String_epilogue
 pulsec_com_pulse_lang_Float_parse__String_epilogue:
 pulsec_com_pulse_lang_Float_parse__String_epilogue_post:
@@ -6558,8 +11558,8 @@ pulsec_com_pulse_lang_Float_floatValue__Float proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m125
-    mov edx, trace_m125_len
+    lea rcx, trace_m351
+    mov edx, trace_m351_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6587,8 +11587,8 @@ pulsec_com_pulse_lang_Float_equals__float_float proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m127
-    mov edx, trace_m127_len
+    lea rcx, trace_m353
+    mov edx, trace_m353_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6631,8 +11631,8 @@ pulsec_com_pulse_lang_Float_compare__float_float proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m129
-    mov edx, trace_m129_len
+    lea rcx, trace_m355
+    mov edx, trace_m355_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6839,14 +11839,1611 @@ pulsec_com_pulse_lang_Float_compare__float_float_epilogue_post:
     ret
 pulsec_com_pulse_lang_Float_compare__float_float endp
 
+pulsec_com_pulse_lang_Float_toString__float proc
+    sub rsp, 632
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m369
+    mov edx, trace_m369_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+184], rcx
+pulsec_com_pulse_lang_Float_toString__float_b0:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s0
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s1
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+192], xmm0
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+192]
+    ucomisd xmm0, xmm1
+    jp Float_toString_fp_cmp_1_4_unordered
+    setne al
+    jmp Float_toString_fp_cmp_1_4_done
+Float_toString_fp_cmp_1_4_unordered:
+    mov al, 1
+Float_toString_fp_cmp_1_4_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b1
+    jmp pulsec_com_pulse_lang_Float_toString__float_b2
+pulsec_com_pulse_lang_Float_toString__float_b1:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s2
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg21
+    mov edx, msg21_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Float_toString__float_epilogue
+pulsec_com_pulse_lang_Float_toString__float_b2:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s1
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b3
+pulsec_com_pulse_lang_Float_toString__float_b3:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s3
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+200], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+200]
+    ucomisd xmm0, xmm1
+    jp Float_toString_fp_cmp_3_8_unordered
+    sete al
+    jmp Float_toString_fp_cmp_3_8_done
+Float_toString_fp_cmp_3_8_unordered:
+    xor eax, eax
+Float_toString_fp_cmp_3_8_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b4
+    jmp pulsec_com_pulse_lang_Float_toString__float_b5
+pulsec_com_pulse_lang_Float_toString__float_b4:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s4
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 4607182418800017408
+    movq xmm0, rax
+    movq qword ptr [rsp+208], xmm0
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+208]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+216], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+216]
+    ucomisd xmm0, xmm1
+    jp Float_toString_fp_cmp_4_13_unordered
+    setb al
+    jmp Float_toString_fp_cmp_4_13_done
+Float_toString_fp_cmp_4_13_unordered:
+    xor eax, eax
+Float_toString_fp_cmp_4_13_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b7
+    jmp pulsec_com_pulse_lang_Float_toString__float_b8
+pulsec_com_pulse_lang_Float_toString__float_b5:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s3
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b6
+pulsec_com_pulse_lang_Float_toString__float_b6:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s7
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s7_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+224], xmm0
+    mov rax, 0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+224]
+    ucomisd xmm0, xmm1
+    jp Float_toString_fp_cmp_7_18_unordered
+    setb al
+    jmp Float_toString_fp_cmp_7_18_done
+Float_toString_fp_cmp_7_18_unordered:
+    xor eax, eax
+Float_toString_fp_cmp_7_18_done:
+    movzx eax, al
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s8
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s8_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b10
+    jmp pulsec_com_pulse_lang_Float_toString__float_b11
+pulsec_com_pulse_lang_Float_toString__float_b7:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s5
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg22
+    mov edx, msg22_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Float_toString__float_epilogue
+pulsec_com_pulse_lang_Float_toString__float_b8:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s4
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b9
+pulsec_com_pulse_lang_Float_toString__float_b9:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s6
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s6_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg23
+    mov edx, msg23_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Float_toString__float_epilogue
+pulsec_com_pulse_lang_Float_toString__float_b10:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s9
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s9_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    movq xmm0, rax
+    movq qword ptr [rsp+232], xmm0
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+232]
+    subsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s8
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s8_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b12
+pulsec_com_pulse_lang_Float_toString__float_b11:
+    jmp pulsec_com_pulse_lang_Float_toString__float_b12
+pulsec_com_pulse_lang_Float_toString__float_b12:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s10
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s10_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call pulsec_rt_fpToLong
+    mov qword ptr [rsp+80], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s11
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s11_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    cvtsi2sd xmm0, rax
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+240], xmm0
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+240]
+    ucomisd xmm0, xmm1
+    jp Float_toString_fp_cmp_11_29_unordered
+    sete al
+    jmp Float_toString_fp_cmp_11_29_done
+Float_toString_fp_cmp_11_29_unordered:
+    xor eax, eax
+Float_toString_fp_cmp_11_29_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b13
+    jmp pulsec_com_pulse_lang_Float_toString__float_b14
+pulsec_com_pulse_lang_Float_toString__float_b13:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s12
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s12_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+576], rax
+    mov rax, qword ptr [rsp+576]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Long_toString__long
+    mov qword ptr [rsp+88], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s13
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s13_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b16
+    jmp pulsec_com_pulse_lang_Float_toString__float_b17
+pulsec_com_pulse_lang_Float_toString__float_b14:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s11
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s11_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b15
+pulsec_com_pulse_lang_Float_toString__float_b15:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s18
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s18_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+96], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s19
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s19_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b19
+pulsec_com_pulse_lang_Float_toString__float_b16:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s14
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s14_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg24
+    mov edx, msg24_len
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+104], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s15
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s15_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+576], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+576]
+    mov rax, qword ptr [rsp+576]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_concat__String
+    mov qword ptr [rsp+616], rax
+    mov rax, qword ptr [rsp+576]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+616]
+    mov qword ptr [rsp+112], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s16
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s16_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg25
+    mov edx, msg25_len
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+576], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+576]
+    mov rax, qword ptr [rsp+576]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_concat__String
+    mov qword ptr [rsp+616], rax
+    mov rax, qword ptr [rsp+576]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+616]
+    jmp pulsec_com_pulse_lang_Float_toString__float_epilogue
+pulsec_com_pulse_lang_Float_toString__float_b17:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s13
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s13_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b18
+pulsec_com_pulse_lang_Float_toString__float_b18:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s17
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s17_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg26
+    mov edx, msg26_len
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+576], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+576]
+    mov rax, qword ptr [rsp+576]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_concat__String
+    mov qword ptr [rsp+616], rax
+    mov rax, qword ptr [rsp+576]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+616]
+    jmp pulsec_com_pulse_lang_Float_toString__float_epilogue
+pulsec_com_pulse_lang_Float_toString__float_b19:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s19
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s19_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+248], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+248]
+    ucomisd xmm0, xmm1
+    jp Float_toString_fp_cmp_19_51_unordered
+    setae al
+    jmp Float_toString_fp_cmp_19_51_done
+Float_toString_fp_cmp_19_51_unordered:
+    xor eax, eax
+Float_toString_fp_cmp_19_51_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b20
+    jmp pulsec_com_pulse_lang_Float_toString__float_b21
+pulsec_com_pulse_lang_Float_toString__float_b20:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s20
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s20_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+256], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+256]
+    divsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s21
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s21_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+264], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+264]
+    add eax, edx
+    mov dword ptr [rsp+96], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s19
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s19_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b19
+pulsec_com_pulse_lang_Float_toString__float_b21:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s22
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s22_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b22
+pulsec_com_pulse_lang_Float_toString__float_b22:
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+272], xmm0
+    mov rax, 4607182418800017408
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+272]
+    ucomisd xmm0, xmm1
+    jp Float_toString_fp_cmp_22_62_unordered
+    setb al
+    jmp Float_toString_fp_cmp_22_62_done
+Float_toString_fp_cmp_22_62_unordered:
+    xor eax, eax
+Float_toString_fp_cmp_22_62_done:
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b23
+    jmp pulsec_com_pulse_lang_Float_toString__float_b24
+pulsec_com_pulse_lang_Float_toString__float_b23:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s23
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s23_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+280], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+280]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s24
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s24_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+288], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+288]
+    sub eax, edx
+    mov dword ptr [rsp+96], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s22
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s22_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b22
+pulsec_com_pulse_lang_Float_toString__float_b24:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s25
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s25_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 7
+    mov dword ptr [rsp+120], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s26
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s26_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_StringBuilder_StringBuilder
+    mov qword ptr [rsp+608], rax
+    mov rax, qword ptr [rsp+608]
+    mov qword ptr [rsp+128], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s27
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s27_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s28
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s28_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b25
+pulsec_com_pulse_lang_Float_toString__float_b25:
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+296], eax
+    mov eax, dword ptr [rsp+120]
+    mov edx, eax
+    mov eax, dword ptr [rsp+296]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b26
+    jmp pulsec_com_pulse_lang_Float_toString__float_b27
+pulsec_com_pulse_lang_Float_toString__float_b26:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s29
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s29_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call pulsec_rt_fpToInt
+    mov dword ptr [rsp+144], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s30
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s30_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    movzx eax, ax
+    mov dword ptr [rsp+304], eax
+    mov eax, dword ptr [rsp+144]
+    mov edx, eax
+    mov eax, dword ptr [rsp+304]
+    add eax, edx
+    movzx eax, ax
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_26_30_2_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_26_30_2_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_26_30_2_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_26_30_2_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s31
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s31_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+312], xmm0
+    mov eax, dword ptr [rsp+144]
+    movsxd rax, eax
+    cvtsi2sd xmm0, rax
+    movq rax, xmm0
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+312]
+    subsd xmm0, xmm1
+    movq rax, xmm0
+    movq xmm0, rax
+    movq qword ptr [rsp+320], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+320]
+    mulsd xmm0, xmm1
+    movq rax, xmm0
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s32
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s32_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+328], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+328]
+    add eax, edx
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s28
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s28_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b25
+pulsec_com_pulse_lang_Float_toString__float_b27:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s33
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s33_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    cmp ecx, 0
+    je Float_toString_vd33_100_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Float_toString_vd33_100_done
+Float_toString_vd33_100_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Float_toString_vd33_100_done:
+    mov qword ptr [rsp+152], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s34
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s34_len
+    call pulsec_rt_traceUpdateTop
+    call pulsec_com_pulse_lang_StringBuilder_StringBuilder
+    mov qword ptr [rsp+608], rax
+    mov rax, qword ptr [rsp+608]
+    mov qword ptr [rsp+160], rax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s35
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s35_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b28
+    jmp pulsec_com_pulse_lang_Float_toString__float_b29
+pulsec_com_pulse_lang_Float_toString__float_b28:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s36
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s36_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 45
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_28_36_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_28_36_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_28_36_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_28_36_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s35
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s35_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b30
+pulsec_com_pulse_lang_Float_toString__float_b29:
+    jmp pulsec_com_pulse_lang_Float_toString__float_b30
+pulsec_com_pulse_lang_Float_toString__float_b30:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s37
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s37_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+336], eax
+    mov eax, 3
+    neg eax
+    mov edx, eax
+    mov eax, dword ptr [rsp+336]
+    cmp eax, edx
+    setge al
+    movzx eax, al
+    test rax, rax
+    jne Float_toString_ternary_then_37_115
+    mov eax, 0
+    jmp Float_toString_ternary_done_37_115
+Float_toString_ternary_then_37_115:
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+344], eax
+    mov eax, 7
+    mov edx, eax
+    mov eax, dword ptr [rsp+344]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+Float_toString_ternary_done_37_115:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b31
+    jmp pulsec_com_pulse_lang_Float_toString__float_b32
+pulsec_com_pulse_lang_Float_toString__float_b31:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s38
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s38_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+352], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+352]
+    add eax, edx
+    mov dword ptr [rsp+168], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s39
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s39_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s40
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s40_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+168]
+    mov dword ptr [rsp+360], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+360]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b34
+    jmp pulsec_com_pulse_lang_Float_toString__float_b35
+pulsec_com_pulse_lang_Float_toString__float_b32:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s37
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s37_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b33
+pulsec_com_pulse_lang_Float_toString__float_b33:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s72
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s72_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_charAt__int
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_33_72_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_33_72_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_33_72_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_33_72_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s73
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s73_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 46
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_33_73_1_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_33_73_1_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_33_73_1_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_33_73_1_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s74
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s74_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+120]
+    mov dword ptr [rsp+176], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s75
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s75_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b61
+pulsec_com_pulse_lang_Float_toString__float_b34:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s41
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s41_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b37
+pulsec_com_pulse_lang_Float_toString__float_b35:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s40
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s40_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b36
+pulsec_com_pulse_lang_Float_toString__float_b36:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s58
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s58_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_36_58_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_36_58_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_36_58_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_36_58_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s59
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s59_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 46
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_36_59_1_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_36_59_1_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_36_59_1_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_36_59_1_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s60
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s60_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s61
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s61_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b52
+pulsec_com_pulse_lang_Float_toString__float_b37:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s41
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s41_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+368], eax
+    mov eax, dword ptr [rsp+168]
+    mov edx, eax
+    mov eax, dword ptr [rsp+368]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b38
+    jmp pulsec_com_pulse_lang_Float_toString__float_b39
+pulsec_com_pulse_lang_Float_toString__float_b38:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s42
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s42_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+144], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s43
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s43_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+376], eax
+    mov eax, dword ptr [rsp+120]
+    mov edx, eax
+    mov eax, dword ptr [rsp+376]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b40
+    jmp pulsec_com_pulse_lang_Float_toString__float_b41
+pulsec_com_pulse_lang_Float_toString__float_b39:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s47
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s47_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 46
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_39_47_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_39_47_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_39_47_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_39_47_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s48
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s48_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+120]
+    mov dword ptr [rsp+176], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s49
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s49_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b43
+pulsec_com_pulse_lang_Float_toString__float_b40:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s44
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s44_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_charAt__int
+    mov dword ptr [rsp+144], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s43
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s43_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b42
+pulsec_com_pulse_lang_Float_toString__float_b41:
+    jmp pulsec_com_pulse_lang_Float_toString__float_b42
+pulsec_com_pulse_lang_Float_toString__float_b42:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s45
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s45_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+144]
+    movzx eax, ax
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_42_45_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__int
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_42_45_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_42_45_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_42_45_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s46
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s46_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+384], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+384]
+    add eax, edx
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s41
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s41_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b37
+pulsec_com_pulse_lang_Float_toString__float_b43:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s49
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s49_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+392], eax
+    mov eax, dword ptr [rsp+168]
+    mov edx, eax
+    mov eax, dword ptr [rsp+392]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test rax, rax
+    jne Float_toString_ternary_then_49_161
+    mov eax, 0
+    jmp Float_toString_ternary_done_49_161
+Float_toString_ternary_then_49_161:
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+400], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+400]
+    sub eax, edx
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_charAt__int
+    mov dword ptr [rsp+408], eax
+    mov eax, 48
+    mov edx, eax
+    mov eax, dword ptr [rsp+408]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Float_toString_ternary_done_49_161:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b44
+    jmp pulsec_com_pulse_lang_Float_toString__float_b45
+pulsec_com_pulse_lang_Float_toString__float_b44:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s50
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s50_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+416], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+416]
+    sub eax, edx
+    mov dword ptr [rsp+176], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s49
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s49_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b43
+pulsec_com_pulse_lang_Float_toString__float_b45:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s51
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s51_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+424], eax
+    mov eax, dword ptr [rsp+168]
+    mov edx, eax
+    mov eax, dword ptr [rsp+424]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b46
+    jmp pulsec_com_pulse_lang_Float_toString__float_b47
+pulsec_com_pulse_lang_Float_toString__float_b46:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s52
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s52_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_46_52_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_46_52_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_46_52_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_46_52_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s51
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s51_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b48
+pulsec_com_pulse_lang_Float_toString__float_b47:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s53
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s53_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+168]
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s54
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s54_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b49
+pulsec_com_pulse_lang_Float_toString__float_b48:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s57
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s57_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je Float_toString_vd57_191_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Float_toString_vd57_191_done
+Float_toString_vd57_191_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Float_toString_vd57_191_done:
+    jmp pulsec_com_pulse_lang_Float_toString__float_epilogue
+pulsec_com_pulse_lang_Float_toString__float_b49:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s54
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s54_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+432], eax
+    mov eax, dword ptr [rsp+176]
+    mov edx, eax
+    mov eax, dword ptr [rsp+432]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b50
+    jmp pulsec_com_pulse_lang_Float_toString__float_b51
+pulsec_com_pulse_lang_Float_toString__float_b50:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s55
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s55_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_charAt__int
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_50_55_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_50_55_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_50_55_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_50_55_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s56
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s56_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+440], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+440]
+    add eax, edx
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s54
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s54_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b49
+pulsec_com_pulse_lang_Float_toString__float_b51:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s51
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s51_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b48
+pulsec_com_pulse_lang_Float_toString__float_b52:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s61
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s61_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+456], eax
+    mov eax, 0
+    mov dword ptr [rsp+448], eax
+    mov eax, dword ptr [rsp+168]
+    mov edx, eax
+    mov eax, dword ptr [rsp+448]
+    sub eax, edx
+    mov edx, eax
+    mov eax, dword ptr [rsp+456]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b53
+    jmp pulsec_com_pulse_lang_Float_toString__float_b54
+pulsec_com_pulse_lang_Float_toString__float_b53:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s62
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s62_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_53_62_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_53_62_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_53_62_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_53_62_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s63
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s63_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+464], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+464]
+    add eax, edx
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s61
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s61_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b52
+pulsec_com_pulse_lang_Float_toString__float_b54:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s64
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s64_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+120]
+    mov dword ptr [rsp+176], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s65
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s65_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b55
+pulsec_com_pulse_lang_Float_toString__float_b55:
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+472], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+472]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test rax, rax
+    jne Float_toString_ternary_then_65_228
+    mov eax, 0
+    jmp Float_toString_ternary_done_65_228
+Float_toString_ternary_then_65_228:
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+480], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+480]
+    sub eax, edx
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_charAt__int
+    mov dword ptr [rsp+488], eax
+    mov eax, 48
+    mov edx, eax
+    mov eax, dword ptr [rsp+488]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Float_toString_ternary_done_65_228:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b56
+    jmp pulsec_com_pulse_lang_Float_toString__float_b57
+pulsec_com_pulse_lang_Float_toString__float_b56:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s66
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s66_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+496], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+496]
+    sub eax, edx
+    mov dword ptr [rsp+176], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s65
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s65_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b55
+pulsec_com_pulse_lang_Float_toString__float_b57:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s67
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s67_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s68
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s68_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b58
+pulsec_com_pulse_lang_Float_toString__float_b58:
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+504], eax
+    mov eax, dword ptr [rsp+176]
+    mov edx, eax
+    mov eax, dword ptr [rsp+504]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b59
+    jmp pulsec_com_pulse_lang_Float_toString__float_b60
+pulsec_com_pulse_lang_Float_toString__float_b59:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s69
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s69_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_charAt__int
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_59_69_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_59_69_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_59_69_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_59_69_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s70
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s70_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+512], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+512]
+    add eax, edx
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s68
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s68_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b58
+pulsec_com_pulse_lang_Float_toString__float_b60:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s71
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s71_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je Float_toString_vd71_251_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Float_toString_vd71_251_done
+Float_toString_vd71_251_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Float_toString_vd71_251_done:
+    jmp pulsec_com_pulse_lang_Float_toString__float_epilogue
+pulsec_com_pulse_lang_Float_toString__float_b61:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s75
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s75_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+520], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+520]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test rax, rax
+    jne Float_toString_ternary_then_75_276
+    mov eax, 0
+    jmp Float_toString_ternary_done_75_276
+Float_toString_ternary_then_75_276:
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+528], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+528]
+    sub eax, edx
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_charAt__int
+    mov dword ptr [rsp+536], eax
+    mov eax, 48
+    mov edx, eax
+    mov eax, dword ptr [rsp+536]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+Float_toString_ternary_done_75_276:
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b62
+    jmp pulsec_com_pulse_lang_Float_toString__float_b63
+pulsec_com_pulse_lang_Float_toString__float_b62:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s76
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s76_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+544], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+544]
+    sub eax, edx
+    mov dword ptr [rsp+176], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s75
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s75_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b61
+pulsec_com_pulse_lang_Float_toString__float_b63:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s77
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s77_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+176]
+    mov dword ptr [rsp+552], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+552]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b64
+    jmp pulsec_com_pulse_lang_Float_toString__float_b65
+pulsec_com_pulse_lang_Float_toString__float_b64:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s78
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s78_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 48
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_64_78_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_64_78_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_64_78_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_64_78_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s77
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s77_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b66
+pulsec_com_pulse_lang_Float_toString__float_b65:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s79
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s79_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 1
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s80
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s80_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b67
+pulsec_com_pulse_lang_Float_toString__float_b66:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s83
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s83_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 69
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_66_83_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__char
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_66_83_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_66_83_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_66_83_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s84
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s84_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Integer_toString__int
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_66_84_1_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_66_84_1_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_66_84_1_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_66_84_1_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s85
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s85_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je Float_toString_vd85_317_null
+    call pulsec_com_pulse_lang_StringBuilder_toString
+    jmp Float_toString_vd85_317_done
+Float_toString_vd85_317_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+Float_toString_vd85_317_done:
+    jmp pulsec_com_pulse_lang_Float_toString__float_epilogue
+pulsec_com_pulse_lang_Float_toString__float_b67:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s80
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s80_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+560], eax
+    mov eax, dword ptr [rsp+176]
+    mov edx, eax
+    mov eax, dword ptr [rsp+560]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_toString__float_b68
+    jmp pulsec_com_pulse_lang_Float_toString__float_b69
+pulsec_com_pulse_lang_Float_toString__float_b68:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s81
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s81_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_charAt__int
+    mov dword ptr [rsp+576], eax
+    mov eax, dword ptr [rsp+576]
+    mov edx, eax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    cmp ecx, 0
+    je pulsec_com_pulse_lang_Float_toString__float_vd_stmt_68_81_0_null
+    call pulsec_com_pulse_lang_StringBuilder_append__Object
+    jmp pulsec_com_pulse_lang_Float_toString__float_vd_stmt_68_81_0_done
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_68_81_0_null:
+    call pulsec_rt_dispatchNullReceiverPanic
+pulsec_com_pulse_lang_Float_toString__float_vd_stmt_68_81_0_done:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s82
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s82_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+136]
+    mov dword ptr [rsp+568], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+568]
+    add eax, edx
+    mov dword ptr [rsp+136], eax
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s80
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s80_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b67
+pulsec_com_pulse_lang_Float_toString__float_b69:
+    lea rcx, pulsec_com_pulse_lang_Float_toString__float_trace_s77
+    mov edx, pulsec_com_pulse_lang_Float_toString__float_trace_s77_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_toString__float_b66
+pulsec_com_pulse_lang_Float_toString__float_epilogue:
+pulsec_com_pulse_lang_Float_toString__float_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 632
+    ret
+pulsec_com_pulse_lang_Float_toString__float endp
+
+pulsec_com_pulse_lang_Float_buildMinValue proc
+    sub rsp, 152
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m456
+    mov edx, trace_m456_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+pulsec_com_pulse_lang_Float_buildMinValue_b0:
+    lea rcx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s0
+    mov edx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 4608989706678435840
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s1
+    mov edx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s2
+    mov edx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_buildMinValue_b1
+pulsec_com_pulse_lang_Float_buildMinValue_b1:
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+80], eax
+    mov eax, 45
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_buildMinValue_b2
+    jmp pulsec_com_pulse_lang_Float_buildMinValue_b3
+pulsec_com_pulse_lang_Float_buildMinValue_b2:
+    lea rcx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s3
+    mov edx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+88], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+88]
+    divsd xmm0, xmm1
+    cvtsd2ss xmm0, xmm0
+    cvtss2sd xmm0, xmm0
+    movq rax, xmm0
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s4
+    mov edx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s2
+    mov edx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_buildMinValue_b1
+pulsec_com_pulse_lang_Float_buildMinValue_b3:
+    lea rcx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s5
+    mov edx, pulsec_com_pulse_lang_Float_buildMinValue_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    jmp pulsec_com_pulse_lang_Float_buildMinValue_epilogue
+pulsec_com_pulse_lang_Float_buildMinValue_epilogue:
+pulsec_com_pulse_lang_Float_buildMinValue_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 152
+    ret
+pulsec_com_pulse_lang_Float_buildMinValue endp
+
+pulsec_com_pulse_lang_Float_buildMaxValue proc
+    sub rsp, 152
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m463
+    mov edx, trace_m463_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+pulsec_com_pulse_lang_Float_buildMaxValue_b0:
+    lea rcx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s0
+    mov edx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 4614844896006635520
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s1
+    mov edx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s2
+    mov edx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_buildMaxValue_b1
+pulsec_com_pulse_lang_Float_buildMaxValue_b1:
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+80], eax
+    mov eax, 38
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne pulsec_com_pulse_lang_Float_buildMaxValue_b2
+    jmp pulsec_com_pulse_lang_Float_buildMaxValue_b3
+pulsec_com_pulse_lang_Float_buildMaxValue_b2:
+    lea rcx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s3
+    mov edx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s3_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    movq xmm0, rax
+    movq qword ptr [rsp+88], xmm0
+    mov rax, 4621819117588971520
+    movq xmm0, rax
+    movapd xmm1, xmm0
+    movq xmm0, qword ptr [rsp+88]
+    mulsd xmm0, xmm1
+    cvtsd2ss xmm0, xmm0
+    cvtss2sd xmm0, xmm0
+    movq rax, xmm0
+    mov qword ptr [rsp+64], rax
+    lea rcx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s4
+    mov edx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s4_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s2
+    mov edx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    jmp pulsec_com_pulse_lang_Float_buildMaxValue_b1
+pulsec_com_pulse_lang_Float_buildMaxValue_b3:
+    lea rcx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s5
+    mov edx, pulsec_com_pulse_lang_Float_buildMaxValue_trace_s5_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    jmp pulsec_com_pulse_lang_Float_buildMaxValue_epilogue
+pulsec_com_pulse_lang_Float_buildMaxValue_epilogue:
+pulsec_com_pulse_lang_Float_buildMaxValue_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 152
+    ret
+pulsec_com_pulse_lang_Float_buildMaxValue endp
+
 pulsec_com_pulse_lang_IO_println__String proc
     sub rsp, 120
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m143
-    mov edx, trace_m143_len
+    lea rcx, trace_m470
+    mov edx, trace_m470_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6877,8 +13474,8 @@ pulsec_com_pulse_lang_IO_println__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m145
-    mov edx, trace_m145_len
+    lea rcx, trace_m472
+    mov edx, trace_m472_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6911,8 +13508,8 @@ pulsec_com_pulse_lang_IO_println__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m147
-    mov edx, trace_m147_len
+    lea rcx, trace_m474
+    mov edx, trace_m474_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6945,8 +13542,8 @@ pulsec_com_pulse_lang_IO_print__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m149
-    mov edx, trace_m149_len
+    lea rcx, trace_m476
+    mov edx, trace_m476_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -6977,8 +13574,8 @@ pulsec_com_pulse_lang_IO_print__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m151
-    mov edx, trace_m151_len
+    lea rcx, trace_m478
+    mov edx, trace_m478_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7011,8 +13608,8 @@ pulsec_com_pulse_lang_IO_print__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m153
-    mov edx, trace_m153_len
+    lea rcx, trace_m480
+    mov edx, trace_m480_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7045,8 +13642,8 @@ pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m155
-    mov edx, trace_m155_len
+    lea rcx, trace_m482
+    mov edx, trace_m482_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7061,8 +13658,8 @@ pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException_b0:
     lea rcx, pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException_trace_s0
     mov edx, pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg14
-    mov edx, msg14_len
+    lea rcx, msg27
+    mov edx, msg27_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
@@ -7109,8 +13706,8 @@ pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String 
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m157
-    mov edx, trace_m157_len
+    lea rcx, trace_m484
+    mov edx, trace_m484_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7126,8 +13723,8 @@ pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_
     lea rcx, pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_trace_s0
     mov edx, pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg15
-    mov edx, msg15_len
+    lea rcx, msg28
+    mov edx, msg28_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
@@ -7181,8 +13778,8 @@ pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m159
-    mov edx, trace_m159_len
+    lea rcx, trace_m486
+    mov edx, trace_m486_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7199,8 +13796,8 @@ pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_
     lea rcx, pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_IllegalArgumentException_IllegalArgumentException__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg16
-    mov edx, msg16_len
+    lea rcx, msg29
+    mov edx, msg29_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
@@ -7261,8 +13858,8 @@ pulsec_com_pulse_lang_IllegalStateException_IllegalStateException proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m161
-    mov edx, trace_m161_len
+    lea rcx, trace_m488
+    mov edx, trace_m488_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7277,8 +13874,8 @@ pulsec_com_pulse_lang_IllegalStateException_IllegalStateException_b0:
     lea rcx, pulsec_com_pulse_lang_IllegalStateException_IllegalStateException_trace_s0
     mov edx, pulsec_com_pulse_lang_IllegalStateException_IllegalStateException_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg17
-    mov edx, msg17_len
+    lea rcx, msg30
+    mov edx, msg30_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
@@ -7325,8 +13922,8 @@ pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m163
-    mov edx, trace_m163_len
+    lea rcx, trace_m490
+    mov edx, trace_m490_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7342,8 +13939,8 @@ pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_b0:
     lea rcx, pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_trace_s0
     mov edx, pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg18
-    mov edx, msg18_len
+    lea rcx, msg31
+    mov edx, msg31_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
@@ -7397,8 +13994,8 @@ pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_Throwa
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m165
-    mov edx, trace_m165_len
+    lea rcx, trace_m492
+    mov edx, trace_m492_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7415,8 +14012,8 @@ pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_Throwa
     lea rcx, pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_IllegalStateException_IllegalStateException__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg19
-    mov edx, msg19_len
+    lea rcx, msg32
+    mov edx, msg32_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
@@ -7477,8 +14074,8 @@ pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m167
-    mov edx, trace_m167_len
+    lea rcx, trace_m494
+    mov edx, trace_m494_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7493,8 +14090,8 @@ pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException_b0:
     lea rcx, pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException_trace_s0
     mov edx, pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg20
-    mov edx, msg20_len
+    lea rcx, msg33
+    mov edx, msg33_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
@@ -7541,8 +14138,8 @@ pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__Strin
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m169
-    mov edx, trace_m169_len
+    lea rcx, trace_m496
+    mov edx, trace_m496_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7558,8 +14155,8 @@ pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__Strin
     lea rcx, pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_trace_s0
     mov edx, pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg21
-    mov edx, msg21_len
+    lea rcx, msg34
+    mov edx, msg34_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
@@ -7613,8 +14210,8 @@ pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__Strin
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m171
-    mov edx, trace_m171_len
+    lea rcx, trace_m498
+    mov edx, trace_m498_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7631,8 +14228,8 @@ pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__Strin
     lea rcx, pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_IndexOutOfBoundsException_IndexOutOfBoundsException__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg22
-    mov edx, msg22_len
+    lea rcx, msg35
+    mov edx, msg35_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
@@ -7693,8 +14290,8 @@ pulsec_com_pulse_lang_Integer_valueOf__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m173
-    mov edx, trace_m173_len
+    lea rcx, trace_m500
+    mov edx, trace_m500_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7722,8 +14319,8 @@ pulsec_com_pulse_lang_Integer_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m175
-    mov edx, trace_m175_len
+    lea rcx, trace_m502
+    mov edx, trace_m502_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7768,8 +14365,8 @@ pulsec_com_pulse_lang_Integer_intValue__Integer proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m177
-    mov edx, trace_m177_len
+    lea rcx, trace_m504
+    mov edx, trace_m504_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7797,8 +14394,8 @@ pulsec_com_pulse_lang_Integer_equals__int_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m179
-    mov edx, trace_m179_len
+    lea rcx, trace_m506
+    mov edx, trace_m506_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7834,8 +14431,8 @@ pulsec_com_pulse_lang_Integer_compare__int_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m181
-    mov edx, trace_m181_len
+    lea rcx, trace_m508
+    mov edx, trace_m508_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7917,8 +14514,8 @@ pulsec_com_pulse_lang_Integer_toString__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m187
-    mov edx, trace_m187_len
+    lea rcx, trace_m514
+    mov edx, trace_m514_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7950,8 +14547,8 @@ pulsec_com_pulse_lang_Iterable_iterator proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m189
-    mov edx, trace_m189_len
+    lea rcx, trace_m516
+    mov edx, trace_m516_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -7976,8 +14573,8 @@ pulsec_com_pulse_lang_Iterator_hasNext proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m190
-    mov edx, trace_m190_len
+    lea rcx, trace_m517
+    mov edx, trace_m517_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8002,8 +14599,8 @@ pulsec_com_pulse_lang_Iterator_next proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m191
-    mov edx, trace_m191_len
+    lea rcx, trace_m518
+    mov edx, trace_m518_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8028,8 +14625,8 @@ pulsec_com_pulse_lang_Long_valueOf__long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m192
-    mov edx, trace_m192_len
+    lea rcx, trace_m519
+    mov edx, trace_m519_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8057,8 +14654,8 @@ pulsec_com_pulse_lang_Long_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m194
-    mov edx, trace_m194_len
+    lea rcx, trace_m521
+    mov edx, trace_m521_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8069,9 +14666,7 @@ pulsec_com_pulse_lang_Long_parse__String_b0:
     lea rcx, pulsec_com_pulse_lang_Long_parse__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Long_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg23
-    mov edx, msg23_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -8079,17 +14674,16 @@ pulsec_com_pulse_lang_Long_parse__String_b0:
     mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
+    call pulsec_rt_parseLong
     mov qword ptr [rsp+112], rax
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_Long_parse__String_trace_s1
-    mov edx, pulsec_com_pulse_lang_Long_parse__String_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    mov ecx, 24
-    call pulsec_rt_objectNew
+    mov dword ptr [rsp+72], eax
+    mov eax, dword ptr [rsp+72]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_Long_valueOf__long
     jmp pulsec_com_pulse_lang_Long_parse__String_epilogue
 pulsec_com_pulse_lang_Long_parse__String_epilogue:
 pulsec_com_pulse_lang_Long_parse__String_epilogue_post:
@@ -8106,8 +14700,8 @@ pulsec_com_pulse_lang_Long_longValue__Long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m197
-    mov edx, trace_m197_len
+    lea rcx, trace_m523
+    mov edx, trace_m523_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8135,8 +14729,8 @@ pulsec_com_pulse_lang_Long_equals__long_long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m199
-    mov edx, trace_m199_len
+    lea rcx, trace_m525
+    mov edx, trace_m525_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8172,8 +14766,8 @@ pulsec_com_pulse_lang_Long_compare__long_long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m201
-    mov edx, trace_m201_len
+    lea rcx, trace_m527
+    mov edx, trace_m527_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8255,8 +14849,8 @@ pulsec_com_pulse_lang_Long_toString__long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m207
-    mov edx, trace_m207_len
+    lea rcx, trace_m533
+    mov edx, trace_m533_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8267,28 +14861,11 @@ pulsec_com_pulse_lang_Long_toString__long_b0:
     lea rcx, pulsec_com_pulse_lang_Long_toString__long_trace_s0
     mov edx, pulsec_com_pulse_lang_Long_toString__long_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg24
-    mov edx, msg24_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
-    mov qword ptr [rsp+32], rax
-    mov rcx, rax
-    call pulsec_rt_arcRetain
-    mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
-    mov qword ptr [rsp+112], rax
-    mov rax, qword ptr [rsp+72]
-    mov rcx, rax
-    call pulsec_rt_arcRelease
-    mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_Long_toString__long_trace_s1
-    mov edx, pulsec_com_pulse_lang_Long_toString__long_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    lea rcx, msg25
-    mov edx, msg25_len
-    call pulsec_rt_stringFromBytes
+    call pulsec_rt_longToString
     jmp pulsec_com_pulse_lang_Long_toString__long_epilogue
 pulsec_com_pulse_lang_Long_toString__long_epilogue:
 pulsec_com_pulse_lang_Long_toString__long_epilogue_post:
@@ -8299,14 +14876,74 @@ pulsec_com_pulse_lang_Long_toString__long_epilogue_post:
     ret
 pulsec_com_pulse_lang_Long_toString__long endp
 
+pulsec_com_pulse_lang_Long_runtimeParse__String proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m535
+    mov edx, trace_m535_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_Long_runtimeParse__String_b0:
+    lea rcx, pulsec_com_pulse_lang_Long_runtimeParse__String_trace_s0
+    mov edx, pulsec_com_pulse_lang_Long_runtimeParse__String_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    jmp pulsec_com_pulse_lang_Long_runtimeParse__String_epilogue
+pulsec_com_pulse_lang_Long_runtimeParse__String_epilogue:
+pulsec_com_pulse_lang_Long_runtimeParse__String_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_Long_runtimeParse__String endp
+
+pulsec_com_pulse_lang_Long_runtimeToString__long proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m537
+    mov edx, trace_m537_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_Long_runtimeToString__long_b0:
+    lea rcx, pulsec_com_pulse_lang_Long_runtimeToString__long_trace_s0
+    mov edx, pulsec_com_pulse_lang_Long_runtimeToString__long_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg36
+    mov edx, msg36_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_Long_runtimeToString__long_epilogue
+pulsec_com_pulse_lang_Long_runtimeToString__long_epilogue:
+pulsec_com_pulse_lang_Long_runtimeToString__long_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_Long_runtimeToString__long endp
+
 pulsec_com_pulse_lang_NullPointerException_NullPointerException proc
     sub rsp, 120
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m210
-    mov edx, trace_m210_len
+    lea rcx, trace_m539
+    mov edx, trace_m539_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8321,8 +14958,8 @@ pulsec_com_pulse_lang_NullPointerException_NullPointerException_b0:
     lea rcx, pulsec_com_pulse_lang_NullPointerException_NullPointerException_trace_s0
     mov edx, pulsec_com_pulse_lang_NullPointerException_NullPointerException_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg26
-    mov edx, msg26_len
+    lea rcx, msg37
+    mov edx, msg37_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
@@ -8369,8 +15006,8 @@ pulsec_com_pulse_lang_NullPointerException_NullPointerException__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m212
-    mov edx, trace_m212_len
+    lea rcx, trace_m541
+    mov edx, trace_m541_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8386,8 +15023,8 @@ pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_b0:
     lea rcx, pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_trace_s0
     mov edx, pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg27
-    mov edx, msg27_len
+    lea rcx, msg38
+    mov edx, msg38_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
@@ -8441,8 +15078,8 @@ pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_Throwabl
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m214
-    mov edx, trace_m214_len
+    lea rcx, trace_m543
+    mov edx, trace_m543_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8459,8 +15096,8 @@ pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_Throwabl
     lea rcx, pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_NullPointerException_NullPointerException__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg28
-    mov edx, msg28_len
+    lea rcx, msg39
+    mov edx, msg39_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
@@ -8521,8 +15158,8 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m216
-    mov edx, trace_m216_len
+    lea rcx, trace_m545
+    mov edx, trace_m545_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8537,8 +15174,8 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_b0:
     lea rcx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0
     mov edx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg29
-    mov edx, msg29_len
+    lea rcx, msg40
+    mov edx, msg40_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
@@ -8585,8 +15222,8 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m218
-    mov edx, trace_m218_len
+    lea rcx, trace_m547
+    mov edx, trace_m547_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8602,8 +15239,8 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_b0:
     lea rcx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0
     mov edx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg30
-    mov edx, msg30_len
+    lea rcx, msg41
+    mov edx, msg41_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
@@ -8657,8 +15294,8 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwa
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m220
-    mov edx, trace_m220_len
+    lea rcx, trace_m549
+    mov edx, trace_m549_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8675,8 +15312,8 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwa
     lea rcx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg31
-    mov edx, msg31_len
+    lea rcx, msg42
+    mov edx, msg42_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
@@ -8737,8 +15374,8 @@ pulsec_com_pulse_lang_Object_hashCode proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m222
-    mov edx, trace_m222_len
+    lea rcx, trace_m551
+    mov edx, trace_m551_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8779,8 +15416,8 @@ pulsec_com_pulse_lang_Object_toString proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m224
-    mov edx, trace_m224_len
+    lea rcx, trace_m553
+    mov edx, trace_m553_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8821,8 +15458,8 @@ pulsec_com_pulse_lang_Object_equals__Object proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m226
-    mov edx, trace_m226_len
+    lea rcx, trace_m555
+    mov edx, trace_m555_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8858,8 +15495,8 @@ pulsec_com_pulse_lang_Object_getClass proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m228
-    mov edx, trace_m228_len
+    lea rcx, trace_m557
+    mov edx, trace_m557_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8904,8 +15541,8 @@ pulsec_com_pulse_lang_PrintStream_println__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m230
-    mov edx, trace_m230_len
+    lea rcx, trace_m559
+    mov edx, trace_m559_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8937,8 +15574,8 @@ pulsec_com_pulse_lang_PrintStream_println__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m232
-    mov edx, trace_m232_len
+    lea rcx, trace_m561
+    mov edx, trace_m561_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -8972,8 +15609,8 @@ pulsec_com_pulse_lang_PrintStream_println__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m234
-    mov edx, trace_m234_len
+    lea rcx, trace_m563
+    mov edx, trace_m563_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9007,8 +15644,8 @@ pulsec_com_pulse_lang_PrintStream_print__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m236
-    mov edx, trace_m236_len
+    lea rcx, trace_m565
+    mov edx, trace_m565_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9040,8 +15677,8 @@ pulsec_com_pulse_lang_PrintStream_print__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m238
-    mov edx, trace_m238_len
+    lea rcx, trace_m567
+    mov edx, trace_m567_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9075,8 +15712,8 @@ pulsec_com_pulse_lang_PrintStream_print__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m240
-    mov edx, trace_m240_len
+    lea rcx, trace_m569
+    mov edx, trace_m569_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9110,8 +15747,8 @@ pulsec_com_pulse_lang_RuntimeException_RuntimeException proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m242
-    mov edx, trace_m242_len
+    lea rcx, trace_m571
+    mov edx, trace_m571_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9126,8 +15763,8 @@ pulsec_com_pulse_lang_RuntimeException_RuntimeException_b0:
     lea rcx, pulsec_com_pulse_lang_RuntimeException_RuntimeException_trace_s0
     mov edx, pulsec_com_pulse_lang_RuntimeException_RuntimeException_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg32
-    mov edx, msg32_len
+    lea rcx, msg43
+    mov edx, msg43_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
@@ -9174,8 +15811,8 @@ pulsec_com_pulse_lang_RuntimeException_RuntimeException__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m244
-    mov edx, trace_m244_len
+    lea rcx, trace_m573
+    mov edx, trace_m573_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9191,8 +15828,8 @@ pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_b0:
     lea rcx, pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_trace_s0
     mov edx, pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg33
-    mov edx, msg33_len
+    lea rcx, msg44
+    mov edx, msg44_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
@@ -9246,8 +15883,8 @@ pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_Throwable proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m246
-    mov edx, trace_m246_len
+    lea rcx, trace_m575
+    mov edx, trace_m575_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9264,8 +15901,8 @@ pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_RuntimeException_RuntimeException__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg34
-    mov edx, msg34_len
+    lea rcx, msg45
+    mov edx, msg45_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
@@ -9326,8 +15963,8 @@ pulsec_com_pulse_lang_Short_valueOf__short proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m248
-    mov edx, trace_m248_len
+    lea rcx, trace_m577
+    mov edx, trace_m577_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9355,8 +15992,8 @@ pulsec_com_pulse_lang_Short_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m250
-    mov edx, trace_m250_len
+    lea rcx, trace_m579
+    mov edx, trace_m579_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9419,8 +16056,8 @@ pulsec_com_pulse_lang_Short_parse__String_b1:
     lea rcx, pulsec_com_pulse_lang_Short_parse__String_trace_s2
     mov edx, pulsec_com_pulse_lang_Short_parse__String_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg35
-    mov edx, msg35_len
+    lea rcx, msg46
+    mov edx, msg46_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
@@ -9467,8 +16104,8 @@ pulsec_com_pulse_lang_Short_shortValue__Short proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m255
-    mov edx, trace_m255_len
+    lea rcx, trace_m584
+    mov edx, trace_m584_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9496,8 +16133,8 @@ pulsec_com_pulse_lang_Short_equals__short_short proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m257
-    mov edx, trace_m257_len
+    lea rcx, trace_m586
+    mov edx, trace_m586_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9533,8 +16170,8 @@ pulsec_com_pulse_lang_Short_compare__short_short proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m259
-    mov edx, trace_m259_len
+    lea rcx, trace_m588
+    mov edx, trace_m588_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9616,8 +16253,8 @@ pulsec_com_pulse_lang_Short_toString__short proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m265
-    mov edx, trace_m265_len
+    lea rcx, trace_m594
+    mov edx, trace_m594_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9650,8 +16287,8 @@ pulsec_com_pulse_lang_String_length proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m267
-    mov edx, trace_m267_len
+    lea rcx, trace_m596
+    mov edx, trace_m596_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9692,8 +16329,8 @@ pulsec_com_pulse_lang_String_isEmpty proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m269
-    mov edx, trace_m269_len
+    lea rcx, trace_m598
+    mov edx, trace_m598_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9729,8 +16366,8 @@ pulsec_com_pulse_lang_String_concat__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m271
-    mov edx, trace_m271_len
+    lea rcx, trace_m600
+    mov edx, trace_m600_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9783,8 +16420,8 @@ pulsec_com_pulse_lang_String_charAt__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m273
-    mov edx, trace_m273_len
+    lea rcx, trace_m602
+    mov edx, trace_m602_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9830,8 +16467,8 @@ pulsec_com_pulse_lang_String_substring__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m275
-    mov edx, trace_m275_len
+    lea rcx, trace_m604
+    mov edx, trace_m604_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9870,8 +16507,8 @@ pulsec_com_pulse_lang_String_substring__int_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m277
-    mov edx, trace_m277_len
+    lea rcx, trace_m606
+    mov edx, trace_m606_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9922,8 +16559,8 @@ pulsec_com_pulse_lang_String_equals__Object proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m279
-    mov edx, trace_m279_len
+    lea rcx, trace_m608
+    mov edx, trace_m608_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -9984,8 +16621,8 @@ pulsec_com_pulse_lang_String_equals__Object_b3:
     cmp edx, 33
     je String_equals_cast_2_5_ok
 String_equals_cast_2_5_fail:
-    lea rcx, msg36
-    mov edx, msg36_len
+    lea rcx, msg47
+    mov edx, msg47_len
     call pulsec_rt_stringFromBytes
     mov rcx, rax
     call pulsec_rt_panic
@@ -10122,8 +16759,8 @@ pulsec_com_pulse_lang_String_startsWith__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m291
-    mov edx, trace_m291_len
+    lea rcx, trace_m620
+    mov edx, trace_m620_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -10173,8 +16810,8 @@ pulsec_com_pulse_lang_String_endsWith__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m293
-    mov edx, trace_m293_len
+    lea rcx, trace_m622
+    mov edx, trace_m622_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -10199,8 +16836,8 @@ pulsec_com_pulse_lang_String_endsWith__String_b0:
     lea rcx, pulsec_com_pulse_lang_String_endsWith__String_trace_s2
     mov edx, pulsec_com_pulse_lang_String_endsWith__String_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg37
-    mov edx, msg37_len
+    lea rcx, msg48
+    mov edx, msg48_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     lea rcx, pulsec_com_pulse_lang_String_endsWith__String_trace_s3
@@ -10283,8 +16920,8 @@ pulsec_com_pulse_lang_String_contains__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m301
-    mov edx, trace_m301_len
+    lea rcx, trace_m630
+    mov edx, trace_m630_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -10334,8 +16971,8 @@ pulsec_com_pulse_lang_String_indexOf__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m303
-    mov edx, trace_m303_len
+    lea rcx, trace_m632
+    mov edx, trace_m632_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -10593,8 +17230,8 @@ pulsec_com_pulse_lang_String_lastIndexOf__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m324
-    mov edx, trace_m324_len
+    lea rcx, trace_m653
+    mov edx, trace_m653_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -10847,8 +17484,8 @@ pulsec_com_pulse_lang_String_trim proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m344
-    mov edx, trace_m344_len
+    lea rcx, trace_m673
+    mov edx, trace_m673_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11122,8 +17759,8 @@ pulsec_com_pulse_lang_String_valueOf__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m358
-    mov edx, trace_m358_len
+    lea rcx, trace_m687
+    mov edx, trace_m687_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11155,8 +17792,8 @@ pulsec_com_pulse_lang_String_valueOf__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m360
-    mov edx, trace_m360_len
+    lea rcx, trace_m689
+    mov edx, trace_m689_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11188,8 +17825,8 @@ pulsec_com_pulse_lang_String_valueOf__char proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m362
-    mov edx, trace_m362_len
+    lea rcx, trace_m691
+    mov edx, trace_m691_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11215,14 +17852,80 @@ pulsec_com_pulse_lang_String_valueOf__char_epilogue_post:
     ret
 pulsec_com_pulse_lang_String_valueOf__char endp
 
+pulsec_com_pulse_lang_String_valueOf__float proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m693
+    mov edx, trace_m693_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_String_valueOf__float_b0:
+    lea rcx, pulsec_com_pulse_lang_String_valueOf__float_trace_s0
+    mov edx, pulsec_com_pulse_lang_String_valueOf__float_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Float_toString__float
+    jmp pulsec_com_pulse_lang_String_valueOf__float_epilogue
+pulsec_com_pulse_lang_String_valueOf__float_epilogue:
+pulsec_com_pulse_lang_String_valueOf__float_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_String_valueOf__float endp
+
+pulsec_com_pulse_lang_String_valueOf__double proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m695
+    mov edx, trace_m695_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_String_valueOf__double_b0:
+    lea rcx, pulsec_com_pulse_lang_String_valueOf__double_trace_s0
+    mov edx, pulsec_com_pulse_lang_String_valueOf__double_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Double_toString__double
+    jmp pulsec_com_pulse_lang_String_valueOf__double_epilogue
+pulsec_com_pulse_lang_String_valueOf__double_epilogue:
+pulsec_com_pulse_lang_String_valueOf__double_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_String_valueOf__double endp
+
 pulsec_com_pulse_lang_String_valueOf__Object proc
     sub rsp, 136
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m364
-    mov edx, trace_m364_len
+    lea rcx, trace_m697
+    mov edx, trace_m697_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11248,8 +17951,8 @@ pulsec_com_pulse_lang_String_valueOf__Object_b1:
     lea rcx, pulsec_com_pulse_lang_String_valueOf__Object_trace_s1
     mov edx, pulsec_com_pulse_lang_String_valueOf__Object_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg38
-    mov edx, msg38_len
+    lea rcx, msg49
+    mov edx, msg49_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_lang_String_valueOf__Object_epilogue
 pulsec_com_pulse_lang_String_valueOf__Object_b2:
@@ -11370,8 +18073,8 @@ pulsec_com_pulse_lang_String_runtimeCharAt__String_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m368
-    mov edx, trace_m368_len
+    lea rcx, trace_m701
+    mov edx, trace_m701_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11400,8 +18103,8 @@ pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m370
-    mov edx, trace_m370_len
+    lea rcx, trace_m703
+    mov edx, trace_m703_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11414,8 +18117,8 @@ pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_b0:
     lea rcx, pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0
     mov edx, pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg39
-    mov edx, msg39_len
+    lea rcx, msg50
+    mov edx, msg50_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_epilogue
 pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_epilogue:
@@ -11433,8 +18136,8 @@ pulsec_com_pulse_lang_String_runtimeFromChar__char proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m372
-    mov edx, trace_m372_len
+    lea rcx, trace_m705
+    mov edx, trace_m705_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11445,8 +18148,8 @@ pulsec_com_pulse_lang_String_runtimeFromChar__char_b0:
     lea rcx, pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0
     mov edx, pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg40
-    mov edx, msg40_len
+    lea rcx, msg51
+    mov edx, msg51_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_lang_String_runtimeFromChar__char_epilogue
 pulsec_com_pulse_lang_String_runtimeFromChar__char_epilogue:
@@ -11621,8 +18324,8 @@ pulsec_com_pulse_lang_StringBuilder_StringBuilder proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m374
-    mov edx, trace_m374_len
+    lea rcx, trace_m707
+    mov edx, trace_m707_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11641,8 +18344,8 @@ pulsec_com_pulse_lang_StringBuilder_StringBuilder_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg41
-    mov edx, msg41_len
+    lea rcx, msg52
+    mov edx, msg52_len
     call pulsec_rt_stringFromBytes
     mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
@@ -11668,8 +18371,8 @@ pulsec_com_pulse_lang_StringBuilder_StringBuilder__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m376
-    mov edx, trace_m376_len
+    lea rcx, trace_m709
+    mov edx, trace_m709_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11714,8 +18417,8 @@ pulsec_com_pulse_lang_StringBuilder_append__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m378
-    mov edx, trace_m378_len
+    lea rcx, trace_m711
+    mov edx, trace_m711_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11776,8 +18479,8 @@ pulsec_com_pulse_lang_StringBuilder_append__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m381
-    mov edx, trace_m381_len
+    lea rcx, trace_m714
+    mov edx, trace_m714_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11833,8 +18536,8 @@ pulsec_com_pulse_lang_StringBuilder_append__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m384
-    mov edx, trace_m384_len
+    lea rcx, trace_m717
+    mov edx, trace_m717_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11890,8 +18593,8 @@ pulsec_com_pulse_lang_StringBuilder_append__char proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m387
-    mov edx, trace_m387_len
+    lea rcx, trace_m720
+    mov edx, trace_m720_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -11941,14 +18644,128 @@ pulsec_com_pulse_lang_StringBuilder_append__char_epilogue_post:
     ret
 pulsec_com_pulse_lang_StringBuilder_append__char endp
 
+pulsec_com_pulse_lang_StringBuilder_append__float proc
+    sub rsp, 136
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m723
+    mov edx, trace_m723_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rdx
+    mov qword ptr [rsp+72], rcx
+pulsec_com_pulse_lang_StringBuilder_append__float_b0:
+    lea rcx, pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0
+    mov edx, pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_valueOf__float
+    mov dword ptr [rsp+80], eax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_concat__String
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1
+    mov edx, pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    jmp pulsec_com_pulse_lang_StringBuilder_append__float_epilogue
+pulsec_com_pulse_lang_StringBuilder_append__float_epilogue:
+pulsec_com_pulse_lang_StringBuilder_append__float_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 136
+    ret
+pulsec_com_pulse_lang_StringBuilder_append__float endp
+
+pulsec_com_pulse_lang_StringBuilder_append__double proc
+    sub rsp, 136
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m726
+    mov edx, trace_m726_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rdx
+    mov qword ptr [rsp+72], rcx
+pulsec_com_pulse_lang_StringBuilder_append__double_b0:
+    lea rcx, pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0
+    mov edx, pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_valueOf__double
+    mov dword ptr [rsp+80], eax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_String_concat__String
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1
+    mov edx, pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    jmp pulsec_com_pulse_lang_StringBuilder_append__double_epilogue
+pulsec_com_pulse_lang_StringBuilder_append__double_epilogue:
+pulsec_com_pulse_lang_StringBuilder_append__double_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 136
+    ret
+pulsec_com_pulse_lang_StringBuilder_append__double endp
+
 pulsec_com_pulse_lang_StringBuilder_append__Object proc
     sub rsp, 136
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m390
-    mov edx, trace_m390_len
+    lea rcx, trace_m729
+    mov edx, trace_m729_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12013,8 +18830,8 @@ pulsec_com_pulse_lang_StringBuilder_length proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m393
-    mov edx, trace_m393_len
+    lea rcx, trace_m732
+    mov edx, trace_m732_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12050,8 +18867,8 @@ pulsec_com_pulse_lang_StringBuilder_clear proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m395
-    mov edx, trace_m395_len
+    lea rcx, trace_m734
+    mov edx, trace_m734_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12062,8 +18879,8 @@ pulsec_com_pulse_lang_StringBuilder_clear_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_clear_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_clear_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg42
-    mov edx, msg42_len
+    lea rcx, msg53
+    mov edx, msg53_len
     call pulsec_rt_stringFromBytes
     mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
@@ -12089,8 +18906,8 @@ pulsec_com_pulse_lang_StringBuilder_insert__int_String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m397
-    mov edx, trace_m397_len
+    lea rcx, trace_m736
+    mov edx, trace_m736_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12216,8 +19033,8 @@ pulsec_com_pulse_lang_StringBuilder_delete__int_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m403
-    mov edx, trace_m403_len
+    lea rcx, trace_m742
+    mov edx, trace_m742_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12311,8 +19128,8 @@ pulsec_com_pulse_lang_StringBuilder_setLength__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m408
-    mov edx, trace_m408_len
+    lea rcx, trace_m747
+    mov edx, trace_m747_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12463,8 +19280,8 @@ pulsec_com_pulse_lang_StringBuilder_toString proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m416
-    mov edx, trace_m416_len
+    lea rcx, trace_m755
+    mov edx, trace_m755_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12829,8 +19646,8 @@ pulsec_com_pulse_lang_Throwable_Throwable proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m418
-    mov edx, trace_m418_len
+    lea rcx, trace_m757
+    mov edx, trace_m757_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12849,8 +19666,8 @@ pulsec_com_pulse_lang_Throwable_Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg43
-    mov edx, msg43_len
+    lea rcx, msg54
+    mov edx, msg54_len
     call pulsec_rt_stringFromBytes
     mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
@@ -12910,8 +19727,8 @@ pulsec_com_pulse_lang_Throwable_Throwable__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m422
-    mov edx, trace_m422_len
+    lea rcx, trace_m761
+    mov edx, trace_m761_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -12931,8 +19748,8 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg44
-    mov edx, msg44_len
+    lea rcx, msg55
+    mov edx, msg55_len
     call pulsec_rt_stringFromBytes
     mov edx, dword ptr [rsp+72]
     cmp edx, 4294967295
@@ -12992,8 +19809,8 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m426
-    mov edx, trace_m426_len
+    lea rcx, trace_m765
+    mov edx, trace_m765_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13014,8 +19831,8 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg45
-    mov edx, msg45_len
+    lea rcx, msg56
+    mov edx, msg56_len
     call pulsec_rt_stringFromBytes
     mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
@@ -13075,8 +19892,8 @@ pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m430
-    mov edx, trace_m430_len
+    lea rcx, trace_m769
+    mov edx, trace_m769_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13149,8 +19966,8 @@ pulsec_com_pulse_lang_Throwable_getMessage proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m434
-    mov edx, trace_m434_len
+    lea rcx, trace_m773
+    mov edx, trace_m773_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13184,8 +20001,8 @@ pulsec_com_pulse_lang_Throwable_getCause proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m436
-    mov edx, trace_m436_len
+    lea rcx, trace_m775
+    mov edx, trace_m775_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13219,8 +20036,8 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m438
-    mov edx, trace_m438_len
+    lea rcx, trace_m777
+    mov edx, trace_m777_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13247,8 +20064,8 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_b1:
     lea rcx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s1
     mov edx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg46
-    mov edx, msg46_len
+    lea rcx, msg57
+    mov edx, msg57_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
@@ -13294,8 +20111,8 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_b4:
     lea rcx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s3
     mov edx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s3_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg47
-    mov edx, msg47_len
+    lea rcx, msg58
+    mov edx, msg58_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
@@ -13360,8 +20177,8 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m445
-    mov edx, trace_m445_len
+    lea rcx, trace_m784
+    mov edx, trace_m784_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13427,8 +20244,8 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String_b3:
     lea rcx, pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3
     mov edx, pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg48
-    mov edx, msg48_len
+    lea rcx, msg59
+    mov edx, msg59_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+112], rax
     mov qword ptr [rsp+32], rax
@@ -13481,8 +20298,8 @@ pulsec_com_pulse_lang_Throwable_describe proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m451
-    mov edx, trace_m451_len
+    lea rcx, trace_m790
+    mov edx, trace_m790_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13545,8 +20362,8 @@ pulsec_com_pulse_lang_Throwable_describe_b3:
     lea rcx, pulsec_com_pulse_lang_Throwable_describe_trace_s4
     mov edx, pulsec_com_pulse_lang_Throwable_describe_trace_s4_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg49
-    mov edx, msg49_len
+    lea rcx, msg60
+    mov edx, msg60_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+104], rax
     mov qword ptr [rsp+32], rax
@@ -13612,8 +20429,8 @@ pulsec_com_pulse_lang_Throwable_toString proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m459
-    mov edx, trace_m459_len
+    lea rcx, trace_m798
+    mov edx, trace_m798_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13701,8 +20518,8 @@ pulsec_com_pulse_lang_UByte_valueOf__ubyte proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m461
-    mov edx, trace_m461_len
+    lea rcx, trace_m800
+    mov edx, trace_m800_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13730,8 +20547,8 @@ pulsec_com_pulse_lang_UByte_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m463
-    mov edx, trace_m463_len
+    lea rcx, trace_m802
+    mov edx, trace_m802_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13793,8 +20610,8 @@ pulsec_com_pulse_lang_UByte_parse__String_b1:
     lea rcx, pulsec_com_pulse_lang_UByte_parse__String_trace_s2
     mov edx, pulsec_com_pulse_lang_UByte_parse__String_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg50
-    mov edx, msg50_len
+    lea rcx, msg61
+    mov edx, msg61_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
@@ -13841,8 +20658,8 @@ pulsec_com_pulse_lang_UByte_ubyteValue__UByte proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m468
-    mov edx, trace_m468_len
+    lea rcx, trace_m807
+    mov edx, trace_m807_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13870,8 +20687,8 @@ pulsec_com_pulse_lang_UByte_equals__ubyte_ubyte proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m470
-    mov edx, trace_m470_len
+    lea rcx, trace_m809
+    mov edx, trace_m809_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13907,8 +20724,8 @@ pulsec_com_pulse_lang_UByte_compare__ubyte_ubyte proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m472
-    mov edx, trace_m472_len
+    lea rcx, trace_m811
+    mov edx, trace_m811_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -13990,8 +20807,8 @@ pulsec_com_pulse_lang_UByte_toString__ubyte proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m478
-    mov edx, trace_m478_len
+    lea rcx, trace_m817
+    mov edx, trace_m817_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14024,8 +20841,8 @@ pulsec_com_pulse_lang_UInteger_valueOf__uint proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m480
-    mov edx, trace_m480_len
+    lea rcx, trace_m819
+    mov edx, trace_m819_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14053,8 +20870,8 @@ pulsec_com_pulse_lang_UInteger_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m482
-    mov edx, trace_m482_len
+    lea rcx, trace_m821
+    mov edx, trace_m821_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14065,9 +20882,7 @@ pulsec_com_pulse_lang_UInteger_parse__String_b0:
     lea rcx, pulsec_com_pulse_lang_UInteger_parse__String_trace_s0
     mov edx, pulsec_com_pulse_lang_UInteger_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg51
-    mov edx, msg51_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -14075,17 +20890,16 @@ pulsec_com_pulse_lang_UInteger_parse__String_b0:
     mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
+    call pulsec_rt_parseUInt
     mov qword ptr [rsp+112], rax
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_UInteger_parse__String_trace_s1
-    mov edx, pulsec_com_pulse_lang_UInteger_parse__String_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    mov ecx, 39
-    call pulsec_rt_objectNew
+    mov dword ptr [rsp+72], eax
+    mov eax, dword ptr [rsp+72]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_UInteger_valueOf__uint
     jmp pulsec_com_pulse_lang_UInteger_parse__String_epilogue
 pulsec_com_pulse_lang_UInteger_parse__String_epilogue:
 pulsec_com_pulse_lang_UInteger_parse__String_epilogue_post:
@@ -14102,8 +20916,8 @@ pulsec_com_pulse_lang_UInteger_uintValue__UInteger proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m485
-    mov edx, trace_m485_len
+    lea rcx, trace_m823
+    mov edx, trace_m823_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14131,8 +20945,8 @@ pulsec_com_pulse_lang_UInteger_equals__uint_uint proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m487
-    mov edx, trace_m487_len
+    lea rcx, trace_m825
+    mov edx, trace_m825_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14168,8 +20982,8 @@ pulsec_com_pulse_lang_UInteger_compare__uint_uint proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m489
-    mov edx, trace_m489_len
+    lea rcx, trace_m827
+    mov edx, trace_m827_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14251,8 +21065,8 @@ pulsec_com_pulse_lang_UInteger_toString__uint proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m495
-    mov edx, trace_m495_len
+    lea rcx, trace_m833
+    mov edx, trace_m833_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14263,28 +21077,11 @@ pulsec_com_pulse_lang_UInteger_toString__uint_b0:
     lea rcx, pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0
     mov edx, pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg52
-    mov edx, msg52_len
-    call pulsec_rt_stringFromBytes
-    mov qword ptr [rsp+72], rax
-    mov qword ptr [rsp+32], rax
-    mov rcx, rax
-    call pulsec_rt_arcRetain
-    mov rax, qword ptr [rsp+72]
-    mov rax, qword ptr [rsp+72]
-    mov rcx, rax
-    call pulsec_rt_panic
-    mov qword ptr [rsp+112], rax
-    mov rax, qword ptr [rsp+72]
-    mov rcx, rax
-    call pulsec_rt_arcRelease
-    mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_UInteger_toString__uint_trace_s1
-    mov edx, pulsec_com_pulse_lang_UInteger_toString__uint_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    lea rcx, msg53
-    mov edx, msg53_len
-    call pulsec_rt_stringFromBytes
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+72], eax
+    mov eax, dword ptr [rsp+72]
+    mov ecx, eax
+    call pulsec_rt_uintToString
     jmp pulsec_com_pulse_lang_UInteger_toString__uint_epilogue
 pulsec_com_pulse_lang_UInteger_toString__uint_epilogue:
 pulsec_com_pulse_lang_UInteger_toString__uint_epilogue_post:
@@ -14295,14 +21092,75 @@ pulsec_com_pulse_lang_UInteger_toString__uint_epilogue_post:
     ret
 pulsec_com_pulse_lang_UInteger_toString__uint endp
 
+pulsec_com_pulse_lang_UInteger_runtimeParse__String proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m835
+    mov edx, trace_m835_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_UInteger_runtimeParse__String_b0:
+    lea rcx, pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0
+    mov edx, pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, 0
+    mov eax, eax
+    jmp pulsec_com_pulse_lang_UInteger_runtimeParse__String_epilogue
+pulsec_com_pulse_lang_UInteger_runtimeParse__String_epilogue:
+pulsec_com_pulse_lang_UInteger_runtimeParse__String_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_UInteger_runtimeParse__String endp
+
+pulsec_com_pulse_lang_UInteger_runtimeToString__uint proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m837
+    mov edx, trace_m837_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov dword ptr [rsp+64], ecx
+pulsec_com_pulse_lang_UInteger_runtimeToString__uint_b0:
+    lea rcx, pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0
+    mov edx, pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg62
+    mov edx, msg62_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_UInteger_runtimeToString__uint_epilogue
+pulsec_com_pulse_lang_UInteger_runtimeToString__uint_epilogue:
+pulsec_com_pulse_lang_UInteger_runtimeToString__uint_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_UInteger_runtimeToString__uint endp
+
 pulsec_com_pulse_lang_ULong_valueOf__ulong proc
     sub rsp, 120
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m498
-    mov edx, trace_m498_len
+    lea rcx, trace_m839
+    mov edx, trace_m839_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14330,8 +21188,8 @@ pulsec_com_pulse_lang_ULong_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m500
-    mov edx, trace_m500_len
+    lea rcx, trace_m841
+    mov edx, trace_m841_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14342,9 +21200,7 @@ pulsec_com_pulse_lang_ULong_parse__String_b0:
     lea rcx, pulsec_com_pulse_lang_ULong_parse__String_trace_s0
     mov edx, pulsec_com_pulse_lang_ULong_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg54
-    mov edx, msg54_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -14352,17 +21208,16 @@ pulsec_com_pulse_lang_ULong_parse__String_b0:
     mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
+    call pulsec_rt_parseULong
     mov qword ptr [rsp+112], rax
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_ULong_parse__String_trace_s1
-    mov edx, pulsec_com_pulse_lang_ULong_parse__String_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    mov ecx, 40
-    call pulsec_rt_objectNew
+    mov dword ptr [rsp+72], eax
+    mov eax, dword ptr [rsp+72]
+    mov ecx, eax
+    call pulsec_com_pulse_lang_ULong_valueOf__ulong
     jmp pulsec_com_pulse_lang_ULong_parse__String_epilogue
 pulsec_com_pulse_lang_ULong_parse__String_epilogue:
 pulsec_com_pulse_lang_ULong_parse__String_epilogue_post:
@@ -14379,8 +21234,8 @@ pulsec_com_pulse_lang_ULong_ulongValue__ULong proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m503
-    mov edx, trace_m503_len
+    lea rcx, trace_m843
+    mov edx, trace_m843_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14408,8 +21263,8 @@ pulsec_com_pulse_lang_ULong_equals__ulong_ulong proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m505
-    mov edx, trace_m505_len
+    lea rcx, trace_m845
+    mov edx, trace_m845_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14445,8 +21300,8 @@ pulsec_com_pulse_lang_ULong_compare__ulong_ulong proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m507
-    mov edx, trace_m507_len
+    lea rcx, trace_m847
+    mov edx, trace_m847_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14528,8 +21383,8 @@ pulsec_com_pulse_lang_ULong_toString__ulong proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m513
-    mov edx, trace_m513_len
+    lea rcx, trace_m853
+    mov edx, trace_m853_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14540,28 +21395,11 @@ pulsec_com_pulse_lang_ULong_toString__ulong_b0:
     lea rcx, pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0
     mov edx, pulsec_com_pulse_lang_ULong_toString__ulong_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg55
-    mov edx, msg55_len
-    call pulsec_rt_stringFromBytes
+    mov rax, qword ptr [rsp+64]
     mov qword ptr [rsp+72], rax
-    mov qword ptr [rsp+32], rax
-    mov rcx, rax
-    call pulsec_rt_arcRetain
-    mov rax, qword ptr [rsp+72]
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
-    call pulsec_rt_panic
-    mov qword ptr [rsp+112], rax
-    mov rax, qword ptr [rsp+72]
-    mov rcx, rax
-    call pulsec_rt_arcRelease
-    mov rax, qword ptr [rsp+112]
-    lea rcx, pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1
-    mov edx, pulsec_com_pulse_lang_ULong_toString__ulong_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    lea rcx, msg56
-    mov edx, msg56_len
-    call pulsec_rt_stringFromBytes
+    call pulsec_rt_ulongToString
     jmp pulsec_com_pulse_lang_ULong_toString__ulong_epilogue
 pulsec_com_pulse_lang_ULong_toString__ulong_epilogue:
 pulsec_com_pulse_lang_ULong_toString__ulong_epilogue_post:
@@ -14572,14 +21410,74 @@ pulsec_com_pulse_lang_ULong_toString__ulong_epilogue_post:
     ret
 pulsec_com_pulse_lang_ULong_toString__ulong endp
 
+pulsec_com_pulse_lang_ULong_runtimeParse__String proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m855
+    mov edx, trace_m855_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_ULong_runtimeParse__String_b0:
+    lea rcx, pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0
+    mov edx, pulsec_com_pulse_lang_ULong_runtimeParse__String_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, 0
+    jmp pulsec_com_pulse_lang_ULong_runtimeParse__String_epilogue
+pulsec_com_pulse_lang_ULong_runtimeParse__String_epilogue:
+pulsec_com_pulse_lang_ULong_runtimeParse__String_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_ULong_runtimeParse__String endp
+
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m857
+    mov edx, trace_m857_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_b0:
+    lea rcx, pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0
+    mov edx, pulsec_com_pulse_lang_ULong_runtimeToString__ulong_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    lea rcx, msg63
+    mov edx, msg63_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_com_pulse_lang_ULong_runtimeToString__ulong_epilogue
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_epilogue:
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_ULong_runtimeToString__ulong endp
+
 pulsec_com_pulse_lang_UShort_valueOf__ushort proc
     sub rsp, 120
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m516
-    mov edx, trace_m516_len
+    lea rcx, trace_m859
+    mov edx, trace_m859_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14607,8 +21505,8 @@ pulsec_com_pulse_lang_UShort_parse__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m518
-    mov edx, trace_m518_len
+    lea rcx, trace_m861
+    mov edx, trace_m861_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14670,8 +21568,8 @@ pulsec_com_pulse_lang_UShort_parse__String_b1:
     lea rcx, pulsec_com_pulse_lang_UShort_parse__String_trace_s2
     mov edx, pulsec_com_pulse_lang_UShort_parse__String_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg57
-    mov edx, msg57_len
+    lea rcx, msg64
+    mov edx, msg64_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
@@ -14718,8 +21616,8 @@ pulsec_com_pulse_lang_UShort_ushortValue__UShort proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m523
-    mov edx, trace_m523_len
+    lea rcx, trace_m866
+    mov edx, trace_m866_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14747,8 +21645,8 @@ pulsec_com_pulse_lang_UShort_equals__ushort_ushort proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m525
-    mov edx, trace_m525_len
+    lea rcx, trace_m868
+    mov edx, trace_m868_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14784,8 +21682,8 @@ pulsec_com_pulse_lang_UShort_compare__ushort_ushort proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m527
-    mov edx, trace_m527_len
+    lea rcx, trace_m870
+    mov edx, trace_m870_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14867,8 +21765,8 @@ pulsec_com_pulse_lang_UShort_toString__ushort proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m533
-    mov edx, trace_m533_len
+    lea rcx, trace_m876
+    mov edx, trace_m876_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14901,8 +21799,8 @@ pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationExceptio
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m535
-    mov edx, trace_m535_len
+    lea rcx, trace_m878
+    mov edx, trace_m878_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14917,8 +21815,8 @@ pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationExceptio
     lea rcx, pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException_trace_s0
     mov edx, pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg58
-    mov edx, msg58_len
+    lea rcx, msg65
+    mov edx, msg65_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
@@ -14965,8 +21863,8 @@ pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationExceptio
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m537
-    mov edx, trace_m537_len
+    lea rcx, trace_m880
+    mov edx, trace_m880_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -14982,8 +21880,8 @@ pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationExceptio
     lea rcx, pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_trace_s0
     mov edx, pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg59
-    mov edx, msg59_len
+    lea rcx, msg66
+    mov edx, msg66_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
@@ -15037,8 +21935,8 @@ pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationExceptio
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m539
-    mov edx, trace_m539_len
+    lea rcx, trace_m882
+    mov edx, trace_m882_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15055,8 +21953,8 @@ pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationExceptio
     lea rcx, pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_UnsupportedOperationException_UnsupportedOperationException__String_Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg60
-    mov edx, msg60_len
+    lea rcx, msg67
+    mov edx, msg67_len
     call pulsec_rt_stringFromBytes
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
@@ -15117,8 +22015,8 @@ pulsec_com_pulse_rt_Intrinsics_consoleWrite__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m541
-    mov edx, trace_m541_len
+    lea rcx, trace_m884
+    mov edx, trace_m884_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15143,8 +22041,8 @@ pulsec_com_pulse_rt_Intrinsics_consoleWrite__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m542
-    mov edx, trace_m542_len
+    lea rcx, trace_m885
+    mov edx, trace_m885_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15169,8 +22067,8 @@ pulsec_com_pulse_rt_Intrinsics_consoleWrite__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m543
-    mov edx, trace_m543_len
+    lea rcx, trace_m886
+    mov edx, trace_m886_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15195,8 +22093,8 @@ pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m544
-    mov edx, trace_m544_len
+    lea rcx, trace_m887
+    mov edx, trace_m887_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15221,8 +22119,8 @@ pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m545
-    mov edx, trace_m545_len
+    lea rcx, trace_m888
+    mov edx, trace_m888_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15247,8 +22145,8 @@ pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m546
-    mov edx, trace_m546_len
+    lea rcx, trace_m889
+    mov edx, trace_m889_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15273,8 +22171,8 @@ pulsec_com_pulse_rt_Intrinsics_panic__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m547
-    mov edx, trace_m547_len
+    lea rcx, trace_m890
+    mov edx, trace_m890_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15299,8 +22197,8 @@ pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m548
-    mov edx, trace_m548_len
+    lea rcx, trace_m891
+    mov edx, trace_m891_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15312,8 +22210,8 @@ pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_b0:
     lea rcx, pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0
     mov edx, pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg61
-    mov edx, msg61_len
+    lea rcx, msg68
+    mov edx, msg68_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_epilogue
 pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_epilogue:
@@ -15331,8 +22229,8 @@ pulsec_com_pulse_rt_Intrinsics_stringLength__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m550
-    mov edx, trace_m550_len
+    lea rcx, trace_m893
+    mov edx, trace_m893_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15360,8 +22258,8 @@ pulsec_com_pulse_rt_Intrinsics_intToString__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m552
-    mov edx, trace_m552_len
+    lea rcx, trace_m895
+    mov edx, trace_m895_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15372,8 +22270,8 @@ pulsec_com_pulse_rt_Intrinsics_intToString__int_b0:
     lea rcx, pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0
     mov edx, pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg62
-    mov edx, msg62_len
+    lea rcx, msg69
+    mov edx, msg69_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_rt_Intrinsics_intToString__int_epilogue
 pulsec_com_pulse_rt_Intrinsics_intToString__int_epilogue:
@@ -15391,8 +22289,8 @@ pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m554
-    mov edx, trace_m554_len
+    lea rcx, trace_m897
+    mov edx, trace_m897_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15403,8 +22301,8 @@ pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_b0:
     lea rcx, pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0
     mov edx, pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg63
-    mov edx, msg63_len
+    lea rcx, msg70
+    mov edx, msg70_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_epilogue
 pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_epilogue:
@@ -15422,8 +22320,8 @@ pulsec_com_pulse_rt_Intrinsics_parseInt__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m556
-    mov edx, trace_m556_len
+    lea rcx, trace_m899
+    mov edx, trace_m899_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15451,8 +22349,8 @@ pulsec_com_pulse_rt_Intrinsics_parseBoolean__String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m558
-    mov edx, trace_m558_len
+    lea rcx, trace_m901
+    mov edx, trace_m901_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15480,8 +22378,8 @@ pulsec_com_pulse_rt_Intrinsics_objectClassName__Object proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m560
-    mov edx, trace_m560_len
+    lea rcx, trace_m903
+    mov edx, trace_m903_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15492,8 +22390,8 @@ pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_b0:
     lea rcx, pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0
     mov edx, pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg64
-    mov edx, msg64_len
+    lea rcx, msg71
+    mov edx, msg71_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_epilogue
 pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_epilogue:
@@ -15511,8 +22409,8 @@ pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m562
-    mov edx, trace_m562_len
+    lea rcx, trace_m905
+    mov edx, trace_m905_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15540,8 +22438,8 @@ pulsec_com_pulse_rt_Intrinsics_arrayNew__int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m564
-    mov edx, trace_m564_len
+    lea rcx, trace_m907
+    mov edx, trace_m907_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15570,8 +22468,8 @@ pulsec_com_pulse_rt_Intrinsics_arrayLength__long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m566
-    mov edx, trace_m566_len
+    lea rcx, trace_m909
+    mov edx, trace_m909_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15599,8 +22497,8 @@ pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m568
-    mov edx, trace_m568_len
+    lea rcx, trace_m911
+    mov edx, trace_m911_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15629,8 +22527,8 @@ pulsec_com_pulse_rt_Intrinsics_arraySetInt__long_int_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m570
-    mov edx, trace_m570_len
+    lea rcx, trace_m913
+    mov edx, trace_m913_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15657,8 +22555,8 @@ pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m571
-    mov edx, trace_m571_len
+    lea rcx, trace_m914
+    mov edx, trace_m914_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15670,8 +22568,8 @@ pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_b0:
     lea rcx, pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0
     mov edx, pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg65
-    mov edx, msg65_len
+    lea rcx, msg72
+    mov edx, msg72_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_epilogue
 pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_epilogue:
@@ -15689,8 +22587,8 @@ pulsec_com_pulse_rt_Intrinsics_arraySetString__long_int_String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m573
-    mov edx, trace_m573_len
+    lea rcx, trace_m916
+    mov edx, trace_m916_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15717,8 +22615,8 @@ pulsec_com_pulse_rt_Intrinsics_listNew proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m574
-    mov edx, trace_m574_len
+    lea rcx, trace_m917
+    mov edx, trace_m917_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15746,8 +22644,8 @@ pulsec_com_pulse_rt_Intrinsics_listSize__long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m576
-    mov edx, trace_m576_len
+    lea rcx, trace_m919
+    mov edx, trace_m919_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15775,8 +22673,8 @@ pulsec_com_pulse_rt_Intrinsics_listClear__long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m578
-    mov edx, trace_m578_len
+    lea rcx, trace_m921
+    mov edx, trace_m921_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15801,8 +22699,8 @@ pulsec_com_pulse_rt_Intrinsics_listAddInt__long_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m579
-    mov edx, trace_m579_len
+    lea rcx, trace_m922
+    mov edx, trace_m922_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15828,8 +22726,8 @@ pulsec_com_pulse_rt_Intrinsics_listAddString__long_String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m580
-    mov edx, trace_m580_len
+    lea rcx, trace_m923
+    mov edx, trace_m923_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15855,8 +22753,8 @@ pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m581
-    mov edx, trace_m581_len
+    lea rcx, trace_m924
+    mov edx, trace_m924_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15885,8 +22783,8 @@ pulsec_com_pulse_rt_Intrinsics_listGetString__long_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m583
-    mov edx, trace_m583_len
+    lea rcx, trace_m926
+    mov edx, trace_m926_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15898,8 +22796,8 @@ pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_b0:
     lea rcx, pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0
     mov edx, pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg66
-    mov edx, msg66_len
+    lea rcx, msg73
+    mov edx, msg73_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_epilogue
 pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_epilogue:
@@ -15917,8 +22815,8 @@ pulsec_com_pulse_rt_Intrinsics_mapNew proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m585
-    mov edx, trace_m585_len
+    lea rcx, trace_m928
+    mov edx, trace_m928_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15946,8 +22844,8 @@ pulsec_com_pulse_rt_Intrinsics_mapSize__long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m587
-    mov edx, trace_m587_len
+    lea rcx, trace_m930
+    mov edx, trace_m930_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -15975,8 +22873,8 @@ pulsec_com_pulse_rt_Intrinsics_mapClear__long proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m589
-    mov edx, trace_m589_len
+    lea rcx, trace_m932
+    mov edx, trace_m932_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -16001,8 +22899,8 @@ pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m590
-    mov edx, trace_m590_len
+    lea rcx, trace_m933
+    mov edx, trace_m933_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -16031,8 +22929,8 @@ pulsec_com_pulse_rt_Intrinsics_mapPut__long_String_String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m592
-    mov edx, trace_m592_len
+    lea rcx, trace_m935
+    mov edx, trace_m935_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -16059,8 +22957,8 @@ pulsec_com_pulse_rt_Intrinsics_mapPutInt__long_String_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m593
-    mov edx, trace_m593_len
+    lea rcx, trace_m936
+    mov edx, trace_m936_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -16087,8 +22985,8 @@ pulsec_com_pulse_rt_Intrinsics_mapGet__long_String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m594
-    mov edx, trace_m594_len
+    lea rcx, trace_m937
+    mov edx, trace_m937_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -16100,8 +22998,8 @@ pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_b0:
     lea rcx, pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0
     mov edx, pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    lea rcx, msg67
-    mov edx, msg67_len
+    lea rcx, msg74
+    mov edx, msg74_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_epilogue
 pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_epilogue:
@@ -16119,8 +23017,8 @@ pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m596
-    mov edx, trace_m596_len
+    lea rcx, trace_m939
+    mov edx, trace_m939_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -17989,6 +24887,51 @@ pulsec_rt_listSize_ok:
     ret
 pulsec_rt_listSize endp
 
+pulsec_rt_longToString proc
+    mov rax, rcx
+    lea r8, rt_tmpbuf
+    add r8, 31
+    xor r9d, r9d
+    xor ecx, ecx
+    cmp rax, 0
+    jne pulsec_rt_longToString_nonzero
+    mov byte ptr [r8], '0'
+    mov rcx, r8
+    mov edx, 1
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_longToString_nonzero:
+    cmp rax, 0
+    jge pulsec_rt_longToString_digit_loop
+    mov r9d, 1
+pulsec_rt_longToString_digit_loop:
+    mov r10, 10
+    cqo
+    idiv r10
+    mov r11, rdx
+    test r11, r11
+    jge pulsec_rt_longToString_positive_rem
+    neg r11
+pulsec_rt_longToString_positive_rem:
+    add r11b, '0'
+    mov byte ptr [r8], r11b
+    sub r8, 1
+    add ecx, 1
+    test rax, rax
+    jne pulsec_rt_longToString_digit_loop
+    cmp r9d, 0
+    je pulsec_rt_longToString_after_sign
+    mov byte ptr [r8], '-'
+    sub r8, 1
+    add ecx, 1
+pulsec_rt_longToString_after_sign:
+    add r8, 1
+    mov rdx, rcx
+    mov rcx, r8
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_longToString endp
+
 pulsec_rt_mapClear proc
     mov r10d, ecx
     cmp r10d, 1
@@ -19396,6 +26339,210 @@ rt_parse_int_stale:
     ret
 pulsec_rt_parseInt endp
 
+pulsec_rt_parseLong proc
+    mov r10d, ecx
+    and r10d, 4294967295
+    mov r8, rcx
+    shr r8, 32
+    cmp r10d, 0
+    jl rt_parse_long_fail
+    cmp r10d, dword ptr [rt_slot_capacity]
+    jg rt_parse_long_fail
+    test r8d, r8d
+    jz rt_parse_long_plain
+    cmp r8d, dword ptr [rt_arc_generation+r10*4]
+    jne rt_parse_long_stale
+rt_parse_long_plain:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je rt_parse_long_stale
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne rt_parse_long_stale
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov r11d, dword ptr [rax+r10*4]
+    cmp r11d, 0
+    je rt_parse_long_fail
+    mov r9, qword ptr [rt_str_data_ptr]
+    mov r8d, r10d
+    imul r8d, 256
+    add r9, r8
+    xor rax, rax
+    xor r8d, r8d
+    mov ecx, 1
+    mov bl, byte ptr [r9]
+    cmp bl, '-'
+    jne rt_parse_long_loop
+    cmp r11d, 1
+    je rt_parse_long_fail
+    mov ecx, -1
+    mov r8d, 1
+rt_parse_long_loop:
+    cmp r8d, r11d
+    jge rt_parse_long_done
+    mov bl, byte ptr [r9+r8]
+    cmp bl, '0'
+    jb rt_parse_long_fail
+    cmp bl, '9'
+    ja rt_parse_long_fail
+    movzx edx, bl
+    sub edx, '0'
+    imul rax, rax, 10
+    add rax, rdx
+    inc r8d
+    jmp rt_parse_long_loop
+rt_parse_long_done:
+    cmp ecx, -1
+    jne rt_parse_long_ret
+    neg rax
+rt_parse_long_ret:
+    ret
+rt_parse_long_fail:
+    lea rcx, rt_parse_long_err
+    mov edx, 20
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+rt_parse_long_stale:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_parseLong endp
+
+pulsec_rt_parseUInt proc
+    mov r10d, ecx
+    and r10d, 4294967295
+    mov r8, rcx
+    shr r8, 32
+    cmp r10d, 0
+    jl rt_parse_uint_fail
+    cmp r10d, dword ptr [rt_slot_capacity]
+    jg rt_parse_uint_fail
+    test r8d, r8d
+    jz rt_parse_uint_plain
+    cmp r8d, dword ptr [rt_arc_generation+r10*4]
+    jne rt_parse_uint_stale
+rt_parse_uint_plain:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je rt_parse_uint_stale
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne rt_parse_uint_stale
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov r11d, dword ptr [rax+r10*4]
+    cmp r11d, 0
+    je rt_parse_uint_fail
+    mov r9, qword ptr [rt_str_data_ptr]
+    mov r8d, r10d
+    imul r8d, 256
+    add r9, r8
+    xor eax, eax
+    xor r8d, r8d
+rt_parse_uint_loop:
+    cmp r8d, r11d
+    jge rt_parse_uint_ret
+    mov bl, byte ptr [r9+r8]
+    cmp bl, '0'
+    jb rt_parse_uint_fail
+    cmp bl, '9'
+    ja rt_parse_uint_fail
+    movzx ecx, bl
+    sub ecx, '0'
+    imul eax, eax, 10
+    add eax, ecx
+    inc r8d
+    jmp rt_parse_uint_loop
+rt_parse_uint_ret:
+    ret
+rt_parse_uint_fail:
+    lea rcx, rt_parse_uint_err
+    mov edx, 20
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+rt_parse_uint_stale:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_parseUInt endp
+
+pulsec_rt_parseULong proc
+    mov r10d, ecx
+    and r10d, 4294967295
+    mov r8, rcx
+    shr r8, 32
+    cmp r10d, 0
+    jl rt_parse_ulong_fail
+    cmp r10d, dword ptr [rt_slot_capacity]
+    jg rt_parse_ulong_fail
+    test r8d, r8d
+    jz rt_parse_ulong_plain
+    cmp r8d, dword ptr [rt_arc_generation+r10*4]
+    jne rt_parse_ulong_stale
+rt_parse_ulong_plain:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je rt_parse_ulong_stale
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne rt_parse_ulong_stale
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov r11d, dword ptr [rax+r10*4]
+    cmp r11d, 0
+    je rt_parse_ulong_fail
+    mov r9, qword ptr [rt_str_data_ptr]
+    mov r8d, r10d
+    imul r8d, 256
+    add r9, r8
+    xor rax, rax
+    xor r8d, r8d
+rt_parse_ulong_loop:
+    cmp r8d, r11d
+    jge rt_parse_ulong_ret
+    mov bl, byte ptr [r9+r8]
+    cmp bl, '0'
+    jb rt_parse_ulong_fail
+    cmp bl, '9'
+    ja rt_parse_ulong_fail
+    movzx edx, bl
+    sub edx, '0'
+    imul rax, rax, 10
+    add rax, rdx
+    inc r8d
+    jmp rt_parse_ulong_loop
+rt_parse_ulong_ret:
+    ret
+rt_parse_ulong_fail:
+    lea rcx, rt_parse_ulong_err
+    mov edx, 21
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+rt_parse_ulong_stale:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_parseULong endp
+
 pulsec_rt_stringCharAt proc
     mov r9d, edx
     mov r10d, ecx
@@ -19672,6 +26819,66 @@ pulsec_rt_stringSubstring_fail:
     xor eax, eax
     ret
 pulsec_rt_stringSubstring endp
+
+pulsec_rt_uintToString proc
+    mov eax, ecx
+    lea r8, rt_tmpbuf
+    add r8, 31
+    xor ecx, ecx
+    cmp eax, 0
+    jne pulsec_rt_uintToString_nonzero
+    mov byte ptr [r8], '0'
+    mov rcx, r8
+    mov edx, 1
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_uintToString_nonzero:
+    mov r10d, 10
+pulsec_rt_uintToString_digit_loop:
+    xor edx, edx
+    div r10d
+    add dl, '0'
+    mov byte ptr [r8], dl
+    sub r8, 1
+    add ecx, 1
+    test eax, eax
+    jne pulsec_rt_uintToString_digit_loop
+    add r8, 1
+    mov rdx, rcx
+    mov rcx, r8
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_uintToString endp
+
+pulsec_rt_ulongToString proc
+    mov rax, rcx
+    lea r8, rt_tmpbuf
+    add r8, 31
+    xor ecx, ecx
+    cmp rax, 0
+    jne pulsec_rt_ulongToString_nonzero
+    mov byte ptr [r8], '0'
+    mov rcx, r8
+    mov edx, 1
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_ulongToString_nonzero:
+    mov r10, 10
+pulsec_rt_ulongToString_digit_loop:
+    xor edx, edx
+    div r10
+    add dl, '0'
+    mov byte ptr [r8], dl
+    sub r8, 1
+    add ecx, 1
+    test rax, rax
+    jne pulsec_rt_ulongToString_digit_loop
+    add r8, 1
+    mov rdx, rcx
+    mov rcx, r8
+    call pulsec_rt_stringFromBytes
+    ret
+pulsec_rt_ulongToString endp
 
 pulsec_rt_weakClear proc
     cmp ecx, 0
@@ -20015,129 +27222,143 @@ msg4 db "AssertionError: "
 msg4_len equ $ - msg4
 msg5 db "Byte.parse out of range"
 msg5_len equ $ - msg5
-msg6 db "Char.parse is not supported yet"
+msg6 db "Invalid char literal"
 msg6_len equ $ - msg6
 msg7 db 0
 msg7_len equ $ - msg7
 msg8 db 0
 msg8_len equ $ - msg8
-msg9 db "Double.parse is not supported yet"
+msg9 db "NaN"
 msg9_len equ $ - msg9
-msg10 db "Exception"
+msg10 db "-Infinity"
 msg10_len equ $ - msg10
-msg11 db "Exception"
+msg11 db "Infinity"
 msg11_len equ $ - msg11
-msg12 db "Exception"
+msg12 db "-0.0"
 msg12_len equ $ - msg12
-msg13 db "Float.parse is not supported yet"
+msg13 db "0.0"
 msg13_len equ $ - msg13
-msg14 db "IllegalArgumentException"
+msg14 db "-"
 msg14_len equ $ - msg14
-msg15 db "IllegalArgumentException"
+msg15 db ".0"
 msg15_len equ $ - msg15
-msg16 db "IllegalArgumentException"
+msg16 db ".0"
 msg16_len equ $ - msg16
-msg17 db "IllegalStateException"
+msg17 db "Invalid floating literal"
 msg17_len equ $ - msg17
-msg18 db "IllegalStateException"
+msg18 db "Exception"
 msg18_len equ $ - msg18
-msg19 db "IllegalStateException"
+msg19 db "Exception"
 msg19_len equ $ - msg19
-msg20 db "IndexOutOfBoundsException"
+msg20 db "Exception"
 msg20_len equ $ - msg20
-msg21 db "IndexOutOfBoundsException"
+msg21 db "NaN"
 msg21_len equ $ - msg21
-msg22 db "IndexOutOfBoundsException"
+msg22 db "-0.0"
 msg22_len equ $ - msg22
-msg23 db "Long.parse is not supported yet"
+msg23 db "0.0"
 msg23_len equ $ - msg23
-msg24 db "Long.toString is not supported yet"
+msg24 db "-"
 msg24_len equ $ - msg24
-msg25 db 0
+msg25 db ".0"
 msg25_len equ $ - msg25
-msg26 db "NullPointerException"
+msg26 db ".0"
 msg26_len equ $ - msg26
-msg27 db "NullPointerException"
+msg27 db "IllegalArgumentException"
 msg27_len equ $ - msg27
-msg28 db "NullPointerException"
+msg28 db "IllegalArgumentException"
 msg28_len equ $ - msg28
-msg29 db "NumberFormatException"
+msg29 db "IllegalArgumentException"
 msg29_len equ $ - msg29
-msg30 db "NumberFormatException"
+msg30 db "IllegalStateException"
 msg30_len equ $ - msg30
-msg31 db "NumberFormatException"
+msg31 db "IllegalStateException"
 msg31_len equ $ - msg31
-msg32 db "RuntimeException"
+msg32 db "IllegalStateException"
 msg32_len equ $ - msg32
-msg33 db "RuntimeException"
+msg33 db "IndexOutOfBoundsException"
 msg33_len equ $ - msg33
-msg34 db "RuntimeException"
+msg34 db "IndexOutOfBoundsException"
 msg34_len equ $ - msg34
-msg35 db "Short.parse out of range"
+msg35 db "IndexOutOfBoundsException"
 msg35_len equ $ - msg35
-msg36 db "Invalid cast"
+msg36 db 0
 msg36_len equ $ - msg36
-msg37 db 0
+msg37 db "NullPointerException"
 msg37_len equ $ - msg37
-msg38 db "null"
+msg38 db "NullPointerException"
 msg38_len equ $ - msg38
-msg39 db 0
+msg39 db "NullPointerException"
 msg39_len equ $ - msg39
-msg40 db 0
+msg40 db "NumberFormatException"
 msg40_len equ $ - msg40
-msg41 db 0
+msg41 db "NumberFormatException"
 msg41_len equ $ - msg41
-msg42 db 0
+msg42 db "NumberFormatException"
 msg42_len equ $ - msg42
-msg43 db "Throwable"
+msg43 db "RuntimeException"
 msg43_len equ $ - msg43
-msg44 db "Throwable"
+msg44 db "RuntimeException"
 msg44_len equ $ - msg44
-msg45 db "Throwable"
+msg45 db "RuntimeException"
 msg45_len equ $ - msg45
-msg46 db "Self-causation is not permitted"
+msg46 db "Short.parse out of range"
 msg46_len equ $ - msg46
-msg47 db "Cause already initialized"
+msg47 db "Invalid cast"
 msg47_len equ $ - msg47
-msg48 db ": "
+msg48 db 0
 msg48_len equ $ - msg48
-msg49 db 10, 67, 97, 117, 115, 101, 100, 32, 98, 121, 58, 32
+msg49 db "null"
 msg49_len equ $ - msg49
-msg50 db "UByte.parse out of range"
+msg50 db 0
 msg50_len equ $ - msg50
-msg51 db "UInteger.parse is not supported yet"
+msg51 db 0
 msg51_len equ $ - msg51
-msg52 db "UInteger.toString is not supported yet"
+msg52 db 0
 msg52_len equ $ - msg52
 msg53 db 0
 msg53_len equ $ - msg53
-msg54 db "ULong.parse is not supported yet"
+msg54 db "Throwable"
 msg54_len equ $ - msg54
-msg55 db "ULong.toString is not supported yet"
+msg55 db "Throwable"
 msg55_len equ $ - msg55
-msg56 db 0
+msg56 db "Throwable"
 msg56_len equ $ - msg56
-msg57 db "UShort.parse out of range"
+msg57 db "Self-causation is not permitted"
 msg57_len equ $ - msg57
-msg58 db "UnsupportedOperationException"
+msg58 db "Cause already initialized"
 msg58_len equ $ - msg58
-msg59 db "UnsupportedOperationException"
+msg59 db ": "
 msg59_len equ $ - msg59
-msg60 db "UnsupportedOperationException"
+msg60 db 10, 67, 97, 117, 115, 101, 100, 32, 98, 121, 58, 32
 msg60_len equ $ - msg60
-msg61 db 0
+msg61 db "UByte.parse out of range"
 msg61_len equ $ - msg61
 msg62 db 0
 msg62_len equ $ - msg62
 msg63 db 0
 msg63_len equ $ - msg63
-msg64 db 0
+msg64 db "UShort.parse out of range"
 msg64_len equ $ - msg64
-msg65 db 0
+msg65 db "UnsupportedOperationException"
 msg65_len equ $ - msg65
-msg66 db 0
+msg66 db "UnsupportedOperationException"
 msg66_len equ $ - msg66
-msg67 db 0
+msg67 db "UnsupportedOperationException"
 msg67_len equ $ - msg67
+msg68 db 0
+msg68_len equ $ - msg68
+msg69 db 0
+msg69_len equ $ - msg69
+msg70 db 0
+msg70_len equ $ - msg70
+msg71 db 0
+msg71_len equ $ - msg71
+msg72 db 0
+msg72_len equ $ - msg72
+msg73 db 0
+msg73_len equ $ - msg73
+msg74 db 0
+msg74_len equ $ - msg74
 
 end

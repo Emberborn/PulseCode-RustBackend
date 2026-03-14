@@ -59,6 +59,25 @@ public class StringBuilder {
     }
 
     /**
+     * Appends a float value after converting it to text.
+     * Use this when mixing single-precision output into a builder chain.
+     */
+    public StringBuilder append(float value) {
+        this.value = this.value.concat(String.valueOf(value));
+        return this;
+    }
+
+    /**
+     * Appends a double value after converting it to text.
+     * Use this when mixing double-precision output into a builder chain.
+     */
+    public StringBuilder append(double value) {
+        this.value = this.value.concat(String.valueOf(value));
+        return this;
+    }
+
+
+    /**
      * Appends an object value after converting it to text.
      * Use this when Java-like builder flows need object formatting or `null` rendering.
      */

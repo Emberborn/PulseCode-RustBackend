@@ -1499,6 +1499,31 @@ fn lock_f1_98_nested_local_and_anonymous_type_policy_are_documented_and_board_lo
 }
 
 #[test]
+fn lock_f1_43_wrapper_surface_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let abi = fs::read_to_string(root.join("docs").join("RUNTIME_INTRINSICS_ABI.md"))
+        .expect("read runtime abi doc");
+
+    assert!(board.contains("| F1-43 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("signed/unsigned integral wrappers"));
+    assert!(board.contains("Float` / `Double`"));
+
+    assert!(handoff.contains("`F1-43` wrapper-class depth"));
+    assert!(handoff.contains("`Float.compare` / `Double.compare`"));
+    assert!(handoff.contains("`Float.parse` / `Double.parse` now accept ordinary decimal text"));
+    assert!(handoff.contains("cli_build_executes_wrapper_floating_text_and_compare_flow"));
+
+    assert!(!abi.contains("Float.runtimeParse"));
+    assert!(!abi.contains("pulsec_rt_fpToString"));
+    assert!(abi.contains("floating wrapper parse/format does not add new runtime ABI in F1"));
+}
+
+#[test]
 fn lock_f1_09_f1_13_and_f1_14_cli_baseline_is_char_varargs_and_explicit_nested_type_fence() {
     let root = unique_temp_root();
     let src_root = root.join("src");

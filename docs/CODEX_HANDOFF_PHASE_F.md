@@ -176,20 +176,17 @@ The following are already `Done (Locked)` on the board:
 The current board resume point is:
 
 - `F1-43` wrapper-class depth
-  - implemented now:
-    - primitive constant fields are Java-like primitive constants, not wrapper-typed placeholders
-    - `Byte` / `Short` / `Char` / `Integer` / `Boolean` now have real compare/helper coverage
-    - `Byte.parse`, `Short.parse`, `UByte.parse`, and `UShort.parse` are executable
-    - `Byte` / `Short` / `Char` / `Integer` / `Boolean` plus the retained small unsigned wrappers have working `toString(...)` coverage through the current string/runtime surface
-    - `Float.compare` / `Double.compare` are no longer the old broken `0-or-1` placeholder shape
-  - still open before lock:
-    - `Char.parse`
-    - `Long.parse` / `Long.toString`
-    - `UInteger.parse` / `UInteger.toString`
-    - `ULong.parse` / `ULong.toString`
-    - floating wrapper text parse/format (`Float` / `Double`)
-  - current focused proof:
-    - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_integer_boolean_apis -- --exact`
+    - implemented now:
+      - primitive constant fields are Java-like primitive constants, not wrapper-typed placeholders
+      - `Byte` / `Short` / `Char` / `Integer` / `Boolean` / `Long` / `UInteger` / `ULong` now have real compare/helper coverage
+      - `Byte.parse`, `Short.parse`, `Char.parse`, `Long.parse`, `UByte.parse`, `UShort.parse`, `UInteger.parse`, and `ULong.parse` are executable
+      - `Byte` / `Short` / `Char` / `Integer` / `Boolean` / `Long` / `UInteger` / `ULong` plus the retained small unsigned wrappers have working `toString(...)` coverage through the current string/runtime surface
+      - `Float.compare` / `Double.compare` are no longer the old broken `0-or-1` placeholder shape
+      - `Float.parse` / `Double.parse` now accept ordinary decimal text, optional signs, fractional parts, exponent text, and `NaN` / `Infinity`
+      - `Float.toString` / `Double.toString` now produce practical Java-close decimal/scientific text in stdlib code, and `String.valueOf(float|double)` plus `StringBuilder.append(float|double)` ride that same surface
+    - current focused proof:
+      - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_integral_text_and_constants_flow -- --exact`
+      - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_floating_text_and_compare_flow -- --exact`
     - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_integral_text_and_constants_flow -- --exact`
     - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_unsupported_parse_panics -- --exact`
 

@@ -70,6 +70,13 @@ const CLASS_PACKAGE_NAME_SYMBOL: &str = "pulsec_rt_classPackageName";
 const STRING_CHAR_AT_SYMBOL: &str = "pulsec_rt_stringCharAt";
 const STRING_SUBSTRING_SYMBOL: &str = "pulsec_rt_stringSubstring";
 const CHAR_TO_STRING_SYMBOL: &str = "pulsec_rt_charToString";
+const LONG_TO_STRING_SYMBOL: &str = "pulsec_rt_longToString";
+const PARSE_LONG_SYMBOL: &str = "pulsec_rt_parseLong";
+const UINT_TO_STRING_SYMBOL: &str = "pulsec_rt_uintToString";
+const PARSE_UINT_SYMBOL: &str = "pulsec_rt_parseUInt";
+const ULONG_TO_STRING_SYMBOL: &str = "pulsec_rt_ulongToString";
+const PARSE_ULONG_SYMBOL: &str = "pulsec_rt_parseULong";
+const CHAR_RUNTIME_CHAR_AT_SYMBOL: &str = "pulsec_rt_stringCharAt";
 const DISPATCH_NULL_PANIC_SYMBOL: &str = "pulsec_rt_dispatchNullReceiverPanic";
 const DISPATCH_TYPE_PANIC_SYMBOL: &str = "pulsec_rt_dispatchInvalidTypePanic";
 

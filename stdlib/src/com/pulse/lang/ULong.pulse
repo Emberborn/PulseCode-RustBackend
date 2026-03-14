@@ -29,8 +29,7 @@ public final class ULong {
      * Use this for textual unsigned conversion at API boundaries.
      */
     public static ULong parse(String text) {
-        Intrinsics.panic("ULong.parse is not supported yet");
-        return new ULong();
+        return valueOf(ULong.runtimeParse(text));
     }
 
     /**
@@ -68,7 +67,22 @@ public final class ULong {
      * Use this when formatting Pulse extension `ulong` values.
      */
     public static String toString(ulong value) {
-        Intrinsics.panic("ULong.toString is not supported yet");
+        return ULong.runtimeToString(value);
+    }
+
+    /**
+     * Runtime-backed helper for unsigned long parsing.
+     * Use this only inside the stdlib `ULong` implementation.
+     */
+    private static ulong runtimeParse(String text) {
+        return (ulong) 0L;
+    }
+
+    /**
+     * Runtime-backed helper for unsigned long formatting.
+     * Use this only inside the stdlib `ULong` implementation.
+     */
+    private static String runtimeToString(ulong value) {
         return "";
     }
 }

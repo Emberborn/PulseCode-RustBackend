@@ -73,6 +73,14 @@
             "com.pulse.lang.String.runtimeCharAt",
             "com.pulse.lang.String.runtimeSubstring",
             "com.pulse.lang.String.runtimeFromChar",
+            "com.pulse.lang.Char.runtimeCharAt",
+            "com.pulse.lang.Double.runtimeCharAt",
+            "com.pulse.lang.Long.runtimeParse",
+            "com.pulse.lang.Long.runtimeToString",
+            "com.pulse.lang.UInteger.runtimeParse",
+            "com.pulse.lang.UInteger.runtimeToString",
+            "com.pulse.lang.ULong.runtimeParse",
+            "com.pulse.lang.ULong.runtimeToString",
             "com.pulse.rt.Intrinsics.arrayNew",
             "com.pulse.rt.Intrinsics.arrayNewMulti",
             "com.pulse.rt.Intrinsics.arrayLength",
@@ -124,6 +132,12 @@
             "pulsec_rt_stringCharAt",
             "pulsec_rt_stringSubstring",
             "pulsec_rt_charToString",
+            "pulsec_rt_longToString",
+            "pulsec_rt_parseLong",
+            "pulsec_rt_uintToString",
+            "pulsec_rt_parseUInt",
+            "pulsec_rt_ulongToString",
+            "pulsec_rt_parseULong",
             "pulsec_rt_arrayNew",
             "pulsec_rt_arrayNewMulti",
             "pulsec_rt_arrayLength",
@@ -205,6 +219,16 @@
             } else if let Some(method) = intrinsic.strip_prefix("com.pulse.lang.Class.") {
                 method
             } else if let Some(method) = intrinsic.strip_prefix("com.pulse.lang.String.") {
+                method
+            } else if let Some(method) = intrinsic.strip_prefix("com.pulse.lang.Char.") {
+                method
+            } else if let Some(method) = intrinsic.strip_prefix("com.pulse.lang.Double.") {
+                method
+            } else if let Some(method) = intrinsic.strip_prefix("com.pulse.lang.Long.") {
+                method
+            } else if let Some(method) = intrinsic.strip_prefix("com.pulse.lang.UInteger.") {
+                method
+            } else if let Some(method) = intrinsic.strip_prefix("com.pulse.lang.ULong.") {
                 method
             } else {
                 panic!("intrinsic prefix");

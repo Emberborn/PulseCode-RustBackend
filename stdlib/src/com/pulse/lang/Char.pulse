@@ -29,8 +29,10 @@ public final class Char {
      * Use this when taking character data from a string input surface.
      */
     public static Char parse(String text) {
-        Intrinsics.panic("Char.parse is not supported yet");
-        return new Char();
+        if (text == null || Intrinsics.stringLength(text) != 1) {
+            Intrinsics.panic("Invalid char literal");
+        }
+        return valueOf(Char.runtimeCharAt(text, 0));
     }
 
     /**
@@ -69,6 +71,14 @@ public final class Char {
      */
     public static String toString(char value) {
         return String.valueOf(value);
+    }
+
+    /**
+     * Runtime-backed helper for indexed character access.
+     * Use this only inside the stdlib `Char` implementation.
+     */
+    private static char runtimeCharAt(String value, int index) {
+        return '\0';
     }
 }
 

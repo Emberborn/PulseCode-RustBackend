@@ -96,6 +96,16 @@ Use this when formatting boolean output.
 Converts a character value into its string representation.
 Use this when formatting character data into string-based APIs.
 
+### ``public static String valueOf(float value)``
+
+Converts a float value into its string representation.
+Use this when formatting single-precision values through Java-like APIs.
+
+### ``public static String valueOf(double value)``
+
+Converts a double value into its string representation.
+Use this when formatting double-precision values through Java-like APIs.
+
 ### ``public static String valueOf(Object value)``
 
 Converts an object reference into its string representation.

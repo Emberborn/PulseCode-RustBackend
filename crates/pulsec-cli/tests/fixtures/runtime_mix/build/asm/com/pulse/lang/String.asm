@@ -20,6 +20,8 @@ extrn pulsec_rt_arcRelease:proc
 extrn pulsec_rt_tracePush:proc
 extrn pulsec_rt_traceUpdateTop:proc
 extrn pulsec_rt_tracePop:proc
+extrn pulsec_com_pulse_lang_Double_toString__double:proc
+extrn pulsec_com_pulse_lang_Float_toString__float:proc
 extrn pulsec_rt_booleanToString:proc
 extrn pulsec_rt_charToString:proc
 extrn pulsec_rt_intToString:proc
@@ -228,23 +230,31 @@ pulsec_com_pulse_lang_String_valueOf__char_trace_s0 db "com.pulse.lang.String.va
 pulsec_com_pulse_lang_String_valueOf__char_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__char_trace_s0
 trace_m97 db "com.pulse.lang.String.valueOf"
 trace_m97_len equ $ - trace_m97
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:231)"
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s0
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s1 db "com.pulse.lang.String.valueOf(String.pulse:232)"
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s1_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s1
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s2 db "com.pulse.lang.String.valueOf(String.pulse:234)"
-pulsec_com_pulse_lang_String_valueOf__Object_trace_s2_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s2
-trace_m101 db "com.pulse.lang.String.runtimeCharAt"
+pulsec_com_pulse_lang_String_valueOf__float_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:231)"
+pulsec_com_pulse_lang_String_valueOf__float_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__float_trace_s0
+trace_m99 db "com.pulse.lang.String.valueOf"
+trace_m99_len equ $ - trace_m99
+pulsec_com_pulse_lang_String_valueOf__double_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:239)"
+pulsec_com_pulse_lang_String_valueOf__double_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__double_trace_s0
+trace_m101 db "com.pulse.lang.String.valueOf"
 trace_m101_len equ $ - trace_m101
-pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0 db "com.pulse.lang.String.runtimeCharAt(String.pulse:242)"
-pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0
-trace_m103 db "com.pulse.lang.String.runtimeSubstring"
-trace_m103_len equ $ - trace_m103
-pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0 db "com.pulse.lang.String.runtimeSubstring(String.pulse:250)"
-pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0
-trace_m105 db "com.pulse.lang.String.runtimeFromChar"
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s0 db "com.pulse.lang.String.valueOf(String.pulse:248)"
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s0_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s0
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s1 db "com.pulse.lang.String.valueOf(String.pulse:249)"
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s1_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s1
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s2 db "com.pulse.lang.String.valueOf(String.pulse:251)"
+pulsec_com_pulse_lang_String_valueOf__Object_trace_s2_len equ $ - pulsec_com_pulse_lang_String_valueOf__Object_trace_s2
+trace_m105 db "com.pulse.lang.String.runtimeCharAt"
 trace_m105_len equ $ - trace_m105
-pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0 db "com.pulse.lang.String.runtimeFromChar(String.pulse:258)"
+pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0 db "com.pulse.lang.String.runtimeCharAt(String.pulse:259)"
+pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_runtimeCharAt__String_int_trace_s0
+trace_m107 db "com.pulse.lang.String.runtimeSubstring"
+trace_m107_len equ $ - trace_m107
+pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0 db "com.pulse.lang.String.runtimeSubstring(String.pulse:267)"
+pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int_trace_s0
+trace_m109 db "com.pulse.lang.String.runtimeFromChar"
+trace_m109_len equ $ - trace_m109
+pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0 db "com.pulse.lang.String.runtimeFromChar(String.pulse:275)"
 pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0_len equ $ - pulsec_com_pulse_lang_String_runtimeFromChar__char_trace_s0
 msg0 db "Invalid cast"
 msg0_len equ $ - msg0
@@ -1829,14 +1839,80 @@ pulsec_com_pulse_lang_String_valueOf__char_epilogue_post:
     ret
 pulsec_com_pulse_lang_String_valueOf__char endp
 
-pulsec_com_pulse_lang_String_valueOf__Object proc
-    sub rsp, 136
+pulsec_com_pulse_lang_String_valueOf__float proc
+    sub rsp, 120
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
     lea rcx, trace_m97
     mov edx, trace_m97_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_String_valueOf__float_b0:
+    lea rcx, pulsec_com_pulse_lang_String_valueOf__float_trace_s0
+    mov edx, pulsec_com_pulse_lang_String_valueOf__float_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Float_toString__float
+    jmp pulsec_com_pulse_lang_String_valueOf__float_epilogue
+pulsec_com_pulse_lang_String_valueOf__float_epilogue:
+pulsec_com_pulse_lang_String_valueOf__float_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_String_valueOf__float endp
+
+pulsec_com_pulse_lang_String_valueOf__double proc
+    sub rsp, 120
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m99
+    mov edx, trace_m99_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+pulsec_com_pulse_lang_String_valueOf__double_b0:
+    lea rcx, pulsec_com_pulse_lang_String_valueOf__double_trace_s0
+    mov edx, pulsec_com_pulse_lang_String_valueOf__double_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_com_pulse_lang_Double_toString__double
+    jmp pulsec_com_pulse_lang_String_valueOf__double_epilogue
+pulsec_com_pulse_lang_String_valueOf__double_epilogue:
+pulsec_com_pulse_lang_String_valueOf__double_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 120
+    ret
+pulsec_com_pulse_lang_String_valueOf__double endp
+
+pulsec_com_pulse_lang_String_valueOf__Object proc
+    sub rsp, 136
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m101
+    mov edx, trace_m101_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -1984,8 +2060,8 @@ pulsec_com_pulse_lang_String_runtimeCharAt__String_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m101
-    mov edx, trace_m101_len
+    lea rcx, trace_m105
+    mov edx, trace_m105_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -2014,8 +2090,8 @@ pulsec_com_pulse_lang_String_runtimeSubstring__String_int_int proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m103
-    mov edx, trace_m103_len
+    lea rcx, trace_m107
+    mov edx, trace_m107_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -2047,8 +2123,8 @@ pulsec_com_pulse_lang_String_runtimeFromChar__char proc
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m105
-    mov edx, trace_m105_len
+    lea rcx, trace_m109
+    mov edx, trace_m109_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]

@@ -797,6 +797,12 @@ pub(crate) fn emit_masm_split_program_objects(
             STRING_CHAR_AT_SYMBOL => emit_string_char_at_proc(&mut std_src, &sym),
             STRING_SUBSTRING_SYMBOL => emit_string_substring_proc(&mut std_src, &sym),
             CHAR_TO_STRING_SYMBOL => emit_char_to_string_proc(&mut std_src, &sym),
+            LONG_TO_STRING_SYMBOL => emit_long_to_string_proc(&mut std_src, &sym),
+            PARSE_LONG_SYMBOL => emit_parse_long_proc(&mut std_src, &sym),
+            UINT_TO_STRING_SYMBOL => emit_uint_to_string_proc(&mut std_src, &sym),
+            PARSE_UINT_SYMBOL => emit_parse_uint_proc(&mut std_src, &sym),
+            ULONG_TO_STRING_SYMBOL => emit_ulong_to_string_proc(&mut std_src, &sym),
+            PARSE_ULONG_SYMBOL => emit_parse_ulong_proc(&mut std_src, &sym),
             "pulsec_rt_arrayNew" => emit_array_new_proc(&mut std_src, &sym),
             "pulsec_rt_arrayNewMulti" => emit_array_new_multi_proc(&mut std_src, &sym),
             "pulsec_rt_arrayLength" => emit_array_length_proc(&mut std_src, &sym),
@@ -1263,6 +1269,12 @@ pub(crate) fn emit_masm_full_program_object(
             STRING_CHAR_AT_SYMBOL => emit_string_char_at_proc(&mut source, &sym),
             STRING_SUBSTRING_SYMBOL => emit_string_substring_proc(&mut source, &sym),
             CHAR_TO_STRING_SYMBOL => emit_char_to_string_proc(&mut source, &sym),
+            LONG_TO_STRING_SYMBOL => emit_long_to_string_proc(&mut source, &sym),
+            PARSE_LONG_SYMBOL => emit_parse_long_proc(&mut source, &sym),
+            UINT_TO_STRING_SYMBOL => emit_uint_to_string_proc(&mut source, &sym),
+            PARSE_UINT_SYMBOL => emit_parse_uint_proc(&mut source, &sym),
+            ULONG_TO_STRING_SYMBOL => emit_ulong_to_string_proc(&mut source, &sym),
+            PARSE_ULONG_SYMBOL => emit_parse_ulong_proc(&mut source, &sym),
             "pulsec_rt_arrayNew" => emit_array_new_proc(&mut source, &sym),
             "pulsec_rt_arrayNewMulti" => emit_array_new_multi_proc(&mut source, &sym),
             "pulsec_rt_arrayLength" => emit_array_length_proc(&mut source, &sym),
@@ -1343,7 +1355,10 @@ pub(crate) fn emit_masm_full_program_object(
         return Err(format!("Full MASM assembly failed: {}", detail));
     }
 
-    Ok(("masm-full-stdlib".to_string(), vec![kernel32]))
+    Ok((
+        "masm-full-stdlib".to_string(),
+        vec![kernel32],
+    ))
 }
 
 pub(crate) fn masm_method_stack_size(method: &IrMethod) -> usize {
