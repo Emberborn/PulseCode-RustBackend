@@ -26,6 +26,11 @@ Use this for line-oriented string output.
 Writes an integer followed by a newline to the console.
 Use this for line-oriented numeric output.
 
+### ``void println(long value);``
+
+Writes a long followed by a newline to the console.
+Use this for line-oriented 64-bit numeric output.
+
 ### ``void println(boolean value);``
 
 Writes a boolean followed by a newline to the console.
@@ -40,6 +45,11 @@ Use this for incremental console output.
 
 Writes an integer without appending a newline.
 Use this for incremental numeric console output.
+
+### ``void print(long value);``
+
+Writes a long without appending a newline.
+Use this for incremental 64-bit numeric output.
 
 ### ``void print(boolean value);``
 

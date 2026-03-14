@@ -17,6 +17,8 @@ pub(crate) fn default_backend_contract() -> BackendContract {
         runtime_symbols: &[
             "com.pulse.rt.Intrinsics.consoleWriteLine",
             "com.pulse.rt.Intrinsics.consoleWrite",
+            "com.pulse.rt.Intrinsics.consoleErrorWriteLine",
+            "com.pulse.rt.Intrinsics.consoleErrorWrite",
             "com.pulse.rt.Intrinsics.panic",
             "com.pulse.rt.Intrinsics.stringConcat",
             "com.pulse.rt.Intrinsics.stringLength",
@@ -77,6 +79,9 @@ pub(crate) fn default_backend_contract() -> BackendContract {
             "com.pulse.memory.Memory.weakClear",
             "com.pulse.lang.IO.println",
             "com.pulse.lang.IO.print",
+            "com.pulse.lang.System.currentTimeMillis",
+            "com.pulse.lang.System.nanoTime",
+            "com.pulse.lang.System.exit",
             "com.pulse.io.Console.writeLine",
             "com.pulse.io.File.readAllText",
             "com.pulse.math.Math.abs",
@@ -110,6 +115,14 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("Intrinsics".to_string(), "consoleWrite".to_string()),
         "pulsec_rt_consoleWrite".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "consoleErrorWriteLine".to_string()),
+        "pulsec_rt_consoleErrorWriteLine".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "consoleErrorWrite".to_string()),
+        "pulsec_rt_consoleErrorWrite".to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "panic".to_string()),
@@ -206,6 +219,18 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("ULong".to_string(), "runtimeToString".to_string()),
         ULONG_TO_STRING_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("System".to_string(), "currentTimeMillis".to_string()),
+        SYSTEM_CURRENT_TIME_MILLIS_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("System".to_string(), "nanoTime".to_string()),
+        SYSTEM_NANO_TIME_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("System".to_string(), "exit".to_string()),
+        SYSTEM_EXIT_SYMBOL.to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "arrayNew".to_string()),

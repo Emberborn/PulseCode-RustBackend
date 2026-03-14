@@ -1,5 +1,4 @@
 status=linked
 linker=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\bin\Hostx64\x64\link.exe
-entry_codegen=masm-full-stdlib (split failed: ml64 failed for '\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\runtime_mix\build\obj\com\pulse\lang\NullPointerException.asm': Assembling: \\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\runtime_mix\build\obj\com\pulse\lang\NullPointerException.asm
-\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\runtime_mix\build\obj\com\pulse\lang\NullPointerException.asm(1) : fatal error A1000:cannot open file : \\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\runtime_mix\build\obj\com\pulse\lang\NullPointerException.obj)
+entry_codegen=masm-split-stdlib
 exe=\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\runtime_mix\build\main.exe

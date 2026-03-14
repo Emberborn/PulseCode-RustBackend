@@ -23,6 +23,8 @@ Pulse extension unsigned primitives:
 - `uint`
 - `ulong`
 
+Unsigned primitives and their wrapper classes are intentional Pulse extensions. They are executable and documented parts of the language, but they are not part of the Java-close compatibility claim.
+
 ## Reference Types
 
 Current reference baseline:

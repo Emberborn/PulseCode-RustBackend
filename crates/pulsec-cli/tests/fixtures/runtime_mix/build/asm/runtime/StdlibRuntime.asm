@@ -4,6 +4,9 @@ extrn WriteFile:proc
 
 extrn ExitProcess:proc
 
+extrn GetSystemTimeAsFileTime:proc
+extrn GetTickCount64:proc
+
 extrn GetProcessHeap:proc
 extrn HeapAlloc:proc
 extrn HeapFree:proc
@@ -3723,6 +3726,130 @@ pulsec_rt_classSimpleName_no_dot:
     ret
 pulsec_rt_classSimpleName endp
 
+pulsec_rt_consoleErrorWrite proc
+    sub rsp, 56
+    xor edx, edx
+    cmp ecx, 0
+    je pulsec_rt_consoleErrorWrite_empty
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_consoleErrorWrite_empty
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_consoleErrorWrite_empty
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_consoleErrorWrite_plain
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_consoleErrorWrite_stale
+pulsec_rt_consoleErrorWrite_plain:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je pulsec_rt_consoleErrorWrite_stale
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne pulsec_rt_consoleErrorWrite_stale
+    mov eax, r10d
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov edx, dword ptr [rax+r10*4]
+    mov r8d, r10d
+    imul r8d, 256
+    mov rcx, qword ptr [rt_str_data_ptr]
+    add rcx, r8
+    jmp pulsec_rt_consoleErrorWrite_ready
+pulsec_rt_consoleErrorWrite_empty:
+    lea rcx, rt_empty
+pulsec_rt_consoleErrorWrite_ready:
+    mov qword ptr [rsp+16], rcx
+    mov dword ptr [rsp+24], edx
+    mov rcx, -12
+    call GetStdHandle
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+16]
+    mov r8d, dword ptr [rsp+24]
+    lea r9, written
+    mov qword ptr [rsp+32], 0
+    call WriteFile
+    xor eax, eax
+    add rsp, 56
+    ret
+pulsec_rt_consoleErrorWrite_stale:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    add rsp, 56
+    ret
+pulsec_rt_consoleErrorWrite endp
+
+pulsec_rt_consoleErrorWriteLine proc
+    sub rsp, 56
+    xor edx, edx
+    cmp ecx, 0
+    je pulsec_rt_consoleErrorWriteLine_empty
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_consoleErrorWriteLine_empty
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_consoleErrorWriteLine_empty
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_consoleErrorWriteLine_plain
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_consoleErrorWriteLine_stale
+pulsec_rt_consoleErrorWriteLine_plain:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je pulsec_rt_consoleErrorWriteLine_stale
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne pulsec_rt_consoleErrorWriteLine_stale
+    mov eax, r10d
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov edx, dword ptr [rax+r10*4]
+    mov r8d, r10d
+    imul r8d, 256
+    mov rcx, qword ptr [rt_str_data_ptr]
+    add rcx, r8
+    jmp pulsec_rt_consoleErrorWriteLine_ready
+pulsec_rt_consoleErrorWriteLine_empty:
+    lea rcx, rt_empty
+pulsec_rt_consoleErrorWriteLine_ready:
+    mov qword ptr [rsp+16], rcx
+    mov dword ptr [rsp+24], edx
+    mov rcx, -12
+    call GetStdHandle
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+16]
+    mov r8d, dword ptr [rsp+24]
+    lea r9, written
+    mov qword ptr [rsp+32], 0
+    call WriteFile
+    mov rcx, -12
+    call GetStdHandle
+    mov rcx, rax
+    lea rdx, rt_newline
+    mov r8d, 2
+    lea r9, written
+    mov qword ptr [rsp+32], 0
+    call WriteFile
+    xor eax, eax
+    add rsp, 56
+    ret
+pulsec_rt_consoleErrorWriteLine_stale:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    add rsp, 56
+    ret
+pulsec_rt_consoleErrorWriteLine endp
+
 pulsec_rt_consoleWrite proc
     sub rsp, 56
     xor edx, edx
@@ -3846,6 +3973,20 @@ pulsec_rt_consoleWriteLine_stale:
     add rsp, 56
     ret
 pulsec_rt_consoleWriteLine endp
+
+pulsec_rt_currentTimeMillis proc
+    sub rsp, 40
+    lea rcx, qword ptr [rsp+32]
+    call GetSystemTimeAsFileTime
+    mov rax, qword ptr [rsp+32]
+    mov rcx, 116444736000000000
+    sub rax, rcx
+    xor rdx, rdx
+    mov rcx, 10000
+    div rcx
+    add rsp, 40
+    ret
+pulsec_rt_currentTimeMillis endp
 
 pulsec_rt_dispatchInvalidTypePanic proc
     lea rcx, rt_dispatch_invalid_type_err
@@ -5885,6 +6026,15 @@ pulsec_rt_mapSize_ok:
     ret
 pulsec_rt_mapSize endp
 
+pulsec_rt_nanoTime proc
+    sub rsp, 40
+    call GetTickCount64
+    mov rcx, 1000000
+    imul rax, rcx
+    add rsp, 40
+    ret
+pulsec_rt_nanoTime endp
+
 
 
 pulsec_rt_panic proc
@@ -6534,6 +6684,13 @@ pulsec_rt_stringSubstring_fail:
     xor eax, eax
     ret
 pulsec_rt_stringSubstring endp
+
+pulsec_rt_systemExit proc
+    sub rsp, 40
+    call ExitProcess
+    add rsp, 40
+    ret
+pulsec_rt_systemExit endp
 
 pulsec_rt_uintToString proc
     mov eax, ecx

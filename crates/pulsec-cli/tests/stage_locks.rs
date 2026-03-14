@@ -1524,6 +1524,97 @@ fn lock_f1_43_wrapper_surface_is_documented_and_board_locked() {
 }
 
 #[test]
+fn lock_f1_44_unsigned_policy_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
+        .expect("read F1 support policy");
+    let compiler_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("types-and-conversions.md"),
+    )
+    .expect("read types and conversions doc");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let fixtures = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("tests")
+            .join("fixture_projects.rs"),
+    )
+    .expect("read fixture projects");
+
+    assert!(policy.contains("unsigned primitive and wrapper support"));
+    assert!(policy.contains("retained Pulse extensions, not part of the Java-close claim"));
+    assert!(policy.contains("must not imply that unsigned types came from Java"));
+    assert!(compiler_doc.contains("Pulse extension unsigned primitives"));
+    assert!(compiler_doc.contains("intentional Pulse extensions"));
+    assert!(compiler_doc.contains("not part of the Java-close compatibility claim"));
+    assert!(handoff.contains("`F1-44` unsigned policy"));
+    assert!(handoff.contains("retained Pulse extensions"));
+    assert!(fixtures.contains("cli_build_executes_unsigned_promotion_and_comparison_flow"));
+    assert!(fixtures.contains("UByte.toString(UByte.ubyteValue(UByte.parse(\"255\")))"));
+    assert!(board.contains("| F1-44 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("retained Pulse extensions"));
+    assert!(board.contains("Java-close wording"));
+}
+
+#[test]
+fn lock_f1_45_system_process_surface_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let abi = fs::read_to_string(root.join("docs").join("RUNTIME_INTRINSICS_ABI.md"))
+        .expect("read runtime abi doc");
+    let runtime_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("program-entry-and-execution.md"),
+    )
+    .expect("read program entry doc");
+    let system_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("com")
+            .join("pulse")
+            .join("lang")
+            .join("System.md"),
+    )
+    .expect("read System stdlib doc");
+
+    assert!(system_doc.contains("public static final PrintStream out"));
+    assert!(system_doc.contains("public static final PrintStream err"));
+    assert!(system_doc.contains("public static long currentTimeMillis()"));
+    assert!(system_doc.contains("public static long nanoTime()"));
+    assert!(system_doc.contains("public static void exit(int status)"));
+    assert!(runtime_doc.contains("## `System` Runtime Baseline"));
+    assert!(runtime_doc.contains("`System.out`"));
+    assert!(runtime_doc.contains("`System.err`"));
+    assert!(runtime_doc.contains("`System.currentTimeMillis()`"));
+    assert!(runtime_doc.contains("`System.nanoTime()`"));
+    assert!(runtime_doc.contains("`System.exit(int)`"));
+    assert!(runtime_doc.contains("System.getProperty"));
+    assert!(runtime_doc.contains("System.getenv"));
+    assert!(abi.contains("pulsec_rt_consoleErrorWrite"));
+    assert!(abi.contains("pulsec_rt_currentTimeMillis"));
+    assert!(abi.contains("pulsec_rt_nanoTime"));
+    assert!(abi.contains("pulsec_rt_systemExit"));
+    assert!(handoff.contains("`F1-45` `System` / process baseline"));
+    assert!(board.contains("| F1-45 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("real `out` / `err`"));
+    assert!(board.contains("property/env/process breadth beyond that slice is still deferred"));
+}
+
+#[test]
 fn lock_f1_09_f1_13_and_f1_14_cli_baseline_is_char_varargs_and_explicit_nested_type_fence() {
     let root = unique_temp_root();
     let src_root = root.join("src");

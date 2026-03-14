@@ -74,6 +74,9 @@ Current explicit F1 deferrals:
 These remain allowed Pulse-specific differences in F1 if documented honestly:
 
 - unsigned primitive and wrapper support
+  - `ubyte`, `ushort`, `uint`, `ulong` and their wrapper classes are retained Pulse extensions, not part of the Java-close claim
+  - docs and compatibility notes must call them out explicitly as Pulse-only surface
+  - Java-close wording may describe the signed primitive/wrapper baseline, but it must not imply that unsigned types came from Java
 - current native packaging/build model
 - reflection-lite-only `Class`
 - compile-time instantiated generics with erased runtime before the deeper collection-wide generic work lands

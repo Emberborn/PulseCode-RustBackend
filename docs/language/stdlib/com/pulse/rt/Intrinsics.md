@@ -31,6 +31,21 @@ Use this for low-level console numeric output from runtime-backed code.
 Writes a boolean without a trailing newline.
 Use this for low-level console boolean output from runtime-backed code.
 
+### ``public static void consoleErrorWrite(String value)``
+
+Writes a string to the standard error stream without a trailing newline.
+Use this for low-level diagnostic text output from runtime-backed code.
+
+### ``public static void consoleErrorWrite(int value)``
+
+Writes an integer to the standard error stream without a trailing newline.
+Use this for low-level diagnostic numeric output from runtime-backed code.
+
+### ``public static void consoleErrorWrite(boolean value)``
+
+Writes a boolean to the standard error stream without a trailing newline.
+Use this for low-level diagnostic boolean output from runtime-backed code.
+
 ### ``public static void consoleWriteLine(String value)``
 
 Writes a string followed by a newline.
@@ -45,6 +60,21 @@ Use this for low-level line-oriented numeric console output.
 
 Writes a boolean followed by a newline.
 Use this for low-level line-oriented boolean console output.
+
+### ``public static void consoleErrorWriteLine(String value)``
+
+Writes a string followed by a newline to the standard error stream.
+Use this for low-level diagnostic line output.
+
+### ``public static void consoleErrorWriteLine(int value)``
+
+Writes an integer followed by a newline to the standard error stream.
+Use this for low-level diagnostic numeric line output.
+
+### ``public static void consoleErrorWriteLine(boolean value)``
+
+Writes a boolean followed by a newline to the standard error stream.
+Use this for low-level diagnostic boolean line output.
 
 ### ``public static void panic(String message)``
 

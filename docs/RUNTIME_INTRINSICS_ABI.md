@@ -99,6 +99,8 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
 ## Native Symbols (Current)
 - `pulsec_rt_consoleWrite`
 - `pulsec_rt_consoleWriteLine`
+- `pulsec_rt_consoleErrorWrite`
+- `pulsec_rt_consoleErrorWriteLine`
 - `pulsec_rt_panic`
 - Planned/locked naming for String bridge:
   - `pulsec_rt_stringConcat`
@@ -120,8 +122,18 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
   - `pulsec_rt_stringCharAt`
   - `pulsec_rt_stringSubstring`
   - `pulsec_rt_charToString`
+  - `pulsec_rt_currentTimeMillis`
+  - `pulsec_rt_nanoTime`
+  - `pulsec_rt_systemExit`
   - internal helper used by backend/runtime bridge:
     - `pulsec_rt_stringFromBytes`
+
+System/process bridge:
+- `System.currentTimeMillis() -> long`
+- `System.nanoTime() -> long`
+- `System.exit(int) -> void`
+
+These are shipped as stdlib-owned runtime-backed `System` methods, not as public fake helper APIs.
 
 Collections/array bridge:
 - `pulsec_rt_arrayNew`

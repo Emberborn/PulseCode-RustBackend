@@ -2,6 +2,8 @@ option casemap:none
 extrn GetStdHandle:proc
 extrn WriteFile:proc
 extrn ExitProcess:proc
+extrn GetSystemTimeAsFileTime:proc
+extrn GetTickCount64:proc
 extrn GetProcessHeap:proc
 extrn HeapAlloc:proc
 extrn HeapFree:proc

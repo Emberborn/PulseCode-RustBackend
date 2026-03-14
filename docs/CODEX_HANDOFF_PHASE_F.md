@@ -175,20 +175,31 @@ The following are already `Done (Locked)` on the board:
 
 The current board resume point is:
 
+- `F1-47` foundational `com.pulse.lang` type expansion
+
+Recently locked:
+
 - `F1-43` wrapper-class depth
-    - implemented now:
-      - primitive constant fields are Java-like primitive constants, not wrapper-typed placeholders
-      - `Byte` / `Short` / `Char` / `Integer` / `Boolean` / `Long` / `UInteger` / `ULong` now have real compare/helper coverage
-      - `Byte.parse`, `Short.parse`, `Char.parse`, `Long.parse`, `UByte.parse`, `UShort.parse`, `UInteger.parse`, and `ULong.parse` are executable
-      - `Byte` / `Short` / `Char` / `Integer` / `Boolean` / `Long` / `UInteger` / `ULong` plus the retained small unsigned wrappers have working `toString(...)` coverage through the current string/runtime surface
-      - `Float.compare` / `Double.compare` are no longer the old broken `0-or-1` placeholder shape
-      - `Float.parse` / `Double.parse` now accept ordinary decimal text, optional signs, fractional parts, exponent text, and `NaN` / `Infinity`
-      - `Float.toString` / `Double.toString` now produce practical Java-close decimal/scientific text in stdlib code, and `String.valueOf(float|double)` plus `StringBuilder.append(float|double)` ride that same surface
-    - current focused proof:
-      - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_integral_text_and_constants_flow -- --exact`
-      - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_floating_text_and_compare_flow -- --exact`
+  - primitive constant fields are Java-like primitive constants, not wrapper-typed placeholders
+  - `Byte` / `Short` / `Char` / `Integer` / `Boolean` / `Long` / `UInteger` / `ULong` now have real compare/helper coverage
+  - `Byte.parse`, `Short.parse`, `Char.parse`, `Long.parse`, `UByte.parse`, `UShort.parse`, `UInteger.parse`, and `ULong.parse` are executable
+  - `Byte` / `Short` / `Char` / `Integer` / `Boolean` / `Long` / `UInteger` / `ULong` plus the retained small unsigned wrappers have working `toString(...)` coverage through the current string/runtime surface
+  - `Float.compare` / `Double.compare` are no longer the old broken `0-or-1` placeholder shape
+  - `Float.parse` / `Double.parse` now accept ordinary decimal text, optional signs, fractional parts, exponent text, and `NaN` / `Infinity`
+  - `Float.toString` / `Double.toString` now produce practical Java-close decimal/scientific text in stdlib code, and `String.valueOf(float|double)` plus `StringBuilder.append(float|double)` ride that same surface
+  - focused proof:
     - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_integral_text_and_constants_flow -- --exact`
-    - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_unsupported_parse_panics -- --exact`
+    - `cargo test -q -p pulsec --test fixture_projects cli_build_executes_wrapper_floating_text_and_compare_flow -- --exact`
+- `F1-44` unsigned policy
+  - `ubyte` / `ushort` / `uint` / `ulong` plus their wrapper classes are now explicitly locked as retained Pulse extensions
+  - Java-close wording must not imply that unsigned primitives/wrappers are part of the Java baseline
+  - existing executable coverage for unsigned promotion, comparison, parse, and `toString(...)` remains the proof that the extension surface is real rather than a doc-only claim
+- `F1-45` `System` / process baseline
+  - `System.out` and `System.err` are both real print streams now
+  - `System.currentTimeMillis()` is runtime-backed wall-clock time
+  - `System.nanoTime()` is runtime-backed elapsed-time measurement
+  - `System.exit(int)` is real process termination
+  - property/env/process breadth beyond that slice remains explicitly deferred instead of being implied
 
 Recent non-board regression work that is now fixed and should not be re-debugged from scratch:
 

@@ -56,9 +56,11 @@ class com.pulse.lang.Comparable
 class com.pulse.lang.ConsoleWriter
   method void println(String value) blocks=1 values=0
   method void println(int value) blocks=1 values=0
+  method void println(long value) blocks=1 values=0
   method void println(boolean value) blocks=1 values=0
   method void print(String value) blocks=1 values=0
   method void print(int value) blocks=1 values=0
+  method void print(long value) blocks=1 values=0
   method void print(boolean value) blocks=1 values=0
 class com.pulse.lang.Double
   field double static MIN_VALUE
@@ -161,12 +163,17 @@ class com.pulse.lang.Object
   method Class getClass() blocks=1 values=5
 class com.pulse.lang.Override
 class com.pulse.lang.PrintStream
-  method void println(String value) blocks=1 values=4
-  method void println(int value) blocks=1 values=4
-  method void println(boolean value) blocks=1 values=4
-  method void print(String value) blocks=1 values=4
-  method void print(int value) blocks=1 values=4
-  method void print(boolean value) blocks=1 values=4
+  field boolean errorStream
+  method ctor PrintStream() blocks=1 values=3
+  method ctor PrintStream(boolean errorStream) blocks=1 values=3
+  method void println(String value) blocks=4 values=10
+  method void println(int value) blocks=4 values=10
+  method void println(long value) blocks=1 values=7
+  method void println(boolean value) blocks=4 values=10
+  method void print(String value) blocks=4 values=10
+  method void print(int value) blocks=4 values=10
+  method void print(long value) blocks=1 values=7
+  method void print(boolean value) blocks=4 values=10
 class com.pulse.lang.RuntimeException
   method ctor RuntimeException() blocks=1 values=6
   method ctor RuntimeException(String message) blocks=1 values=6
@@ -221,7 +228,11 @@ class com.pulse.lang.StringBuilder
   method void setLength(int newLength) blocks=7 values=32
   method String toString() blocks=1 values=2
 class com.pulse.lang.System
-  field ConsoleWriter static out
+  field PrintStream static out
+  field PrintStream static err
+  method long currentTimeMillis() blocks=1 values=1
+  method long nanoTime() blocks=1 values=1
+  method void exit(int status) blocks=1 values=0
 class com.pulse.lang.Test
 class com.pulse.lang.Throwable
   field String typeName
@@ -287,9 +298,15 @@ class com.pulse.rt.Intrinsics
   method void consoleWrite(String value) blocks=1 values=0
   method void consoleWrite(int value) blocks=1 values=0
   method void consoleWrite(boolean value) blocks=1 values=0
+  method void consoleErrorWrite(String value) blocks=1 values=0
+  method void consoleErrorWrite(int value) blocks=1 values=0
+  method void consoleErrorWrite(boolean value) blocks=1 values=0
   method void consoleWriteLine(String value) blocks=1 values=0
   method void consoleWriteLine(int value) blocks=1 values=0
   method void consoleWriteLine(boolean value) blocks=1 values=0
+  method void consoleErrorWriteLine(String value) blocks=1 values=0
+  method void consoleErrorWriteLine(int value) blocks=1 values=0
+  method void consoleErrorWriteLine(boolean value) blocks=1 values=0
   method void panic(String message) blocks=1 values=0
   method String stringConcat(String left, String right) blocks=1 values=1
   method int stringLength(String value) blocks=1 values=1

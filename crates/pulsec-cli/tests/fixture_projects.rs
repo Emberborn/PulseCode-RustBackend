@@ -5671,6 +5671,56 @@ fn cli_build_executes_system_out_console_writer_path() {
 }
 
 #[test]
+fn cli_build_executes_system_process_time_and_stderr_flow() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import com.pulse.lang.System;
+
+        class Main {
+            public static void main() {
+                long start = System.nanoTime();
+                long wall = System.currentTimeMillis();
+                System.out.println(wall > 0L);
+                System.out.println(System.nanoTime() >= start);
+                System.err.println("errline");
+                System.err.print("tail");
+                System.exit(5);
+            }
+        }
+        "#,
+    );
+
+    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+        .arg("build")
+        .arg(entry.to_str().expect("entry utf8"))
+        .arg("--source-root")
+        .arg(src_root.to_str().expect("src utf8"))
+        .arg("--strict-package")
+        .output()
+        .expect("run pulsec build");
+
+    if !build_supports_runtime_execution(&output, &root) {
+        return;
+    }
+
+    let exe = root.join("build").join("main.exe");
+    let run = Command::new(exe).output().expect("run exe");
+    assert_eq!(run.status.code(), Some(5), "expected exit status 5");
+    let stdout = String::from_utf8_lossy(&run.stdout).replace('\r', "");
+    let stderr = String::from_utf8_lossy(&run.stderr).replace('\r', "");
+    assert_eq!(stdout, "true\ntrue\n");
+    assert_eq!(stderr, "errline\ntail");
+
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
 fn cli_build_executes_io_print_and_println_mix() {
     let root = unique_temp_root();
     let src_root = root.join("src");

@@ -42,6 +42,24 @@ Executable output currently supports:
 
 Those modes affect native publication and runtime layout, but not the source-level `main` contract.
 
+## `System` Runtime Baseline
+
+The current runtime-backed `System` baseline includes:
+
+- `System.out` as the standard output stream
+- `System.err` as the standard error stream
+- `System.currentTimeMillis()` for Unix epoch millisecond timestamps
+- `System.nanoTime()` for monotonic elapsed-time measurement
+- `System.exit(int)` for explicit process termination
+
+Current intentional omissions:
+
+- property lookup APIs such as `System.getProperty(...)`
+- environment lookup APIs such as `System.getenv(...)`
+- richer process APIs beyond explicit exit
+
+Those omissions are deferred until later F1/F2 work instead of being implied by the current `System` baseline.
+
 ## Related
 
 - [Constructors](../compiler-backed/constructors.md)

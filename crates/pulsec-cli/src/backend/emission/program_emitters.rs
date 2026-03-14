@@ -280,6 +280,8 @@ pub(crate) fn emit_masm_split_program_objects(
         source.push_str("extrn GetStdHandle:proc\n");
         source.push_str("extrn WriteFile:proc\n");
         source.push_str("extrn ExitProcess:proc\n");
+        source.push_str("extrn GetSystemTimeAsFileTime:proc\n");
+        source.push_str("extrn GetTickCount64:proc\n");
         source.push_str("extrn GetProcessHeap:proc\n");
         source.push_str("extrn HeapAlloc:proc\n");
         source.push_str("extrn HeapFree:proc\n");
@@ -692,6 +694,8 @@ pub(crate) fn emit_masm_split_program_objects(
     std_src.push_str("extrn GetStdHandle:proc\n");
     std_src.push_str("extrn WriteFile:proc\n\n");
     std_src.push_str("extrn ExitProcess:proc\n\n");
+    std_src.push_str("extrn GetSystemTimeAsFileTime:proc\n");
+    std_src.push_str("extrn GetTickCount64:proc\n\n");
     std_src.push_str("extrn GetProcessHeap:proc\n");
     std_src.push_str("extrn HeapAlloc:proc\n");
     std_src.push_str("extrn HeapFree:proc\n\n");
@@ -772,10 +776,16 @@ pub(crate) fn emit_masm_split_program_objects(
     for sym in std_symbols {
         match sym.as_str() {
             "pulsec_std_com_pulse_lang_IO_println" | "pulsec_rt_consoleWriteLine" => {
-                emit_console_write_handle_proc(&mut std_src, &sym, true);
+                emit_console_write_handle_proc(&mut std_src, &sym, true, -11);
             }
             "pulsec_std_com_pulse_lang_IO_print" | "pulsec_rt_consoleWrite" => {
-                emit_console_write_handle_proc(&mut std_src, &sym, false);
+                emit_console_write_handle_proc(&mut std_src, &sym, false, -11);
+            }
+            "pulsec_rt_consoleErrorWriteLine" => {
+                emit_console_write_handle_proc(&mut std_src, &sym, true, -12);
+            }
+            "pulsec_rt_consoleErrorWrite" => {
+                emit_console_write_handle_proc(&mut std_src, &sym, false, -12);
             }
             "pulsec_rt_panic" => emit_panic_proc(&mut std_src, &sym),
             DISPATCH_NULL_PANIC_SYMBOL => {
@@ -792,6 +802,9 @@ pub(crate) fn emit_masm_split_program_objects(
             "pulsec_rt_parseBoolean" => emit_parse_boolean_proc(&mut std_src, &sym),
             OBJECT_CLASS_NAME_SYMBOL => {}
             OBJECT_HASH_CODE_SYMBOL => {}
+            SYSTEM_CURRENT_TIME_MILLIS_SYMBOL => emit_current_time_millis_proc(&mut std_src, &sym),
+            SYSTEM_NANO_TIME_SYMBOL => emit_nano_time_proc(&mut std_src, &sym),
+            SYSTEM_EXIT_SYMBOL => emit_system_exit_proc(&mut std_src, &sym),
             CLASS_SIMPLE_NAME_SYMBOL => emit_class_simple_name_proc(&mut std_src, &sym),
             CLASS_PACKAGE_NAME_SYMBOL => emit_class_package_name_proc(&mut std_src, &sym),
             STRING_CHAR_AT_SYMBOL => emit_string_char_at_proc(&mut std_src, &sym),
@@ -1043,6 +1056,8 @@ pub(crate) fn emit_masm_full_program_object(
     source.push_str("extrn GetStdHandle:proc\n");
     source.push_str("extrn WriteFile:proc\n");
     source.push_str("extrn ExitProcess:proc\n\n");
+    source.push_str("extrn GetSystemTimeAsFileTime:proc\n");
+    source.push_str("extrn GetTickCount64:proc\n\n");
     source.push_str("extrn GetProcessHeap:proc\n");
     source.push_str("extrn HeapAlloc:proc\n");
     source.push_str("extrn HeapFree:proc\n\n");
@@ -1244,10 +1259,16 @@ pub(crate) fn emit_masm_full_program_object(
     for sym in std_symbols {
         match sym.as_str() {
             "pulsec_std_com_pulse_lang_IO_println" | "pulsec_rt_consoleWriteLine" => {
-                emit_console_write_handle_proc(&mut source, &sym, true);
+                emit_console_write_handle_proc(&mut source, &sym, true, -11);
             }
             "pulsec_std_com_pulse_lang_IO_print" | "pulsec_rt_consoleWrite" => {
-                emit_console_write_handle_proc(&mut source, &sym, false);
+                emit_console_write_handle_proc(&mut source, &sym, false, -11);
+            }
+            "pulsec_rt_consoleErrorWriteLine" => {
+                emit_console_write_handle_proc(&mut source, &sym, true, -12);
+            }
+            "pulsec_rt_consoleErrorWrite" => {
+                emit_console_write_handle_proc(&mut source, &sym, false, -12);
             }
             "pulsec_rt_panic" => emit_panic_proc(&mut source, &sym),
             DISPATCH_NULL_PANIC_SYMBOL => {
@@ -1264,6 +1285,9 @@ pub(crate) fn emit_masm_full_program_object(
             "pulsec_rt_parseBoolean" => emit_parse_boolean_proc(&mut source, &sym),
             OBJECT_CLASS_NAME_SYMBOL => {}
             OBJECT_HASH_CODE_SYMBOL => {}
+            SYSTEM_CURRENT_TIME_MILLIS_SYMBOL => emit_current_time_millis_proc(&mut source, &sym),
+            SYSTEM_NANO_TIME_SYMBOL => emit_nano_time_proc(&mut source, &sym),
+            SYSTEM_EXIT_SYMBOL => emit_system_exit_proc(&mut source, &sym),
             CLASS_SIMPLE_NAME_SYMBOL => emit_class_simple_name_proc(&mut source, &sym),
             CLASS_PACKAGE_NAME_SYMBOL => emit_class_package_name_proc(&mut source, &sym),
             STRING_CHAR_AT_SYMBOL => emit_string_char_at_proc(&mut source, &sym),
@@ -1395,6 +1419,8 @@ pub(crate) fn build_masm_print_entry_source(lines: &[String]) -> String {
     src.push_str("extrn GetStdHandle:proc\n");
     src.push_str("extrn WriteFile:proc\n");
     src.push_str("extrn ExitProcess:proc\n\n");
+    src.push_str("extrn GetSystemTimeAsFileTime:proc\n");
+    src.push_str("extrn GetTickCount64:proc\n\n");
     src.push_str(".data\n");
     src.push_str("written dq 0\n");
     for (i, line) in lines.iter().enumerate() {

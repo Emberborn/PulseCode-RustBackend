@@ -1,6 +1,11 @@
 use super::*;
 
-pub(crate) fn emit_console_write_handle_proc(out: &mut String, symbol: &str, newline: bool) {
+pub(crate) fn emit_console_write_handle_proc(
+    out: &mut String,
+    symbol: &str,
+    newline: bool,
+    std_handle: i32,
+) {
     let l_empty = format!("{}_empty", symbol);
     let l_stale = format!("{}_stale", symbol);
     let l_plain = format!("{}_plain", symbol);
@@ -41,7 +46,7 @@ pub(crate) fn emit_console_write_handle_proc(out: &mut String, symbol: &str, new
     out.push_str(&format!("{}:\n", l_ready));
     out.push_str("    mov qword ptr [rsp+16], rcx\n");
     out.push_str("    mov dword ptr [rsp+24], edx\n");
-    out.push_str("    mov rcx, -11\n");
+    out.push_str(&format!("    mov rcx, {}\n", std_handle));
     out.push_str("    call GetStdHandle\n");
     out.push_str("    mov rcx, rax\n");
     out.push_str("    mov rdx, qword ptr [rsp+16]\n");
@@ -50,7 +55,7 @@ pub(crate) fn emit_console_write_handle_proc(out: &mut String, symbol: &str, new
     out.push_str("    mov qword ptr [rsp+32], 0\n");
     out.push_str("    call WriteFile\n");
     if newline {
-        out.push_str("    mov rcx, -11\n");
+        out.push_str(&format!("    mov rcx, {}\n", std_handle));
         out.push_str("    call GetStdHandle\n");
         out.push_str("    mov rcx, rax\n");
         out.push_str("    lea rdx, rt_newline\n");
@@ -2337,6 +2342,42 @@ pub(crate) fn emit_trace_push_proc(out: &mut String, symbol: &str) {
     out.push_str("    mov dword ptr [rt_trace_depth], eax\n");
     out.push_str(&format!("{}:\n", done));
     out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_current_time_millis_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, qword ptr [rsp+32]\n");
+    out.push_str("    call GetSystemTimeAsFileTime\n");
+    out.push_str("    mov rax, qword ptr [rsp+32]\n");
+    out.push_str("    mov rcx, 116444736000000000\n");
+    out.push_str("    sub rax, rcx\n");
+    out.push_str("    xor rdx, rdx\n");
+    out.push_str("    mov rcx, 10000\n");
+    out.push_str("    div rcx\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_nano_time_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetTickCount64\n");
+    out.push_str("    mov rcx, 1000000\n");
+    out.push_str("    imul rax, rcx\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_system_exit_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{} endp\n", symbol));
 }
