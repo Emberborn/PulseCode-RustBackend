@@ -24,3 +24,6 @@ Desktop.ini
 
 # One-off local files
 /tmp_map_clear_main.pulse
+/crates/pulsec-cli/tests/fixtures/strict_stress_soak/build/
+/crates/pulsec-cli/tests/fixtures/stress_soak/build/
+/crates/pulsec-cli/tests/fixtures/runtime_mix/build/
