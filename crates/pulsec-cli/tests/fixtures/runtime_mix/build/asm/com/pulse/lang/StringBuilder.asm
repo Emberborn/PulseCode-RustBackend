@@ -19,6 +19,7 @@ extrn rt_arc_flags_tbl:dword
 extrn pulsec_rt_tracePush:proc
 extrn pulsec_rt_traceUpdateTop:proc
 extrn pulsec_rt_tracePop:proc
+extrn pulsec_com_pulse_lang_String_charAt__int:proc
 extrn pulsec_com_pulse_lang_String_concat__String:proc
 extrn pulsec_com_pulse_lang_String_length:proc
 extrn pulsec_com_pulse_lang_String_substring__int:proc
@@ -41,109 +42,117 @@ pulsec_fld_com_pulse_lang_StringBuilder_value_tbl dq 64 dup(0)
 pulsec_fld_com_pulse_lang_StringBuilder_value dq pulsec_fld_com_pulse_lang_StringBuilder_value_tbl
 pulsec_fld_com_pulse_lang_StringBuilder_value_heap_owned dd 0
 trace_m0 db "com.pulse.lang.StringBuilder.StringBuilder"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 42
 pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0 db "com.pulse.lang.StringBuilder.StringBuilder(StringBuilder.pulse:14)"
-pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0
+pulsec_com_pulse_lang_StringBuilder_StringBuilder_trace_s0_len equ 66
 trace_m2 db "com.pulse.lang.StringBuilder.StringBuilder"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 42
 pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0 db "com.pulse.lang.StringBuilder.StringBuilder(StringBuilder.pulse:22)"
-pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0
+pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0_len equ 66
 trace_m4 db "com.pulse.lang.StringBuilder.append"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 35
 pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:30)"
-pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0_len equ 59
 pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:31)"
-pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1
+pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1_len equ 59
 trace_m7 db "com.pulse.lang.StringBuilder.append"
-trace_m7_len equ $ - trace_m7
+trace_m7_len equ 35
 pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:39)"
-pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0_len equ 59
 pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:40)"
-pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1
+pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1_len equ 59
 trace_m10 db "com.pulse.lang.StringBuilder.append"
-trace_m10_len equ $ - trace_m10
+trace_m10_len equ 35
 pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:48)"
-pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0_len equ 59
 pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:49)"
-pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1
+pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1_len equ 59
 trace_m13 db "com.pulse.lang.StringBuilder.append"
-trace_m13_len equ $ - trace_m13
+trace_m13_len equ 35
 pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:57)"
-pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0_len equ 59
 pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:58)"
-pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1
+pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1_len equ 59
 trace_m16 db "com.pulse.lang.StringBuilder.append"
-trace_m16_len equ $ - trace_m16
+trace_m16_len equ 35
 pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:66)"
-pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0_len equ 59
 pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:67)"
-pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1
+pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1_len equ 59
 trace_m19 db "com.pulse.lang.StringBuilder.append"
-trace_m19_len equ $ - trace_m19
+trace_m19_len equ 35
 pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:75)"
-pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0_len equ 59
 pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:76)"
-pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1
+pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1_len equ 59
 trace_m22 db "com.pulse.lang.StringBuilder.append"
-trace_m22_len equ $ - trace_m22
+trace_m22_len equ 35
 pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:85)"
-pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0
+pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0_len equ 59
 pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1 db "com.pulse.lang.StringBuilder.append(StringBuilder.pulse:86)"
-pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1
+pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1_len equ 59
 trace_m25 db "com.pulse.lang.StringBuilder.length"
-trace_m25_len equ $ - trace_m25
+trace_m25_len equ 35
 pulsec_com_pulse_lang_StringBuilder_length_trace_s0 db "com.pulse.lang.StringBuilder.length(StringBuilder.pulse:94)"
-pulsec_com_pulse_lang_StringBuilder_length_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_length_trace_s0
-trace_m27 db "com.pulse.lang.StringBuilder.clear"
-trace_m27_len equ $ - trace_m27
-pulsec_com_pulse_lang_StringBuilder_clear_trace_s0 db "com.pulse.lang.StringBuilder.clear(StringBuilder.pulse:102)"
-pulsec_com_pulse_lang_StringBuilder_clear_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_clear_trace_s0
-trace_m29 db "com.pulse.lang.StringBuilder.insert"
-trace_m29_len equ $ - trace_m29
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:110)"
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:111)"
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:112)"
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:113)"
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:114)"
-pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4_len equ $ - pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4
-trace_m35 db "com.pulse.lang.StringBuilder.delete"
-trace_m35_len equ $ - trace_m35
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:122)"
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:123)"
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:124)"
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2_len equ $ - pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:125)"
-pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3_len equ $ - pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3
-trace_m40 db "com.pulse.lang.StringBuilder.setLength"
-trace_m40_len equ $ - trace_m40
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:133)"
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:134)"
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:135)"
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:136)"
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:138)"
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:139)"
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:140)"
-pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6_len equ $ - pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6
-trace_m48 db "com.pulse.lang.StringBuilder.toString"
-trace_m48_len equ $ - trace_m48
-pulsec_com_pulse_lang_StringBuilder_toString_trace_s0 db "com.pulse.lang.StringBuilder.toString(StringBuilder.pulse:149)"
-pulsec_com_pulse_lang_StringBuilder_toString_trace_s0_len equ $ - pulsec_com_pulse_lang_StringBuilder_toString_trace_s0
+pulsec_com_pulse_lang_StringBuilder_length_trace_s0_len equ 59
+trace_m27 db "com.pulse.lang.StringBuilder.charAt"
+trace_m27_len equ 35
+pulsec_com_pulse_lang_StringBuilder_charAt__int_trace_s0 db "com.pulse.lang.StringBuilder.charAt(StringBuilder.pulse:102)"
+pulsec_com_pulse_lang_StringBuilder_charAt__int_trace_s0_len equ 60
+trace_m29 db "com.pulse.lang.StringBuilder.subSequence"
+trace_m29_len equ 40
+pulsec_com_pulse_lang_StringBuilder_subSequence__int_int_trace_s0 db "com.pulse.lang.StringBuilder.subSequence(StringBuilder.pulse:110)"
+pulsec_com_pulse_lang_StringBuilder_subSequence__int_int_trace_s0_len equ 65
+trace_m31 db "com.pulse.lang.StringBuilder.clear"
+trace_m31_len equ 34
+pulsec_com_pulse_lang_StringBuilder_clear_trace_s0 db "com.pulse.lang.StringBuilder.clear(StringBuilder.pulse:118)"
+pulsec_com_pulse_lang_StringBuilder_clear_trace_s0_len equ 59
+trace_m33 db "com.pulse.lang.StringBuilder.insert"
+trace_m33_len equ 35
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:126)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0_len equ 60
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:127)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1_len equ 60
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:128)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2_len equ 60
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:129)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3_len equ 60
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4 db "com.pulse.lang.StringBuilder.insert(StringBuilder.pulse:130)"
+pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4_len equ 60
+trace_m39 db "com.pulse.lang.StringBuilder.delete"
+trace_m39_len equ 35
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:138)"
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0_len equ 60
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:139)"
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1_len equ 60
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:140)"
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2_len equ 60
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3 db "com.pulse.lang.StringBuilder.delete(StringBuilder.pulse:141)"
+pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3_len equ 60
+trace_m44 db "com.pulse.lang.StringBuilder.setLength"
+trace_m44_len equ 38
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:149)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0_len equ 63
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:150)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1_len equ 63
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:151)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2_len equ 63
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:152)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s3_len equ 63
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:154)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s4_len equ 63
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:155)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5_len equ 63
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6 db "com.pulse.lang.StringBuilder.setLength(StringBuilder.pulse:156)"
+pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s6_len equ 63
+trace_m52 db "com.pulse.lang.StringBuilder.toString"
+trace_m52_len equ 37
+pulsec_com_pulse_lang_StringBuilder_toString_trace_s0 db "com.pulse.lang.StringBuilder.toString(StringBuilder.pulse:165)"
+pulsec_com_pulse_lang_StringBuilder_toString_trace_s0_len equ 62
 msg0 db 0
-msg0_len equ $ - msg0
+msg0_len equ 0
 msg1 db 0
-msg1_len equ $ - msg1
+msg1_len equ 0
 
 .code
 pulsec_fcap_com_pulse_lang_StringBuilder_ensure proc
@@ -250,6 +259,7 @@ pulsec_fcap_com_pulse_lang_StringBuilder_arc_scan_edges proc
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_StringBuilder_arc_scan_edges_field_0_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_StringBuilder_arc_scan_edges_field_0_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -284,6 +294,7 @@ pulsec_fcap_com_pulse_lang_StringBuilder_arc_invalidate_edges proc
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_StringBuilder_arc_invalidate_edges_field_0_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_StringBuilder_arc_invalidate_edges_field_0_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -304,7 +315,7 @@ pulsec_fcap_com_pulse_lang_StringBuilder_arc_invalidate_edges_done:
     ret
 pulsec_fcap_com_pulse_lang_StringBuilder_arc_invalidate_edges endp
 pulsec_com_pulse_lang_StringBuilder_StringBuilder proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -317,7 +328,7 @@ pulsec_com_pulse_lang_StringBuilder_StringBuilder proc
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
     mov qword ptr [rsp+64], rcx
-    mov ecx, 34
+    mov ecx, 37
     call pulsec_rt_objectNew
     mov qword ptr [rsp+104], rax
     mov ecx, eax
@@ -346,12 +357,12 @@ pulsec_com_pulse_lang_StringBuilder_StringBuilder_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_StringBuilder_StringBuilder endp
 
 pulsec_com_pulse_lang_StringBuilder_StringBuilder__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -363,41 +374,41 @@ pulsec_com_pulse_lang_StringBuilder_StringBuilder__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
-    mov ecx, 34
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov ecx, 37
     call pulsec_rt_objectNew
     mov qword ptr [rsp+112], rax
     mov ecx, eax
     call pulsec_fcap_com_pulse_lang_StringBuilder_ensure
     mov rax, qword ptr [rsp+112]
     mov ecx, eax
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
 pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
-    mov edx, dword ptr [rsp+72]
+    mov rax, qword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
 @@:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov qword ptr [r10+rdx*8], rax
-    mov eax, dword ptr [rsp+72]
+    mov eax, dword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_epilogue
 pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_epilogue:
 pulsec_com_pulse_lang_StringBuilder_StringBuilder__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_StringBuilder_StringBuilder__String endp
 
 pulsec_com_pulse_lang_StringBuilder_append__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -409,13 +420,15 @@ pulsec_com_pulse_lang_StringBuilder_append__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_StringBuilder_append__String_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -423,7 +436,10 @@ pulsec_com_pulse_lang_StringBuilder_append__String_b0:
     mov rax, qword ptr [rsp+80]
     mov rax, qword ptr [rsp+80]
     mov rdx, rax
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -431,13 +447,16 @@ pulsec_com_pulse_lang_StringBuilder_append__String_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+120], rax
     mov rax, qword ptr [rsp+80]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+120]
-    mov edx, dword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -447,19 +466,19 @@ pulsec_com_pulse_lang_StringBuilder_append__String_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__String_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_StringBuilder_append__String_epilogue
 pulsec_com_pulse_lang_StringBuilder_append__String_epilogue:
 pulsec_com_pulse_lang_StringBuilder_append__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_StringBuilder_append__String endp
 
 pulsec_com_pulse_lang_StringBuilder_append__int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -471,21 +490,32 @@ pulsec_com_pulse_lang_StringBuilder_append__int proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+64], edx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
 pulsec_com_pulse_lang_StringBuilder_append__int_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__int_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov eax, dword ptr [rsp+64]
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov dword ptr [rsp+80], eax
     mov eax, dword ptr [rsp+80]
     mov ecx, eax
     call pulsec_com_pulse_lang_String_valueOf__int
-    mov dword ptr [rsp+80], eax
-    mov eax, dword ptr [rsp+80]
-    mov edx, eax
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -493,8 +523,16 @@ pulsec_com_pulse_lang_StringBuilder_append__int_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
     call pulsec_com_pulse_lang_String_concat__String
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -504,19 +542,19 @@ pulsec_com_pulse_lang_StringBuilder_append__int_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__int_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_StringBuilder_append__int_epilogue
 pulsec_com_pulse_lang_StringBuilder_append__int_epilogue:
 pulsec_com_pulse_lang_StringBuilder_append__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_StringBuilder_append__int endp
 
 pulsec_com_pulse_lang_StringBuilder_append__boolean proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -528,21 +566,32 @@ pulsec_com_pulse_lang_StringBuilder_append__boolean proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+64], edx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
 pulsec_com_pulse_lang_StringBuilder_append__boolean_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov eax, dword ptr [rsp+64]
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov dword ptr [rsp+80], eax
     mov eax, dword ptr [rsp+80]
     mov ecx, eax
     call pulsec_com_pulse_lang_String_valueOf__boolean
-    mov dword ptr [rsp+80], eax
-    mov eax, dword ptr [rsp+80]
-    mov edx, eax
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -550,8 +599,16 @@ pulsec_com_pulse_lang_StringBuilder_append__boolean_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
     call pulsec_com_pulse_lang_String_concat__String
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -561,19 +618,19 @@ pulsec_com_pulse_lang_StringBuilder_append__boolean_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__boolean_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_StringBuilder_append__boolean_epilogue
 pulsec_com_pulse_lang_StringBuilder_append__boolean_epilogue:
 pulsec_com_pulse_lang_StringBuilder_append__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_StringBuilder_append__boolean endp
 
 pulsec_com_pulse_lang_StringBuilder_append__char proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -585,21 +642,32 @@ pulsec_com_pulse_lang_StringBuilder_append__char proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+64], edx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
 pulsec_com_pulse_lang_StringBuilder_append__char_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__char_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov eax, dword ptr [rsp+64]
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov dword ptr [rsp+80], eax
     mov eax, dword ptr [rsp+80]
     mov ecx, eax
     call pulsec_com_pulse_lang_String_valueOf__char
-    mov dword ptr [rsp+80], eax
-    mov eax, dword ptr [rsp+80]
-    mov edx, eax
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -607,8 +675,16 @@ pulsec_com_pulse_lang_StringBuilder_append__char_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
     call pulsec_com_pulse_lang_String_concat__String
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -618,19 +694,19 @@ pulsec_com_pulse_lang_StringBuilder_append__char_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__char_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_StringBuilder_append__char_epilogue
 pulsec_com_pulse_lang_StringBuilder_append__char_epilogue:
 pulsec_com_pulse_lang_StringBuilder_append__char_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_StringBuilder_append__char endp
 
 pulsec_com_pulse_lang_StringBuilder_append__float proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -642,21 +718,32 @@ pulsec_com_pulse_lang_StringBuilder_append__float proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_StringBuilder_append__float_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__float_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+80], rax
     mov rax, qword ptr [rsp+80]
     mov rcx, rax
     call pulsec_com_pulse_lang_String_valueOf__float
-    mov dword ptr [rsp+80], eax
-    mov eax, dword ptr [rsp+80]
-    mov edx, eax
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -664,8 +751,16 @@ pulsec_com_pulse_lang_StringBuilder_append__float_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
     call pulsec_com_pulse_lang_String_concat__String
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -675,19 +770,19 @@ pulsec_com_pulse_lang_StringBuilder_append__float_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__float_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_StringBuilder_append__float_epilogue
 pulsec_com_pulse_lang_StringBuilder_append__float_epilogue:
 pulsec_com_pulse_lang_StringBuilder_append__float_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_StringBuilder_append__float endp
 
 pulsec_com_pulse_lang_StringBuilder_append__double proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -699,21 +794,32 @@ pulsec_com_pulse_lang_StringBuilder_append__double proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_StringBuilder_append__double_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__double_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+80], rax
     mov rax, qword ptr [rsp+80]
     mov rcx, rax
     call pulsec_com_pulse_lang_String_valueOf__double
-    mov dword ptr [rsp+80], eax
-    mov eax, dword ptr [rsp+80]
-    mov edx, eax
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -721,8 +827,16 @@ pulsec_com_pulse_lang_StringBuilder_append__double_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
     call pulsec_com_pulse_lang_String_concat__String
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -732,19 +846,19 @@ pulsec_com_pulse_lang_StringBuilder_append__double_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__double_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_StringBuilder_append__double_epilogue
 pulsec_com_pulse_lang_StringBuilder_append__double_epilogue:
 pulsec_com_pulse_lang_StringBuilder_append__double_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_StringBuilder_append__double endp
 
 pulsec_com_pulse_lang_StringBuilder_append__Object proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -756,13 +870,15 @@ pulsec_com_pulse_lang_StringBuilder_append__Object proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_StringBuilder_append__Object_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -776,10 +892,19 @@ pulsec_com_pulse_lang_StringBuilder_append__Object_b0:
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+120]
-    mov dword ptr [rsp+80], eax
-    mov eax, dword ptr [rsp+80]
-    mov edx, eax
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -787,8 +912,16 @@ pulsec_com_pulse_lang_StringBuilder_append__Object_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
     call pulsec_com_pulse_lang_String_concat__String
-    mov edx, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -798,19 +931,19 @@ pulsec_com_pulse_lang_StringBuilder_append__Object_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_append__Object_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_StringBuilder_append__Object_epilogue
 pulsec_com_pulse_lang_StringBuilder_append__Object_epilogue:
 pulsec_com_pulse_lang_StringBuilder_append__Object_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_StringBuilder_append__Object endp
 
 pulsec_com_pulse_lang_StringBuilder_length proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -827,6 +960,9 @@ pulsec_com_pulse_lang_StringBuilder_length_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_length_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_length_trace_s0_len
     call pulsec_rt_traceUpdateTop
+    mov qword ptr [rsp+112], rdx
+    mov qword ptr [rsp+120], r8
+    mov qword ptr [rsp+128], r9
     mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
@@ -835,6 +971,9 @@ pulsec_com_pulse_lang_StringBuilder_length_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+112]
+    mov r8, qword ptr [rsp+120]
+    mov r9, qword ptr [rsp+128]
     call pulsec_com_pulse_lang_String_length
     jmp pulsec_com_pulse_lang_StringBuilder_length_epilogue
 pulsec_com_pulse_lang_StringBuilder_length_epilogue:
@@ -842,18 +981,129 @@ pulsec_com_pulse_lang_StringBuilder_length_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_StringBuilder_length endp
 
-pulsec_com_pulse_lang_StringBuilder_clear proc
-    sub rsp, 120
+pulsec_com_pulse_lang_StringBuilder_charAt__int proc
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
     lea rcx, trace_m27
     mov edx, trace_m27_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+pulsec_com_pulse_lang_StringBuilder_charAt__int_b0:
+    lea rcx, pulsec_com_pulse_lang_StringBuilder_charAt__int_trace_s0
+    mov edx, pulsec_com_pulse_lang_StringBuilder_charAt__int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov dword ptr [rsp+80], eax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
+    call pulsec_com_pulse_lang_String_charAt__int
+    jmp pulsec_com_pulse_lang_StringBuilder_charAt__int_epilogue
+pulsec_com_pulse_lang_StringBuilder_charAt__int_epilogue:
+pulsec_com_pulse_lang_StringBuilder_charAt__int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 200
+    ret
+pulsec_com_pulse_lang_StringBuilder_charAt__int endp
+
+pulsec_com_pulse_lang_StringBuilder_subSequence__int_int proc
+    sub rsp, 200
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m29
+    mov edx, trace_m29_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+pulsec_com_pulse_lang_StringBuilder_subSequence__int_int_b0:
+    lea rcx, pulsec_com_pulse_lang_StringBuilder_subSequence__int_int_trace_s0
+    mov edx, pulsec_com_pulse_lang_StringBuilder_subSequence__int_int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov dword ptr [rsp+88], eax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+168], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov dword ptr [rsp+96], eax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov qword ptr [rsp+128], rdx
+    mov qword ptr [rsp+136], r8
+    mov qword ptr [rsp+144], r9
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+128]
+    mov r8, qword ptr [rsp+136]
+    mov r9, qword ptr [rsp+144]
+    call pulsec_com_pulse_lang_String_substring__int_int
+    jmp pulsec_com_pulse_lang_StringBuilder_subSequence__int_int_epilogue
+pulsec_com_pulse_lang_StringBuilder_subSequence__int_int_epilogue:
+pulsec_com_pulse_lang_StringBuilder_subSequence__int_int_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 200
+    ret
+pulsec_com_pulse_lang_StringBuilder_subSequence__int_int endp
+
+pulsec_com_pulse_lang_StringBuilder_clear proc
+    sub rsp, 184
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m31
+    mov edx, trace_m31_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -881,39 +1131,50 @@ pulsec_com_pulse_lang_StringBuilder_clear_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_StringBuilder_clear endp
 
 pulsec_com_pulse_lang_StringBuilder_insert__int_String proc
-    sub rsp, 152
+    sub rsp, 216
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m29
-    mov edx, trace_m29_len
+    lea rcx, trace_m33
+    mov edx, trace_m33_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+80], edx
-    mov qword ptr [rsp+88], r8
-    mov qword ptr [rsp+96], rcx
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov qword ptr [rsp+96], r8
 pulsec_com_pulse_lang_StringBuilder_insert__int_String_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s0_len
     call pulsec_rt_traceUpdateTop
     mov eax, 0
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov dword ptr [rsp+104], eax
-    mov eax, dword ptr [rsp+80]
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
     mov dword ptr [rsp+112], eax
     mov eax, dword ptr [rsp+104]
     mov edx, eax
     mov eax, dword ptr [rsp+112]
     mov r8d, eax
-    mov edx, dword ptr [rsp+96]
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
+    mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -921,16 +1182,24 @@ pulsec_com_pulse_lang_StringBuilder_insert__int_String_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_substring__int_int
     mov qword ptr [rsp+64], rax
     lea rcx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov eax, dword ptr [rsp+80]
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov dword ptr [rsp+104], eax
     mov eax, dword ptr [rsp+104]
     mov edx, eax
-    mov edx, dword ptr [rsp+96]
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
+    mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -938,12 +1207,17 @@ pulsec_com_pulse_lang_StringBuilder_insert__int_String_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_substring__int
     mov qword ptr [rsp+72], rax
     lea rcx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2
     mov edx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov qword ptr [rsp+104], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -951,15 +1225,21 @@ pulsec_com_pulse_lang_StringBuilder_insert__int_String_b0:
     mov rax, qword ptr [rsp+104]
     mov rax, qword ptr [rsp+104]
     mov rdx, rax
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
     mov rax, qword ptr [rsp+64]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+144], rax
     mov rax, qword ptr [rsp+104]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+144]
-    mov edx, dword ptr [rsp+96]
+    mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -970,6 +1250,8 @@ pulsec_com_pulse_lang_StringBuilder_insert__int_String_b0:
     mov edx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s3_len
     call pulsec_rt_traceUpdateTop
     mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov qword ptr [rsp+104], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -977,7 +1259,10 @@ pulsec_com_pulse_lang_StringBuilder_insert__int_String_b0:
     mov rax, qword ptr [rsp+104]
     mov rax, qword ptr [rsp+104]
     mov rdx, rax
-    mov edx, dword ptr [rsp+96]
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
+    mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -985,13 +1270,16 @@ pulsec_com_pulse_lang_StringBuilder_insert__int_String_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+144], rax
     mov rax, qword ptr [rsp+104]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+144]
-    mov edx, dword ptr [rsp+96]
+    mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1001,46 +1289,57 @@ pulsec_com_pulse_lang_StringBuilder_insert__int_String_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4
     mov edx, pulsec_com_pulse_lang_StringBuilder_insert__int_String_trace_s4_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+96]
+    mov rax, qword ptr [rsp+80]
     jmp pulsec_com_pulse_lang_StringBuilder_insert__int_String_epilogue
 pulsec_com_pulse_lang_StringBuilder_insert__int_String_epilogue:
 pulsec_com_pulse_lang_StringBuilder_insert__int_String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 152
+    add rsp, 216
     ret
 pulsec_com_pulse_lang_StringBuilder_insert__int_String endp
 
 pulsec_com_pulse_lang_StringBuilder_delete__int_int proc
-    sub rsp, 152
+    sub rsp, 216
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m35
-    mov edx, trace_m35_len
+    lea rcx, trace_m39
+    mov edx, trace_m39_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+80], edx
-    mov dword ptr [rsp+88], r8d
-    mov qword ptr [rsp+96], rcx
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov dword ptr [rsp+96], r8d
 pulsec_com_pulse_lang_StringBuilder_delete__int_int_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s0_len
     call pulsec_rt_traceUpdateTop
     mov eax, 0
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov dword ptr [rsp+104], eax
-    mov eax, dword ptr [rsp+80]
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
     mov dword ptr [rsp+112], eax
     mov eax, dword ptr [rsp+104]
     mov edx, eax
     mov eax, dword ptr [rsp+112]
     mov r8d, eax
-    mov edx, dword ptr [rsp+96]
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
+    mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1048,16 +1347,24 @@ pulsec_com_pulse_lang_StringBuilder_delete__int_int_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_substring__int_int
     mov qword ptr [rsp+64], rax
     lea rcx, pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov eax, dword ptr [rsp+88]
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov dword ptr [rsp+104], eax
     mov eax, dword ptr [rsp+104]
     mov edx, eax
-    mov edx, dword ptr [rsp+96]
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
+    mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1065,12 +1372,17 @@ pulsec_com_pulse_lang_StringBuilder_delete__int_int_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_substring__int
     mov qword ptr [rsp+72], rax
     lea rcx, pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2
     mov edx, pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s2_len
     call pulsec_rt_traceUpdateTop
     mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov qword ptr [rsp+104], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -1078,15 +1390,21 @@ pulsec_com_pulse_lang_StringBuilder_delete__int_int_b0:
     mov rax, qword ptr [rsp+104]
     mov rax, qword ptr [rsp+104]
     mov rdx, rax
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
     mov rax, qword ptr [rsp+64]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+144], rax
     mov rax, qword ptr [rsp+104]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+144]
-    mov edx, dword ptr [rsp+96]
+    mov edx, dword ptr [rsp+80]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1096,37 +1414,40 @@ pulsec_com_pulse_lang_StringBuilder_delete__int_int_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3
     mov edx, pulsec_com_pulse_lang_StringBuilder_delete__int_int_trace_s3_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+96]
+    mov rax, qword ptr [rsp+80]
     jmp pulsec_com_pulse_lang_StringBuilder_delete__int_int_epilogue
 pulsec_com_pulse_lang_StringBuilder_delete__int_int_epilogue:
 pulsec_com_pulse_lang_StringBuilder_delete__int_int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 152
+    add rsp, 216
     ret
 pulsec_com_pulse_lang_StringBuilder_delete__int_int endp
 
 pulsec_com_pulse_lang_StringBuilder_setLength__int proc
-    sub rsp, 168
+    sub rsp, 232
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m40
-    mov edx, trace_m40_len
+    lea rcx, trace_m44
+    mov edx, trace_m44_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+72], edx
-    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+72], rcx
+    mov dword ptr [rsp+80], edx
 pulsec_com_pulse_lang_StringBuilder_setLength__int_b0:
     lea rcx, pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0
     mov edx, pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov edx, dword ptr [rsp+80]
+    mov qword ptr [rsp+152], rdx
+    mov qword ptr [rsp+160], r8
+    mov qword ptr [rsp+168], r9
+    mov edx, dword ptr [rsp+72]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1134,12 +1455,15 @@ pulsec_com_pulse_lang_StringBuilder_setLength__int_b0:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+152]
+    mov r8, qword ptr [rsp+160]
+    mov r9, qword ptr [rsp+168]
     call pulsec_com_pulse_lang_String_length
     mov dword ptr [rsp+64], eax
     lea rcx, pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1
     mov edx, pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov eax, dword ptr [rsp+72]
+    mov eax, dword ptr [rsp+80]
     mov dword ptr [rsp+88], eax
     mov eax, dword ptr [rsp+64]
     mov edx, eax
@@ -1155,14 +1479,25 @@ pulsec_com_pulse_lang_StringBuilder_setLength__int_b1:
     mov edx, pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s2_len
     call pulsec_rt_traceUpdateTop
     mov eax, 0
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
     mov dword ptr [rsp+112], eax
-    mov eax, dword ptr [rsp+72]
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+192], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
     mov dword ptr [rsp+120], eax
     mov eax, dword ptr [rsp+112]
     mov edx, eax
     mov eax, dword ptr [rsp+120]
     mov r8d, eax
-    mov edx, dword ptr [rsp+80]
+    mov qword ptr [rsp+152], rdx
+    mov qword ptr [rsp+160], r8
+    mov qword ptr [rsp+168], r9
+    mov edx, dword ptr [rsp+72]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1170,8 +1505,11 @@ pulsec_com_pulse_lang_StringBuilder_setLength__int_b1:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+152]
+    mov r8, qword ptr [rsp+160]
+    mov r9, qword ptr [rsp+168]
     call pulsec_com_pulse_lang_String_substring__int_int
-    mov edx, dword ptr [rsp+80]
+    mov edx, dword ptr [rsp+72]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1196,7 +1534,7 @@ pulsec_com_pulse_lang_StringBuilder_setLength__int_b3:
 pulsec_com_pulse_lang_StringBuilder_setLength__int_b4:
     mov eax, dword ptr [rsp+64]
     mov dword ptr [rsp+96], eax
-    mov eax, dword ptr [rsp+72]
+    mov eax, dword ptr [rsp+80]
     mov edx, eax
     mov eax, dword ptr [rsp+96]
     cmp eax, edx
@@ -1210,14 +1548,25 @@ pulsec_com_pulse_lang_StringBuilder_setLength__int_b5:
     mov edx, pulsec_com_pulse_lang_StringBuilder_setLength__int_trace_s5_len
     call pulsec_rt_traceUpdateTop
     mov eax, 0
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
     mov dword ptr [rsp+112], eax
     mov eax, dword ptr [rsp+112]
     mov ecx, eax
     call pulsec_com_pulse_lang_String_valueOf__char
-    mov dword ptr [rsp+112], eax
-    mov eax, dword ptr [rsp+112]
-    mov edx, eax
-    mov edx, dword ptr [rsp+80]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov qword ptr [rsp+152], rdx
+    mov qword ptr [rsp+160], r8
+    mov qword ptr [rsp+168], r9
+    mov edx, dword ptr [rsp+72]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1225,8 +1574,16 @@ pulsec_com_pulse_lang_StringBuilder_setLength__int_b5:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_StringBuilder_value]
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+152]
+    mov r8, qword ptr [rsp+160]
+    mov r9, qword ptr [rsp+168]
     call pulsec_com_pulse_lang_String_concat__String
-    mov edx, dword ptr [rsp+80]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov edx, dword ptr [rsp+72]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -1255,18 +1612,18 @@ pulsec_com_pulse_lang_StringBuilder_setLength__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 168
+    add rsp, 232
     ret
 pulsec_com_pulse_lang_StringBuilder_setLength__int endp
 
 pulsec_com_pulse_lang_StringBuilder_toString proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
     mov qword ptr [rsp+32], r9
-    lea rcx, trace_m48
-    mov edx, trace_m48_len
+    lea rcx, trace_m52
+    mov edx, trace_m52_len
     call pulsec_rt_tracePush
     mov rcx, qword ptr [rsp+8]
     mov rdx, qword ptr [rsp+16]
@@ -1290,7 +1647,7 @@ pulsec_com_pulse_lang_StringBuilder_toString_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_StringBuilder_toString endp
 

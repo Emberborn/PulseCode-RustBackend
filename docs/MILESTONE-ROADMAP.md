@@ -149,7 +149,7 @@ Milestone 2 freeze note:
   - lock tests validate double-release and retain-after-release detection; full `cargo test -q` is green
 - C2-22 completed and locked:
   - leak/stability soak lock now runs repeated `strict_stress_soak` build+run cycles under split-native mode
-  - lock enforces linked-native status and deterministic output (`soak_ok`, checksum `20313`) across all iterations
+  - lock enforces linked-native status and deterministic output (`soak_ok`, checksum `40415`) across all iterations
   - post-warmup peak working-set spread/drift thresholds are enforced (CI-tunable via `PULSEC_SOAK_TREND_*` env knobs)
   - `stage_locks_c2` and full `cargo test -q` are green
 - C2-23 completed and locked:

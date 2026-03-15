@@ -108,6 +108,10 @@ pub(crate) fn masm_db_payload(text: &str) -> String {
         .join(", ")
 }
 
+pub(crate) fn masm_db_len(text: &str) -> usize {
+    text.len()
+}
+
 pub(crate) fn masm_field_data_directive(field: &IrField) -> String {
     if field.is_static {
         if uses_qword_field_storage(&field.ty) {
@@ -320,13 +324,13 @@ pub(crate) fn method_param_type_tokens(method: &IrMethod) -> Vec<String> {
 
 pub(crate) fn value_type_token(method: &IrMethod, value_id: IrValueId) -> Option<String> {
     let value = method.values.get(value_id as usize)?;
+    if value.ty != "unknown" {
+        return Some(normalize_type_token(&value.ty));
+    }
     if let IrValueKind::LocalRef(ref name) = value.kind {
         if let Some(ty) = lookup_local_decl_type(method, name) {
             return Some(normalize_type_token(&ty));
         }
-    }
-    if value.ty != "unknown" {
-        return Some(normalize_type_token(&value.ty));
     }
     match value.kind {
         IrValueKind::IntLiteral(_) => Some("int".to_string()),
@@ -565,6 +569,17 @@ pub(crate) fn masm_call_retval_spill_offset(method: &IrMethod) -> usize {
     arc_arg_spill_offset(method, masm_arc_arg_spill_count(method) + 1)
 }
 
+pub(crate) fn masm_call_arg_preserve_offset(method: &IrMethod, slot: usize) -> usize {
+    masm_call_retval_spill_offset(method) + (slot * 8)
+}
+
+pub(crate) fn masm_nested_call_arg_preserve_offset(method: &IrMethod, arg_index: usize) -> usize {
+    arc_arg_spill_offset(
+        method,
+        masm_arc_arg_spill_count(method) + ARC_SCRATCH_EXTRA_SLOTS + arg_index,
+    )
+}
+
 pub(crate) fn masm_outgoing_stack_arg_offset(stack_arg_slot: usize) -> usize {
     32 + (stack_arg_slot * 8)
 }
@@ -573,6 +588,8 @@ fn masm_array_temp_slot_width(value: &IrValue) -> usize {
     match &value.kind {
         IrValueKind::ArrayNewInitialized { .. } => 1,
         IrValueKind::ArrayNew { lengths, .. } if lengths.len() > 1 => lengths.len(),
+        IrValueKind::ArrayGet { .. } => 1,
+        IrValueKind::ArraySet { .. } => 2,
         _ => 0,
     }
 }
@@ -598,7 +615,8 @@ pub(crate) fn masm_array_init_temp_slot(method: &IrMethod, value_id: IrValueId) 
 
 pub(crate) fn masm_array_init_tmp_base(method: &IrMethod) -> usize {
     let spill_end = masm_arc_spill_base(method)
-        + ((masm_arc_arg_spill_count(method) + ARC_SCRATCH_EXTRA_SLOTS) * ARC_ARG_SPILL_STRIDE);
+        + ((masm_arc_arg_spill_count(method) * 2 + ARC_SCRATCH_EXTRA_SLOTS)
+            * ARC_ARG_SPILL_STRIDE);
     (spill_end + 7) & !7
 }
 

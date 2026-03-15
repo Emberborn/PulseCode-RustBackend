@@ -23,41 +23,41 @@ pulsec_objc_com_pulse_lang_Boolean dd 0
 pulsec_fld_com_pulse_lang_Boolean_TRUE dq 0
 pulsec_fld_com_pulse_lang_Boolean_FALSE dq 0
 trace_m0 db "com.pulse.lang.Boolean.valueOf"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 30
 pulsec_com_pulse_lang_Boolean_valueOf__boolean_trace_s0 db "com.pulse.lang.Boolean.valueOf(Boolean.pulse:24)"
-pulsec_com_pulse_lang_Boolean_valueOf__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_Boolean_valueOf__boolean_trace_s0
+pulsec_com_pulse_lang_Boolean_valueOf__boolean_trace_s0_len equ 48
 trace_m2 db "com.pulse.lang.Boolean.parse"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 28
 pulsec_com_pulse_lang_Boolean_parse__String_trace_s0 db "com.pulse.lang.Boolean.parse(Boolean.pulse:32)"
-pulsec_com_pulse_lang_Boolean_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Boolean_parse__String_trace_s0
+pulsec_com_pulse_lang_Boolean_parse__String_trace_s0_len equ 46
 trace_m4 db "com.pulse.lang.Boolean.booleanValue"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 35
 pulsec_com_pulse_lang_Boolean_booleanValue__Boolean_trace_s0 db "com.pulse.lang.Boolean.booleanValue(Boolean.pulse:40)"
-pulsec_com_pulse_lang_Boolean_booleanValue__Boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_Boolean_booleanValue__Boolean_trace_s0
+pulsec_com_pulse_lang_Boolean_booleanValue__Boolean_trace_s0_len equ 53
 trace_m6 db "com.pulse.lang.Boolean.equals"
-trace_m6_len equ $ - trace_m6
+trace_m6_len equ 29
 pulsec_com_pulse_lang_Boolean_equals__boolean_boolean_trace_s0 db "com.pulse.lang.Boolean.equals(Boolean.pulse:48)"
-pulsec_com_pulse_lang_Boolean_equals__boolean_boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_Boolean_equals__boolean_boolean_trace_s0
+pulsec_com_pulse_lang_Boolean_equals__boolean_boolean_trace_s0_len equ 47
 trace_m8 db "com.pulse.lang.Boolean.compare"
-trace_m8_len equ $ - trace_m8
+trace_m8_len equ 30
 pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s0 db "com.pulse.lang.Boolean.compare(Boolean.pulse:56)"
-pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s0
+pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s0_len equ 48
 pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s1 db "com.pulse.lang.Boolean.compare(Boolean.pulse:57)"
-pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s1_len equ $ - pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s1
+pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s1_len equ 48
 pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s2 db "com.pulse.lang.Boolean.compare(Boolean.pulse:59)"
-pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s2_len equ $ - pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s2
+pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s2_len equ 48
 pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s3 db "com.pulse.lang.Boolean.compare(Boolean.pulse:60)"
-pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s3_len equ $ - pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s3
+pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s3_len equ 48
 pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s4 db "com.pulse.lang.Boolean.compare(Boolean.pulse:62)"
-pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s4_len equ $ - pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s4
+pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_trace_s4_len equ 48
 trace_m14 db "com.pulse.lang.Boolean.toString"
-trace_m14_len equ $ - trace_m14
+trace_m14_len equ 31
 pulsec_com_pulse_lang_Boolean_toString__boolean_trace_s0 db "com.pulse.lang.Boolean.toString(Boolean.pulse:70)"
-pulsec_com_pulse_lang_Boolean_toString__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_Boolean_toString__boolean_trace_s0
+pulsec_com_pulse_lang_Boolean_toString__boolean_trace_s0_len equ 49
 
 .code
 pulsec_com_pulse_lang_Boolean_valueOf__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -81,12 +81,12 @@ pulsec_com_pulse_lang_Boolean_valueOf__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Boolean_valueOf__boolean endp
 
 pulsec_com_pulse_lang_Boolean_parse__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -104,6 +104,8 @@ pulsec_com_pulse_lang_Boolean_parse__String_b0:
     mov edx, pulsec_com_pulse_lang_Boolean_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
     mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -117,6 +119,8 @@ pulsec_com_pulse_lang_Boolean_parse__String_b0:
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+72], eax
     mov eax, dword ptr [rsp+72]
     mov ecx, eax
@@ -127,12 +131,12 @@ pulsec_com_pulse_lang_Boolean_parse__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Boolean_parse__String endp
 
 pulsec_com_pulse_lang_Boolean_booleanValue__Boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -156,12 +160,12 @@ pulsec_com_pulse_lang_Boolean_booleanValue__Boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Boolean_booleanValue__Boolean endp
 
 pulsec_com_pulse_lang_Boolean_equals__boolean_boolean proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -193,12 +197,12 @@ pulsec_com_pulse_lang_Boolean_equals__boolean_boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_Boolean_equals__boolean_boolean endp
 
 pulsec_com_pulse_lang_Boolean_compare__boolean_boolean proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -269,12 +273,12 @@ pulsec_com_pulse_lang_Boolean_compare__boolean_boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_Boolean_compare__boolean_boolean endp
 
 pulsec_com_pulse_lang_Boolean_toString__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -292,6 +296,8 @@ pulsec_com_pulse_lang_Boolean_toString__boolean_b0:
     mov edx, pulsec_com_pulse_lang_Boolean_toString__boolean_trace_s0_len
     call pulsec_rt_traceUpdateTop
     mov eax, dword ptr [rsp+64]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+72], eax
     mov eax, dword ptr [rsp+72]
     mov ecx, eax
@@ -302,7 +308,7 @@ pulsec_com_pulse_lang_Boolean_toString__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Boolean_toString__boolean endp
 

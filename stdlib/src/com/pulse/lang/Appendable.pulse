@@ -1,0 +1,18 @@
+package com.pulse.lang;
+
+/**
+ * Minimal append contract for mutable text builders in the current F1 baseline.
+ */
+public interface Appendable {
+    /**
+     * Appends the supplied string and returns the mutable target.
+     * Use this for chained text-building flows through the abstract append contract.
+     */
+    public StringBuilder append(String text);
+
+    /**
+     * Appends the supplied character and returns the mutable target.
+     * Use this for chained single-character append flows.
+     */
+    public StringBuilder append(char value);
+}

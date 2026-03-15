@@ -1,7 +1,9 @@
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
+use std::thread;
+use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 fn fixture_root(name: &str) -> PathBuf {
@@ -360,7 +362,7 @@ fn cli_build_executes_strict_stress_soak_fixture_project_in_shared_mode() {
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "soak_ok\n20313\n");
+    assert_eq!(out, "soak_ok\n40415\n");
 }
 
 #[test]
@@ -429,7 +431,7 @@ fn cli_build_executes_strict_stress_soak_repeatedly_in_shared_mode() {
             String::from_utf8_lossy(&run.stderr)
         );
         let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-        assert_eq!(out, "soak_ok\n20313\n");
+        assert_eq!(out, "soak_ok\n40415\n");
     }
 }
 
@@ -470,7 +472,7 @@ fn cli_build_executes_strict_stress_soak_fixture_project() {
     let run = Command::new(&exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "soak_ok\n20313\n", "unexpected output:\n{}", out);
+    assert_eq!(out, "soak_ok\n40415\n", "unexpected output:\n{}", out);
 }
 
 #[test]
@@ -516,7 +518,7 @@ fn cli_build_executes_stress_soak_repeatedly() {
         let run = Command::new(&exe).output().expect("run exe");
         assert!(run.status.success(), "exe failed");
         let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-        assert_eq!(out, "soak_ok\n20313\n", "unexpected soak output:\n{}", out);
+        assert_eq!(out, "soak_ok\n40415\n", "unexpected soak output:\n{}", out);
     }
 }
 
@@ -1588,7 +1590,7 @@ fn cli_build_executes_cross_method_try_catch_finally_flow() {
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
     assert_eq!(
         out,
-        "before\ninner-finally\ncaught\nException\nouter-finally\nafter\n"
+        "before\ninner-finally\ncaught\nException: boom\nouter-finally\nafter\n"
     );
 
     let _ = fs::remove_dir_all(root);
@@ -4674,7 +4676,7 @@ fn build_and_run_fixture_in_mode(
     }
 
     let exe = root.join("build").join("main.exe");
-    let run = Command::new(&exe).output().expect("run built executable");
+    let run = run_exe_with_timeout(&exe, fixture_name, mode);
     assert!(
         run.status.success(),
         "{fixture_name} {mode} executable failed\nstdout:\n{}\nstderr:\n{}",
@@ -4710,7 +4712,7 @@ fn build_and_run_source_in_mode(entry_source: &str, mode: &str) -> Option<String
     }
 
     let exe = root.join("build").join("main.exe");
-    let run = Command::new(&exe).output().expect("run built executable");
+    let run = run_exe_with_timeout(&exe, "inline_source", mode);
     assert!(
         run.status.success(),
         "inline {mode} executable failed\nstdout:\n{}\nstderr:\n{}",
@@ -4746,7 +4748,7 @@ fn build_and_run_source_expect_failure_in_mode(entry_source: &str, mode: &str) -
     }
 
     let exe = root.join("build").join("main.exe");
-    let run = Command::new(&exe).output().expect("run built executable");
+    let run = run_exe_with_timeout(&exe, "inline_failure_source", mode);
     assert!(
         !run.status.success(),
         "inline {mode} executable was expected to fail\nstdout:\n{}\nstderr:\n{}",
@@ -4763,12 +4765,48 @@ fn build_and_run_source_expect_failure_in_mode(entry_source: &str, mode: &str) -
     Some(combined)
 }
 
+fn run_exe_with_timeout(exe: &std::path::Path, fixture_name: &str, mode: &str) -> Output {
+    let timeout_ms = env::var("PULSEC_TEST_EXE_TIMEOUT_MS")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(15_000);
+    let mut child = Command::new(exe)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("spawn built executable");
+    let deadline = std::time::Instant::now() + Duration::from_millis(timeout_ms);
+
+    loop {
+        match child.try_wait().expect("poll built executable") {
+            Some(_) => {
+                return child
+                    .wait_with_output()
+                    .expect("collect built executable output");
+            }
+            None if std::time::Instant::now() >= deadline => {
+                let _ = child.kill();
+                let output = child
+                    .wait_with_output()
+                    .expect("collect timed out executable output");
+                panic!(
+                    "{fixture_name} {mode} executable exceeded {} ms and was killed\nstdout:\n{}\nstderr:\n{}",
+                    timeout_ms,
+                    String::from_utf8_lossy(&output.stdout),
+                    String::from_utf8_lossy(&output.stderr)
+                );
+            }
+            None => thread::sleep(Duration::from_millis(10)),
+        }
+    }
+}
+
 #[test]
 fn cli_build_executes_same_fixture_corpus_with_side_by_side_fat_shared_parity() {
     for (fixture_name, entry_rel, expected) in [
         ("runtime_mix", "app/runtime/Main.pulse", "runtime_mix_ok\n"),
         ("object_interface_mix", "app/mixed/Main.pulse", "object_interface_mix_ok\n"),
-        ("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n20313\n"),
+        ("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n40415\n"),
     ] {
         let Some(fat_out) = build_and_run_fixture_in_mode(fixture_name, entry_rel, "fat") else {
             return;
@@ -4873,8 +4911,8 @@ fn cli_build_executes_strict_stress_soak_with_repeated_fat_shared_parity() {
         else {
             return;
         };
-        assert_eq!(fat_out, "soak_ok\n20313\n");
-        assert_eq!(shared_out, "soak_ok\n20313\n");
+        assert_eq!(fat_out, "soak_ok\n40415\n");
+        assert_eq!(shared_out, "soak_ok\n40415\n");
         assert_eq!(fat_out, shared_out, "strict stress fat/shared outputs diverged");
     }
 }
@@ -5718,6 +5756,117 @@ fn cli_build_executes_system_process_time_and_stderr_flow() {
     assert_eq!(stderr, "errline\ntail");
 
     let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+fn cli_build_executes_foundational_lang_interface_flow() {
+    let source = r#"
+        package app.core;
+        import com.pulse.lang.Char;
+        import com.pulse.lang.IO;
+        import com.pulse.lang.Runnable;
+        import com.pulse.lang.Appendable;
+        import com.pulse.lang.CharSequence;
+
+        class Job implements Runnable {
+            public void run() {
+                IO.println("run");
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Runnable r = new Job();
+                r.run();
+
+                StringBuilder builder = new StringBuilder();
+                Appendable appendable = builder;
+                appendable.append("ab");
+                appendable.append('c');
+                IO.println(builder.toString());
+
+                CharSequence seq = builder;
+                IO.println(seq.length());
+                IO.println(Char.toString(seq.charAt(1)));
+                IO.println(seq.subSequence(1, 3));
+
+                CharSequence text = "pulse";
+                IO.println(text.subSequence(1, 4));
+            }
+        }
+        "#;
+
+    let Some(fat_out) = build_and_run_source_in_mode(source, "fat") else {
+        return;
+    };
+    let Some(shared_out) = build_and_run_source_in_mode(source, "shared") else {
+        return;
+    };
+    assert_eq!(fat_out, "run\nabc\n3\nb\nbc\nuls\n");
+    assert_eq!(shared_out, fat_out, "foundational lang fat/shared outputs diverged");
+}
+
+#[test]
+fn cli_build_executes_collection_isempty_contract_flow() {
+    let source = r#"
+        package app.core;
+        import com.pulse.lang.IO;
+        import com.pulse.collections.Collection;
+        import com.pulse.collections.List;
+        import com.pulse.collections.Set;
+        import com.pulse.collections.Map;
+        import com.pulse.collections.ArrayList;
+        import com.pulse.collections.LinkedList;
+        import com.pulse.collections.HashSet;
+        import com.pulse.collections.HashMap;
+
+        class Main {
+            public static void main() {
+                Collection collection = new ArrayList();
+                IO.println(collection.isEmpty());
+                collection.clear();
+                IO.println(collection.isEmpty());
+
+                List list = new LinkedList();
+                IO.println(list.isEmpty());
+                list.add(7);
+                IO.println(list.isEmpty());
+                list.clear();
+                IO.println(list.isEmpty());
+
+                Set set = new HashSet();
+                IO.println(set.isEmpty());
+                set.add("pulse");
+                IO.println(set.isEmpty());
+                set.clear();
+                IO.println(set.isEmpty());
+
+                Map map = new Map();
+                IO.println(map.isEmpty());
+                map.putInt("a", 1);
+                IO.println(map.isEmpty());
+                map.clear();
+                IO.println(map.isEmpty());
+
+                HashMap direct = new HashMap();
+                IO.println(direct.isEmpty());
+                direct.put("name", "pulse");
+                IO.println(direct.isEmpty());
+            }
+        }
+    "#;
+
+    let Some(fat_out) = build_and_run_source_in_mode(source, "fat") else {
+        return;
+    };
+    let Some(shared_out) = build_and_run_source_in_mode(source, "shared") else {
+        return;
+    };
+    assert_eq!(
+        fat_out,
+        "true\ntrue\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\nfalse\n"
+    );
+    assert_eq!(shared_out, fat_out, "collection isEmpty fat/shared outputs diverged");
 }
 
 #[test]

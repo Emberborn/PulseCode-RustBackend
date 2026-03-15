@@ -1405,18 +1405,28 @@ fn check_rejects_reserved_keyword_as_identifier() {
 }
 
 #[test]
-fn check_rejects_unknown_interface_in_implements() {
+fn check_accepts_foundational_lang_interfaces_in_implements_and_usage() {
     let src = r#"
         package app.core;
+        import com.pulse.lang.Runnable;
+        import com.pulse.lang.Appendable;
+        import com.pulse.lang.CharSequence;
 
         class Main implements Runnable {
+            public void run() {
+            }
+        }
+
+        class Use {
             public static void main() {
+                Runnable r = new Main();
+                Appendable app = new StringBuilder();
+                CharSequence seq = "pulse";
             }
         }
     "#;
 
-    let err = check(src).expect_err("unknown interface in implements should fail");
-    assert!(err.to_string().contains("Unknown type 'Runnable'"));
+    check(src).expect("foundational lang interfaces should typecheck");
 }
 
 #[test]

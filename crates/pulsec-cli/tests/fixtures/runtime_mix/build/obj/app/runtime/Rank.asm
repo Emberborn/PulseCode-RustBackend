@@ -16,11 +16,11 @@ extrn pulsec_rt_tracePop:proc
 written dq 0
 pulsec_objc_app_runtime_Rank dd 0
 trace_m0 db "app.runtime.Rank.value"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 22
 
 .code
 pulsec_app_runtime_Rank_value proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -41,7 +41,7 @@ pulsec_app_runtime_Rank_value_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_app_runtime_Rank_value endp
 

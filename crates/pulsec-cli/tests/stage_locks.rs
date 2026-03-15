@@ -401,7 +401,7 @@ fn lock_m2_12_wrapper_nullability_enforced() {
 
 #[test]
 fn lock_m2_13_wrapper_runtime_failure_fixture() {
-    assert_fixture_build_and_run("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n20313\n");
+    assert_fixture_build_and_run("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n40415\n");
 }
 
 #[test]
@@ -1615,6 +1615,157 @@ fn lock_f1_45_system_process_surface_is_documented_and_board_locked() {
 }
 
 #[test]
+fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let enums_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("enums.md"),
+    )
+    .expect("read enums doc");
+    let runnable_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("com")
+            .join("pulse")
+            .join("lang")
+            .join("Runnable.md"),
+    )
+    .expect("read Runnable stdlib doc");
+    let appendable_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("com")
+            .join("pulse")
+            .join("lang")
+            .join("Appendable.md"),
+    )
+    .expect("read Appendable stdlib doc");
+    let sequence_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("com")
+            .join("pulse")
+            .join("lang")
+            .join("CharSequence.md"),
+    )
+    .expect("read CharSequence stdlib doc");
+    let string_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("com")
+            .join("pulse")
+            .join("lang")
+            .join("String.md"),
+    )
+    .expect("read String stdlib doc");
+    let builder_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("com")
+            .join("pulse")
+            .join("lang")
+            .join("StringBuilder.md"),
+    )
+    .expect("read StringBuilder stdlib doc");
+    let input_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("com")
+            .join("pulse")
+            .join("io")
+            .join("InputStream.md"),
+    )
+    .expect("read InputStream stdlib doc");
+    let output_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("com")
+            .join("pulse")
+            .join("io")
+            .join("OutputStream.md"),
+    )
+    .expect("read OutputStream stdlib doc");
+
+    assert!(runnable_doc.contains("public interface Runnable"));
+    assert!(appendable_doc.contains("public interface Appendable"));
+    assert!(appendable_doc.contains("public StringBuilder append(String text);"));
+    assert!(sequence_doc.contains("public interface CharSequence"));
+    assert!(sequence_doc.contains("public String subSequence(int beginIndex, int endIndex);"));
+    assert!(string_doc.contains("implements CharSequence, Comparable"));
+    assert!(string_doc.contains("public String subSequence(int beginIndex, int endIndex)"));
+    assert!(string_doc.contains("public int compareTo(Object other)"));
+    assert!(builder_doc.contains("implements Appendable, CharSequence"));
+    assert!(builder_doc.contains("public char charAt(int index)"));
+    assert!(builder_doc.contains("public String subSequence(int beginIndex, int endIndex)"));
+    assert!(input_doc.contains("implements AutoCloseable"));
+    assert!(output_doc.contains("implements AutoCloseable"));
+    assert!(enums_doc.contains("com.pulse.lang.Enum"));
+    assert!(enums_doc.contains("bootstrap base contract"));
+    assert!(board.contains("| F1-47 |"));
+    assert!(board.contains("| F1-47 | Add missing foundational `com.pulse.lang` types"));
+    assert!(board.contains("| 2026-03-14 | Done (Locked) |"));
+    assert!(board.contains("Runnable"));
+    assert!(board.contains("Appendable"));
+    assert!(board.contains("CharSequence"));
+    assert!(handoff.contains("`F1-47` foundational `com.pulse.lang` types"));
+    assert!(handoff.contains("`Runnable`, `Appendable`, and `CharSequence`"));
+    assert!(handoff.contains("fat and shared output modes now both pass the foundational interface flow"));
+}
+
+#[test]
+fn lock_f1_48_collection_inventory_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let inventory = fs::read_to_string(root.join("docs").join("F1_COLLECTION_API_INVENTORY.md"))
+        .expect("read collection inventory");
+
+    assert!(board.contains("| F1-48 |"));
+    assert!(board.contains("| F1-48 | Inventory current collection API limitations versus Java-close expectations | F1-01 | Codex | 2026-03-14 | Done (Locked) |"));
+    assert!(inventory.contains("## Current Surface"));
+    assert!(inventory.contains("## Cross-Cutting Gaps Versus Java-Close Expectations"));
+    assert!(inventory.contains("`F1-49`"));
+    assert!(inventory.contains("`F1-55`"));
+    assert!(handoff.contains("`F1-48` collection API inventory and strategy"));
+    assert!(handoff.contains("`F1-49` staged collection strategy before and after generics"));
+}
+
+#[test]
+fn lock_f1_49_collection_strategy_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let strategy = fs::read_to_string(root.join("docs").join("F1_COLLECTION_STRATEGY.md"))
+        .expect("read collection strategy");
+
+    assert!(board.contains("| F1-49 |"));
+    assert!(board.contains("| F1-49 | Define staged collection strategy before and after generic support is available | F1-11, F1-48 | Codex | 2026-03-14 | Done (Locked) |"));
+    assert!(strategy.contains("## Stage 1: Current Bootstrap Surface"));
+    assert!(strategy.contains("## Stage 2: Transitional Generic Public Contracts"));
+    assert!(strategy.contains("## Stage 3: Java-Close Collection Shape"));
+    assert!(strategy.contains("`F1-68`"));
+    assert!(handoff.contains("`F1-49` staged collection strategy before and after generics"));
+    assert!(handoff.contains("generic collection contracts are the intended public direction"));
+}
+
+#[test]
 fn lock_f1_09_f1_13_and_f1_14_cli_baseline_is_char_varargs_and_explicit_nested_type_fence() {
     let root = unique_temp_root();
     let src_root = root.join("src");
@@ -2626,7 +2777,7 @@ fn lock_e3_02_and_e3_03_cli_parity_semantics_and_evidence_strategy_are_documente
 fn gate_m3_g1_fixture_project_coverage() {
     assert_fixture_build_and_run("runtime_mix", "app/runtime/Main.pulse", "runtime_mix_ok\n");
     assert_fixture_build_and_run("object_interface_mix", "app/mixed/Main.pulse", "object_interface_mix_ok\n");
-    assert_fixture_build_and_run("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n20313\n");
+    assert_fixture_build_and_run("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n40415\n");
 }
 
 #[test]

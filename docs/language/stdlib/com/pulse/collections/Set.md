@@ -21,6 +21,11 @@ interface Set
 Returns the number of unique values currently stored in the set.
 Use this before size-sensitive operations or emptiness checks.
 
+### ``boolean isEmpty();``
+
+Reports whether the set currently stores any values.
+Use this as the baseline emptiness check for unique-value containers.
+
 ### ``void clear();``
 
 Removes all values from the set.

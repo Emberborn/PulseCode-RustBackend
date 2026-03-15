@@ -19,19 +19,19 @@ pulsec_objc_com_pulse_lang_System dd 0
 pulsec_fld_com_pulse_lang_System_out dq 0
 pulsec_fld_com_pulse_lang_System_err dq 0
 trace_m0 db "com.pulse.lang.System.currentTimeMillis"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 39
 pulsec_com_pulse_lang_System_currentTimeMillis_trace_s0 db "com.pulse.lang.System.currentTimeMillis(System.pulse:24)"
-pulsec_com_pulse_lang_System_currentTimeMillis_trace_s0_len equ $ - pulsec_com_pulse_lang_System_currentTimeMillis_trace_s0
+pulsec_com_pulse_lang_System_currentTimeMillis_trace_s0_len equ 56
 trace_m2 db "com.pulse.lang.System.nanoTime"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 30
 pulsec_com_pulse_lang_System_nanoTime_trace_s0 db "com.pulse.lang.System.nanoTime(System.pulse:32)"
-pulsec_com_pulse_lang_System_nanoTime_trace_s0_len equ $ - pulsec_com_pulse_lang_System_nanoTime_trace_s0
+pulsec_com_pulse_lang_System_nanoTime_trace_s0_len equ 47
 trace_m4 db "com.pulse.lang.System.exit"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 26
 
 .code
 pulsec_com_pulse_lang_System_currentTimeMillis proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -54,12 +54,12 @@ pulsec_com_pulse_lang_System_currentTimeMillis_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_System_currentTimeMillis endp
 
 pulsec_com_pulse_lang_System_nanoTime proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -82,12 +82,12 @@ pulsec_com_pulse_lang_System_nanoTime_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_System_nanoTime endp
 
 pulsec_com_pulse_lang_System_exit__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -108,7 +108,7 @@ pulsec_com_pulse_lang_System_exit__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_System_exit__int endp
 

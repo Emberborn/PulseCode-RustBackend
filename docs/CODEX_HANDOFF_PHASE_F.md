@@ -175,7 +175,7 @@ The following are already `Done (Locked)` on the board:
 
 The current board resume point is:
 
-- `F1-47` foundational `com.pulse.lang` type expansion
+- `F1-50` core collection contract expansion
 
 Recently locked:
 
@@ -200,6 +200,23 @@ Recently locked:
   - `System.nanoTime()` is runtime-backed elapsed-time measurement
   - `System.exit(int)` is real process termination
   - property/env/process breadth beyond that slice remains explicitly deferred instead of being implied
+- `F1-47` foundational `com.pulse.lang` types
+    - `Runnable`, `Appendable`, and `CharSequence` now exist as real stdlib interfaces
+    - `String` now implements `CharSequence` and the current non-generic `Comparable` baseline
+    - `StringBuilder` now implements `Appendable` and `CharSequence`
+    - `InputStream` and `OutputStream` now implement the current bootstrap `AutoCloseable` seam
+    - fat and shared output modes now both pass the foundational interface flow
+- `F1-48` collection API inventory and strategy
+    - the shipped `com.pulse.collections` surface is now inventoried explicitly
+    - the gap doc records the current bootstrap lane-specific contracts and the real `F1-49`..`F1-55` return points
+- `F1-49` staged collection strategy before and after generics
+    - the current lane-specific collection APIs are now explicitly locked as bootstrap compatibility scaffolding
+    - the generic collection contracts are the intended public direction, with later closure explicitly tied to `F1-50`, `F1-53`, `F1-54`, `F1-55`, and `F1-68`
+- `F1-50` core collection contract expansion
+    - the first coherence slice is in: `isEmpty()` now exists across the current `Collection`, `List`, `Set`, `Map`, `Queue`, and `Deque` baseline
+    - fat and shared output modes both pass the new `isEmpty()` contract fixture
+    - return next for broader method-family alignment and concrete-class contract closure
+  - `com.pulse.lang.Enum` remains explicitly bootstrap; the fuller enum object model still returns later under `F1-10`
 
 Recent non-board regression work that is now fixed and should not be re-debugged from scratch:
 
@@ -608,6 +625,7 @@ This is future Phase F-A work, not current F1 execution.
 Resume at:
 
 - [F1 Task Board](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md)
+- `F1-50` core collection contract expansion
 
 Current board state after the latest completed work:
 

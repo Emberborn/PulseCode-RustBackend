@@ -21,6 +21,11 @@ interface Collection
 Returns the number of values currently stored in the collection.
 Use this before indexed access or to test for emptiness.
 
+### ``boolean isEmpty();``
+
+Reports whether the collection currently stores any values.
+Use this as the baseline emptiness check across mutable containers.
+
 ### ``void clear();``
 
 Removes all values from the collection.

@@ -11,6 +11,12 @@ interface Set {
     int size();
 
     /**
+     * Reports whether the set currently stores any values.
+     * Use this as the baseline emptiness check for unique-value containers.
+     */
+    boolean isEmpty();
+
+    /**
      * Removes all values from the set.
      * Use this to reset a mutable set to its empty state.
      */

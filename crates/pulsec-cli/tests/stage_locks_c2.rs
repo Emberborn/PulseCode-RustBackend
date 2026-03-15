@@ -45,13 +45,15 @@ fn write_file(path: &Path, contents: &str) {
 }
 
 fn read_runtime_asm(root: &Path) -> String {
-    fs::read_to_string(
-        root.join("build")
-            .join("obj")
-            .join("runtime")
-            .join("StdlibRuntime.asm"),
-    )
-    .expect("read StdlibRuntime.asm")
+    let split_runtime = root
+        .join("build")
+        .join("obj")
+        .join("runtime")
+        .join("StdlibRuntime.asm");
+    if split_runtime.exists() {
+        return fs::read_to_string(&split_runtime).expect("read StdlibRuntime.asm");
+    }
+    fs::read_to_string(root.join("build").join("main.asm")).expect("read main.asm")
 }
 
 fn fixture_root(name: &str) -> PathBuf {
@@ -790,13 +792,7 @@ fn lock_c2_07_arc_failure_semantics_are_locked() {
     assert!(plan.contains("\"zero_reclaim_lag_limit\": 1024"));
     assert!(plan.contains("\"lag_action\": \"track\""));
 
-    let runtime_asm = fs::read_to_string(
-        root.join("build")
-            .join("obj")
-            .join("runtime")
-            .join("StdlibRuntime.asm"),
-    )
-    .expect("read StdlibRuntime.asm");
+    let runtime_asm = read_runtime_asm(&root);
     assert!(
         runtime_asm.contains("cmp edx, 4294967294"),
         "expected retain saturation guard compare in runtime asm"
@@ -1167,7 +1163,7 @@ fn lock_c2_08_array_heap_allocation_contract_is_locked() {
     assert!(plan.contains(&format!("\"warn_bytes\": {}", FRAME_BUDGET_WARN_BYTES)));
     assert!(plan.contains(&format!("\"fail_bytes\": {}", FRAME_BUDGET_FAIL_BYTES)));
     assert!(plan.contains("\"pointer_bytes\": 8"));
-    assert!(plan.contains("\"lane_bytes\": 4"));
+    assert!(plan.contains("\"lane_bytes\": { \"int\": 4, \"handle\": 8 }"));
     assert!(plan.contains("\"container_storage\""));
     assert!(plan.contains("\"list\""));
     assert!(plan.contains("\"init_capacity\": 16"));
@@ -2508,7 +2504,7 @@ fn lock_c2_22_soak_memory_trend_is_stable() {
             String::from_utf8_lossy(&run.stderr)
         );
         let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-        assert_eq!(out, "soak_ok\n20313\n", "unexpected strict soak output:\n{}", out);
+        assert_eq!(out, "soak_ok\n40415\n", "unexpected strict soak output:\n{}", out);
         peaks.push(peak);
     }
 

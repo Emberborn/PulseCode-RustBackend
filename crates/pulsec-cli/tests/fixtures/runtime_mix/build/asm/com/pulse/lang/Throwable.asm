@@ -46,105 +46,105 @@ pulsec_fld_com_pulse_lang_Throwable_cause_tbl dq 64 dup(0)
 pulsec_fld_com_pulse_lang_Throwable_cause dq pulsec_fld_com_pulse_lang_Throwable_cause_tbl
 pulsec_fld_com_pulse_lang_Throwable_cause_heap_owned dd 0
 trace_m0 db "com.pulse.lang.Throwable.Throwable"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 34
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s0 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:17)"
-pulsec_com_pulse_lang_Throwable_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable_trace_s0
+pulsec_com_pulse_lang_Throwable_Throwable_trace_s0_len equ 54
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s1 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:18)"
-pulsec_com_pulse_lang_Throwable_Throwable_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable_trace_s1
+pulsec_com_pulse_lang_Throwable_Throwable_trace_s1_len equ 54
 pulsec_com_pulse_lang_Throwable_Throwable_trace_s2 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:19)"
-pulsec_com_pulse_lang_Throwable_Throwable_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable_trace_s2
+pulsec_com_pulse_lang_Throwable_Throwable_trace_s2_len equ 54
 trace_m4 db "com.pulse.lang.Throwable.Throwable"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 34
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:27)"
-pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0
+pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0_len equ 54
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:28)"
-pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1
+pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1_len equ 54
 pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:29)"
-pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2
+pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2_len equ 54
 trace_m8 db "com.pulse.lang.Throwable.Throwable"
-trace_m8_len equ $ - trace_m8
+trace_m8_len equ 34
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:37)"
-pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0
+pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0_len equ 54
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:38)"
-pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1
+pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1_len equ 54
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2 db "com.pulse.lang.Throwable.Throwable(Throwable.pulse:39)"
-pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2
+pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2_len equ 54
 trace_m12 db "com.pulse.lang.Throwable.initThrowableState"
-trace_m12_len equ $ - trace_m12
+trace_m12_len equ 43
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0 db "com.pulse.lang.Throwable.initThrowableState(Throwable.pulse:47)"
-pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0
+pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0_len equ 63
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1 db "com.pulse.lang.Throwable.initThrowableState(Throwable.pulse:48)"
-pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1
+pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1_len equ 63
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2 db "com.pulse.lang.Throwable.initThrowableState(Throwable.pulse:49)"
-pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2
+pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2_len equ 63
 trace_m16 db "com.pulse.lang.Throwable.getMessage"
-trace_m16_len equ $ - trace_m16
+trace_m16_len equ 35
 pulsec_com_pulse_lang_Throwable_getMessage_trace_s0 db "com.pulse.lang.Throwable.getMessage(Throwable.pulse:57)"
-pulsec_com_pulse_lang_Throwable_getMessage_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_getMessage_trace_s0
+pulsec_com_pulse_lang_Throwable_getMessage_trace_s0_len equ 55
 trace_m18 db "com.pulse.lang.Throwable.getCause"
-trace_m18_len equ $ - trace_m18
+trace_m18_len equ 33
 pulsec_com_pulse_lang_Throwable_getCause_trace_s0 db "com.pulse.lang.Throwable.getCause(Throwable.pulse:65)"
-pulsec_com_pulse_lang_Throwable_getCause_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_getCause_trace_s0
+pulsec_com_pulse_lang_Throwable_getCause_trace_s0_len equ 53
 trace_m20 db "com.pulse.lang.Throwable.initCause"
-trace_m20_len equ $ - trace_m20
+trace_m20_len equ 34
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:73)"
-pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0
+pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0_len equ 54
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s1 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:74)"
-pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s1
+pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s1_len equ 54
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s2 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:76)"
-pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s2
+pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s2_len equ 54
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s3 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:77)"
-pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s3_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s3
+pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s3_len equ 54
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:79)"
-pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4
+pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4_len equ 54
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5 db "com.pulse.lang.Throwable.initCause(Throwable.pulse:80)"
-pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5_len equ $ - pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5
+pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5_len equ 54
 trace_m27 db "com.pulse.lang.Throwable.formatThrowable"
-trace_m27_len equ $ - trace_m27
+trace_m27_len equ 40
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0 db "com.pulse.lang.Throwable.formatThrowable(Throwable.pulse:88)"
-pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0
+pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0_len equ 60
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s1 db "com.pulse.lang.Throwable.formatThrowable(Throwable.pulse:89)"
-pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s1
+pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s1_len equ 60
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s2 db "com.pulse.lang.Throwable.formatThrowable(Throwable.pulse:90)"
-pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s2
+pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s2_len equ 60
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3 db "com.pulse.lang.Throwable.formatThrowable(Throwable.pulse:92)"
-pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3_len equ $ - pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3
+pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s3_len equ 60
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s4 db "com.pulse.lang.Throwable.formatThrowable(Throwable.pulse:93)"
-pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s4_len equ $ - pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s4
+pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s4_len equ 60
 trace_m33 db "com.pulse.lang.Throwable.describe"
-trace_m33_len equ $ - trace_m33
+trace_m33_len equ 33
 pulsec_com_pulse_lang_Throwable_describe_trace_s0 db "com.pulse.lang.Throwable.describe(Throwable.pulse:101)"
-pulsec_com_pulse_lang_Throwable_describe_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s0
+pulsec_com_pulse_lang_Throwable_describe_trace_s0_len equ 54
 pulsec_com_pulse_lang_Throwable_describe_trace_s1 db "com.pulse.lang.Throwable.describe(Throwable.pulse:102)"
-pulsec_com_pulse_lang_Throwable_describe_trace_s1_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s1
+pulsec_com_pulse_lang_Throwable_describe_trace_s1_len equ 54
 pulsec_com_pulse_lang_Throwable_describe_trace_s2 db "com.pulse.lang.Throwable.describe(Throwable.pulse:103)"
-pulsec_com_pulse_lang_Throwable_describe_trace_s2_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s2
+pulsec_com_pulse_lang_Throwable_describe_trace_s2_len equ 54
 pulsec_com_pulse_lang_Throwable_describe_trace_s3 db "com.pulse.lang.Throwable.describe(Throwable.pulse:104)"
-pulsec_com_pulse_lang_Throwable_describe_trace_s3_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s3
+pulsec_com_pulse_lang_Throwable_describe_trace_s3_len equ 54
 pulsec_com_pulse_lang_Throwable_describe_trace_s4 db "com.pulse.lang.Throwable.describe(Throwable.pulse:106)"
-pulsec_com_pulse_lang_Throwable_describe_trace_s4_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s4
+pulsec_com_pulse_lang_Throwable_describe_trace_s4_len equ 54
 pulsec_com_pulse_lang_Throwable_describe_trace_s5 db "com.pulse.lang.Throwable.describe(Throwable.pulse:107)"
-pulsec_com_pulse_lang_Throwable_describe_trace_s5_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s5
+pulsec_com_pulse_lang_Throwable_describe_trace_s5_len equ 54
 pulsec_com_pulse_lang_Throwable_describe_trace_s6 db "com.pulse.lang.Throwable.describe(Throwable.pulse:108)"
-pulsec_com_pulse_lang_Throwable_describe_trace_s6_len equ $ - pulsec_com_pulse_lang_Throwable_describe_trace_s6
+pulsec_com_pulse_lang_Throwable_describe_trace_s6_len equ 54
 trace_m41 db "com.pulse.lang.Throwable.toString"
-trace_m41_len equ $ - trace_m41
+trace_m41_len equ 33
 pulsec_com_pulse_lang_Throwable_toString_trace_s0 db "com.pulse.lang.Throwable.toString(Throwable.pulse:116)"
-pulsec_com_pulse_lang_Throwable_toString_trace_s0_len equ $ - pulsec_com_pulse_lang_Throwable_toString_trace_s0
+pulsec_com_pulse_lang_Throwable_toString_trace_s0_len equ 54
 msg0 db "Throwable"
-msg0_len equ $ - msg0
+msg0_len equ 9
 msg1 db "Throwable"
-msg1_len equ $ - msg1
+msg1_len equ 9
 msg2 db "Throwable"
-msg2_len equ $ - msg2
+msg2_len equ 9
 msg3 db "Self-causation is not permitted"
-msg3_len equ $ - msg3
+msg3_len equ 31
 msg4 db "Cause already initialized"
-msg4_len equ $ - msg4
+msg4_len equ 25
 msg5 db ": "
-msg5_len equ $ - msg5
+msg5_len equ 2
 msg6 db 10, 67, 97, 117, 115, 101, 100, 32, 98, 121, 58, 32
-msg6_len equ $ - msg6
+msg6_len equ 12
 
 .code
 pulsec_fcap_com_pulse_lang_Throwable_ensure proc
@@ -339,6 +339,7 @@ pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges proc
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges_field_0_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges_field_0_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -362,6 +363,7 @@ pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges_field_0_skip:
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges_field_1_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges_field_1_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -385,6 +387,7 @@ pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges_field_1_skip:
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges_field_2_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges_field_2_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -419,6 +422,7 @@ pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges proc
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_field_0_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_field_0_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -439,6 +443,7 @@ pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_field_0_skip:
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_field_1_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_field_1_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -459,6 +464,7 @@ pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_field_1_skip:
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_field_2_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_field_2_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -479,7 +485,7 @@ pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges_done:
     ret
 pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges endp
 pulsec_com_pulse_lang_Throwable_Throwable proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -492,7 +498,7 @@ pulsec_com_pulse_lang_Throwable_Throwable proc
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
     mov qword ptr [rsp+64], rcx
-    mov ecx, 37
+    mov ecx, 40
     call pulsec_rt_objectNew
     mov qword ptr [rsp+104], rax
     mov ecx, eax
@@ -555,12 +561,12 @@ pulsec_com_pulse_lang_Throwable_Throwable_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Throwable_Throwable endp
 
 pulsec_com_pulse_lang_Throwable_Throwable__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -572,16 +578,16 @@ pulsec_com_pulse_lang_Throwable_Throwable__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
-    mov ecx, 37
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov ecx, 40
     call pulsec_rt_objectNew
     mov qword ptr [rsp+112], rax
     mov ecx, eax
     call pulsec_fcap_com_pulse_lang_Throwable_ensure
     mov rax, qword ptr [rsp+112]
     mov ecx, eax
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
 pulsec_com_pulse_lang_Throwable_Throwable__String_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s0_len
@@ -589,7 +595,7 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_b0:
     lea rcx, msg1
     mov edx, msg1_len
     call pulsec_rt_stringFromBytes
-    mov edx, dword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -599,8 +605,8 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
-    mov edx, dword ptr [rsp+72]
+    mov rax, qword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -610,7 +616,7 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable__String_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    mov edx, dword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -623,26 +629,26 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_b0:
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
-    mov edx, dword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
 @@:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_cause]
     mov qword ptr [r10+rdx*8], rax
-    mov eax, dword ptr [rsp+72]
+    mov eax, dword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_Throwable_Throwable__String_epilogue
 pulsec_com_pulse_lang_Throwable_Throwable__String_epilogue:
 pulsec_com_pulse_lang_Throwable_Throwable__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_Throwable_Throwable__String endp
 
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -654,17 +660,17 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], r8
-    mov qword ptr [rsp+80], rcx
-    mov ecx, 37
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov qword ptr [rsp+80], r8
+    mov ecx, 40
     call pulsec_rt_objectNew
     mov qword ptr [rsp+120], rax
     mov ecx, eax
     call pulsec_fcap_com_pulse_lang_Throwable_ensure
     mov rax, qword ptr [rsp+120]
     mov ecx, eax
-    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+64], rcx
 pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s0_len
@@ -672,7 +678,7 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_b0:
     lea rcx, msg2
     mov edx, msg2_len
     call pulsec_rt_stringFromBytes
-    mov edx, dword ptr [rsp+80]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -682,8 +688,8 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s1_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
-    mov edx, dword ptr [rsp+80]
+    mov rax, qword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -693,81 +699,7 @@ pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2
     mov edx, pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    mov edx, dword ptr [rsp+80]
-    cmp edx, 4294967295
-    jbe @F
-    mov edx, 4294967295
-@@:
-    mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_cause]
-    mov rax, qword ptr [r10+rdx*8]
-    mov rcx, rax
-    call pulsec_rt_arcRelease
-    mov rax, qword ptr [rsp+72]
-    mov qword ptr [rsp+32], rax
-    mov rcx, rax
-    call pulsec_rt_arcRetain
-    mov edx, dword ptr [rsp+80]
-    cmp edx, 4294967295
-    jbe @F
-    mov edx, 4294967295
-@@:
-    mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_cause]
-    mov qword ptr [r10+rdx*8], rax
-    mov eax, dword ptr [rsp+80]
-    jmp pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_epilogue
-pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_epilogue:
-pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_epilogue_post:
-    mov qword ptr [rsp+40], rax
-    call pulsec_rt_tracePop
-    mov rax, qword ptr [rsp+40]
-    add rsp, 136
-    ret
-pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable endp
-
-pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable proc
-    sub rsp, 152
-    mov qword ptr [rsp+8], rcx
-    mov qword ptr [rsp+16], rdx
-    mov qword ptr [rsp+24], r8
-    mov qword ptr [rsp+32], r9
-    lea rcx, trace_m12
-    mov edx, trace_m12_len
-    call pulsec_rt_tracePush
-    mov rcx, qword ptr [rsp+8]
-    mov rdx, qword ptr [rsp+16]
-    mov r8, qword ptr [rsp+24]
-    mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], r8
-    mov qword ptr [rsp+80], r9
-    mov qword ptr [rsp+88], rcx
-pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_b0:
-    lea rcx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0
-    mov edx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0_len
-    call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
-    mov edx, dword ptr [rsp+88]
-    cmp edx, 4294967295
-    jbe @F
-    mov edx, 4294967295
-@@:
-    mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_typeName]
-    mov qword ptr [r10+rdx*8], rax
-    lea rcx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1
-    mov edx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1_len
-    call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
-    mov edx, dword ptr [rsp+88]
-    cmp edx, 4294967295
-    jbe @F
-    mov edx, 4294967295
-@@:
-    mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_message]
-    mov qword ptr [r10+rdx*8], rax
-    lea rcx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2
-    mov edx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2_len
-    call pulsec_rt_traceUpdateTop
-    mov edx, dword ptr [rsp+88]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -780,7 +712,81 @@ pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_b0:
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
-    mov edx, dword ptr [rsp+88]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_cause]
+    mov qword ptr [r10+rdx*8], rax
+    mov eax, dword ptr [rsp+64]
+    jmp pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_epilogue
+pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_epilogue:
+pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable_epilogue_post:
+    mov qword ptr [rsp+40], rax
+    call pulsec_rt_tracePop
+    mov rax, qword ptr [rsp+40]
+    add rsp, 200
+    ret
+pulsec_com_pulse_lang_Throwable_Throwable__String_Throwable endp
+
+pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable proc
+    sub rsp, 216
+    mov qword ptr [rsp+8], rcx
+    mov qword ptr [rsp+16], rdx
+    mov qword ptr [rsp+24], r8
+    mov qword ptr [rsp+32], r9
+    lea rcx, trace_m12
+    mov edx, trace_m12_len
+    call pulsec_rt_tracePush
+    mov rcx, qword ptr [rsp+8]
+    mov rdx, qword ptr [rsp+16]
+    mov r8, qword ptr [rsp+24]
+    mov r9, qword ptr [rsp+32]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov qword ptr [rsp+80], r8
+    mov qword ptr [rsp+88], r9
+pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_b0:
+    lea rcx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0
+    mov edx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_typeName]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1
+    mov edx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s1_len
+    call pulsec_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_message]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2
+    mov edx, pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_trace_s2_len
+    call pulsec_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_cause]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -794,12 +800,12 @@ pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable_epil
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 152
+    add rsp, 216
     ret
 pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable endp
 
 pulsec_com_pulse_lang_Throwable_getMessage proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -829,12 +835,12 @@ pulsec_com_pulse_lang_Throwable_getMessage_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Throwable_getMessage endp
 
 pulsec_com_pulse_lang_Throwable_getCause proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -864,12 +870,12 @@ pulsec_com_pulse_lang_Throwable_getCause_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Throwable_getCause endp
 
 pulsec_com_pulse_lang_Throwable_initCause__Throwable proc
-    sub rsp, 152
+    sub rsp, 216
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -881,15 +887,15 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
-    mov dword ptr [rsp+80], eax
     mov rax, qword ptr [rsp+72]
+    mov dword ptr [rsp+80], eax
+    mov rax, qword ptr [rsp+64]
     mov edx, eax
     mov eax, dword ptr [rsp+80]
     cmp eax, edx
@@ -905,6 +911,8 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_b1:
     lea rcx, msg3
     mov edx, msg3_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -928,7 +936,7 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_b3:
     lea rcx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s2
     mov edx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    mov edx, dword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -952,6 +960,8 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_b4:
     lea rcx, msg4
     mov edx, msg4_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -975,7 +985,7 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_b6:
     lea rcx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4
     mov edx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s4_len
     call pulsec_rt_traceUpdateTop
-    mov edx, dword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -984,11 +994,11 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_b6:
     mov rax, qword ptr [r10+rdx*8]
     mov rcx, rax
     call pulsec_rt_arcRelease
-    mov rax, qword ptr [rsp+64]
+    mov rax, qword ptr [rsp+72]
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
-    mov edx, dword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
@@ -998,19 +1008,19 @@ pulsec_com_pulse_lang_Throwable_initCause__Throwable_b6:
     lea rcx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5
     mov edx, pulsec_com_pulse_lang_Throwable_initCause__Throwable_trace_s5_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_Throwable_initCause__Throwable_epilogue
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_epilogue:
 pulsec_com_pulse_lang_Throwable_initCause__Throwable_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 152
+    add rsp, 216
     ret
 pulsec_com_pulse_lang_Throwable_initCause__Throwable endp
 
 pulsec_com_pulse_lang_Throwable_formatThrowable__String proc
-    sub rsp, 168
+    sub rsp, 232
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1022,13 +1032,13 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+80], rdx
-    mov qword ptr [rsp+88], rcx
+    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+88], rdx
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_b0:
     lea rcx, pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov rcx, qword ptr [rsp+88]
+    mov rcx, qword ptr [rsp+80]
     cmp ecx, 0
     je Throwable_formatThrowable_vd0_2_null
     call pulsec_com_pulse_lang_Throwable_getMessage
@@ -1050,8 +1060,14 @@ Throwable_formatThrowable_vd0_2_done:
     movzx eax, al
     test rax, rax
     jne Throwable_formatThrowable_ternary_then_1_12
+    mov qword ptr [rsp+152], rdx
+    mov qword ptr [rsp+160], r8
+    mov qword ptr [rsp+168], r9
     mov rax, qword ptr [rsp+64]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+152]
+    mov r8, qword ptr [rsp+160]
+    mov r9, qword ptr [rsp+168]
     call pulsec_com_pulse_lang_String_length
     mov dword ptr [rsp+104], eax
     mov eax, 0
@@ -1071,7 +1087,7 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String_b1:
     lea rcx, pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s2
     mov edx, pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s2_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+88]
     jmp pulsec_com_pulse_lang_Throwable_formatThrowable__String_epilogue
 pulsec_com_pulse_lang_Throwable_formatThrowable__String_b2:
     lea rcx, pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s1
@@ -1085,6 +1101,8 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String_b3:
     lea rcx, msg5
     mov edx, msg5_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
     mov qword ptr [rsp+112], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -1092,8 +1110,14 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String_b3:
     mov rax, qword ptr [rsp+112]
     mov rax, qword ptr [rsp+112]
     mov rdx, rax
-    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+152], rdx
+    mov qword ptr [rsp+160], r8
+    mov qword ptr [rsp+168], r9
+    mov rax, qword ptr [rsp+88]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+152]
+    mov r8, qword ptr [rsp+160]
+    mov r9, qword ptr [rsp+168]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+152], rax
     mov rax, qword ptr [rsp+112]
@@ -1105,6 +1129,8 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String_b3:
     mov edx, pulsec_com_pulse_lang_Throwable_formatThrowable__String_trace_s4_len
     call pulsec_rt_traceUpdateTop
     mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
     mov qword ptr [rsp+112], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -1112,8 +1138,14 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String_b3:
     mov rax, qword ptr [rsp+112]
     mov rax, qword ptr [rsp+112]
     mov rdx, rax
+    mov qword ptr [rsp+152], rdx
+    mov qword ptr [rsp+160], r8
+    mov qword ptr [rsp+168], r9
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+152]
+    mov r8, qword ptr [rsp+160]
+    mov r9, qword ptr [rsp+168]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+152], rax
     mov rax, qword ptr [rsp+112]
@@ -1126,12 +1158,12 @@ pulsec_com_pulse_lang_Throwable_formatThrowable__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 168
+    add rsp, 232
     ret
 pulsec_com_pulse_lang_Throwable_formatThrowable__String endp
 
 pulsec_com_pulse_lang_Throwable_describe proc
-    sub rsp, 152
+    sub rsp, 216
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1203,6 +1235,8 @@ pulsec_com_pulse_lang_Throwable_describe_b3:
     lea rcx, msg6
     mov edx, msg6_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov qword ptr [rsp+104], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -1210,8 +1244,14 @@ pulsec_com_pulse_lang_Throwable_describe_b3:
     mov rax, qword ptr [rsp+104]
     mov rax, qword ptr [rsp+104]
     mov rdx, rax
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
     mov rax, qword ptr [rsp+64]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+144], rax
     mov rax, qword ptr [rsp+104]
@@ -1222,8 +1262,14 @@ pulsec_com_pulse_lang_Throwable_describe_b3:
     lea rcx, pulsec_com_pulse_lang_Throwable_describe_trace_s5
     mov edx, pulsec_com_pulse_lang_Throwable_describe_trace_s5_len
     call pulsec_rt_traceUpdateTop
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
     mov rax, qword ptr [rsp+72]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     cmp ecx, 0
     je Throwable_describe_vd5_17_null
     call pulsec_com_pulse_lang_Throwable_describe
@@ -1236,6 +1282,8 @@ Throwable_describe_vd5_17_done:
     mov edx, pulsec_com_pulse_lang_Throwable_describe_trace_s6_len
     call pulsec_rt_traceUpdateTop
     mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
     mov qword ptr [rsp+104], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -1243,8 +1291,14 @@ Throwable_describe_vd5_17_done:
     mov rax, qword ptr [rsp+104]
     mov rax, qword ptr [rsp+104]
     mov rdx, rax
+    mov qword ptr [rsp+144], rdx
+    mov qword ptr [rsp+152], r8
+    mov qword ptr [rsp+160], r9
     mov rax, qword ptr [rsp+64]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+144]
+    mov r8, qword ptr [rsp+152]
+    mov r9, qword ptr [rsp+160]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+144], rax
     mov rax, qword ptr [rsp+104]
@@ -1257,12 +1311,12 @@ pulsec_com_pulse_lang_Throwable_describe_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 152
+    add rsp, 216
     ret
 pulsec_com_pulse_lang_Throwable_describe endp
 
 pulsec_com_pulse_lang_Throwable_toString proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1286,6 +1340,8 @@ pulsec_com_pulse_lang_Throwable_toString_b0:
 @@:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_Throwable_typeName]
     mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -1312,12 +1368,12 @@ pulsec_com_pulse_lang_Throwable_toString_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Throwable_toString endp
 
 pulsec_com_pulse_lang_Throwable_panic proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1336,17 +1392,28 @@ pulsec_com_pulse_lang_Throwable_panic_b0:
 Throwable_panic_vd0_4_null:
     call pulsec_rt_dispatchNullReceiverPanic
 Throwable_panic_vd0_4_done:
-    mov dword ptr [rsp+72], eax
-    mov eax, dword ptr [rsp+72]
-    mov ecx, eax
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+72], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
     call pulsec_rt_panic
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
     xor eax, eax
     jmp pulsec_com_pulse_lang_Throwable_panic_epilogue
 pulsec_com_pulse_lang_Throwable_panic_epilogue:
 pulsec_com_pulse_lang_Throwable_panic_epilogue_post:
     mov qword ptr [rsp+40], rax
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Throwable_panic endp
 

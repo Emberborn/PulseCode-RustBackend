@@ -11,6 +11,12 @@ interface List {
     int size();
 
     /**
+     * Reports whether the list currently stores any values.
+     * Use this as the baseline emptiness check for ordered containers.
+     */
+    boolean isEmpty();
+
+    /**
      * Removes all values from the list.
      * Use this to reset an ordered container to its empty state.
      */

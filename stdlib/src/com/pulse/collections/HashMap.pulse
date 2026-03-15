@@ -24,6 +24,14 @@ class HashMap {
     }
 
     /**
+     * Reports whether the map currently stores any entries.
+     * Use this as the baseline emptiness check before keyed reads or writes.
+     */
+    public boolean isEmpty() {
+        return Intrinsics.mapSize(this.handle) == 0;
+    }
+
+    /**
      * Removes all entries from the map.
      * Use this to reuse a mutable map instance.
      */

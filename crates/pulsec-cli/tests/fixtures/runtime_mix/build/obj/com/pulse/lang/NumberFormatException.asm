@@ -23,27 +23,27 @@ extrn pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwabl
 written dq 0
 pulsec_objc_com_pulse_lang_NumberFormatException dd 0
 trace_m0 db "com.pulse.lang.NumberFormatException.NumberFormatException"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 58
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0 db "com.pulse.lang.NumberFormatException.NumberFormatException(NumberFormatException.pulse:12)"
-pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0_len equ $ - pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0
+pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_trace_s0_len equ 90
 trace_m2 db "com.pulse.lang.NumberFormatException.NumberFormatException"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 58
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0 db "com.pulse.lang.NumberFormatException.NumberFormatException(NumberFormatException.pulse:20)"
-pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0_len equ $ - pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0
+pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0_len equ 90
 trace_m4 db "com.pulse.lang.NumberFormatException.NumberFormatException"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 58
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0 db "com.pulse.lang.NumberFormatException.NumberFormatException(NumberFormatException.pulse:28)"
-pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0_len equ $ - pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0
+pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0_len equ 90
 msg0 db "NumberFormatException"
-msg0_len equ $ - msg0
+msg0_len equ 21
 msg1 db "NumberFormatException"
-msg1_len equ $ - msg1
+msg1_len equ 21
 msg2 db "NumberFormatException"
-msg2_len equ $ - msg2
+msg2_len equ 21
 
 .code
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -56,7 +56,7 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException proc
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
     mov qword ptr [rsp+64], rcx
-    mov ecx, 27
+    mov ecx, 29
     call pulsec_rt_objectNew
     mov ecx, eax
     mov qword ptr [rsp+64], rcx
@@ -67,14 +67,32 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_b0:
     lea rcx, msg0
     mov edx, msg0_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
     mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
     xor eax, eax
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+80], eax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+160], rax
     xor eax, eax
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+88], eax
     mov rax, qword ptr [rsp+72]
     mov rdx, rax
@@ -102,12 +120,12 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException endp
 
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -119,12 +137,12 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
-    mov ecx, 27
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov ecx, 29
     call pulsec_rt_objectNew
     mov ecx, eax
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_b0:
     lea rcx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0
     mov edx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_trace_s0_len
@@ -132,18 +150,36 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_b0:
     lea rcx, msg1
     mov edx, msg1_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
     mov rax, qword ptr [rsp+80]
-    mov rax, qword ptr [rsp+64]
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
     mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+168], rax
     xor eax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+120]
     mov dword ptr [rsp+96], eax
     mov rax, qword ptr [rsp+80]
     mov rdx, rax
@@ -151,7 +187,7 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_b0:
     mov r8, rax
     mov eax, dword ptr [rsp+96]
     mov r9d, eax
-    mov rcx, qword ptr [rsp+72]
+    mov rcx, qword ptr [rsp+64]
     cmp ecx, 0
     je pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_vd_stmt_0_0_0_null
     call pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable
@@ -167,19 +203,19 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_vd_stm
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+120]
-    mov eax, dword ptr [rsp+72]
+    mov eax, dword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_epilogue
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_epilogue:
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String endp
 
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -191,13 +227,13 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwa
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], r8
-    mov qword ptr [rsp+80], rcx
-    mov ecx, 27
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov qword ptr [rsp+80], r8
+    mov ecx, 29
     call pulsec_rt_objectNew
     mov ecx, eax
-    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+64], rcx
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_b0:
     lea rcx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0
     mov edx, pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_trace_s0_len
@@ -205,18 +241,36 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwa
     lea rcx, msg2
     mov edx, msg2_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
     mov rax, qword ptr [rsp+88]
-    mov rax, qword ptr [rsp+64]
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
     mov rax, qword ptr [rsp+96]
-    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+176]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+128]
     mov qword ptr [rsp+104], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -228,7 +282,7 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwa
     mov r8, rax
     mov rax, qword ptr [rsp+104]
     mov r9, rax
-    mov rcx, qword ptr [rsp+80]
+    mov rcx, qword ptr [rsp+64]
     cmp ecx, 0
     je pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_vd_stmt_0_0_0_null
     call pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable
@@ -247,14 +301,14 @@ pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwa
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+128]
-    mov eax, dword ptr [rsp+80]
+    mov eax, dword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_epilogue
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_epilogue:
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_NumberFormatException_NumberFormatException__String_Throwable endp
 

@@ -22,33 +22,33 @@ extrn pulsec_rt_consoleWriteLine:proc
 written dq 0
 pulsec_objc_com_pulse_lang_IO dd 0
 trace_m0 db "com.pulse.lang.IO.println"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 25
 pulsec_com_pulse_lang_IO_println__String_trace_s0 db "com.pulse.lang.IO.println(IO.pulse:14)"
-pulsec_com_pulse_lang_IO_println__String_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_println__String_trace_s0
+pulsec_com_pulse_lang_IO_println__String_trace_s0_len equ 38
 trace_m2 db "com.pulse.lang.IO.println"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 25
 pulsec_com_pulse_lang_IO_println__int_trace_s0 db "com.pulse.lang.IO.println(IO.pulse:22)"
-pulsec_com_pulse_lang_IO_println__int_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_println__int_trace_s0
+pulsec_com_pulse_lang_IO_println__int_trace_s0_len equ 38
 trace_m4 db "com.pulse.lang.IO.println"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 25
 pulsec_com_pulse_lang_IO_println__boolean_trace_s0 db "com.pulse.lang.IO.println(IO.pulse:30)"
-pulsec_com_pulse_lang_IO_println__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_println__boolean_trace_s0
+pulsec_com_pulse_lang_IO_println__boolean_trace_s0_len equ 38
 trace_m6 db "com.pulse.lang.IO.print"
-trace_m6_len equ $ - trace_m6
+trace_m6_len equ 23
 pulsec_com_pulse_lang_IO_print__String_trace_s0 db "com.pulse.lang.IO.print(IO.pulse:38)"
-pulsec_com_pulse_lang_IO_print__String_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_print__String_trace_s0
+pulsec_com_pulse_lang_IO_print__String_trace_s0_len equ 36
 trace_m8 db "com.pulse.lang.IO.print"
-trace_m8_len equ $ - trace_m8
+trace_m8_len equ 23
 pulsec_com_pulse_lang_IO_print__int_trace_s0 db "com.pulse.lang.IO.print(IO.pulse:46)"
-pulsec_com_pulse_lang_IO_print__int_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_print__int_trace_s0
+pulsec_com_pulse_lang_IO_print__int_trace_s0_len equ 36
 trace_m10 db "com.pulse.lang.IO.print"
-trace_m10_len equ $ - trace_m10
+trace_m10_len equ 23
 pulsec_com_pulse_lang_IO_print__boolean_trace_s0 db "com.pulse.lang.IO.print(IO.pulse:54)"
-pulsec_com_pulse_lang_IO_print__boolean_trace_s0_len equ $ - pulsec_com_pulse_lang_IO_print__boolean_trace_s0
+pulsec_com_pulse_lang_IO_print__boolean_trace_s0_len equ 36
 
 .code
 pulsec_com_pulse_lang_IO_println__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -75,12 +75,12 @@ pulsec_com_pulse_lang_IO_println__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_IO_println__String endp
 
 pulsec_com_pulse_lang_IO_println__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -109,12 +109,12 @@ pulsec_com_pulse_lang_IO_println__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_IO_println__int endp
 
 pulsec_com_pulse_lang_IO_println__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -143,12 +143,12 @@ pulsec_com_pulse_lang_IO_println__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_IO_println__boolean endp
 
 pulsec_com_pulse_lang_IO_print__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -175,12 +175,12 @@ pulsec_com_pulse_lang_IO_print__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_IO_print__String endp
 
 pulsec_com_pulse_lang_IO_print__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -209,12 +209,12 @@ pulsec_com_pulse_lang_IO_print__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_IO_print__int endp
 
 pulsec_com_pulse_lang_IO_print__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -243,7 +243,7 @@ pulsec_com_pulse_lang_IO_print__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_IO_print__boolean endp
 

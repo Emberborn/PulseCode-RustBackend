@@ -5,6 +5,53 @@ use super::super::{IrUnaryOp, IrValueId, IrValueKind};
 use super::IrBuilder;
 
 impl IrBuilder {
+    fn lookup_method_return_type(&self, owner: &str, member: &str, arity: usize) -> Option<String> {
+        let simple = owner.rsplit('.').next().unwrap_or(owner);
+        self.method_return_types
+            .get(&(simple.to_string(), member.to_string(), arity))
+            .cloned()
+    }
+
+    fn lookup_unique_method_return_type(&self, member: &str, arity: usize) -> Option<String> {
+        let mut found: Option<String> = None;
+        for ((_, method_name, method_arity), return_ty) in &self.method_return_types {
+            if method_name != member || *method_arity != arity {
+                continue;
+            }
+            match &found {
+                None => found = Some(return_ty.clone()),
+                Some(existing) if existing == return_ty => {}
+                Some(_) => return None,
+            }
+        }
+        found
+    }
+
+    fn infer_call_return_type(&self, callee: &Expr, arity: usize) -> Option<String> {
+        match callee {
+            Expr::Var(name) => self
+                .lookup_method_return_type(&self.class_name, name, arity)
+                .or_else(|| self.lookup_method_return_type(name, name, arity))
+                .or_else(|| self.lookup_unique_method_return_type(name, arity)),
+            Expr::MemberAccess { object, member } => match &**object {
+                Expr::Var(name) => {
+                    let owner = self
+                        .local_types
+                        .get(name)
+                        .cloned()
+                        .unwrap_or_else(|| name.clone());
+                    self.lookup_method_return_type(&owner, member, arity)
+                }
+                Expr::This => self.lookup_method_return_type(&self.class_name, member, arity),
+                Expr::Super => self
+                    .lookup_method_return_type("Object", member, arity)
+                    .or_else(|| self.lookup_method_return_type(&self.class_name, member, arity)),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     fn signed_rank(ty: &str) -> Option<u8> {
         match ty {
             "byte" => Some(1),
@@ -295,7 +342,10 @@ impl IrBuilder {
                 self.push_value(self.class_name.clone(), IrValueKind::SuperRef, statement_index)
             }
             Expr::Var(v) => self.push_value(
-                "unknown".to_string(),
+                self.local_types
+                    .get(v)
+                    .cloned()
+                    .unwrap_or_else(|| "unknown".to_string()),
                 IrValueKind::LocalRef(v.clone()),
                 statement_index,
             ),
@@ -380,6 +430,24 @@ impl IrBuilder {
                 let mut right_id = self.lower_expr(right, statement_index);
                 let left_ty = self.value_ty(left_id);
                 let right_ty = self.value_ty(right_id);
+                if matches!(op, BinaryOp::Add) && left_ty == "String" {
+                    let callee_id = self.push_value(
+                        "unknown".to_string(),
+                        IrValueKind::MemberAccess {
+                            object: left_id,
+                            member: "concat".to_string(),
+                        },
+                        statement_index,
+                    );
+                    return self.push_value(
+                        "String".to_string(),
+                        IrValueKind::Call {
+                            callee: callee_id,
+                            args: vec![right_id],
+                        },
+                        statement_index,
+                    );
+                }
                 let ty = match op {
                     BinaryOp::Add => {
                         if left_ty == "String" || right_ty == "String" {
@@ -578,8 +646,11 @@ impl IrBuilder {
                     .iter()
                     .map(|arg| self.lower_expr(arg, statement_index))
                     .collect::<Vec<_>>();
+                let ty = self
+                    .infer_call_return_type(callee, args.len())
+                    .unwrap_or_else(|| "unknown".to_string());
                 self.push_value(
-                    "unknown".to_string(),
+                    ty,
                     IrValueKind::Call {
                         callee: callee_id,
                         args: arg_ids,

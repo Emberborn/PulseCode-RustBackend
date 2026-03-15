@@ -6,7 +6,7 @@ class Main {
     public static void main() {
         SoakRunner runner = new SoakRunner();
         int checksum = runner.run(200);
-        if (checksum == 20313) {
+        if (checksum == 40415) {
             IO.println("soak_ok");
             IO.println(checksum);
         } else {

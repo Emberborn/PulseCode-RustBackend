@@ -24,6 +24,14 @@ class ArrayList implements Collection, List {
     }
 
     /**
+     * Reports whether the list currently stores any values.
+     * Use this before indexed reads when empty-list behavior should be avoided.
+     */
+    public boolean isEmpty() {
+        return Intrinsics.listSize(this.handle) == 0;
+    }
+
+    /**
      * Removes all values from the list.
      * Use this to reuse an existing list instance.
      */

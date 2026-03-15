@@ -21,6 +21,11 @@ interface List
 Returns the number of values currently stored in the list.
 Use this before indexed access or to test for emptiness.
 
+### ``boolean isEmpty();``
+
+Reports whether the list currently stores any values.
+Use this as the baseline emptiness check for ordered containers.
+
 ### ``void clear();``
 
 Removes all values from the list.

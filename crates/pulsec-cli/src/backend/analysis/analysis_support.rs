@@ -135,14 +135,27 @@ impl BackendAdapter for NoopNativeBackend {
                     || link_plan.runtime_owned_objects.is_empty()
                 {
                     if let Some(split_err) = &split_failure_detail {
-                        return Err(format!(
+                        let detail = format!(
                             "shared output mode requires split runtime/app object emission (split failed: {})",
                             split_err
-                        ));
+                        );
+                        write_native_failure_report(
+                            &link_report_path,
+                            "not-linked",
+                            &detail,
+                            &[],
+                        )?;
+                        return Err(detail);
                     }
-                    return Err(
-                        "shared output mode requires split runtime/app object emission".to_string(),
-                    );
+                    let detail =
+                        "shared output mode requires split runtime/app object emission".to_string();
+                    write_native_failure_report(
+                        &link_report_path,
+                        "not-linked",
+                        &detail,
+                        &[],
+                    )?;
+                    return Err(detail);
                 }
                 let shared = try_link_windows_shared_artifacts(
                     &link_plan,

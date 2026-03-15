@@ -86,7 +86,7 @@ const DISPATCH_TYPE_PANIC_SYMBOL: &str = "pulsec_rt_dispatchInvalidTypePanic";
 const STRING_SLOT_BYTES: u32 = 256;
 const ARC_ARG_SPILL_STRIDE: usize = 8;
 const ARC_ARG_SPILL_MAX: usize = 4;
-const ARC_SCRATCH_EXTRA_SLOTS: usize = 2;
+const ARC_SCRATCH_EXTRA_SLOTS: usize = 6;
 const FRAME_BUDGET_WARN_BYTES: usize = 1024;
 const FRAME_BUDGET_FAIL_BYTES: usize = 4096;
 const ARC_HANDLE_SLOT_MASK: u32 = 0xFFFF_FFFF;
@@ -117,6 +117,7 @@ pub struct NativeLinkPlan {
     pub app_owned_objects: Vec<PathBuf>,
     pub runtime_owned_objects: Vec<PathBuf>,
     pub system_inputs: Vec<PathBuf>,
+    pub shared_runtime_exports: Vec<String>,
 }
 
 pub trait BackendAdapter {

@@ -1478,6 +1478,10 @@ pub(crate) fn emit_class_arc_scan_edges_proc(
         out.push_str("    mov rcx, qword ptr [r10+rcx*8]\n");
         out.push_str("    test rcx, rcx\n");
         out.push_str(&format!("    jz {}\n", skip));
+        out.push_str(&format!(
+            "    and ecx, {}\n",
+            ARC_HANDLE_SLOT_MASK
+        ));
         out.push_str("    cmp ecx, 1\n");
         out.push_str(&format!("    jb {}\n", skip));
         out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
@@ -1540,6 +1544,10 @@ pub(crate) fn emit_class_arc_invalidate_edges_proc(
         out.push_str("    mov rcx, qword ptr [r10+rcx*8]\n");
         out.push_str("    test rcx, rcx\n");
         out.push_str(&format!("    jz {}\n", skip));
+        out.push_str(&format!(
+            "    and ecx, {}\n",
+            ARC_HANDLE_SLOT_MASK
+        ));
         out.push_str("    cmp ecx, 1\n");
         out.push_str(&format!("    jb {}\n", skip));
         out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
@@ -1951,6 +1959,7 @@ pub(crate) fn emit_weak_get_proc(out: &mut String, symbol: &str) {
     let token_ok = format!("{}_token_ok", symbol);
     let token_plain = format!("{}_token_plain", symbol);
     let target_live = format!("{}_target_live", symbol);
+    let target_dead = format!("{}_target_dead", symbol);
     out.push_str(&format!("{} proc\n", symbol));
     out.push_str("    cmp ecx, 0\n");
     out.push_str(&format!("    je {}\n", done));
@@ -1987,12 +1996,15 @@ pub(crate) fn emit_weak_get_proc(out: &mut String, symbol: &str) {
     out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r11*4]\n");
     out.push_str("    cmp eax, 0\n");
     out.push_str(&format!("    jne {}\n", target_live));
-    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str(&format!("    jmp {}\n", target_dead));
     out.push_str(&format!("{}:\n", target_live));
     out.push_str("    mov eax, r11d\n");
     out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
     out.push_str("    or rax, rdx\n");
-    out.push_str(&format!("    jmp {}\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", target_dead));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
     out.push_str(&format!("{}:\n", stale));
     out.push_str("    lea rcx, rt_stale_handle_err\n");
     out.push_str("    mov edx, rt_stale_handle_err_len\n");
@@ -2734,6 +2746,102 @@ pub(crate) fn emit_string_length_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("{} endp\n", symbol));
 }
 
+pub(crate) fn emit_string_equals_proc(out: &mut String, symbol: &str) {
+    let same = format!("{}_same", symbol);
+    let done_true = format!("{}_done_true", symbol);
+    let done_false = format!("{}_done_false", symbol);
+    let left_plain = format!("{}_left_plain", symbol);
+    let right_plain = format!("{}_right_plain", symbol);
+    let loop_label = format!("{}_loop", symbol);
+    let left_ok = format!("{}_left_ok", symbol);
+    let right_ok = format!("{}_right_ok", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    cmp rcx, rdx\n");
+    out.push_str(&format!("    je {}\n", same));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done_false));
+    out.push_str("    test rdx, rdx\n");
+    out.push_str(&format!("    jz {}\n", done_false));
+    out.push_str("    mov r10d, ecx\n");
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", done_false));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", done_false));
+    out.push_str("    mov r11, rcx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", left_plain));
+    out.push_str("    cmp r11d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str(&format!("    jne {}\n", done_false));
+    out.push_str(&format!("{}:\n", left_plain));
+    out.push_str(&format!(
+        "    cmp dword ptr [rt_arc_kinds+r10*4], {}\n",
+        ARC_KIND_TAG_STRING
+    ));
+    out.push_str(&format!("    jne {}\n", done_false));
+    out.push_str("    cmp dword ptr [rt_arc_refcounts+r10*4], 0\n");
+    out.push_str(&format!("    je {}\n", done_false));
+    out.push_str(&format!("{}:\n", left_ok));
+    out.push_str("    mov dword ptr [rsp+32], r10d\n");
+    out.push_str("    mov r10d, edx\n");
+    out.push_str("    cmp r10d, 1\n");
+    out.push_str(&format!("    jb {}\n", done_false));
+    out.push_str("    cmp r10d, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", done_false));
+    out.push_str("    mov r11, rdx\n");
+    out.push_str(&format!("    shr r11, {}\n", ARC_HANDLE_GEN_SHIFT));
+    out.push_str("    test r11d, r11d\n");
+    out.push_str(&format!("    jz {}\n", right_plain));
+    out.push_str("    cmp r11d, dword ptr [rt_arc_generation+r10*4]\n");
+    out.push_str(&format!("    jne {}\n", done_false));
+    out.push_str(&format!("{}:\n", right_plain));
+    out.push_str(&format!(
+        "    cmp dword ptr [rt_arc_kinds+r10*4], {}\n",
+        ARC_KIND_TAG_STRING
+    ));
+    out.push_str(&format!("    jne {}\n", done_false));
+    out.push_str("    cmp dword ptr [rt_arc_refcounts+r10*4], 0\n");
+    out.push_str(&format!("    je {}\n", done_false));
+    out.push_str(&format!("{}:\n", right_ok));
+    out.push_str("    mov dword ptr [rsp+36], r10d\n");
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov r10d, dword ptr [rsp+32]\n");
+    out.push_str("    mov r11d, dword ptr [rsp+36]\n");
+    out.push_str("    mov ecx, dword ptr [rax+r10*4]\n");
+    out.push_str("    cmp ecx, dword ptr [rax+r11*4]\n");
+    out.push_str(&format!("    jne {}\n", done_false));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", loop_label));
+    out.push_str("    cmp eax, ecx\n");
+    out.push_str(&format!("    jae {}\n", done_true));
+    out.push_str("    mov r8, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    mov r10d, dword ptr [rsp+32]\n");
+    out.push_str("    imul r10d, 256\n");
+    out.push_str("    add r10, r8\n");
+    out.push_str("    mov r11d, dword ptr [rsp+36]\n");
+    out.push_str("    imul r11d, 256\n");
+    out.push_str("    add r11, r8\n");
+    out.push_str("    mov dl, byte ptr [r10+rax]\n");
+    out.push_str("    cmp dl, byte ptr [r11+rax]\n");
+    out.push_str(&format!("    jne {}\n", done_false));
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", loop_label));
+    out.push_str(&format!("{}:\n", same));
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done_true));
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done_false));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
 pub(crate) fn emit_class_simple_name_proc(out: &mut String, symbol: &str) {
     let scan = format!("{}_scan", symbol);
     let no_dot = format!("{}_no_dot", symbol);
@@ -2754,7 +2862,9 @@ pub(crate) fn emit_class_simple_name_proc(out: &mut String, symbol: &str) {
     out.push_str("    sub r10d, 1\n");
     out.push_str("    cmp byte ptr [r9+r10], '.'\n");
     out.push_str(&format!("    jne {}\n", scan));
-    out.push_str("    lea rcx, [r9+r10+1]\n");
+    out.push_str("    mov rcx, r9\n");
+    out.push_str("    add rcx, r10\n");
+    out.push_str("    add rcx, 1\n");
     out.push_str("    mov eax, edx\n");
     out.push_str("    sub eax, r10d\n");
     out.push_str("    sub eax, 1\n");
@@ -2830,10 +2940,10 @@ pub(crate) fn emit_string_char_at_proc(out: &mut String, symbol: &str) {
 pub(crate) fn emit_string_substring_proc(out: &mut String, symbol: &str) {
     let fail = format!("{}_fail", symbol);
     out.push_str(&format!("{} proc\n", symbol));
-    out.push_str("    mov r9d, edx\n");
-    out.push_str("    mov r10d, r8d\n");
     emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_STRING), None);
     out.push_str("    mov r11d, ecx\n");
+    out.push_str("    mov r9d, edx\n");
+    out.push_str("    mov r10d, r8d\n");
     out.push_str("    cmp r9d, 0\n");
     out.push_str(&format!("    jl {}\n", fail));
     out.push_str("    cmp r10d, r9d\n");
@@ -3851,17 +3961,21 @@ pub(crate) fn emit_array_set_proc(out: &mut String, symbol: &str, table_ptr: &st
     out.push_str("    test r10, r10\n");
     out.push_str("    jz @F\n");
     if table_ptr == "rt_arr_s_ptr" {
+        out.push_str("    mov qword ptr [rt_tmp_arg_key], rdx\n");
+        out.push_str("    mov qword ptr [rt_tmp_arg_val], r8\n");
         out.push_str("    mov rax, qword ptr [r10+rdx*8]\n");
         out.push_str("    test rax, rax\n");
         out.push_str(&format!("    jz {}\n", ref_release_done));
         out.push_str("    mov rcx, rax\n");
         out.push_str("    call pulsec_rt_arcRelease\n");
         out.push_str(&format!("{}:\n", ref_release_done));
-        out.push_str("    mov rcx, r8\n");
+        out.push_str("    mov rcx, qword ptr [rt_tmp_arg_val]\n");
         out.push_str("    call pulsec_rt_arcRetain\n");
         out.push_str("    mov ecx, dword ptr [rt_tmp_arr_slot]\n");
+        out.push_str("    mov rdx, qword ptr [rt_tmp_arg_key]\n");
         out.push_str("    mov r11, qword ptr [rt_arr_s_ptr_ptr]\n");
         out.push_str("    mov r10, qword ptr [r11+rcx*8]\n");
+        out.push_str("    mov r8, qword ptr [rt_tmp_arg_val]\n");
         out.push_str("    mov qword ptr [r10+rdx*8], r8\n");
     } else {
         out.push_str("    mov dword ptr [r10+rdx*4], r8d\n");
@@ -4866,22 +4980,32 @@ pub(crate) fn emit_map_contains_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("{} proc\n", symbol));
     out.push_str("    xor eax, eax\n");
     emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(2));
+    out.push_str("    mov qword ptr [rt_tmp_arg_key], rdx\n");
     out.push_str("    mov r10d, ecx\n");
     out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
     out.push_str("    mov r8d, dword ptr [rax+r10*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], r8d\n");
     out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
     out.push_str("    mov r11, qword ptr [rax+r10*8]\n");
+    out.push_str("    mov qword ptr [rt_tmp_ptr_a], r11\n");
     out.push_str("    test r11, r11\n");
     out.push_str(&format!("    jz {}\n", l_end));
     out.push_str("    xor r9d, r9d\n");
     out.push_str(&format!("{}:\n", l_loop));
-    out.push_str("    cmp r9d, r8d\n");
+    out.push_str("    cmp r9d, dword ptr [rt_tmp_size]\n");
     out.push_str(&format!("    jae {}\n", l_end));
-    out.push_str("    cmp qword ptr [r11+r9*8], rdx\n");
+    out.push_str("    mov r11, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    mov rcx, qword ptr [r11+r9*8]\n");
+    out.push_str("    mov rdx, qword ptr [rt_tmp_arg_key]\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_bytes], r9d\n");
+    out.push_str("    call pulsec_rt_stringEquals\n");
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    cmp eax, 1\n");
     out.push_str(&format!("    jne {}\n", l_next));
     out.push_str("    mov eax, 1\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{}:\n", l_next));
+    out.push_str("    mov r9d, r10d\n");
     out.push_str("    add r9d, 1\n");
     out.push_str(&format!("    jmp {}\n", l_loop));
     out.push_str(&format!("{}:\n", l_end));
@@ -4955,10 +5079,15 @@ pub(crate) fn emit_map_put_proc(out: &mut String, symbol: &str, is_int: bool) {
     out.push_str("    cmp eax, dword ptr [rt_tmp_size]\n");
     out.push_str(&format!("    jae {}\n", l_insert));
     out.push_str("    mov r10, qword ptr [rt_tmp_ptr_a]\n");
+    out.push_str("    mov rcx, qword ptr [r10+rax*8]\n");
     out.push_str("    mov rdx, qword ptr [rt_tmp_arg_key]\n");
-    out.push_str("    cmp qword ptr [r10+rax*8], rdx\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_bytes], eax\n");
+    out.push_str("    call pulsec_rt_stringEquals\n");
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    cmp eax, 1\n");
     out.push_str(&format!("    jne {}\n", l_miss));
-    out.push_str("    mov dword ptr [rt_tmp_arr_len], eax\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_len], r10d\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_arr_len]\n");
     out.push_str("    mov r10, qword ptr [rt_tmp_ptr_b]\n");
     out.push_str("    cmp dword ptr [r10+rax*4], 2\n");
     out.push_str("    jne @F\n");
@@ -4988,6 +5117,7 @@ pub(crate) fn emit_map_put_proc(out: &mut String, symbol: &str, is_int: bool) {
     }
     out.push_str(&format!("    jmp {}\n", l_end));
     out.push_str(&format!("{}:\n", l_miss));
+    out.push_str("    mov eax, r10d\n");
     out.push_str("    add eax, 1\n");
     out.push_str(&format!("    jmp {}\n", l_loop));
     out.push_str(&format!("{}:\n", l_insert));
@@ -5000,6 +5130,8 @@ pub(crate) fn emit_map_put_proc(out: &mut String, symbol: &str, is_int: bool) {
         out.push_str("    mov rcx, qword ptr [rt_tmp_arg_val]\n");
         out.push_str("    call pulsec_rt_arcRetain\n");
     }
+    out.push_str("    mov r9d, dword ptr [rt_tmp_size]\n");
+    out.push_str("    mov r11d, dword ptr [rt_tmp_arr_slot]\n");
     out.push_str("    mov r9d, dword ptr [rt_tmp_size]\n");
     out.push_str("    mov r10, qword ptr [rt_tmp_ptr_a]\n");
     out.push_str("    mov rdx, qword ptr [rt_tmp_arg_key]\n");
@@ -5190,9 +5322,11 @@ pub(crate) fn emit_map_get_proc(out: &mut String, symbol: &str, want_int: bool) 
     out.push_str(&format!("{} proc\n", symbol));
     out.push_str("    xor eax, eax\n");
     emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_COLLECTION), Some(2));
+    out.push_str("    mov qword ptr [rt_tmp_arg_key], rdx\n");
     out.push_str("    mov r11d, ecx\n");
     out.push_str("    mov rax, qword ptr [rt_map_size_ptr]\n");
     out.push_str("    mov r8d, dword ptr [rax+r11*4]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], r8d\n");
     out.push_str("    mov rax, qword ptr [rt_map_keys_ptr_ptr]\n");
     out.push_str("    mov rax, qword ptr [rax+r11*8]\n");
     out.push_str("    mov qword ptr [rt_tmp_ptr_a], rax\n");
@@ -5213,10 +5347,16 @@ pub(crate) fn emit_map_get_proc(out: &mut String, symbol: &str, want_int: bool) 
     out.push_str(&format!("    jz {}\n", l_end));
     out.push_str("    xor r9d, r9d\n");
     out.push_str(&format!("{}:\n", l_loop));
-    out.push_str("    cmp r9d, r8d\n");
+    out.push_str("    cmp r9d, dword ptr [rt_tmp_size]\n");
     out.push_str(&format!("    jae {}\n", l_end));
     out.push_str("    mov rax, qword ptr [rt_tmp_ptr_a]\n");
-    out.push_str("    cmp qword ptr [rax+r9*8], rdx\n");
+    out.push_str("    mov rcx, qword ptr [rax+r9*8]\n");
+    out.push_str("    mov rdx, qword ptr [rt_tmp_arg_key]\n");
+    out.push_str("    mov dword ptr [rt_tmp_arr_bytes], r9d\n");
+    out.push_str("    call pulsec_rt_stringEquals\n");
+    out.push_str("    mov r10d, dword ptr [rt_tmp_arr_bytes]\n");
+    out.push_str("    mov r9d, r10d\n");
+    out.push_str("    cmp eax, 1\n");
     out.push_str(&format!("    jne {}\n", l_next));
     if want_int {
         out.push_str("    mov rax, qword ptr [rt_tmp_ptr_b]\n");

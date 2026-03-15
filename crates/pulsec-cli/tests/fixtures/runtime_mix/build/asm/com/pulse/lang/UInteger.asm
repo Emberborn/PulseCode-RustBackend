@@ -24,51 +24,51 @@ pulsec_objc_com_pulse_lang_UInteger dd 0
 pulsec_fld_com_pulse_lang_UInteger_MIN_VALUE dd 0
 pulsec_fld_com_pulse_lang_UInteger_MAX_VALUE dd 4294967295
 trace_m0 db "com.pulse.lang.UInteger.valueOf"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 31
 pulsec_com_pulse_lang_UInteger_valueOf__uint_trace_s0 db "com.pulse.lang.UInteger.valueOf(UInteger.pulse:24)"
-pulsec_com_pulse_lang_UInteger_valueOf__uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_valueOf__uint_trace_s0
+pulsec_com_pulse_lang_UInteger_valueOf__uint_trace_s0_len equ 50
 trace_m2 db "com.pulse.lang.UInteger.parse"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 29
 pulsec_com_pulse_lang_UInteger_parse__String_trace_s0 db "com.pulse.lang.UInteger.parse(UInteger.pulse:32)"
-pulsec_com_pulse_lang_UInteger_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_parse__String_trace_s0
+pulsec_com_pulse_lang_UInteger_parse__String_trace_s0_len equ 48
 trace_m4 db "com.pulse.lang.UInteger.uintValue"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 33
 pulsec_com_pulse_lang_UInteger_uintValue__UInteger_trace_s0 db "com.pulse.lang.UInteger.uintValue(UInteger.pulse:40)"
-pulsec_com_pulse_lang_UInteger_uintValue__UInteger_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_uintValue__UInteger_trace_s0
+pulsec_com_pulse_lang_UInteger_uintValue__UInteger_trace_s0_len equ 52
 trace_m6 db "com.pulse.lang.UInteger.equals"
-trace_m6_len equ $ - trace_m6
+trace_m6_len equ 30
 pulsec_com_pulse_lang_UInteger_equals__uint_uint_trace_s0 db "com.pulse.lang.UInteger.equals(UInteger.pulse:48)"
-pulsec_com_pulse_lang_UInteger_equals__uint_uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_equals__uint_uint_trace_s0
+pulsec_com_pulse_lang_UInteger_equals__uint_uint_trace_s0_len equ 49
 trace_m8 db "com.pulse.lang.UInteger.compare"
-trace_m8_len equ $ - trace_m8
+trace_m8_len equ 31
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s0 db "com.pulse.lang.UInteger.compare(UInteger.pulse:56)"
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s0
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s0_len equ 50
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s1 db "com.pulse.lang.UInteger.compare(UInteger.pulse:57)"
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s1_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s1
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s1_len equ 50
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s2 db "com.pulse.lang.UInteger.compare(UInteger.pulse:59)"
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s2_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s2
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s2_len equ 50
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s3 db "com.pulse.lang.UInteger.compare(UInteger.pulse:60)"
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s3_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s3
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s3_len equ 50
 pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s4 db "com.pulse.lang.UInteger.compare(UInteger.pulse:62)"
-pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s4_len equ $ - pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s4
+pulsec_com_pulse_lang_UInteger_compare__uint_uint_trace_s4_len equ 50
 trace_m14 db "com.pulse.lang.UInteger.toString"
-trace_m14_len equ $ - trace_m14
+trace_m14_len equ 32
 pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0 db "com.pulse.lang.UInteger.toString(UInteger.pulse:70)"
-pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0
+pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0_len equ 51
 trace_m16 db "com.pulse.lang.UInteger.runtimeParse"
-trace_m16_len equ $ - trace_m16
+trace_m16_len equ 36
 pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0 db "com.pulse.lang.UInteger.runtimeParse(UInteger.pulse:78)"
-pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0
+pulsec_com_pulse_lang_UInteger_runtimeParse__String_trace_s0_len equ 55
 trace_m18 db "com.pulse.lang.UInteger.runtimeToString"
-trace_m18_len equ $ - trace_m18
+trace_m18_len equ 39
 pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0 db "com.pulse.lang.UInteger.runtimeToString(UInteger.pulse:86)"
-pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0_len equ $ - pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0
+pulsec_com_pulse_lang_UInteger_runtimeToString__uint_trace_s0_len equ 58
 msg0 db 0
-msg0_len equ $ - msg0
+msg0_len equ 0
 
 .code
 pulsec_com_pulse_lang_UInteger_valueOf__uint proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -92,12 +92,12 @@ pulsec_com_pulse_lang_UInteger_valueOf__uint_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UInteger_valueOf__uint endp
 
 pulsec_com_pulse_lang_UInteger_parse__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -115,6 +115,8 @@ pulsec_com_pulse_lang_UInteger_parse__String_b0:
     mov edx, pulsec_com_pulse_lang_UInteger_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
     mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -128,6 +130,8 @@ pulsec_com_pulse_lang_UInteger_parse__String_b0:
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+72], eax
     mov eax, dword ptr [rsp+72]
     mov ecx, eax
@@ -138,12 +142,12 @@ pulsec_com_pulse_lang_UInteger_parse__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UInteger_parse__String endp
 
 pulsec_com_pulse_lang_UInteger_uintValue__UInteger proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -167,12 +171,12 @@ pulsec_com_pulse_lang_UInteger_uintValue__UInteger_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UInteger_uintValue__UInteger endp
 
 pulsec_com_pulse_lang_UInteger_equals__uint_uint proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -204,12 +208,12 @@ pulsec_com_pulse_lang_UInteger_equals__uint_uint_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_UInteger_equals__uint_uint endp
 
 pulsec_com_pulse_lang_UInteger_compare__uint_uint proc
-    sub rsp, 152
+    sub rsp, 216
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -287,12 +291,12 @@ pulsec_com_pulse_lang_UInteger_compare__uint_uint_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 152
+    add rsp, 216
     ret
 pulsec_com_pulse_lang_UInteger_compare__uint_uint endp
 
 pulsec_com_pulse_lang_UInteger_toString__uint proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -310,6 +314,8 @@ pulsec_com_pulse_lang_UInteger_toString__uint_b0:
     mov edx, pulsec_com_pulse_lang_UInteger_toString__uint_trace_s0_len
     call pulsec_rt_traceUpdateTop
     mov eax, dword ptr [rsp+64]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+72], eax
     mov eax, dword ptr [rsp+72]
     mov ecx, eax
@@ -320,12 +326,12 @@ pulsec_com_pulse_lang_UInteger_toString__uint_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UInteger_toString__uint endp
 
 pulsec_com_pulse_lang_UInteger_runtimeParse__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -350,12 +356,12 @@ pulsec_com_pulse_lang_UInteger_runtimeParse__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UInteger_runtimeParse__String endp
 
 pulsec_com_pulse_lang_UInteger_runtimeToString__uint proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -381,7 +387,7 @@ pulsec_com_pulse_lang_UInteger_runtimeToString__uint_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UInteger_runtimeToString__uint endp
 

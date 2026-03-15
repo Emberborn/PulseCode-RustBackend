@@ -192,7 +192,7 @@ C2-22 progress notes:
 - leak/stability soak lock test added: `lock_c2_22_soak_memory_trend_is_stable`.
 - lock executes repeated `strict_stress_soak` build+run cycles and enforces:
   - no stub fallback (`status=linked` required),
-  - deterministic runtime output (`soak_ok`, checksum `20313`),
+  - deterministic runtime output (`soak_ok`, checksum `40415`),
   - bounded memory trend via peak working-set spread/drift thresholds over post-warmup iterations.
 - trend thresholds are configurable for CI environments:
   - `PULSEC_SOAK_TREND_ITERS` (default `8`, min `5`),

@@ -20,15 +20,15 @@ extrn pulsec_std_com_pulse_lang_IO_println:proc
 written dq 0
 pulsec_objc_app_runtime_Main dd 0
 trace_m0 db "app.runtime.Main.main"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 21
 pulsec_app_runtime_Main_main_trace_s0 db "app.runtime.Main.main(Main.pulse:6)"
-pulsec_app_runtime_Main_main_trace_s0_len equ $ - pulsec_app_runtime_Main_main_trace_s0
+pulsec_app_runtime_Main_main_trace_s0_len equ 35
 msg0 db "runtime_mix_ok"
-msg0_len equ $ - msg0
+msg0_len equ 14
 
 .code
 pulsec_app_runtime_Main_main proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -56,7 +56,7 @@ pulsec_app_runtime_Main_main_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_app_runtime_Main_main endp
 

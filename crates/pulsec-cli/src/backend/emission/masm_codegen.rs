@@ -12,6 +12,78 @@ pub(crate) fn emit_arc_release_from_eax(out: &mut String) {
     out.push_str("    call pulsec_rt_arcRelease\n");
 }
 
+fn emit_preserve_call_arg_registers(out: &mut String, method: &IrMethod) {
+    out.push_str(&format!(
+        "    mov qword ptr [rsp+{}], rdx\n",
+        masm_call_arg_preserve_offset(method, 0)
+    ));
+    out.push_str(&format!(
+        "    mov qword ptr [rsp+{}], r8\n",
+        masm_call_arg_preserve_offset(method, 1)
+    ));
+    out.push_str(&format!(
+        "    mov qword ptr [rsp+{}], r9\n",
+        masm_call_arg_preserve_offset(method, 2)
+    ));
+}
+
+fn emit_restore_call_arg_registers(out: &mut String, method: &IrMethod) {
+    out.push_str(&format!(
+        "    mov rdx, qword ptr [rsp+{}]\n",
+        masm_call_arg_preserve_offset(method, 0)
+    ));
+    out.push_str(&format!(
+        "    mov r8, qword ptr [rsp+{}]\n",
+        masm_call_arg_preserve_offset(method, 1)
+    ));
+    out.push_str(&format!(
+        "    mov r9, qword ptr [rsp+{}]\n",
+        masm_call_arg_preserve_offset(method, 2)
+    ));
+}
+
+fn emit_preserve_nested_arg_spills(out: &mut String, method: &IrMethod, count: usize) {
+    for idx in 0..count {
+        out.push_str(&format!(
+            "    mov rax, qword ptr [rsp+{}]\n",
+            arc_arg_spill_offset(method, idx)
+        ));
+        out.push_str(&format!(
+            "    mov qword ptr [rsp+{}], rax\n",
+            masm_nested_call_arg_preserve_offset(method, idx)
+        ));
+    }
+}
+
+fn emit_restore_nested_arg_spills(out: &mut String, method: &IrMethod, count: usize) {
+    for idx in 0..count {
+        out.push_str(&format!(
+            "    mov rax, qword ptr [rsp+{}]\n",
+            masm_nested_call_arg_preserve_offset(method, idx)
+        ));
+        out.push_str(&format!(
+            "    mov qword ptr [rsp+{}], rax\n",
+            arc_arg_spill_offset(method, idx)
+        ));
+    }
+}
+
+fn emit_restore_nested_arg_spills_preserving_rax(
+    out: &mut String,
+    method: &IrMethod,
+    count: usize,
+) {
+    out.push_str(&format!(
+        "    mov qword ptr [rsp+{}], rax\n",
+        masm_call_retval_spill_offset(method)
+    ));
+    emit_restore_nested_arg_spills(out, method, count);
+    out.push_str(&format!(
+        "    mov rax, qword ptr [rsp+{}]\n",
+        masm_call_retval_spill_offset(method)
+    ));
+}
+
 fn emit_trace_update_for_source(
     out: &mut String,
     method_symbol: &str,
@@ -168,6 +240,34 @@ fn resolve_backend_call_value_type(
         }
         _ => None,
     }
+}
+
+fn resolve_backend_runtime_value_type(
+    method: &IrMethod,
+    value_id: IrValueId,
+    current_class_name: &str,
+    class_names: &[String],
+    local_types: &HashMap<String, String>,
+    field_types: &HashMap<String, String>,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+) -> Option<String> {
+    let value = method.values.get(value_id as usize)?;
+    if value.ty != "unknown" {
+        return Some(value.ty.clone());
+    }
+    if let IrValueKind::LocalRef(name) = &value.kind {
+        if let Some(local_ty) = local_types.get(name) {
+            return Some(local_ty.clone());
+        }
+    }
+    resolve_backend_call_value_type(
+        method,
+        value_id,
+        current_class_name,
+        class_names,
+        field_types,
+        method_symbols_by_sig,
+    )
 }
 
 fn is_float_scalar_type_name(ty: &str) -> bool {
@@ -668,6 +768,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                 .map(uses_qword_scalar_type_name)
                 .or_else(|| arg_ty.as_deref().map(uses_qword_scalar_type_name))
                 .unwrap_or(false);
+        emit_preserve_nested_arg_spills(out, method, idx);
         emit_value_to_eax_masm(
             out,
             method,
@@ -689,6 +790,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
             param_offsets,
             string_literals,
         )?;
+        emit_restore_nested_arg_spills_preserving_rax(out, method, idx);
         if let (Some(source_ty), Some(expected_ty)) = (arg_ty.as_deref(), expected_ty.as_deref()) {
             emit_runtime_numeric_coercion(out, source_ty, expected_ty);
         }
@@ -746,6 +848,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                 current_class_name,
             )
             .map(|ty| normalize_type_token(&ty));
+            emit_preserve_nested_arg_spills(out, method, fixed_count + 1);
             emit_value_to_eax_masm(
                 out,
                 method,
@@ -767,6 +870,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                 param_offsets,
                 string_literals,
             )?;
+            emit_restore_nested_arg_spills_preserving_rax(out, method, fixed_count + 1);
             if let Some(source_ty) = arg_ty.as_deref() {
                 emit_runtime_numeric_coercion(out, source_ty, &vararg_element_ty);
             }
@@ -804,6 +908,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                     .map(uses_qword_scalar_type_name)
                     .or_else(|| arg_ty.as_deref().map(uses_qword_scalar_type_name))
                     .unwrap_or(false);
+            emit_preserve_nested_arg_spills(out, method, idx);
             emit_value_to_eax_masm(
                 out,
                 method,
@@ -825,6 +930,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                 param_offsets,
                 string_literals,
             )?;
+            emit_restore_nested_arg_spills_preserving_rax(out, method, idx);
             if let (Some(source_ty), Some(expected_ty)) = (arg_ty.as_deref(), expected_ty.as_deref()) {
                 emit_runtime_numeric_coercion(out, source_ty, expected_ty);
             }
@@ -950,8 +1056,6 @@ fn emit_array_new_initialized_value(
         "pulsec_rt_arraySetString"
     };
     for (index, item) in values.iter().enumerate() {
-        out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", tmp_offset));
-        out.push_str(&format!("    mov edx, {}\n", index));
         emit_value_to_eax_masm(
             out,
             method,
@@ -973,6 +1077,8 @@ fn emit_array_new_initialized_value(
             param_offsets,
             string_literals,
         )?;
+        out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", tmp_offset));
+        out.push_str(&format!("    mov edx, {}\n", index));
         if uses_int_lane {
             out.push_str("    mov r8d, eax\n");
         } else if uses_qword_scalar_lane {
@@ -1040,21 +1146,45 @@ pub(crate) fn resolve_method_param_types_for_call_exact(
     method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
 ) -> Option<(Vec<String>, bool)> {
     let mut arg_types = Vec::with_capacity(args.len());
+    let mut fully_typed = true;
     for arg in args {
-        arg_types.push(value_type_token(method, *arg)?);
+        if let Some(t) = value_type_token(method, *arg) {
+            arg_types.push(t);
+        } else {
+            fully_typed = false;
+            break;
+        }
     }
-    if method_symbols_by_sig.contains_key(&(owner.to_string(), member.to_string(), arg_types.clone()))
-    {
-        return Some((
-            arg_types.clone(),
-            method_is_varargs(owner, member, &arg_types),
-        ));
-    }
-    compatible_backend_signature(owner, member, &arg_types, method_symbols_by_sig)
-        .map(|(sig, _)| {
+    if fully_typed {
+        if method_symbols_by_sig
+            .contains_key(&(owner.to_string(), member.to_string(), arg_types.clone()))
+        {
+            return Some((
+                arg_types.clone(),
+                method_is_varargs(owner, member, &arg_types),
+            ));
+        }
+        if let Some((sig, _)) =
+            compatible_backend_signature(owner, member, &arg_types, method_symbols_by_sig)
+        {
             let is_varargs = method_is_varargs(owner, member, &sig);
-            (sig, is_varargs)
-        })
+            return Some((sig, is_varargs));
+        }
+    }
+    let mut arity_matches: Vec<Vec<String>> = Vec::new();
+    for (o, m, sig) in method_symbols_by_sig.keys() {
+        if o == owner && m == member && sig.len() == args.len() {
+            arity_matches.push(sig.clone());
+        }
+    }
+    arity_matches.sort();
+    arity_matches.dedup();
+    if arity_matches.len() == 1 {
+        let sig = arity_matches.into_iter().next()?;
+        let is_varargs = method_is_varargs(owner, member, &sig);
+        return Some((sig, is_varargs));
+    }
+    None
 }
 
 pub(crate) fn resolve_method_symbol_for_call(
@@ -1484,6 +1614,11 @@ pub(crate) fn emit_virtual_dispatch_call(
     }
     out.push_str("    cmp ecx, 0\n");
     out.push_str(&format!("    je {}\n", label_null));
+    out.push_str("    sub rsp, 80\n");
+    out.push_str("    mov qword ptr [rsp+40], rcx\n");
+    out.push_str("    mov qword ptr [rsp+48], rdx\n");
+    out.push_str("    mov qword ptr [rsp+56], r8\n");
+    out.push_str("    mov qword ptr [rsp+64], r9\n");
     out.push_str(&format!("    call {}\n", OBJECT_CLASS_ID_SYMBOL));
     out.push_str("    test eax, eax\n");
     out.push_str(&format!("    jz {}\n", label_type));
@@ -1500,16 +1635,27 @@ pub(crate) fn emit_virtual_dispatch_call(
     out.push_str(&format!("    jmp {}\n", label_default));
     for (idx, (_, target)) in overrides.iter().enumerate() {
         out.push_str(&format!("{}_ovr{}:\n", label_seed, idx));
+        out.push_str("    mov rcx, qword ptr [rsp+40]\n");
+        out.push_str("    mov rdx, qword ptr [rsp+48]\n");
+        out.push_str("    mov r8, qword ptr [rsp+56]\n");
+        out.push_str("    mov r9, qword ptr [rsp+64]\n");
+        out.push_str("    add rsp, 80\n");
         out.push_str(&format!("    call {}\n", target));
         out.push_str(&format!("    jmp {}\n", label_done));
     }
     out.push_str(&format!("{}:\n", label_default));
+    out.push_str("    mov rcx, qword ptr [rsp+40]\n");
+    out.push_str("    mov rdx, qword ptr [rsp+48]\n");
+    out.push_str("    mov r8, qword ptr [rsp+56]\n");
+    out.push_str("    mov r9, qword ptr [rsp+64]\n");
+    out.push_str("    add rsp, 80\n");
     out.push_str(&format!("    call {}\n", default_target));
     out.push_str(&format!("    jmp {}\n", label_done));
     out.push_str(&format!("{}:\n", label_null));
     out.push_str(&format!("    call {}\n", DISPATCH_NULL_PANIC_SYMBOL));
     out.push_str(&format!("    jmp {}\n", label_done));
     out.push_str(&format!("{}:\n", label_type));
+    out.push_str("    add rsp, 80\n");
     out.push_str(&format!("    call {}\n", DISPATCH_TYPE_PANIC_SYMBOL));
     out.push_str(&format!("{}:\n", label_done));
 }
@@ -1635,8 +1781,16 @@ pub(crate) fn emit_masm_method_body(
     let incoming_stack_base = method_stack_size + 40;
     let local_base = masm_local_base_offset(method);
     let mut param_offsets: HashMap<String, usize> = HashMap::new();
+    let param_slot_base = if method.is_static {
+        next_local_slot
+    } else {
+        let this_offset = local_base + (next_local_slot * 8);
+        param_offsets.insert("__this".to_string(), this_offset);
+        out.push_str(&format!("    mov qword ptr [rsp+{}], rcx\n", this_offset));
+        next_local_slot + 1
+    };
     for (idx, param) in method.params.iter().enumerate() {
-        let slot = next_local_slot + idx;
+        let slot = param_slot_base + idx;
         let offset = local_base + (slot * 8);
         param_offsets.insert(param.name.clone(), offset);
         let incoming_stack_slot = if method.is_static {
@@ -1676,12 +1830,6 @@ pub(crate) fn emit_masm_method_body(
                 arg_register32(reg_idx)
             ));
         }
-    }
-    if !method.is_static {
-        let slot = next_local_slot + method.params.len();
-        let offset = local_base + (slot * 8);
-        param_offsets.insert("__this".to_string(), offset);
-        out.push_str(&format!("    mov qword ptr [rsp+{}], rcx\n", offset));
     }
     let mut initialized_arc_locals: HashSet<String> = HashSet::new();
 
@@ -2174,6 +2322,27 @@ pub(crate) fn emit_masm_method_body(
                 }
             }
             let IrValueKind::Call { callee, args } = &v.kind else {
+                emit_value_to_eax_masm(
+                    out,
+                    method,
+                    *value,
+                    method.is_static,
+                    current_package_name,
+                    current_class_name,
+                    method_symbols,
+                    method_staticness,
+                    method_symbols_by_sig,
+                    method_staticness_by_sig,
+                    stdlib_symbols,
+                    class_names,
+                    field_symbols,
+                    field_is_static,
+                    field_types,
+                    class_object_counter_symbol,
+                    &local_offsets,
+                    &param_offsets,
+                    print_literals,
+                )?;
                 i += 1;
                 continue;
             };
@@ -2384,22 +2553,16 @@ pub(crate) fn emit_masm_method_body(
                     &param_offsets,
                     print_literals,
                 )?;
-                let arg_ty = method
-                    .values
-                    .get(args[0] as usize)
-                    .map(|v| {
-                        if v.ty != "unknown" {
-                            v.ty.clone()
-                        } else if let IrValueKind::LocalRef(name) = &v.kind {
-                            local_types
-                                .get(name)
-                                .cloned()
-                                .unwrap_or_else(|| "unknown".to_string())
-                        } else {
-                            "unknown".to_string()
-                        }
-                    })
-                    .ok_or_else(|| format!("Invalid {}.{} arg", owner, member))?;
+                let arg_ty = resolve_backend_runtime_value_type(
+                    method,
+                    args[0],
+                    current_class_name,
+                    class_names,
+                    &local_types,
+                    field_types,
+                    method_symbols_by_sig,
+                )
+                .ok_or_else(|| format!("Invalid {}.{} arg", owner, member))?;
                 if !(arg_ty == "String"
                     || arg_ty.ends_with(".String")
                     || arg_ty == "com.pulse.lang.String")
@@ -2534,6 +2697,7 @@ pub(crate) fn emit_masm_method_body(
                         out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", this_offset));
                     }
                 } else {
+                    emit_preserve_call_arg_registers(out, method);
                     emit_value_to_eax_masm(
                         out,
                         method,
@@ -2556,6 +2720,7 @@ pub(crate) fn emit_masm_method_body(
                         print_literals,
                     )?;
                     out.push_str("    mov rcx, rax\n");
+                    emit_restore_call_arg_registers(out, method);
                 }
             }
             let devirt = !is_target_static
@@ -3372,6 +3537,7 @@ pub(crate) fn emit_value_to_eax_masm(
                         ));
                     }
                 } else {
+                    emit_preserve_call_arg_registers(out, method);
                     emit_value_to_eax_masm(
                         out,
                         method,
@@ -3394,6 +3560,7 @@ pub(crate) fn emit_value_to_eax_masm(
                         string_literals,
                     )?;
                     out.push_str("    mov rcx, rax\n");
+                    emit_restore_call_arg_registers(out, method);
                 }
             }
             let devirt = !is_target_static
@@ -4214,6 +4381,8 @@ pub(crate) fn emit_value_to_eax_masm(
             Ok(())
         }
         IrValueKind::ArrayGet { array, index, element_ty } => {
+            let tmp_offset = masm_array_init_tmp_offset(method, value.id)
+                .ok_or_else(|| format!("Missing MASM array temp for value {}", value.id))?;
             emit_value_to_eax_masm(
                 out,
                 method,
@@ -4235,7 +4404,7 @@ pub(crate) fn emit_value_to_eax_masm(
                 param_offsets,
                 string_literals,
             )?;
-            out.push_str("    mov rcx, rax\n");
+            out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp_offset));
             emit_value_to_eax_masm(
                 out,
                 method,
@@ -4258,6 +4427,7 @@ pub(crate) fn emit_value_to_eax_masm(
                 string_literals,
             )?;
             out.push_str("    mov edx, eax\n");
+            out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", tmp_offset));
             if native_array_uses_qword_scalar_lane(element_ty) {
                 out.push_str("    call pulsec_rt_arrayGetLong\n");
             } else if is_string_type_name(element_ty)
@@ -4277,6 +4447,10 @@ pub(crate) fn emit_value_to_eax_masm(
             value: stored_value,
             element_ty,
         } => {
+            let array_tmp_offset = masm_array_init_tmp_offset(method, value.id)
+                .ok_or_else(|| format!("Missing MASM array temp for value {}", value.id))?;
+            let index_tmp_offset = masm_array_init_tmp_offset_at(method, value.id, 1)
+                .ok_or_else(|| format!("Missing MASM array index temp for value {}", value.id))?;
             emit_value_to_eax_masm(
                 out,
                 method,
@@ -4298,7 +4472,7 @@ pub(crate) fn emit_value_to_eax_masm(
                 param_offsets,
                 string_literals,
             )?;
-            out.push_str("    mov rcx, rax\n");
+            out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", array_tmp_offset));
             emit_value_to_eax_masm(
                 out,
                 method,
@@ -4320,7 +4494,7 @@ pub(crate) fn emit_value_to_eax_masm(
                 param_offsets,
                 string_literals,
             )?;
-            out.push_str("    mov edx, eax\n");
+            out.push_str(&format!("    mov dword ptr [rsp+{}], eax\n", index_tmp_offset));
             emit_value_to_eax_masm(
                 out,
                 method,
@@ -4343,6 +4517,8 @@ pub(crate) fn emit_value_to_eax_masm(
                 string_literals,
             )?;
             out.push_str("    mov r8, rax\n");
+            out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", array_tmp_offset));
+            out.push_str(&format!("    mov edx, dword ptr [rsp+{}]\n", index_tmp_offset));
             if native_array_uses_qword_scalar_lane(element_ty) {
                 out.push_str("    call pulsec_rt_arraySetLong\n");
             } else if is_string_type_name(element_ty)

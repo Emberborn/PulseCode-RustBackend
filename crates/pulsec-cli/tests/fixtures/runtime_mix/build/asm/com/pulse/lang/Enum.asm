@@ -17,11 +17,11 @@ extrn pulsec_rt_tracePop:proc
 written dq 0
 pulsec_objc_com_pulse_lang_Enum dd 0
 trace_m0 db "com.pulse.lang.Enum.Enum"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 24
 
 .code
 pulsec_com_pulse_lang_Enum_Enum proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -34,7 +34,7 @@ pulsec_com_pulse_lang_Enum_Enum proc
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
     mov qword ptr [rsp+64], rcx
-    mov ecx, 14
+    mov ecx, 16
     call pulsec_rt_objectNew
     mov ecx, eax
     mov qword ptr [rsp+64], rcx
@@ -46,7 +46,7 @@ pulsec_com_pulse_lang_Enum_Enum_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Enum_Enum endp
 

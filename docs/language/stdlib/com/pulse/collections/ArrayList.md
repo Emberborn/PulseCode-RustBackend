@@ -26,6 +26,11 @@ Use this when code needs append-oriented list storage.
 Returns the number of values stored in the list.
 Use this before indexed access or to test for emptiness.
 
+### ``public boolean isEmpty()``
+
+Reports whether the list currently stores any values.
+Use this before indexed reads when empty-list behavior should be avoided.
+
 ### ``public void clear()``
 
 Removes all values from the list.

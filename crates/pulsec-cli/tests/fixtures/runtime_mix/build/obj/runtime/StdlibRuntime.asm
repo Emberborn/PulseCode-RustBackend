@@ -217,93 +217,99 @@ rt_arc_generation textequ <rdi>
 rt_arc_free_next textequ <rsi>
 
 rt_obj_class_name_1 db "app.runtime.GameLoop"
-rt_obj_class_name_1_len equ $ - rt_obj_class_name_1
+rt_obj_class_name_1_len equ 20
 rt_obj_class_name_2 db "app.runtime.Main"
-rt_obj_class_name_2_len equ $ - rt_obj_class_name_2
+rt_obj_class_name_2_len equ 16
 rt_obj_class_name_3 db "app.runtime.Rank"
-rt_obj_class_name_3_len equ $ - rt_obj_class_name_3
+rt_obj_class_name_3_len equ 16
 rt_obj_class_name_4 db "app.runtime.Runner"
-rt_obj_class_name_4_len equ $ - rt_obj_class_name_4
-rt_obj_class_name_5 db "com.pulse.lang.AssertionError"
-rt_obj_class_name_5_len equ $ - rt_obj_class_name_5
-rt_obj_class_name_6 db "com.pulse.lang.AutoCloseable"
-rt_obj_class_name_6_len equ $ - rt_obj_class_name_6
-rt_obj_class_name_7 db "com.pulse.lang.Boolean"
-rt_obj_class_name_7_len equ $ - rt_obj_class_name_7
-rt_obj_class_name_8 db "com.pulse.lang.Byte"
-rt_obj_class_name_8_len equ $ - rt_obj_class_name_8
-rt_obj_class_name_9 db "com.pulse.lang.Char"
-rt_obj_class_name_9_len equ $ - rt_obj_class_name_9
-rt_obj_class_name_10 db "com.pulse.lang.Class"
-rt_obj_class_name_10_len equ $ - rt_obj_class_name_10
-rt_obj_class_name_11 db "com.pulse.lang.Comparable"
-rt_obj_class_name_11_len equ $ - rt_obj_class_name_11
-rt_obj_class_name_12 db "com.pulse.lang.ConsoleWriter"
-rt_obj_class_name_12_len equ $ - rt_obj_class_name_12
-rt_obj_class_name_13 db "com.pulse.lang.Double"
-rt_obj_class_name_13_len equ $ - rt_obj_class_name_13
-rt_obj_class_name_14 db "com.pulse.lang.Enum"
-rt_obj_class_name_14_len equ $ - rt_obj_class_name_14
-rt_obj_class_name_15 db "com.pulse.lang.Exception"
-rt_obj_class_name_15_len equ $ - rt_obj_class_name_15
-rt_obj_class_name_16 db "com.pulse.lang.Float"
-rt_obj_class_name_16_len equ $ - rt_obj_class_name_16
-rt_obj_class_name_17 db "com.pulse.lang.IO"
-rt_obj_class_name_17_len equ $ - rt_obj_class_name_17
-rt_obj_class_name_18 db "com.pulse.lang.IllegalArgumentException"
-rt_obj_class_name_18_len equ $ - rt_obj_class_name_18
-rt_obj_class_name_19 db "com.pulse.lang.IllegalStateException"
-rt_obj_class_name_19_len equ $ - rt_obj_class_name_19
-rt_obj_class_name_20 db "com.pulse.lang.IndexOutOfBoundsException"
-rt_obj_class_name_20_len equ $ - rt_obj_class_name_20
-rt_obj_class_name_21 db "com.pulse.lang.Integer"
-rt_obj_class_name_21_len equ $ - rt_obj_class_name_21
-rt_obj_class_name_22 db "com.pulse.lang.Iterable"
-rt_obj_class_name_22_len equ $ - rt_obj_class_name_22
-rt_obj_class_name_23 db "com.pulse.lang.Iterator"
-rt_obj_class_name_23_len equ $ - rt_obj_class_name_23
-rt_obj_class_name_24 db "com.pulse.lang.Long"
-rt_obj_class_name_24_len equ $ - rt_obj_class_name_24
-rt_obj_class_name_25 db "com.pulse.lang.NotNull"
-rt_obj_class_name_25_len equ $ - rt_obj_class_name_25
-rt_obj_class_name_26 db "com.pulse.lang.NullPointerException"
-rt_obj_class_name_26_len equ $ - rt_obj_class_name_26
-rt_obj_class_name_27 db "com.pulse.lang.NumberFormatException"
-rt_obj_class_name_27_len equ $ - rt_obj_class_name_27
-rt_obj_class_name_28 db "com.pulse.lang.Object"
-rt_obj_class_name_28_len equ $ - rt_obj_class_name_28
-rt_obj_class_name_29 db "com.pulse.lang.Override"
-rt_obj_class_name_29_len equ $ - rt_obj_class_name_29
-rt_obj_class_name_30 db "com.pulse.lang.PrintStream"
-rt_obj_class_name_30_len equ $ - rt_obj_class_name_30
-rt_obj_class_name_31 db "com.pulse.lang.RuntimeException"
-rt_obj_class_name_31_len equ $ - rt_obj_class_name_31
-rt_obj_class_name_32 db "com.pulse.lang.Short"
-rt_obj_class_name_32_len equ $ - rt_obj_class_name_32
-rt_obj_class_name_33 db "com.pulse.lang.String"
-rt_obj_class_name_33_len equ $ - rt_obj_class_name_33
-rt_obj_class_name_34 db "com.pulse.lang.StringBuilder"
-rt_obj_class_name_34_len equ $ - rt_obj_class_name_34
-rt_obj_class_name_35 db "com.pulse.lang.System"
-rt_obj_class_name_35_len equ $ - rt_obj_class_name_35
-rt_obj_class_name_36 db "com.pulse.lang.Test"
-rt_obj_class_name_36_len equ $ - rt_obj_class_name_36
-rt_obj_class_name_37 db "com.pulse.lang.Throwable"
-rt_obj_class_name_37_len equ $ - rt_obj_class_name_37
-rt_obj_class_name_38 db "com.pulse.lang.UByte"
-rt_obj_class_name_38_len equ $ - rt_obj_class_name_38
-rt_obj_class_name_39 db "com.pulse.lang.UInteger"
-rt_obj_class_name_39_len equ $ - rt_obj_class_name_39
-rt_obj_class_name_40 db "com.pulse.lang.ULong"
-rt_obj_class_name_40_len equ $ - rt_obj_class_name_40
-rt_obj_class_name_41 db "com.pulse.lang.UShort"
-rt_obj_class_name_41_len equ $ - rt_obj_class_name_41
-rt_obj_class_name_42 db "com.pulse.lang.UnsupportedOperationException"
-rt_obj_class_name_42_len equ $ - rt_obj_class_name_42
-rt_obj_class_name_43 db "com.pulse.lang.Void"
-rt_obj_class_name_43_len equ $ - rt_obj_class_name_43
-rt_obj_class_name_44 db "com.pulse.rt.Intrinsics"
-rt_obj_class_name_44_len equ $ - rt_obj_class_name_44
+rt_obj_class_name_4_len equ 18
+rt_obj_class_name_5 db "com.pulse.lang.Appendable"
+rt_obj_class_name_5_len equ 25
+rt_obj_class_name_6 db "com.pulse.lang.AssertionError"
+rt_obj_class_name_6_len equ 29
+rt_obj_class_name_7 db "com.pulse.lang.AutoCloseable"
+rt_obj_class_name_7_len equ 28
+rt_obj_class_name_8 db "com.pulse.lang.Boolean"
+rt_obj_class_name_8_len equ 22
+rt_obj_class_name_9 db "com.pulse.lang.Byte"
+rt_obj_class_name_9_len equ 19
+rt_obj_class_name_10 db "com.pulse.lang.Char"
+rt_obj_class_name_10_len equ 19
+rt_obj_class_name_11 db "com.pulse.lang.CharSequence"
+rt_obj_class_name_11_len equ 27
+rt_obj_class_name_12 db "com.pulse.lang.Class"
+rt_obj_class_name_12_len equ 20
+rt_obj_class_name_13 db "com.pulse.lang.Comparable"
+rt_obj_class_name_13_len equ 25
+rt_obj_class_name_14 db "com.pulse.lang.ConsoleWriter"
+rt_obj_class_name_14_len equ 28
+rt_obj_class_name_15 db "com.pulse.lang.Double"
+rt_obj_class_name_15_len equ 21
+rt_obj_class_name_16 db "com.pulse.lang.Enum"
+rt_obj_class_name_16_len equ 19
+rt_obj_class_name_17 db "com.pulse.lang.Exception"
+rt_obj_class_name_17_len equ 24
+rt_obj_class_name_18 db "com.pulse.lang.Float"
+rt_obj_class_name_18_len equ 20
+rt_obj_class_name_19 db "com.pulse.lang.IO"
+rt_obj_class_name_19_len equ 17
+rt_obj_class_name_20 db "com.pulse.lang.IllegalArgumentException"
+rt_obj_class_name_20_len equ 39
+rt_obj_class_name_21 db "com.pulse.lang.IllegalStateException"
+rt_obj_class_name_21_len equ 36
+rt_obj_class_name_22 db "com.pulse.lang.IndexOutOfBoundsException"
+rt_obj_class_name_22_len equ 40
+rt_obj_class_name_23 db "com.pulse.lang.Integer"
+rt_obj_class_name_23_len equ 22
+rt_obj_class_name_24 db "com.pulse.lang.Iterable"
+rt_obj_class_name_24_len equ 23
+rt_obj_class_name_25 db "com.pulse.lang.Iterator"
+rt_obj_class_name_25_len equ 23
+rt_obj_class_name_26 db "com.pulse.lang.Long"
+rt_obj_class_name_26_len equ 19
+rt_obj_class_name_27 db "com.pulse.lang.NotNull"
+rt_obj_class_name_27_len equ 22
+rt_obj_class_name_28 db "com.pulse.lang.NullPointerException"
+rt_obj_class_name_28_len equ 35
+rt_obj_class_name_29 db "com.pulse.lang.NumberFormatException"
+rt_obj_class_name_29_len equ 36
+rt_obj_class_name_30 db "com.pulse.lang.Object"
+rt_obj_class_name_30_len equ 21
+rt_obj_class_name_31 db "com.pulse.lang.Override"
+rt_obj_class_name_31_len equ 23
+rt_obj_class_name_32 db "com.pulse.lang.PrintStream"
+rt_obj_class_name_32_len equ 26
+rt_obj_class_name_33 db "com.pulse.lang.Runnable"
+rt_obj_class_name_33_len equ 23
+rt_obj_class_name_34 db "com.pulse.lang.RuntimeException"
+rt_obj_class_name_34_len equ 31
+rt_obj_class_name_35 db "com.pulse.lang.Short"
+rt_obj_class_name_35_len equ 20
+rt_obj_class_name_36 db "com.pulse.lang.String"
+rt_obj_class_name_36_len equ 21
+rt_obj_class_name_37 db "com.pulse.lang.StringBuilder"
+rt_obj_class_name_37_len equ 28
+rt_obj_class_name_38 db "com.pulse.lang.System"
+rt_obj_class_name_38_len equ 21
+rt_obj_class_name_39 db "com.pulse.lang.Test"
+rt_obj_class_name_39_len equ 19
+rt_obj_class_name_40 db "com.pulse.lang.Throwable"
+rt_obj_class_name_40_len equ 24
+rt_obj_class_name_41 db "com.pulse.lang.UByte"
+rt_obj_class_name_41_len equ 20
+rt_obj_class_name_42 db "com.pulse.lang.UInteger"
+rt_obj_class_name_42_len equ 23
+rt_obj_class_name_43 db "com.pulse.lang.ULong"
+rt_obj_class_name_43_len equ 20
+rt_obj_class_name_44 db "com.pulse.lang.UShort"
+rt_obj_class_name_44_len equ 21
+rt_obj_class_name_45 db "com.pulse.lang.UnsupportedOperationException"
+rt_obj_class_name_45_len equ 44
+rt_obj_class_name_46 db "com.pulse.lang.Void"
+rt_obj_class_name_46_len equ 19
+rt_obj_class_name_47 db "com.pulse.rt.Intrinsics"
+rt_obj_class_name_47_len equ 23
 
 .code
 pulsec_rt_init proc
@@ -590,7 +596,7 @@ pulsec_rt_objectClassId_plain:
     mov eax, dword ptr [rax+r10*4]
     ret
 pulsec_rt_objectClassId_string_kind:
-    mov eax, 33
+    mov eax, 36
     ret
 pulsec_rt_objectClassId_stale:
     lea rcx, rt_stale_handle_err
@@ -712,6 +718,86 @@ pulsec_rt_stringFromBytes_fail:
     xor eax, eax
     ret
 pulsec_rt_stringFromBytes endp
+
+pulsec_rt_stringEquals proc
+    sub rsp, 40
+    cmp rcx, rdx
+    je pulsec_rt_stringEquals_same
+    test rcx, rcx
+    jz pulsec_rt_stringEquals_done_false
+    test rdx, rdx
+    jz pulsec_rt_stringEquals_done_false
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_stringEquals_done_false
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_stringEquals_done_false
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_stringEquals_left_plain
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_stringEquals_done_false
+pulsec_rt_stringEquals_left_plain:
+    cmp dword ptr [rt_arc_kinds+r10*4], 3
+    jne pulsec_rt_stringEquals_done_false
+    cmp dword ptr [rt_arc_refcounts+r10*4], 0
+    je pulsec_rt_stringEquals_done_false
+pulsec_rt_stringEquals_left_ok:
+    mov dword ptr [rsp+32], r10d
+    mov r10d, edx
+    cmp r10d, 1
+    jb pulsec_rt_stringEquals_done_false
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_stringEquals_done_false
+    mov r11, rdx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_stringEquals_right_plain
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_stringEquals_done_false
+pulsec_rt_stringEquals_right_plain:
+    cmp dword ptr [rt_arc_kinds+r10*4], 3
+    jne pulsec_rt_stringEquals_done_false
+    cmp dword ptr [rt_arc_refcounts+r10*4], 0
+    je pulsec_rt_stringEquals_done_false
+pulsec_rt_stringEquals_right_ok:
+    mov dword ptr [rsp+36], r10d
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov r10d, dword ptr [rsp+32]
+    mov r11d, dword ptr [rsp+36]
+    mov ecx, dword ptr [rax+r10*4]
+    cmp ecx, dword ptr [rax+r11*4]
+    jne pulsec_rt_stringEquals_done_false
+    xor eax, eax
+pulsec_rt_stringEquals_loop:
+    cmp eax, ecx
+    jae pulsec_rt_stringEquals_done_true
+    mov r8, qword ptr [rt_str_data_ptr]
+    mov r10d, dword ptr [rsp+32]
+    imul r10d, 256
+    add r10, r8
+    mov r11d, dword ptr [rsp+36]
+    imul r11d, 256
+    add r11, r8
+    mov dl, byte ptr [r10+rax]
+    cmp dl, byte ptr [r11+rax]
+    jne pulsec_rt_stringEquals_done_false
+    add eax, 1
+    jmp pulsec_rt_stringEquals_loop
+pulsec_rt_stringEquals_same:
+    mov eax, 1
+    add rsp, 40
+    ret
+pulsec_rt_stringEquals_done_true:
+    mov eax, 1
+    add rsp, 40
+    ret
+pulsec_rt_stringEquals_done_false:
+    xor eax, eax
+    add rsp, 40
+    ret
+pulsec_rt_stringEquals endp
 
 pulsec_rt_writeRaw proc
     sub rsp, 40
@@ -1024,6 +1110,12 @@ pulsec_rt_objectClassName proc
     je pulsec_rt_objectClassName_c43
     cmp eax, 44
     je pulsec_rt_objectClassName_c44
+    cmp eax, 45
+    je pulsec_rt_objectClassName_c45
+    cmp eax, 46
+    je pulsec_rt_objectClassName_c46
+    cmp eax, 47
+    je pulsec_rt_objectClassName_c47
     jmp pulsec_rt_objectClassName_invalid
 pulsec_rt_objectClassName_c1:
     lea rcx, rt_obj_class_name_1
@@ -1243,6 +1335,21 @@ pulsec_rt_objectClassName_c43:
 pulsec_rt_objectClassName_c44:
     lea rcx, rt_obj_class_name_44
     mov edx, rt_obj_class_name_44_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_objectClassName_done
+pulsec_rt_objectClassName_c45:
+    lea rcx, rt_obj_class_name_45
+    mov edx, rt_obj_class_name_45_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_objectClassName_done
+pulsec_rt_objectClassName_c46:
+    lea rcx, rt_obj_class_name_46
+    mov edx, rt_obj_class_name_46_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_objectClassName_done
+pulsec_rt_objectClassName_c47:
+    lea rcx, rt_obj_class_name_47
+    mov edx, rt_obj_class_name_47_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_rt_objectClassName_done
 pulsec_rt_objectClassName_invalid:
@@ -2462,22 +2569,22 @@ pulsec_rt_arcTeardown proc
 pulsec_rt_arcTeardown_kind_object:
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+rcx*4]
-    cmp edx, 10
-    je pulsec_rt_arcTeardown_kind_object_c10
-    cmp edx, 34
-    je pulsec_rt_arcTeardown_kind_object_c34
+    cmp edx, 12
+    je pulsec_rt_arcTeardown_kind_object_c12
     cmp edx, 37
     je pulsec_rt_arcTeardown_kind_object_c37
+    cmp edx, 40
+    je pulsec_rt_arcTeardown_kind_object_c40
     jmp pulsec_rt_arcTeardown_kind_object_unmatched
-pulsec_rt_arcTeardown_kind_object_c10:
+pulsec_rt_arcTeardown_kind_object_c12:
     call pulsec_fcap_com_pulse_lang_Class_arc_teardown
     mov ecx, dword ptr [rt_tmp_arr_slot]
     jmp pulsec_rt_arcTeardown_kind_object_done
-pulsec_rt_arcTeardown_kind_object_c34:
+pulsec_rt_arcTeardown_kind_object_c37:
     call pulsec_fcap_com_pulse_lang_StringBuilder_arc_teardown
     mov ecx, dword ptr [rt_tmp_arr_slot]
     jmp pulsec_rt_arcTeardown_kind_object_done
-pulsec_rt_arcTeardown_kind_object_c37:
+pulsec_rt_arcTeardown_kind_object_c40:
     call pulsec_fcap_com_pulse_lang_Throwable_arc_teardown
     mov ecx, dword ptr [rt_tmp_arr_slot]
     jmp pulsec_rt_arcTeardown_kind_object_done
@@ -2780,22 +2887,22 @@ pulsec_rt_arcCycleFullPass_scan_edges_loop:
     je pulsec_rt_arcCycleFullPass_scan_edges_next
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+r8*4]
-    cmp edx, 10
-    je pulsec_rt_arcCycleFullPass_scan_edges_c10
-    cmp edx, 34
-    je pulsec_rt_arcCycleFullPass_scan_edges_c34
+    cmp edx, 12
+    je pulsec_rt_arcCycleFullPass_scan_edges_c12
     cmp edx, 37
     je pulsec_rt_arcCycleFullPass_scan_edges_c37
+    cmp edx, 40
+    je pulsec_rt_arcCycleFullPass_scan_edges_c40
     jmp pulsec_rt_arcCycleFullPass_scan_edges_unmatched
-pulsec_rt_arcCycleFullPass_scan_edges_c10:
+pulsec_rt_arcCycleFullPass_scan_edges_c12:
     mov ecx, r8d
     call pulsec_fcap_com_pulse_lang_Class_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
-pulsec_rt_arcCycleFullPass_scan_edges_c34:
+pulsec_rt_arcCycleFullPass_scan_edges_c37:
     mov ecx, r8d
     call pulsec_fcap_com_pulse_lang_StringBuilder_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
-pulsec_rt_arcCycleFullPass_scan_edges_c37:
+pulsec_rt_arcCycleFullPass_scan_edges_c40:
     mov ecx, r8d
     call pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
@@ -2839,22 +2946,22 @@ pulsec_rt_arcCycleFullPass_invalidate_loop:
     jne pulsec_rt_arcCycleFullPass_invalidate_next
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+r8*4]
-    cmp edx, 10
-    je pulsec_rt_arcCycleFullPass_invalidate_c10
-    cmp edx, 34
-    je pulsec_rt_arcCycleFullPass_invalidate_c34
+    cmp edx, 12
+    je pulsec_rt_arcCycleFullPass_invalidate_c12
     cmp edx, 37
     je pulsec_rt_arcCycleFullPass_invalidate_c37
+    cmp edx, 40
+    je pulsec_rt_arcCycleFullPass_invalidate_c40
     jmp pulsec_rt_arcCycleFullPass_invalidate_unmatched
-pulsec_rt_arcCycleFullPass_invalidate_c10:
+pulsec_rt_arcCycleFullPass_invalidate_c12:
     mov ecx, r8d
     call pulsec_fcap_com_pulse_lang_Class_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
-pulsec_rt_arcCycleFullPass_invalidate_c34:
+pulsec_rt_arcCycleFullPass_invalidate_c37:
     mov ecx, r8d
     call pulsec_fcap_com_pulse_lang_StringBuilder_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
-pulsec_rt_arcCycleFullPass_invalidate_c37:
+pulsec_rt_arcCycleFullPass_invalidate_c40:
     mov ecx, r8d
     call pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
@@ -3579,17 +3686,21 @@ pulsec_rt_arraySetString_ok:
     mov r10, qword ptr [r11+rcx*8]
     test r10, r10
     jz @F
+    mov qword ptr [rt_tmp_arg_key], rdx
+    mov qword ptr [rt_tmp_arg_val], r8
     mov rax, qword ptr [r10+rdx*8]
     test rax, rax
     jz pulsec_rt_arraySetString_ref_release_done
     mov rcx, rax
     call pulsec_rt_arcRelease
 pulsec_rt_arraySetString_ref_release_done:
-    mov rcx, r8
+    mov rcx, qword ptr [rt_tmp_arg_val]
     call pulsec_rt_arcRetain
     mov ecx, dword ptr [rt_tmp_arr_slot]
+    mov rdx, qword ptr [rt_tmp_arg_key]
     mov r11, qword ptr [rt_arr_s_ptr_ptr]
     mov r10, qword ptr [r11+rcx*8]
+    mov r8, qword ptr [rt_tmp_arg_val]
     mov qword ptr [r10+rdx*8], r8
 @@:
     xor eax, eax
@@ -3714,7 +3825,9 @@ pulsec_rt_classSimpleName_scan:
     sub r10d, 1
     cmp byte ptr [r9+r10], '.'
     jne pulsec_rt_classSimpleName_scan
-    lea rcx, [r9+r10+1]
+    mov rcx, r9
+    add rcx, r10
+    add rcx, 1
     mov eax, edx
     sub eax, r10d
     sub eax, 1
@@ -5069,22 +5182,32 @@ pulsec_rt_mapContainsKey_live_panic:
     call pulsec_rt_panic
 pulsec_rt_mapContainsKey_ok:
     mov ecx, r10d
+    mov qword ptr [rt_tmp_arg_key], rdx
     mov r10d, ecx
     mov rax, qword ptr [rt_map_size_ptr]
     mov r8d, dword ptr [rax+r10*4]
+    mov dword ptr [rt_tmp_size], r8d
     mov rax, qword ptr [rt_map_keys_ptr_ptr]
     mov r11, qword ptr [rax+r10*8]
+    mov qword ptr [rt_tmp_ptr_a], r11
     test r11, r11
     jz pulsec_rt_mapContainsKey_end
     xor r9d, r9d
 pulsec_rt_mapContainsKey_loop:
-    cmp r9d, r8d
+    cmp r9d, dword ptr [rt_tmp_size]
     jae pulsec_rt_mapContainsKey_end
-    cmp qword ptr [r11+r9*8], rdx
+    mov r11, qword ptr [rt_tmp_ptr_a]
+    mov rcx, qword ptr [r11+r9*8]
+    mov rdx, qword ptr [rt_tmp_arg_key]
+    mov dword ptr [rt_tmp_arr_bytes], r9d
+    call pulsec_rt_stringEquals
+    mov r10d, dword ptr [rt_tmp_arr_bytes]
+    cmp eax, 1
     jne pulsec_rt_mapContainsKey_next
     mov eax, 1
     ret
 pulsec_rt_mapContainsKey_next:
+    mov r9d, r10d
     add r9d, 1
     jmp pulsec_rt_mapContainsKey_loop
 pulsec_rt_mapContainsKey_end:
@@ -5124,9 +5247,11 @@ pulsec_rt_mapGet_live_panic:
     call pulsec_rt_panic
 pulsec_rt_mapGet_ok:
     mov ecx, r10d
+    mov qword ptr [rt_tmp_arg_key], rdx
     mov r11d, ecx
     mov rax, qword ptr [rt_map_size_ptr]
     mov r8d, dword ptr [rax+r11*4]
+    mov dword ptr [rt_tmp_size], r8d
     mov rax, qword ptr [rt_map_keys_ptr_ptr]
     mov rax, qword ptr [rax+r11*8]
     mov qword ptr [rt_tmp_ptr_a], rax
@@ -5147,10 +5272,16 @@ pulsec_rt_mapGet_ok:
     jz pulsec_rt_mapGet_end
     xor r9d, r9d
 pulsec_rt_mapGet_loop:
-    cmp r9d, r8d
+    cmp r9d, dword ptr [rt_tmp_size]
     jae pulsec_rt_mapGet_end
     mov rax, qword ptr [rt_tmp_ptr_a]
-    cmp qword ptr [rax+r9*8], rdx
+    mov rcx, qword ptr [rax+r9*8]
+    mov rdx, qword ptr [rt_tmp_arg_key]
+    mov dword ptr [rt_tmp_arr_bytes], r9d
+    call pulsec_rt_stringEquals
+    mov r10d, dword ptr [rt_tmp_arr_bytes]
+    mov r9d, r10d
+    cmp eax, 1
     jne pulsec_rt_mapGet_next
     mov rax, qword ptr [rt_tmp_ptr_b]
     cmp dword ptr [rax+r9*4], 2
@@ -5200,9 +5331,11 @@ pulsec_rt_mapGetInt_live_panic:
     call pulsec_rt_panic
 pulsec_rt_mapGetInt_ok:
     mov ecx, r10d
+    mov qword ptr [rt_tmp_arg_key], rdx
     mov r11d, ecx
     mov rax, qword ptr [rt_map_size_ptr]
     mov r8d, dword ptr [rax+r11*4]
+    mov dword ptr [rt_tmp_size], r8d
     mov rax, qword ptr [rt_map_keys_ptr_ptr]
     mov rax, qword ptr [rax+r11*8]
     mov qword ptr [rt_tmp_ptr_a], rax
@@ -5223,10 +5356,16 @@ pulsec_rt_mapGetInt_ok:
     jz pulsec_rt_mapGetInt_end
     xor r9d, r9d
 pulsec_rt_mapGetInt_loop:
-    cmp r9d, r8d
+    cmp r9d, dword ptr [rt_tmp_size]
     jae pulsec_rt_mapGetInt_end
     mov rax, qword ptr [rt_tmp_ptr_a]
-    cmp qword ptr [rax+r9*8], rdx
+    mov rcx, qword ptr [rax+r9*8]
+    mov rdx, qword ptr [rt_tmp_arg_key]
+    mov dword ptr [rt_tmp_arr_bytes], r9d
+    call pulsec_rt_stringEquals
+    mov r10d, dword ptr [rt_tmp_arr_bytes]
+    mov r9d, r10d
+    cmp eax, 1
     jne pulsec_rt_mapGetInt_next
     mov rax, qword ptr [rt_tmp_ptr_b]
     cmp dword ptr [rax+r9*4], 1
@@ -5506,10 +5645,15 @@ pulsec_rt_mapPut_loop:
     cmp eax, dword ptr [rt_tmp_size]
     jae pulsec_rt_mapPut_insert
     mov r10, qword ptr [rt_tmp_ptr_a]
+    mov rcx, qword ptr [r10+rax*8]
     mov rdx, qword ptr [rt_tmp_arg_key]
-    cmp qword ptr [r10+rax*8], rdx
+    mov dword ptr [rt_tmp_arr_bytes], eax
+    call pulsec_rt_stringEquals
+    mov r10d, dword ptr [rt_tmp_arr_bytes]
+    cmp eax, 1
     jne pulsec_rt_mapPut_miss
-    mov dword ptr [rt_tmp_arr_len], eax
+    mov dword ptr [rt_tmp_arr_len], r10d
+    mov eax, dword ptr [rt_tmp_arr_len]
     mov r10, qword ptr [rt_tmp_ptr_b]
     cmp dword ptr [r10+rax*4], 2
     jne @F
@@ -5531,6 +5675,7 @@ pulsec_rt_mapPut_loop:
     mov qword ptr [r10+rax*8], rdx
     jmp pulsec_rt_mapPut_end
 pulsec_rt_mapPut_miss:
+    mov eax, r10d
     add eax, 1
     jmp pulsec_rt_mapPut_loop
 pulsec_rt_mapPut_insert:
@@ -5541,6 +5686,8 @@ pulsec_rt_mapPut_insert:
     call pulsec_rt_arcRetain
     mov rcx, qword ptr [rt_tmp_arg_val]
     call pulsec_rt_arcRetain
+    mov r9d, dword ptr [rt_tmp_size]
+    mov r11d, dword ptr [rt_tmp_arr_slot]
     mov r9d, dword ptr [rt_tmp_size]
     mov r10, qword ptr [rt_tmp_ptr_a]
     mov rdx, qword ptr [rt_tmp_arg_key]
@@ -5782,10 +5929,15 @@ pulsec_rt_mapPutInt_loop:
     cmp eax, dword ptr [rt_tmp_size]
     jae pulsec_rt_mapPutInt_insert
     mov r10, qword ptr [rt_tmp_ptr_a]
+    mov rcx, qword ptr [r10+rax*8]
     mov rdx, qword ptr [rt_tmp_arg_key]
-    cmp qword ptr [r10+rax*8], rdx
+    mov dword ptr [rt_tmp_arr_bytes], eax
+    call pulsec_rt_stringEquals
+    mov r10d, dword ptr [rt_tmp_arr_bytes]
+    cmp eax, 1
     jne pulsec_rt_mapPutInt_miss
-    mov dword ptr [rt_tmp_arr_len], eax
+    mov dword ptr [rt_tmp_arr_len], r10d
+    mov eax, dword ptr [rt_tmp_arr_len]
     mov r10, qword ptr [rt_tmp_ptr_b]
     cmp dword ptr [r10+rax*4], 2
     jne @F
@@ -5804,6 +5956,7 @@ pulsec_rt_mapPutInt_loop:
     mov dword ptr [r10+rax*4], edx
     jmp pulsec_rt_mapPutInt_end
 pulsec_rt_mapPutInt_miss:
+    mov eax, r10d
     add eax, 1
     jmp pulsec_rt_mapPutInt_loop
 pulsec_rt_mapPutInt_insert:
@@ -5812,6 +5965,8 @@ pulsec_rt_mapPutInt_insert:
     jae pulsec_rt_mapPutInt_grow
     mov rcx, qword ptr [rt_tmp_arg_key]
     call pulsec_rt_arcRetain
+    mov r9d, dword ptr [rt_tmp_size]
+    mov r11d, dword ptr [rt_tmp_arr_slot]
     mov r9d, dword ptr [rt_tmp_size]
     mov r10, qword ptr [rt_tmp_ptr_a]
     mov rdx, qword ptr [rt_tmp_arg_key]
@@ -6626,8 +6781,6 @@ pulsec_rt_stringLength_fail:
 pulsec_rt_stringLength endp
 
 pulsec_rt_stringSubstring proc
-    mov r9d, edx
-    mov r10d, r8d
     mov r10d, ecx
     cmp r10d, 1
     jb pulsec_rt_stringSubstring_live_panic
@@ -6656,6 +6809,8 @@ pulsec_rt_stringSubstring_live_panic:
 pulsec_rt_stringSubstring_ok:
     mov ecx, r10d
     mov r11d, ecx
+    mov r9d, edx
+    mov r10d, r8d
     cmp r9d, 0
     jl pulsec_rt_stringSubstring_fail
     cmp r10d, r9d
@@ -6828,12 +6983,15 @@ pulsec_rt_weakGet_token_ok:
     mov eax, dword ptr [rt_arc_refcounts+r11*4]
     cmp eax, 0
     jne pulsec_rt_weakGet_target_live
-    jmp pulsec_rt_weakGet_done
+    jmp pulsec_rt_weakGet_target_dead
 pulsec_rt_weakGet_target_live:
     mov eax, r11d
     shl rdx, 32
     or rax, rdx
-    jmp pulsec_rt_weakGet_done
+    ret
+pulsec_rt_weakGet_target_dead:
+    xor eax, eax
+    ret
 pulsec_rt_weakGet_stale:
     lea rcx, rt_stale_handle_err
     mov edx, rt_stale_handle_err_len

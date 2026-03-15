@@ -27,49 +27,49 @@ pulsec_objc_com_pulse_lang_UShort dd 0
 pulsec_fld_com_pulse_lang_UShort_MIN_VALUE dd 0
 pulsec_fld_com_pulse_lang_UShort_MAX_VALUE dd 65535
 trace_m0 db "com.pulse.lang.UShort.valueOf"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 29
 pulsec_com_pulse_lang_UShort_valueOf__ushort_trace_s0 db "com.pulse.lang.UShort.valueOf(UShort.pulse:24)"
-pulsec_com_pulse_lang_UShort_valueOf__ushort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_valueOf__ushort_trace_s0
+pulsec_com_pulse_lang_UShort_valueOf__ushort_trace_s0_len equ 46
 trace_m2 db "com.pulse.lang.UShort.parse"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 27
 pulsec_com_pulse_lang_UShort_parse__String_trace_s0 db "com.pulse.lang.UShort.parse(UShort.pulse:32)"
-pulsec_com_pulse_lang_UShort_parse__String_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_parse__String_trace_s0
+pulsec_com_pulse_lang_UShort_parse__String_trace_s0_len equ 44
 pulsec_com_pulse_lang_UShort_parse__String_trace_s1 db "com.pulse.lang.UShort.parse(UShort.pulse:33)"
-pulsec_com_pulse_lang_UShort_parse__String_trace_s1_len equ $ - pulsec_com_pulse_lang_UShort_parse__String_trace_s1
+pulsec_com_pulse_lang_UShort_parse__String_trace_s1_len equ 44
 pulsec_com_pulse_lang_UShort_parse__String_trace_s2 db "com.pulse.lang.UShort.parse(UShort.pulse:34)"
-pulsec_com_pulse_lang_UShort_parse__String_trace_s2_len equ $ - pulsec_com_pulse_lang_UShort_parse__String_trace_s2
+pulsec_com_pulse_lang_UShort_parse__String_trace_s2_len equ 44
 pulsec_com_pulse_lang_UShort_parse__String_trace_s3 db "com.pulse.lang.UShort.parse(UShort.pulse:36)"
-pulsec_com_pulse_lang_UShort_parse__String_trace_s3_len equ $ - pulsec_com_pulse_lang_UShort_parse__String_trace_s3
+pulsec_com_pulse_lang_UShort_parse__String_trace_s3_len equ 44
 trace_m7 db "com.pulse.lang.UShort.ushortValue"
-trace_m7_len equ $ - trace_m7
+trace_m7_len equ 33
 pulsec_com_pulse_lang_UShort_ushortValue__UShort_trace_s0 db "com.pulse.lang.UShort.ushortValue(UShort.pulse:44)"
-pulsec_com_pulse_lang_UShort_ushortValue__UShort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_ushortValue__UShort_trace_s0
+pulsec_com_pulse_lang_UShort_ushortValue__UShort_trace_s0_len equ 50
 trace_m9 db "com.pulse.lang.UShort.equals"
-trace_m9_len equ $ - trace_m9
+trace_m9_len equ 28
 pulsec_com_pulse_lang_UShort_equals__ushort_ushort_trace_s0 db "com.pulse.lang.UShort.equals(UShort.pulse:52)"
-pulsec_com_pulse_lang_UShort_equals__ushort_ushort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_equals__ushort_ushort_trace_s0
+pulsec_com_pulse_lang_UShort_equals__ushort_ushort_trace_s0_len equ 45
 trace_m11 db "com.pulse.lang.UShort.compare"
-trace_m11_len equ $ - trace_m11
+trace_m11_len equ 29
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s0 db "com.pulse.lang.UShort.compare(UShort.pulse:60)"
-pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s0
+pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s0_len equ 46
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s1 db "com.pulse.lang.UShort.compare(UShort.pulse:61)"
-pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s1_len equ $ - pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s1
+pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s1_len equ 46
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s2 db "com.pulse.lang.UShort.compare(UShort.pulse:63)"
-pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s2_len equ $ - pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s2
+pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s2_len equ 46
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s3 db "com.pulse.lang.UShort.compare(UShort.pulse:64)"
-pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s3_len equ $ - pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s3
+pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s3_len equ 46
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s4 db "com.pulse.lang.UShort.compare(UShort.pulse:66)"
-pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s4_len equ $ - pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s4
+pulsec_com_pulse_lang_UShort_compare__ushort_ushort_trace_s4_len equ 46
 trace_m17 db "com.pulse.lang.UShort.toString"
-trace_m17_len equ $ - trace_m17
+trace_m17_len equ 30
 pulsec_com_pulse_lang_UShort_toString__ushort_trace_s0 db "com.pulse.lang.UShort.toString(UShort.pulse:74)"
-pulsec_com_pulse_lang_UShort_toString__ushort_trace_s0_len equ $ - pulsec_com_pulse_lang_UShort_toString__ushort_trace_s0
+pulsec_com_pulse_lang_UShort_toString__ushort_trace_s0_len equ 47
 msg0 db "UShort.parse out of range"
-msg0_len equ $ - msg0
+msg0_len equ 25
 
 .code
 pulsec_com_pulse_lang_UShort_valueOf__ushort proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -93,12 +93,12 @@ pulsec_com_pulse_lang_UShort_valueOf__ushort_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UShort_valueOf__ushort endp
 
 pulsec_com_pulse_lang_UShort_parse__String proc
-    sub rsp, 152
+    sub rsp, 216
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -116,6 +116,8 @@ pulsec_com_pulse_lang_UShort_parse__String_b0:
     mov edx, pulsec_com_pulse_lang_UShort_parse__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
     mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -129,10 +131,21 @@ pulsec_com_pulse_lang_UShort_parse__String_b0:
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+136]
-    mov dword ptr [rsp+96], eax
-    mov eax, dword ptr [rsp+96]
-    mov ecx, eax
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+96], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
     call pulsec_com_pulse_lang_Integer_intValue__Integer
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
     mov dword ptr [rsp+64], eax
     lea rcx, pulsec_com_pulse_lang_UShort_parse__String_trace_s1
     mov edx, pulsec_com_pulse_lang_UShort_parse__String_trace_s1_len
@@ -169,6 +182,8 @@ pulsec_com_pulse_lang_UShort_parse__String_b1:
     lea rcx, msg0
     mov edx, msg0_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
     mov qword ptr [rsp+96], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -194,6 +209,8 @@ pulsec_com_pulse_lang_UShort_parse__String_b3:
     call pulsec_rt_traceUpdateTop
     mov eax, dword ptr [rsp+64]
     movzx eax, ax
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
     mov dword ptr [rsp+96], eax
     mov eax, dword ptr [rsp+96]
     mov ecx, eax
@@ -204,12 +221,12 @@ pulsec_com_pulse_lang_UShort_parse__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 152
+    add rsp, 216
     ret
 pulsec_com_pulse_lang_UShort_parse__String endp
 
 pulsec_com_pulse_lang_UShort_ushortValue__UShort proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -233,12 +250,12 @@ pulsec_com_pulse_lang_UShort_ushortValue__UShort_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UShort_ushortValue__UShort endp
 
 pulsec_com_pulse_lang_UShort_equals__ushort_ushort proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -270,12 +287,12 @@ pulsec_com_pulse_lang_UShort_equals__ushort_ushort_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_UShort_equals__ushort_ushort endp
 
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort proc
-    sub rsp, 152
+    sub rsp, 216
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -353,12 +370,12 @@ pulsec_com_pulse_lang_UShort_compare__ushort_ushort_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 152
+    add rsp, 216
     ret
 pulsec_com_pulse_lang_UShort_compare__ushort_ushort endp
 
 pulsec_com_pulse_lang_UShort_toString__ushort proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -377,6 +394,8 @@ pulsec_com_pulse_lang_UShort_toString__ushort_b0:
     call pulsec_rt_traceUpdateTop
     mov eax, dword ptr [rsp+64]
     movzx eax, ax
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+72], eax
     mov eax, dword ptr [rsp+72]
     mov ecx, eax
@@ -387,7 +406,7 @@ pulsec_com_pulse_lang_UShort_toString__ushort_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_UShort_toString__ushort endp
 

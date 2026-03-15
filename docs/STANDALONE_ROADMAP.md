@@ -532,7 +532,7 @@ Locked path for current Phase C implementation:
     - lock tests validate both double-release and retain-after-release panic paths; full `cargo test -q` remains green
   - C2-22 completed and locked:
     - leak/stability soak lock now runs repeated `strict_stress_soak` build+run cycles under split-native codegen
-    - lock requires linked-native status + deterministic runtime output (`soak_ok`, checksum `20313`) on every iteration
+    - lock requires linked-native status + deterministic runtime output (`soak_ok`, checksum `40415`) on every iteration
     - memory-trend gate enforces bounded post-warmup peak working-set spread/drift with CI-tunable thresholds
     - verification is green in `stage_locks_c2` and full `cargo test -q`
   - C2-23 completed and locked:

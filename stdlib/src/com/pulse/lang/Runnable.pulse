@@ -1,0 +1,12 @@
+package com.pulse.lang;
+
+/**
+ * Minimal executable task contract for deferred threading and executor work.
+ */
+public interface Runnable {
+    /**
+     * Runs the task body.
+     * Use this for callback-style task execution before the fuller thread/runtime surface lands.
+     */
+    public void run();
+}

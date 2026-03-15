@@ -11,7 +11,7 @@ Mutable helper for incremental string construction.
 ## Declaration
 
 ```pulse
-public class StringBuilder
+public class StringBuilder implements Appendable, CharSequence
 ```
 
 ## Members
@@ -65,6 +65,16 @@ Use this when Java-like builder flows need object formatting or `null` rendering
 
 Returns the current builder length.
 Use this to inspect how much text has been accumulated so far.
+
+### ``public char charAt(int index)``
+
+Returns the character at the supplied index in the current builder contents.
+Use this when code is typed as `CharSequence` over a builder.
+
+### ``public String subSequence(int beginIndex, int endIndex)``
+
+Returns a string subsequence over the current builder contents.
+Use this when code is typed as `CharSequence` and needs a Java-like slice.
 
 ### ``public void clear()``
 

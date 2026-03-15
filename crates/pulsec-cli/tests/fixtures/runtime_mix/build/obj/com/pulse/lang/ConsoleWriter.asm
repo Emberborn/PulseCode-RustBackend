@@ -16,25 +16,25 @@ extrn pulsec_rt_tracePop:proc
 written dq 0
 pulsec_objc_com_pulse_lang_ConsoleWriter dd 0
 trace_m0 db "com.pulse.lang.ConsoleWriter.println"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 36
 trace_m1 db "com.pulse.lang.ConsoleWriter.println"
-trace_m1_len equ $ - trace_m1
+trace_m1_len equ 36
 trace_m2 db "com.pulse.lang.ConsoleWriter.println"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 36
 trace_m3 db "com.pulse.lang.ConsoleWriter.println"
-trace_m3_len equ $ - trace_m3
+trace_m3_len equ 36
 trace_m4 db "com.pulse.lang.ConsoleWriter.print"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 34
 trace_m5 db "com.pulse.lang.ConsoleWriter.print"
-trace_m5_len equ $ - trace_m5
+trace_m5_len equ 34
 trace_m6 db "com.pulse.lang.ConsoleWriter.print"
-trace_m6_len equ $ - trace_m6
+trace_m6_len equ 34
 trace_m7 db "com.pulse.lang.ConsoleWriter.print"
-trace_m7_len equ $ - trace_m7
+trace_m7_len equ 34
 
 .code
 pulsec_com_pulse_lang_ConsoleWriter_println__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -46,8 +46,8 @@ pulsec_com_pulse_lang_ConsoleWriter_println__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_ConsoleWriter_println__String_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_ConsoleWriter_println__String_epilogue
@@ -56,12 +56,12 @@ pulsec_com_pulse_lang_ConsoleWriter_println__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_ConsoleWriter_println__String endp
 
 pulsec_com_pulse_lang_ConsoleWriter_println__int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -73,8 +73,8 @@ pulsec_com_pulse_lang_ConsoleWriter_println__int proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+64], edx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
 pulsec_com_pulse_lang_ConsoleWriter_println__int_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_ConsoleWriter_println__int_epilogue
@@ -83,12 +83,12 @@ pulsec_com_pulse_lang_ConsoleWriter_println__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_ConsoleWriter_println__int endp
 
 pulsec_com_pulse_lang_ConsoleWriter_println__long proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -100,8 +100,8 @@ pulsec_com_pulse_lang_ConsoleWriter_println__long proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_ConsoleWriter_println__long_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_ConsoleWriter_println__long_epilogue
@@ -110,12 +110,12 @@ pulsec_com_pulse_lang_ConsoleWriter_println__long_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_ConsoleWriter_println__long endp
 
 pulsec_com_pulse_lang_ConsoleWriter_println__boolean proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -127,8 +127,8 @@ pulsec_com_pulse_lang_ConsoleWriter_println__boolean proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+64], edx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
 pulsec_com_pulse_lang_ConsoleWriter_println__boolean_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_ConsoleWriter_println__boolean_epilogue
@@ -137,12 +137,12 @@ pulsec_com_pulse_lang_ConsoleWriter_println__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_ConsoleWriter_println__boolean endp
 
 pulsec_com_pulse_lang_ConsoleWriter_print__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -154,8 +154,8 @@ pulsec_com_pulse_lang_ConsoleWriter_print__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_ConsoleWriter_print__String_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_ConsoleWriter_print__String_epilogue
@@ -164,12 +164,12 @@ pulsec_com_pulse_lang_ConsoleWriter_print__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_ConsoleWriter_print__String endp
 
 pulsec_com_pulse_lang_ConsoleWriter_print__int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -181,8 +181,8 @@ pulsec_com_pulse_lang_ConsoleWriter_print__int proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+64], edx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
 pulsec_com_pulse_lang_ConsoleWriter_print__int_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_ConsoleWriter_print__int_epilogue
@@ -191,12 +191,12 @@ pulsec_com_pulse_lang_ConsoleWriter_print__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_ConsoleWriter_print__int endp
 
 pulsec_com_pulse_lang_ConsoleWriter_print__long proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -208,8 +208,8 @@ pulsec_com_pulse_lang_ConsoleWriter_print__long proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_ConsoleWriter_print__long_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_ConsoleWriter_print__long_epilogue
@@ -218,12 +218,12 @@ pulsec_com_pulse_lang_ConsoleWriter_print__long_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_ConsoleWriter_print__long endp
 
 pulsec_com_pulse_lang_ConsoleWriter_print__boolean proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -235,8 +235,8 @@ pulsec_com_pulse_lang_ConsoleWriter_print__boolean proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+64], edx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
 pulsec_com_pulse_lang_ConsoleWriter_print__boolean_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_ConsoleWriter_print__boolean_epilogue
@@ -245,7 +245,7 @@ pulsec_com_pulse_lang_ConsoleWriter_print__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_ConsoleWriter_print__boolean endp
 

@@ -23,6 +23,7 @@ pub(crate) fn lower_program_with_contexts(
     }
 
     let enum_constants = build_enum_constant_table(program, class_contexts);
+    let method_return_types = build_method_return_type_table(program);
     let classes = program
         .classes
         .iter()
@@ -45,9 +46,12 @@ pub(crate) fn lower_program_with_contexts(
                             .any(|m| matches!(m, crate::Modifier::Static)),
                         init: lower_field_initializer(field.init.as_ref(), &enum_constants),
                     }),
-                    ClassMember::Method(method) => {
-                        methods.push(lower_method(class, method, &enum_constants))
-                    }
+                    ClassMember::Method(method) => methods.push(lower_method(
+                        class,
+                        method,
+                        &enum_constants,
+                        &method_return_types,
+                    )),
                 }
             }
 
@@ -77,6 +81,7 @@ fn lower_method(
     class: &crate::ClassDecl,
     method: &MethodDecl,
     enum_constants: &HashMap<String, (String, HashMap<String, i64>)>,
+    method_return_types: &HashMap<(String, String, usize), String>,
 ) -> IrMethod {
     let mut builder = IrBuilder::new(
         class.name.clone(),
@@ -85,6 +90,7 @@ fn lower_method(
     );
     builder.visible_type_params = visible_type_params(class, method);
     builder.enum_constants = enum_constants.clone();
+    builder.method_return_types = method_return_types.clone();
     builder.return_type = method
         .return_type
         .as_ref()
@@ -157,6 +163,28 @@ fn lower_visibility(modifiers: &[crate::Modifier]) -> IrVisibility {
     }
 }
 
+fn build_method_return_type_table(program: &Program) -> HashMap<(String, String, usize), String> {
+    let mut out = HashMap::new();
+    for class in &program.classes {
+        let visible = class.type_params.iter().cloned().collect::<HashSet<_>>();
+        for member in &class.members {
+            let ClassMember::Method(method) = member else {
+                continue;
+            };
+            let return_ty = method
+                .return_type
+                .as_ref()
+                .map(|ty| erase_type_for_runtime(ty, &visible))
+                .unwrap_or_else(|| "void".to_string());
+            out.insert(
+                (class.name.clone(), method.name.clone(), method.params.len()),
+                return_ty,
+            );
+        }
+    }
+    out
+}
+
 pub(crate) struct LoopContext {
     pub(super) break_target: usize,
     pub(super) continue_target: usize,
@@ -171,6 +199,7 @@ pub(crate) struct IrBuilder {
     pub(super) return_type: Option<String>,
     pub(super) visible_type_params: HashSet<String>,
     pub(super) enum_constants: HashMap<String, (String, HashMap<String, i64>)>,
+    pub(super) method_return_types: HashMap<(String, String, usize), String>,
     pub(super) local_types: HashMap<String, String>,
     pub(super) next_statement_index: usize,
     pub(super) next_value_id: IrValueId,
@@ -187,6 +216,7 @@ impl IrBuilder {
             return_type: None,
             visible_type_params: HashSet::new(),
             enum_constants: HashMap::new(),
+            method_return_types: HashMap::new(),
             local_types: HashMap::new(),
             next_statement_index: 0,
             next_value_id: 0,

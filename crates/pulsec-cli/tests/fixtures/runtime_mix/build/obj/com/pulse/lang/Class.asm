@@ -33,37 +33,37 @@ pulsec_fld_com_pulse_lang_Class_name_tbl dq 64 dup(0)
 pulsec_fld_com_pulse_lang_Class_name dq pulsec_fld_com_pulse_lang_Class_name_tbl
 pulsec_fld_com_pulse_lang_Class_name_heap_owned dd 0
 trace_m0 db "com.pulse.lang.Class.Class"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 26
 pulsec_com_pulse_lang_Class_Class__String_trace_s0 db "com.pulse.lang.Class.Class(Class.pulse:14)"
-pulsec_com_pulse_lang_Class_Class__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_Class__String_trace_s0
+pulsec_com_pulse_lang_Class_Class__String_trace_s0_len equ 42
 trace_m2 db "com.pulse.lang.Class.getName"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 28
 pulsec_com_pulse_lang_Class_getName_trace_s0 db "com.pulse.lang.Class.getName(Class.pulse:22)"
-pulsec_com_pulse_lang_Class_getName_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_getName_trace_s0
+pulsec_com_pulse_lang_Class_getName_trace_s0_len equ 44
 trace_m4 db "com.pulse.lang.Class.getSimpleName"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 34
 pulsec_com_pulse_lang_Class_getSimpleName_trace_s0 db "com.pulse.lang.Class.getSimpleName(Class.pulse:30)"
-pulsec_com_pulse_lang_Class_getSimpleName_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_getSimpleName_trace_s0
+pulsec_com_pulse_lang_Class_getSimpleName_trace_s0_len equ 50
 trace_m6 db "com.pulse.lang.Class.getPackageName"
-trace_m6_len equ $ - trace_m6
+trace_m6_len equ 35
 pulsec_com_pulse_lang_Class_getPackageName_trace_s0 db "com.pulse.lang.Class.getPackageName(Class.pulse:38)"
-pulsec_com_pulse_lang_Class_getPackageName_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_getPackageName_trace_s0
+pulsec_com_pulse_lang_Class_getPackageName_trace_s0_len equ 51
 trace_m8 db "com.pulse.lang.Class.toString"
-trace_m8_len equ $ - trace_m8
+trace_m8_len equ 29
 pulsec_com_pulse_lang_Class_toString_trace_s0 db "com.pulse.lang.Class.toString(Class.pulse:46)"
-pulsec_com_pulse_lang_Class_toString_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_toString_trace_s0
+pulsec_com_pulse_lang_Class_toString_trace_s0_len equ 45
 trace_m10 db "com.pulse.lang.Class.runtimeSimpleName"
-trace_m10_len equ $ - trace_m10
+trace_m10_len equ 38
 pulsec_com_pulse_lang_Class_runtimeSimpleName__String_trace_s0 db "com.pulse.lang.Class.runtimeSimpleName(Class.pulse:54)"
-pulsec_com_pulse_lang_Class_runtimeSimpleName__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_runtimeSimpleName__String_trace_s0
+pulsec_com_pulse_lang_Class_runtimeSimpleName__String_trace_s0_len equ 54
 trace_m12 db "com.pulse.lang.Class.runtimePackageName"
-trace_m12_len equ $ - trace_m12
+trace_m12_len equ 39
 pulsec_com_pulse_lang_Class_runtimePackageName__String_trace_s0 db "com.pulse.lang.Class.runtimePackageName(Class.pulse:62)"
-pulsec_com_pulse_lang_Class_runtimePackageName__String_trace_s0_len equ $ - pulsec_com_pulse_lang_Class_runtimePackageName__String_trace_s0
+pulsec_com_pulse_lang_Class_runtimePackageName__String_trace_s0_len equ 55
 msg0 db 0
-msg0_len equ $ - msg0
+msg0_len equ 0
 msg1 db 0
-msg1_len equ $ - msg1
+msg1_len equ 0
 
 .code
 pulsec_fcap_com_pulse_lang_Class_ensure proc
@@ -170,6 +170,7 @@ pulsec_fcap_com_pulse_lang_Class_arc_scan_edges proc
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_Class_arc_scan_edges_field_0_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_Class_arc_scan_edges_field_0_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -204,6 +205,7 @@ pulsec_fcap_com_pulse_lang_Class_arc_invalidate_edges proc
     mov rcx, qword ptr [r10+rcx*8]
     test rcx, rcx
     jz pulsec_fcap_com_pulse_lang_Class_arc_invalidate_edges_field_0_skip
+    and ecx, 4294967295
     cmp ecx, 1
     jb pulsec_fcap_com_pulse_lang_Class_arc_invalidate_edges_field_0_skip
     cmp ecx, dword ptr [rt_slot_capacity]
@@ -224,7 +226,7 @@ pulsec_fcap_com_pulse_lang_Class_arc_invalidate_edges_done:
     ret
 pulsec_fcap_com_pulse_lang_Class_arc_invalidate_edges endp
 pulsec_com_pulse_lang_Class_Class__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -236,41 +238,41 @@ pulsec_com_pulse_lang_Class_Class__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
-    mov ecx, 10
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov ecx, 12
     call pulsec_rt_objectNew
     mov qword ptr [rsp+112], rax
     mov ecx, eax
     call pulsec_fcap_com_pulse_lang_Class_ensure
     mov rax, qword ptr [rsp+112]
     mov ecx, eax
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
 pulsec_com_pulse_lang_Class_Class__String_b0:
     lea rcx, pulsec_com_pulse_lang_Class_Class__String_trace_s0
     mov edx, pulsec_com_pulse_lang_Class_Class__String_trace_s0_len
     call pulsec_rt_traceUpdateTop
-    mov rax, qword ptr [rsp+64]
-    mov edx, dword ptr [rsp+72]
+    mov rax, qword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
 @@:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_Class_name]
     mov qword ptr [r10+rdx*8], rax
-    mov eax, dword ptr [rsp+72]
+    mov eax, dword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_Class_Class__String_epilogue
 pulsec_com_pulse_lang_Class_Class__String_epilogue:
 pulsec_com_pulse_lang_Class_Class__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_Class_Class__String endp
 
 pulsec_com_pulse_lang_Class_getName proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -300,12 +302,12 @@ pulsec_com_pulse_lang_Class_getName_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Class_getName endp
 
 pulsec_com_pulse_lang_Class_getSimpleName proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -329,6 +331,8 @@ pulsec_com_pulse_lang_Class_getSimpleName_b0:
 @@:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_Class_name]
     mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -348,12 +352,12 @@ pulsec_com_pulse_lang_Class_getSimpleName_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Class_getSimpleName endp
 
 pulsec_com_pulse_lang_Class_getPackageName proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -377,6 +381,8 @@ pulsec_com_pulse_lang_Class_getPackageName_b0:
 @@:
     mov r10, qword ptr [pulsec_fld_com_pulse_lang_Class_name]
     mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -396,12 +402,12 @@ pulsec_com_pulse_lang_Class_getPackageName_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Class_getPackageName endp
 
 pulsec_com_pulse_lang_Class_toString proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -431,12 +437,12 @@ pulsec_com_pulse_lang_Class_toString_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Class_toString endp
 
 pulsec_com_pulse_lang_Class_runtimeSimpleName__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -462,12 +468,12 @@ pulsec_com_pulse_lang_Class_runtimeSimpleName__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Class_runtimeSimpleName__String endp
 
 pulsec_com_pulse_lang_Class_runtimePackageName__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -493,7 +499,7 @@ pulsec_com_pulse_lang_Class_runtimePackageName__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_Class_runtimePackageName__String endp
 

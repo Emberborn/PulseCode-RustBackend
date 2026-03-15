@@ -202,7 +202,11 @@ pub(crate) fn try_link_windows_shared_artifacts(
             format!("/OUT:{}", windows_cmd_path(&runtime_library_path)),
             format!("/IMPLIB:{}", windows_cmd_path(&runtime_import_library_path)),
         ];
-        let exported_symbols = shared_runtime_export_symbols();
+        let exported_symbols = if link_plan.shared_runtime_exports.is_empty() {
+            shared_runtime_export_symbols()
+        } else {
+            link_plan.shared_runtime_exports.clone()
+        };
         for export in &exported_symbols {
             dll_args.push(format!("/EXPORT:{}", export));
         }

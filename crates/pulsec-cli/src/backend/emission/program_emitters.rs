@@ -152,6 +152,24 @@ fn prune_unused_fixed_externs(source: &mut String, symbols: &[&str]) {
     source.push('\n');
 }
 
+fn collect_called_proc_symbols(source: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for line in source.lines() {
+        let trimmed = line.trim();
+        let Some(target) = trimmed.strip_prefix("call ") else {
+            continue;
+        };
+        let symbol = target.trim();
+        if symbol.is_empty() || symbol.starts_with('@') || symbol.contains(' ') {
+            continue;
+        }
+        out.push(symbol.to_string());
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
 pub(crate) fn emit_masm_split_program_objects(
     ir: &IrProgram,
     out_dir: &Path,
@@ -450,16 +468,56 @@ pub(crate) fn emit_masm_split_program_objects(
                 let symbol_owner = normalize_stdlib_owner(&resolved_owner).to_string();
                 if let Some(sym) = stdlib_symbols.get(&(symbol_owner, member.clone())) {
                     externs.push(sym.clone());
-                } else if let Some(sym) = resolve_method_symbol_for_call(
-                    &resolved_owner,
-                    member,
-                    args,
-                    method,
-                    &method_symbols,
-                    &method_symbols_by_sig,
-                ) {
+                } else {
+                    let is_super_receiver = matches!(&object_v.kind, IrValueKind::SuperRef);
+                    let is_target_static = resolve_method_staticness_for_call(
+                        &resolved_owner,
+                        member,
+                        args,
+                        method,
+                        &method_staticness,
+                        &method_staticness_by_sig,
+                    )
+                    .unwrap_or(false);
+                    let devirt = !is_target_static
+                        && !is_super_receiver
+                        && is_devirtualizable_instance_call(
+                            &resolved_owner,
+                            member,
+                            args,
+                            method,
+                        );
+                    if !is_target_static && !is_super_receiver && !devirt {
+                        if let Ok((default_target, overrides)) = collect_virtual_dispatch_overrides(
+                            &resolved_owner,
+                            member,
+                            args,
+                            method,
+                            &method_symbols,
+                            &method_symbols_by_sig,
+                        ) {
+                            if !class_method_symbols.contains(&default_target) {
+                                externs.push(default_target);
+                            }
+                            for (_, target) in overrides {
+                                if !class_method_symbols.contains(&target) {
+                                    externs.push(target);
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                    if let Some(sym) = resolve_method_symbol_for_call(
+                        &resolved_owner,
+                        member,
+                        args,
+                        method,
+                        &method_symbols,
+                        &method_symbols_by_sig,
+                    ) {
                     if !class_method_symbols.contains(&sym) {
                         externs.push(sym);
+                    }
                     }
                 }
             }
@@ -583,6 +641,25 @@ pub(crate) fn emit_masm_split_program_objects(
             method_code.push_str("    ret\n");
             method_code.push_str(&format!("{} endp\n\n", symbol));
         }
+        let local_helper_symbols = [
+            mangle_class_field_capacity_proc_symbol(&class.package_name, &class.name),
+            mangle_class_arc_teardown_proc_symbol(&class.package_name, &class.name),
+            mangle_class_arc_scan_edges_proc_symbol(&class.package_name, &class.name),
+            mangle_class_arc_invalidate_edges_proc_symbol(&class.package_name, &class.name),
+        ];
+        for called in collect_called_proc_symbols(&method_code) {
+            if class_method_symbols.contains(&called) {
+                continue;
+            }
+            if local_helper_symbols.iter().any(|sym| sym == &called) {
+                continue;
+            }
+            let extrn = format!("extrn {}:proc", called);
+            if !source.contains(&extrn) {
+                source.push_str(&extrn);
+                source.push('\n');
+            }
+        }
         source.push_str(".data\n");
         source.push_str("written dq 0\n");
         source.push_str(&format!("{} dd 0\n", class_object_counter_symbol));
@@ -625,11 +702,11 @@ pub(crate) fn emit_masm_split_program_objects(
         }
         for (label, text) in &method_trace_literals {
             source.push_str(&format!("{} db {}\n", label, masm_db_payload(text)));
-            source.push_str(&format!("{}_len equ $ - {}\n", label, label));
+            source.push_str(&format!("{}_len equ {}\n", label, masm_db_len(text)));
         }
         for (i, line) in class_literals.iter().enumerate() {
             source.push_str(&format!("msg{} db {}\n", i, masm_db_payload(line)));
-            source.push_str(&format!("msg{}_len equ $ - msg{}\n", i, i));
+            source.push_str(&format!("msg{}_len equ {}\n", i, masm_db_len(line)));
         }
         source.push_str("\n.code\n");
         emit_class_field_capacity_proc(
@@ -726,7 +803,7 @@ pub(crate) fn emit_masm_split_program_objects(
     emit_runtime_data_tables(&mut std_src);
     for (_, label, text) in &class_name_literals {
         std_src.push_str(&format!("{} db {}\n", label, masm_db_payload(text)));
-        std_src.push_str(&format!("{}_len equ $ - {}\n", label, label));
+        std_src.push_str(&format!("{}_len equ {}\n", label, masm_db_len(text)));
     }
     std_src.push('\n');
     std_src.push_str(".code\n");
@@ -741,6 +818,8 @@ pub(crate) fn emit_masm_split_program_objects(
     emit_object_hash_code_proc(&mut std_src, OBJECT_HASH_CODE_SYMBOL);
     std_src.push('\n');
     emit_string_from_bytes_proc(&mut std_src, "pulsec_rt_stringFromBytes");
+    std_src.push('\n');
+    emit_string_equals_proc(&mut std_src, "pulsec_rt_stringEquals");
     std_src.push('\n');
     emit_write_raw_proc(&mut std_src, WRITE_RAW_SYMBOL);
     std_src.push('\n');
@@ -912,6 +991,7 @@ pub(crate) fn emit_masm_split_program_objects(
             app_owned_objects,
             runtime_owned_objects,
             system_inputs: vec![kernel32],
+            shared_runtime_exports: shared_runtime_export_symbols_for_ir(ir),
         },
     })
 }
@@ -1120,11 +1200,11 @@ pub(crate) fn emit_masm_full_program_object(
     }
     for (label, text) in &method_trace_literals {
         source.push_str(&format!("{} db {}\n", label, masm_db_payload(text)));
-        source.push_str(&format!("{}_len equ $ - {}\n", label, label));
+        source.push_str(&format!("{}_len equ {}\n", label, masm_db_len(text)));
     }
     for (_, label, text) in &class_name_literals {
         source.push_str(&format!("{} db {}\n", label, masm_db_payload(text)));
-        source.push_str(&format!("{}_len equ $ - {}\n", label, label));
+        source.push_str(&format!("{}_len equ {}\n", label, masm_db_len(text)));
     }
     source.push('\n');
     source.push_str(".code\n");
@@ -1139,6 +1219,8 @@ pub(crate) fn emit_masm_full_program_object(
     emit_object_hash_code_proc(&mut source, OBJECT_HASH_CODE_SYMBOL);
     source.push('\n');
     emit_string_from_bytes_proc(&mut source, "pulsec_rt_stringFromBytes");
+    source.push('\n');
+    emit_string_equals_proc(&mut source, "pulsec_rt_stringEquals");
     source.push('\n');
     emit_write_raw_proc(&mut source, WRITE_RAW_SYMBOL);
     source.push('\n');
@@ -1348,7 +1430,7 @@ pub(crate) fn emit_masm_full_program_object(
         source.push_str(".data\n");
         for (i, line) in print_literals.iter().enumerate() {
             source.push_str(&format!("msg{} db {}\n", i, masm_db_payload(line)));
-            source.push_str(&format!("msg{}_len equ $ - msg{}\n", i, i));
+            source.push_str(&format!("msg{}_len equ {}\n", i, masm_db_len(line)));
         }
         source.push('\n');
     }
@@ -1395,7 +1477,8 @@ pub(crate) fn masm_method_stack_size(method: &IrMethod) -> usize {
     };
     let binary_end = masm_binary_tmp_base(method) + (masm_binary_temp_count(method) * 8);
     let spill_end = masm_arc_spill_base(method)
-        + ((masm_arc_arg_spill_count(method) + ARC_SCRATCH_EXTRA_SLOTS) * ARC_ARG_SPILL_STRIDE);
+        + ((masm_arc_arg_spill_count(method) * 2 + ARC_SCRATCH_EXTRA_SLOTS)
+            * ARC_ARG_SPILL_STRIDE);
     let array_init_end =
         masm_array_init_tmp_base(method) + (masm_array_init_temp_count(method) * 8);
     let needed = std::cmp::max(
@@ -1426,7 +1509,7 @@ pub(crate) fn build_masm_print_entry_source(lines: &[String]) -> String {
     for (i, line) in lines.iter().enumerate() {
         let line_with_newline = format!("{}\r\n", line);
         src.push_str(&format!("msg{} db {}\n", i, masm_db_payload(&line_with_newline)));
-        src.push_str(&format!("msg{}_len equ $ - msg{}\n", i, i));
+        src.push_str(&format!("msg{}_len equ {}\n", i, masm_db_len(&line_with_newline)));
     }
     src.push_str("\n.code\n");
     src.push_str("mainCRTStartup proc\n");
@@ -1451,6 +1534,31 @@ pub(crate) fn build_masm_print_entry_source(lines: &[String]) -> String {
 
 pub(crate) fn shared_runtime_export_symbols() -> Vec<String> {
     shared_runtime_exported_procedures()
+}
+
+pub(crate) fn shared_runtime_export_symbols_for_ir(ir: &IrProgram) -> Vec<String> {
+    let mut exports = shared_runtime_exported_procedures();
+    for class in &ir.classes {
+        if !class.package_name.starts_with("com.pulse.") {
+            continue;
+        }
+        for method in &class.methods {
+            let sig = method
+                .params
+                .iter()
+                .map(|param| param.ty.clone())
+                .collect::<Vec<_>>();
+            exports.push(mangle_method_symbol(
+                &class.package_name,
+                &class.name,
+                &method.name,
+                &sig,
+            ));
+        }
+    }
+    exports.sort();
+    exports.dedup();
+    exports
 }
 
 

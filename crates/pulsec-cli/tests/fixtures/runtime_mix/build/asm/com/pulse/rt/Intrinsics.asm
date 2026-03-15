@@ -18,149 +18,149 @@ extrn pulsec_rt_tracePop:proc
 written dq 0
 pulsec_objc_com_pulse_rt_Intrinsics dd 0
 trace_m0 db "com.pulse.rt.Intrinsics.consoleWrite"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 36
 trace_m1 db "com.pulse.rt.Intrinsics.consoleWrite"
-trace_m1_len equ $ - trace_m1
+trace_m1_len equ 36
 trace_m2 db "com.pulse.rt.Intrinsics.consoleWrite"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 36
 trace_m3 db "com.pulse.rt.Intrinsics.consoleErrorWrite"
-trace_m3_len equ $ - trace_m3
+trace_m3_len equ 41
 trace_m4 db "com.pulse.rt.Intrinsics.consoleErrorWrite"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 41
 trace_m5 db "com.pulse.rt.Intrinsics.consoleErrorWrite"
-trace_m5_len equ $ - trace_m5
+trace_m5_len equ 41
 trace_m6 db "com.pulse.rt.Intrinsics.consoleWriteLine"
-trace_m6_len equ $ - trace_m6
+trace_m6_len equ 40
 trace_m7 db "com.pulse.rt.Intrinsics.consoleWriteLine"
-trace_m7_len equ $ - trace_m7
+trace_m7_len equ 40
 trace_m8 db "com.pulse.rt.Intrinsics.consoleWriteLine"
-trace_m8_len equ $ - trace_m8
+trace_m8_len equ 40
 trace_m9 db "com.pulse.rt.Intrinsics.consoleErrorWriteLine"
-trace_m9_len equ $ - trace_m9
+trace_m9_len equ 45
 trace_m10 db "com.pulse.rt.Intrinsics.consoleErrorWriteLine"
-trace_m10_len equ $ - trace_m10
+trace_m10_len equ 45
 trace_m11 db "com.pulse.rt.Intrinsics.consoleErrorWriteLine"
-trace_m11_len equ $ - trace_m11
+trace_m11_len equ 45
 trace_m12 db "com.pulse.rt.Intrinsics.panic"
-trace_m12_len equ $ - trace_m12
+trace_m12_len equ 29
 trace_m13 db "com.pulse.rt.Intrinsics.stringConcat"
-trace_m13_len equ $ - trace_m13
+trace_m13_len equ 36
 pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0 db "com.pulse.rt.Intrinsics.stringConcat(Intrinsics.pulse:103)"
-pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0
+pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_trace_s0_len equ 58
 trace_m15 db "com.pulse.rt.Intrinsics.stringLength"
-trace_m15_len equ $ - trace_m15
+trace_m15_len equ 36
 pulsec_com_pulse_rt_Intrinsics_stringLength__String_trace_s0 db "com.pulse.rt.Intrinsics.stringLength(Intrinsics.pulse:111)"
-pulsec_com_pulse_rt_Intrinsics_stringLength__String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_stringLength__String_trace_s0
+pulsec_com_pulse_rt_Intrinsics_stringLength__String_trace_s0_len equ 58
 trace_m17 db "com.pulse.rt.Intrinsics.intToString"
-trace_m17_len equ $ - trace_m17
+trace_m17_len equ 35
 pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0 db "com.pulse.rt.Intrinsics.intToString(Intrinsics.pulse:119)"
-pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0
+pulsec_com_pulse_rt_Intrinsics_intToString__int_trace_s0_len equ 57
 trace_m19 db "com.pulse.rt.Intrinsics.booleanToString"
-trace_m19_len equ $ - trace_m19
+trace_m19_len equ 39
 pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0 db "com.pulse.rt.Intrinsics.booleanToString(Intrinsics.pulse:127)"
-pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0
+pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_trace_s0_len equ 61
 trace_m21 db "com.pulse.rt.Intrinsics.parseInt"
-trace_m21_len equ $ - trace_m21
+trace_m21_len equ 32
 pulsec_com_pulse_rt_Intrinsics_parseInt__String_trace_s0 db "com.pulse.rt.Intrinsics.parseInt(Intrinsics.pulse:135)"
-pulsec_com_pulse_rt_Intrinsics_parseInt__String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_parseInt__String_trace_s0
+pulsec_com_pulse_rt_Intrinsics_parseInt__String_trace_s0_len equ 54
 trace_m23 db "com.pulse.rt.Intrinsics.parseBoolean"
-trace_m23_len equ $ - trace_m23
+trace_m23_len equ 36
 pulsec_com_pulse_rt_Intrinsics_parseBoolean__String_trace_s0 db "com.pulse.rt.Intrinsics.parseBoolean(Intrinsics.pulse:143)"
-pulsec_com_pulse_rt_Intrinsics_parseBoolean__String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_parseBoolean__String_trace_s0
+pulsec_com_pulse_rt_Intrinsics_parseBoolean__String_trace_s0_len equ 58
 trace_m25 db "com.pulse.rt.Intrinsics.objectClassName"
-trace_m25_len equ $ - trace_m25
+trace_m25_len equ 39
 pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0 db "com.pulse.rt.Intrinsics.objectClassName(Intrinsics.pulse:151)"
-pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0
+pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_trace_s0_len equ 61
 trace_m27 db "com.pulse.rt.Intrinsics.objectHashCode"
-trace_m27_len equ $ - trace_m27
+trace_m27_len equ 38
 pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object_trace_s0 db "com.pulse.rt.Intrinsics.objectHashCode(Intrinsics.pulse:159)"
-pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object_trace_s0
+pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object_trace_s0_len equ 60
 trace_m29 db "com.pulse.rt.Intrinsics.arrayNew"
-trace_m29_len equ $ - trace_m29
+trace_m29_len equ 32
 pulsec_com_pulse_rt_Intrinsics_arrayNew__int_trace_s0 db "com.pulse.rt.Intrinsics.arrayNew(Intrinsics.pulse:167)"
-pulsec_com_pulse_rt_Intrinsics_arrayNew__int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_arrayNew__int_trace_s0
+pulsec_com_pulse_rt_Intrinsics_arrayNew__int_trace_s0_len equ 54
 trace_m31 db "com.pulse.rt.Intrinsics.arrayLength"
-trace_m31_len equ $ - trace_m31
+trace_m31_len equ 35
 pulsec_com_pulse_rt_Intrinsics_arrayLength__long_trace_s0 db "com.pulse.rt.Intrinsics.arrayLength(Intrinsics.pulse:175)"
-pulsec_com_pulse_rt_Intrinsics_arrayLength__long_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_arrayLength__long_trace_s0
+pulsec_com_pulse_rt_Intrinsics_arrayLength__long_trace_s0_len equ 57
 trace_m33 db "com.pulse.rt.Intrinsics.arrayGetInt"
-trace_m33_len equ $ - trace_m33
+trace_m33_len equ 35
 pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int_trace_s0 db "com.pulse.rt.Intrinsics.arrayGetInt(Intrinsics.pulse:183)"
-pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int_trace_s0
+pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int_trace_s0_len equ 57
 trace_m35 db "com.pulse.rt.Intrinsics.arraySetInt"
-trace_m35_len equ $ - trace_m35
+trace_m35_len equ 35
 trace_m36 db "com.pulse.rt.Intrinsics.arrayGetString"
-trace_m36_len equ $ - trace_m36
+trace_m36_len equ 38
 pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0 db "com.pulse.rt.Intrinsics.arrayGetString(Intrinsics.pulse:198)"
-pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0
+pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_trace_s0_len equ 60
 trace_m38 db "com.pulse.rt.Intrinsics.arraySetString"
-trace_m38_len equ $ - trace_m38
+trace_m38_len equ 38
 trace_m39 db "com.pulse.rt.Intrinsics.listNew"
-trace_m39_len equ $ - trace_m39
+trace_m39_len equ 31
 pulsec_com_pulse_rt_Intrinsics_listNew_trace_s0 db "com.pulse.rt.Intrinsics.listNew(Intrinsics.pulse:213)"
-pulsec_com_pulse_rt_Intrinsics_listNew_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_listNew_trace_s0
+pulsec_com_pulse_rt_Intrinsics_listNew_trace_s0_len equ 53
 trace_m41 db "com.pulse.rt.Intrinsics.listSize"
-trace_m41_len equ $ - trace_m41
+trace_m41_len equ 32
 pulsec_com_pulse_rt_Intrinsics_listSize__long_trace_s0 db "com.pulse.rt.Intrinsics.listSize(Intrinsics.pulse:221)"
-pulsec_com_pulse_rt_Intrinsics_listSize__long_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_listSize__long_trace_s0
+pulsec_com_pulse_rt_Intrinsics_listSize__long_trace_s0_len equ 54
 trace_m43 db "com.pulse.rt.Intrinsics.listClear"
-trace_m43_len equ $ - trace_m43
+trace_m43_len equ 33
 trace_m44 db "com.pulse.rt.Intrinsics.listAddInt"
-trace_m44_len equ $ - trace_m44
+trace_m44_len equ 34
 trace_m45 db "com.pulse.rt.Intrinsics.listAddString"
-trace_m45_len equ $ - trace_m45
+trace_m45_len equ 37
 trace_m46 db "com.pulse.rt.Intrinsics.listGetInt"
-trace_m46_len equ $ - trace_m46
+trace_m46_len equ 34
 pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int_trace_s0 db "com.pulse.rt.Intrinsics.listGetInt(Intrinsics.pulse:250)"
-pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int_trace_s0
+pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int_trace_s0_len equ 56
 trace_m48 db "com.pulse.rt.Intrinsics.listGetString"
-trace_m48_len equ $ - trace_m48
+trace_m48_len equ 37
 pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0 db "com.pulse.rt.Intrinsics.listGetString(Intrinsics.pulse:258)"
-pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0
+pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_trace_s0_len equ 59
 trace_m50 db "com.pulse.rt.Intrinsics.mapNew"
-trace_m50_len equ $ - trace_m50
+trace_m50_len equ 30
 pulsec_com_pulse_rt_Intrinsics_mapNew_trace_s0 db "com.pulse.rt.Intrinsics.mapNew(Intrinsics.pulse:266)"
-pulsec_com_pulse_rt_Intrinsics_mapNew_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapNew_trace_s0
+pulsec_com_pulse_rt_Intrinsics_mapNew_trace_s0_len equ 52
 trace_m52 db "com.pulse.rt.Intrinsics.mapSize"
-trace_m52_len equ $ - trace_m52
+trace_m52_len equ 31
 pulsec_com_pulse_rt_Intrinsics_mapSize__long_trace_s0 db "com.pulse.rt.Intrinsics.mapSize(Intrinsics.pulse:274)"
-pulsec_com_pulse_rt_Intrinsics_mapSize__long_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapSize__long_trace_s0
+pulsec_com_pulse_rt_Intrinsics_mapSize__long_trace_s0_len equ 53
 trace_m54 db "com.pulse.rt.Intrinsics.mapClear"
-trace_m54_len equ $ - trace_m54
+trace_m54_len equ 32
 trace_m55 db "com.pulse.rt.Intrinsics.mapContainsKey"
-trace_m55_len equ $ - trace_m55
+trace_m55_len equ 38
 pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String_trace_s0 db "com.pulse.rt.Intrinsics.mapContainsKey(Intrinsics.pulse:289)"
-pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String_trace_s0
+pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String_trace_s0_len equ 60
 trace_m57 db "com.pulse.rt.Intrinsics.mapPut"
-trace_m57_len equ $ - trace_m57
+trace_m57_len equ 30
 trace_m58 db "com.pulse.rt.Intrinsics.mapPutInt"
-trace_m58_len equ $ - trace_m58
+trace_m58_len equ 33
 trace_m59 db "com.pulse.rt.Intrinsics.mapGet"
-trace_m59_len equ $ - trace_m59
+trace_m59_len equ 30
 pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0 db "com.pulse.rt.Intrinsics.mapGet(Intrinsics.pulse:311)"
-pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0
+pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_trace_s0_len equ 52
 trace_m61 db "com.pulse.rt.Intrinsics.mapGetInt"
-trace_m61_len equ $ - trace_m61
+trace_m61_len equ 33
 pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String_trace_s0 db "com.pulse.rt.Intrinsics.mapGetInt(Intrinsics.pulse:319)"
-pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String_trace_s0_len equ $ - pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String_trace_s0
+pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String_trace_s0_len equ 55
 msg0 db 0
-msg0_len equ $ - msg0
+msg0_len equ 0
 msg1 db 0
-msg1_len equ $ - msg1
+msg1_len equ 0
 msg2 db 0
-msg2_len equ $ - msg2
+msg2_len equ 0
 msg3 db 0
-msg3_len equ $ - msg3
+msg3_len equ 0
 msg4 db 0
-msg4_len equ $ - msg4
+msg4_len equ 0
 msg5 db 0
-msg5_len equ $ - msg5
+msg5_len equ 0
 msg6 db 0
-msg6_len equ $ - msg6
+msg6_len equ 0
 
 .code
 pulsec_com_pulse_rt_Intrinsics_consoleWrite__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -181,12 +181,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleWrite__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleWrite__String endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleWrite__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -207,12 +207,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleWrite__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleWrite__int endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleWrite__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -233,12 +233,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleWrite__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleWrite__boolean endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -259,12 +259,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__String endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -285,12 +285,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__int endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -311,12 +311,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWrite__boolean endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -337,12 +337,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__String endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -363,12 +363,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__int endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -389,12 +389,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleWriteLine__boolean endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -415,12 +415,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__String endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -441,12 +441,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__int endp
 
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -467,12 +467,12 @@ pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_consoleErrorWriteLine__boolean endp
 
 pulsec_com_pulse_rt_Intrinsics_panic__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -493,12 +493,12 @@ pulsec_com_pulse_rt_Intrinsics_panic__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_panic__String endp
 
 pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -525,12 +525,12 @@ pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_stringConcat__String_String endp
 
 pulsec_com_pulse_rt_Intrinsics_stringLength__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -554,12 +554,12 @@ pulsec_com_pulse_rt_Intrinsics_stringLength__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_stringLength__String endp
 
 pulsec_com_pulse_rt_Intrinsics_intToString__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -585,12 +585,12 @@ pulsec_com_pulse_rt_Intrinsics_intToString__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_intToString__int endp
 
 pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -616,12 +616,12 @@ pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_booleanToString__boolean endp
 
 pulsec_com_pulse_rt_Intrinsics_parseInt__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -645,12 +645,12 @@ pulsec_com_pulse_rt_Intrinsics_parseInt__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_parseInt__String endp
 
 pulsec_com_pulse_rt_Intrinsics_parseBoolean__String proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -674,12 +674,12 @@ pulsec_com_pulse_rt_Intrinsics_parseBoolean__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_parseBoolean__String endp
 
 pulsec_com_pulse_rt_Intrinsics_objectClassName__Object proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -705,12 +705,12 @@ pulsec_com_pulse_rt_Intrinsics_objectClassName__Object_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_objectClassName__Object endp
 
 pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -734,12 +734,12 @@ pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_objectHashCode__Object endp
 
 pulsec_com_pulse_rt_Intrinsics_arrayNew__int proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -764,12 +764,12 @@ pulsec_com_pulse_rt_Intrinsics_arrayNew__int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_arrayNew__int endp
 
 pulsec_com_pulse_rt_Intrinsics_arrayLength__long proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -793,12 +793,12 @@ pulsec_com_pulse_rt_Intrinsics_arrayLength__long_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_arrayLength__long endp
 
 pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -823,12 +823,12 @@ pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_arrayGetInt__long_int endp
 
 pulsec_com_pulse_rt_Intrinsics_arraySetInt__long_int_int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -851,12 +851,12 @@ pulsec_com_pulse_rt_Intrinsics_arraySetInt__long_int_int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_arraySetInt__long_int_int endp
 
 pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -883,12 +883,12 @@ pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_arrayGetString__long_int endp
 
 pulsec_com_pulse_rt_Intrinsics_arraySetString__long_int_String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -911,12 +911,12 @@ pulsec_com_pulse_rt_Intrinsics_arraySetString__long_int_String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_arraySetString__long_int_String endp
 
 pulsec_com_pulse_rt_Intrinsics_listNew proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -940,12 +940,12 @@ pulsec_com_pulse_rt_Intrinsics_listNew_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_listNew endp
 
 pulsec_com_pulse_rt_Intrinsics_listSize__long proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -969,12 +969,12 @@ pulsec_com_pulse_rt_Intrinsics_listSize__long_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_listSize__long endp
 
 pulsec_com_pulse_rt_Intrinsics_listClear__long proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -995,12 +995,12 @@ pulsec_com_pulse_rt_Intrinsics_listClear__long_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_listClear__long endp
 
 pulsec_com_pulse_rt_Intrinsics_listAddInt__long_int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1022,12 +1022,12 @@ pulsec_com_pulse_rt_Intrinsics_listAddInt__long_int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_listAddInt__long_int endp
 
 pulsec_com_pulse_rt_Intrinsics_listAddString__long_String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1049,12 +1049,12 @@ pulsec_com_pulse_rt_Intrinsics_listAddString__long_String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_listAddString__long_String endp
 
 pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1079,12 +1079,12 @@ pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_listGetInt__long_int endp
 
 pulsec_com_pulse_rt_Intrinsics_listGetString__long_int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1111,12 +1111,12 @@ pulsec_com_pulse_rt_Intrinsics_listGetString__long_int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_listGetString__long_int endp
 
 pulsec_com_pulse_rt_Intrinsics_mapNew proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1140,12 +1140,12 @@ pulsec_com_pulse_rt_Intrinsics_mapNew_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_mapNew endp
 
 pulsec_com_pulse_rt_Intrinsics_mapSize__long proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1169,12 +1169,12 @@ pulsec_com_pulse_rt_Intrinsics_mapSize__long_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_mapSize__long endp
 
 pulsec_com_pulse_rt_Intrinsics_mapClear__long proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1195,12 +1195,12 @@ pulsec_com_pulse_rt_Intrinsics_mapClear__long_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_rt_Intrinsics_mapClear__long endp
 
 pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1225,12 +1225,12 @@ pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_mapContainsKey__long_String endp
 
 pulsec_com_pulse_rt_Intrinsics_mapPut__long_String_String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1253,12 +1253,12 @@ pulsec_com_pulse_rt_Intrinsics_mapPut__long_String_String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_mapPut__long_String_String endp
 
 pulsec_com_pulse_rt_Intrinsics_mapPutInt__long_String_int proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1281,12 +1281,12 @@ pulsec_com_pulse_rt_Intrinsics_mapPutInt__long_String_int_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_mapPutInt__long_String_int endp
 
 pulsec_com_pulse_rt_Intrinsics_mapGet__long_String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1313,12 +1313,12 @@ pulsec_com_pulse_rt_Intrinsics_mapGet__long_String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_mapGet__long_String endp
 
 pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -1343,7 +1343,7 @@ pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_rt_Intrinsics_mapGetInt__long_String endp
 

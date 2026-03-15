@@ -3,7 +3,7 @@ package com.pulse.lang;
 /**
  * Mutable helper for incremental string construction.
  */
-public class StringBuilder {
+public class StringBuilder implements Appendable, CharSequence {
     private String value;
 
     /**
@@ -92,6 +92,22 @@ public class StringBuilder {
      */
     public int length() {
         return this.value.length();
+    }
+
+    /**
+     * Returns the character at the supplied index in the current builder contents.
+     * Use this when code is typed as `CharSequence` over a builder.
+     */
+    public char charAt(int index) {
+        return this.value.charAt(index);
+    }
+
+    /**
+     * Returns a string subsequence over the current builder contents.
+     * Use this when code is typed as `CharSequence` and needs a Java-like slice.
+     */
+    public String subSequence(int beginIndex, int endIndex) {
+        return this.value.substring(beginIndex, endIndex);
     }
 
     /**

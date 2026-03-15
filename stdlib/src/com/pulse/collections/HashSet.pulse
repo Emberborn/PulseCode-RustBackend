@@ -24,6 +24,14 @@ class HashSet implements Set {
     }
 
     /**
+     * Reports whether the set currently stores any values.
+     * Use this before membership-sensitive flows that distinguish empty state.
+     */
+    public boolean isEmpty() {
+        return Intrinsics.mapSize(this.handle) == 0;
+    }
+
+    /**
      * Removes all values from the set.
      * Use this to reuse a mutable set instance.
      */

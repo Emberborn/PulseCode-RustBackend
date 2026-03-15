@@ -90,16 +90,6 @@ public final class Float {
         if (negative) {
             promoted = 0.0d - promoted;
         }
-        long whole = (long) promoted;
-        if (((double) whole) == promoted) {
-            String text = Long.toString(whole);
-            if (negative) {
-                String prefix = "-";
-                String signed = prefix.concat(text);
-                return signed.concat(".0");
-            }
-            return text.concat(".0");
-        }
 
         int exponent = 0;
         while (promoted >= 10.0d) {
@@ -111,7 +101,32 @@ public final class Float {
             exponent = exponent - 1;
         }
 
+        long whole = (long) ((double) value < 0.0d ? (0.0d - (double) value) : (double) value);
+        if (((double) whole) == ((double) value < 0.0d ? (0.0d - (double) value) : (double) value)
+            && exponent >= -3
+            && exponent < 7) {
+            String text = Long.toString(whole);
+            if (negative) {
+                String prefix = "-";
+                String signed = prefix.concat(text);
+                return signed.concat(".0");
+            }
+            return text.concat(".0");
+        }
+
         int precision = 7;
+        double rounding = 0.5d;
+        int r = 0;
+        while (r < precision) {
+            rounding = rounding / 10.0d;
+            r = r + 1;
+        }
+        promoted = promoted + rounding;
+        if (promoted >= 10.0d) {
+            promoted = promoted / 10.0d;
+            exponent = exponent + 1;
+        }
+
         StringBuilder digits = new StringBuilder();
         int i = 0;
         while (i < precision) {

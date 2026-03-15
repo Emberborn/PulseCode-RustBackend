@@ -4,7 +4,7 @@ import com.pulse.rt.Intrinsics;
 /**
  * Runtime-backed immutable string value.
  */
-public final class String {
+public final class String implements CharSequence, Comparable {
     /**
      * Returns the number of characters in this string.
      * Use this before indexing or for empty-string checks.
@@ -54,6 +54,14 @@ public final class String {
     }
 
     /**
+     * Returns a subsequence over the supplied half-open range.
+     * Use this when code is typed as `CharSequence` but still needs string slicing.
+     */
+    public String subSequence(int beginIndex, int endIndex) {
+        return this.substring(beginIndex, endIndex);
+    }
+
+    /**
      * Reports whether this string has the same content as the supplied object.
      * Use this for Java-like string content equality instead of reference equality.
      */
@@ -73,6 +81,42 @@ public final class String {
             i = i + 1;
         }
         return true;
+    }
+
+    /**
+     * Orders this string against another string using lexicographic character comparison.
+     * Use this when code is typed against `Comparable` or needs deterministic text ordering.
+     */
+    public int compareTo(Object other) {
+        if (!(other instanceof String)) {
+            Intrinsics.panic("String.compareTo requires String");
+        }
+        String text = (String) other;
+        int ownLength = this.length();
+        int otherLength = text.length();
+        int limit = ownLength;
+        if (otherLength < limit) {
+            limit = otherLength;
+        }
+        int i = 0;
+        while (i < limit) {
+            char left = this.charAt(i);
+            char right = text.charAt(i);
+            if (left < right) {
+                return -1;
+            }
+            if (left > right) {
+                return 1;
+            }
+            i = i + 1;
+        }
+        if (ownLength < otherLength) {
+            return -1;
+        }
+        if (ownLength > otherLength) {
+            return 1;
+        }
+        return 0;
     }
 
     /**
@@ -247,6 +291,9 @@ public final class String {
     public static String valueOf(Object value) {
         if (value == null) {
             return "null";
+        }
+        if (value instanceof String) {
+            return (String) value;
         }
         return value.toString();
     }

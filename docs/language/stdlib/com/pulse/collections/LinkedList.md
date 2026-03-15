@@ -26,6 +26,11 @@ Use this when one structure needs list, queue, or deque operations.
 Returns the number of list values currently stored.
 Use this before indexed access or emptiness checks on the list lane.
 
+### ``public boolean isEmpty()``
+
+Reports whether the structure currently holds any values in its active lanes.
+Use this as the common emptiness check for list/queue/deque-style use.
+
 ### ``public void clear()``
 
 Removes all list, queue, and deque state from this container.
@@ -61,7 +66,7 @@ Use this when treating the structure as a FIFO queue.
 Removes and returns the head value from the queue lane.
 Use this when consuming FIFO values.
 
-### ``public boolean isEmpty()``
+### ``/**``
 
 Reports whether the deque lane is empty.
 Use this before deque removals when code must avoid empty-structure failures.

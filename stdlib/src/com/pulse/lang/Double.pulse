@@ -100,8 +100,19 @@ public final class Double {
             magnitude = 0.0d - magnitude;
         }
 
+        int exponent = 0;
+        double scaled = magnitude;
+        while (scaled >= 10.0d) {
+            scaled = scaled / 10.0d;
+            exponent = exponent + 1;
+        }
+        while (scaled < 1.0d) {
+            scaled = scaled * 10.0d;
+            exponent = exponent - 1;
+        }
+
         long whole = (long) magnitude;
-        if (((double) whole) == magnitude) {
+        if (((double) whole) == magnitude && exponent >= -3 && exponent < 7) {
             String text = Long.toString(whole);
             if (negative) {
                 String prefix = "-";

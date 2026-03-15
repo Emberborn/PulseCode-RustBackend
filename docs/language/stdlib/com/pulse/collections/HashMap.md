@@ -26,6 +26,11 @@ Use this when storing string-keyed values at runtime.
 Returns the number of entries currently stored in the map.
 Use this for sizing checks or emptiness decisions.
 
+### ``public boolean isEmpty()``
+
+Reports whether the map currently stores any entries.
+Use this as the baseline emptiness check before keyed reads or writes.
+
 ### ``public void clear()``
 
 Removes all entries from the map.

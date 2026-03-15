@@ -48,6 +48,14 @@ class LinkedList implements Collection, List, Queue, Deque {
     }
 
     /**
+     * Reports whether the structure currently holds any values in its active lanes.
+     * Use this as the common emptiness check for list/queue/deque-style use.
+     */
+    public boolean isEmpty() {
+        return this.size() == 0;
+    }
+
+    /**
      * Removes all list, queue, and deque state from this container.
      * Use this to fully reset the structure for reuse.
      */
@@ -136,10 +144,6 @@ class LinkedList implements Collection, List, Queue, Deque {
      * Reports whether the deque lane is empty.
      * Use this before deque removals when code must avoid empty-structure failures.
      */
-    public boolean isEmpty() {
-        return this.dequeValues == null || this.dequeHead >= this.dequeTail;
-    }
-
     /**
      * Adds a value at the front of the deque lane.
      * Use this for head-first deque insertion.

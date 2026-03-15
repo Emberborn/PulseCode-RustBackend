@@ -1,9 +1,11 @@
 package com.pulse.io;
 
+import com.pulse.lang.AutoCloseable;
+
 /**
  * Sequential text input facade backed by the current file helpers.
  */
-class InputStream {
+class InputStream implements AutoCloseable {
     private String path;
 
     /**
@@ -20,5 +22,12 @@ class InputStream {
      */
     public String readAll() {
         return Files.readString(this.path);
+    }
+
+    /**
+     * Closes the stream facade.
+     * Use this for API compatibility; the current file-backed baseline does not hold a persistent native handle.
+     */
+    public void close() {
     }
 }

@@ -7,6 +7,9 @@ class app.runtime.Rank
   method int value() blocks=1 values=0
 class app.runtime.Runner
   method int value() blocks=1 values=1
+class com.pulse.lang.Appendable
+  method StringBuilder append(String text) blocks=1 values=0
+  method StringBuilder append(char value) blocks=1 values=0
 class com.pulse.lang.AssertionError
   method ctor AssertionError() blocks=1 values=6
   method ctor AssertionError(String message) blocks=1 values=6
@@ -42,6 +45,10 @@ class com.pulse.lang.Char
   method int compare(char left, char right) blocks=7 values=10
   method String toString(char value) blocks=1 values=4
   method char runtimeCharAt(String value, int index) blocks=1 values=1
+class com.pulse.lang.CharSequence
+  method int length() blocks=1 values=0
+  method char charAt(int index) blocks=1 values=0
+  method String subSequence(int beginIndex, int endIndex) blocks=1 values=0
 class com.pulse.lang.Class
   field String name
   method ctor Class(String name) blocks=1 values=3
@@ -70,7 +77,7 @@ class com.pulse.lang.Double
   method double doubleValue(Double value) blocks=1 values=1
   method boolean equals(double left, double right) blocks=1 values=3
   method int compare(double left, double right) blocks=16 values=28
-  method String toString(double value) blocks=25 values=62
+  method String toString(double value) blocks=31 values=97
   method double parsePrimitive(String text) blocks=85 values=336
   method String formatFiniteWithSign(boolean negative, double magnitude, int precision) blocks=13 values=74
   method String formatFixedDigits(boolean negative, String digits, int exponent) blocks=31 values=135
@@ -100,7 +107,7 @@ class com.pulse.lang.Float
   method float floatValue(Float value) blocks=1 values=1
   method boolean equals(float left, float right) blocks=1 values=3
   method int compare(float left, float right) blocks=16 values=28
-  method String toString(float value) blocks=70 values=318
+  method String toString(float value) blocks=76 values=377
   method float buildMinValue() blocks=4 values=14
   method float buildMaxValue() blocks=4 values=14
 class com.pulse.lang.IO
@@ -174,6 +181,8 @@ class com.pulse.lang.PrintStream
   method void print(int value) blocks=4 values=10
   method void print(long value) blocks=1 values=7
   method void print(boolean value) blocks=4 values=10
+class com.pulse.lang.Runnable
+  method void run() blocks=1 values=0
 class com.pulse.lang.RuntimeException
   method ctor RuntimeException() blocks=1 values=6
   method ctor RuntimeException(String message) blocks=1 values=6
@@ -194,7 +203,9 @@ class com.pulse.lang.String
   method char charAt(int index) blocks=1 values=5
   method String substring(int beginIndex) blocks=1 values=7
   method String substring(int beginIndex, int endIndex) blocks=1 values=6
+  method String subSequence(int beginIndex, int endIndex) blocks=1 values=5
   method boolean equals(Object other) blocks=13 values=35
+  method int compareTo(Object other) blocks=22 values=56
   method boolean startsWith(String prefix) blocks=1 values=6
   method boolean endsWith(String suffix) blocks=4 values=23
   method boolean contains(String text) blocks=1 values=6
@@ -206,7 +217,7 @@ class com.pulse.lang.String
   method String valueOf(char value) blocks=1 values=4
   method String valueOf(float value) blocks=1 values=4
   method String valueOf(double value) blocks=1 values=4
-  method String valueOf(Object value) blocks=4 values=7
+  method String valueOf(Object value) blocks=7 values=11
   method char runtimeCharAt(String value, int index) blocks=1 values=1
   method String runtimeSubstring(String value, int beginIndex, int endIndex) blocks=1 values=1
   method String runtimeFromChar(char value) blocks=1 values=1
@@ -222,6 +233,8 @@ class com.pulse.lang.StringBuilder
   method StringBuilder append(double value) blocks=1 values=11
   method StringBuilder append(Object value) blocks=1 values=11
   method int length() blocks=1 values=4
+  method char charAt(int index) blocks=1 values=5
+  method String subSequence(int beginIndex, int endIndex) blocks=1 values=6
   method void clear() blocks=1 values=3
   method StringBuilder insert(int index, String text) blocks=1 values=25
   method StringBuilder delete(int beginIndex, int endIndex) blocks=1 values=18

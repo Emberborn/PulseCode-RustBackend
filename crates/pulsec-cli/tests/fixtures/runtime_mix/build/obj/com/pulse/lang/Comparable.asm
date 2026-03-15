@@ -16,11 +16,11 @@ extrn pulsec_rt_tracePop:proc
 written dq 0
 pulsec_objc_com_pulse_lang_Comparable dd 0
 trace_m0 db "com.pulse.lang.Comparable.compareTo"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 35
 
 .code
 pulsec_com_pulse_lang_Comparable_compareTo__Object proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -32,8 +32,8 @@ pulsec_com_pulse_lang_Comparable_compareTo__Object proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
 pulsec_com_pulse_lang_Comparable_compareTo__Object_b0:
     xor eax, eax
     jmp pulsec_com_pulse_lang_Comparable_compareTo__Object_epilogue
@@ -42,7 +42,7 @@ pulsec_com_pulse_lang_Comparable_compareTo__Object_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_Comparable_compareTo__Object endp
 

@@ -11,7 +11,7 @@ Sequential text output facade backed by the current file helpers.
 ## Declaration
 
 ```pulse
-class OutputStream
+class OutputStream implements AutoCloseable
 ```
 
 ## Members
@@ -30,3 +30,8 @@ Use this for simple stream-style overwrite writes.
 
 Appends text to the payload for the bound path.
 Use this for simple stream-style append writes.
+
+### ``public void close()``
+
+Closes the stream facade.
+Use this for API compatibility; the current file-backed baseline does not hold a persistent native handle.

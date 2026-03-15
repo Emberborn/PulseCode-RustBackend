@@ -185,6 +185,7 @@ fn render_link_plan_topology(
         app_owned_objects: planned_app_owned_object_paths(ir),
         runtime_owned_objects: planned_runtime_owned_object_paths(),
         system_inputs: vec![PathBuf::from("kernel32.lib")],
+        shared_runtime_exports: Vec::new(),
     };
     let link_plan = link_plan.unwrap_or(&planned);
     let render_paths = |paths: &[PathBuf], owner: &str, kind: &str| -> String {

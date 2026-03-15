@@ -11,7 +11,7 @@ Runtime-backed immutable string value.
 ## Declaration
 
 ```pulse
-public final class String
+public final class String implements CharSequence, Comparable
 ```
 
 ## Members
@@ -46,10 +46,20 @@ Use this when slicing trailing text from an immutable string value.
 Returns a substring over the supplied half-open range.
 Use this when slicing immutable text with Java-like begin/end bounds.
 
+### ``public String subSequence(int beginIndex, int endIndex)``
+
+Returns a subsequence over the supplied half-open range.
+Use this when code is typed as `CharSequence` but still needs string slicing.
+
 ### ``public boolean equals(Object other)``
 
 Reports whether this string has the same content as the supplied object.
 Use this for Java-like string content equality instead of reference equality.
+
+### ``public int compareTo(Object other)``
+
+Orders this string against another string using lexicographic character comparison.
+Use this when code is typed against `Comparable` or needs deterministic text ordering.
 
 ### ``public boolean startsWith(String prefix)``
 

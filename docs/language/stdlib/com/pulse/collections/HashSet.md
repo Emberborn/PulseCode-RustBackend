@@ -26,6 +26,11 @@ Use this when preserving uniqueness across string values.
 Returns the number of unique values in the set.
 Use this for sizing checks or emptiness decisions.
 
+### ``public boolean isEmpty()``
+
+Reports whether the set currently stores any values.
+Use this before membership-sensitive flows that distinguish empty state.
+
 ### ``public void clear()``
 
 Removes all values from the set.

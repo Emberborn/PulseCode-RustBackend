@@ -26,35 +26,35 @@ extrn pulsec_rt_panic:proc
 written dq 0
 pulsec_objc_com_pulse_lang_AssertionError dd 0
 trace_m0 db "com.pulse.lang.AssertionError.AssertionError"
-trace_m0_len equ $ - trace_m0
+trace_m0_len equ 44
 pulsec_com_pulse_lang_AssertionError_AssertionError_trace_s0 db "com.pulse.lang.AssertionError.AssertionError(AssertionError.pulse:14)"
-pulsec_com_pulse_lang_AssertionError_AssertionError_trace_s0_len equ $ - pulsec_com_pulse_lang_AssertionError_AssertionError_trace_s0
+pulsec_com_pulse_lang_AssertionError_AssertionError_trace_s0_len equ 69
 trace_m2 db "com.pulse.lang.AssertionError.AssertionError"
-trace_m2_len equ $ - trace_m2
+trace_m2_len equ 44
 pulsec_com_pulse_lang_AssertionError_AssertionError__String_trace_s0 db "com.pulse.lang.AssertionError.AssertionError(AssertionError.pulse:22)"
-pulsec_com_pulse_lang_AssertionError_AssertionError__String_trace_s0_len equ $ - pulsec_com_pulse_lang_AssertionError_AssertionError__String_trace_s0
+pulsec_com_pulse_lang_AssertionError_AssertionError__String_trace_s0_len equ 69
 trace_m4 db "com.pulse.lang.AssertionError.fail"
-trace_m4_len equ $ - trace_m4
+trace_m4_len equ 34
 pulsec_com_pulse_lang_AssertionError_fail_trace_s0 db "com.pulse.lang.AssertionError.fail(AssertionError.pulse:30)"
-pulsec_com_pulse_lang_AssertionError_fail_trace_s0_len equ $ - pulsec_com_pulse_lang_AssertionError_fail_trace_s0
+pulsec_com_pulse_lang_AssertionError_fail_trace_s0_len equ 59
 trace_m6 db "com.pulse.lang.AssertionError.fail"
-trace_m6_len equ $ - trace_m6
+trace_m6_len equ 34
 pulsec_com_pulse_lang_AssertionError_fail__String_trace_s0 db "com.pulse.lang.AssertionError.fail(AssertionError.pulse:38)"
-pulsec_com_pulse_lang_AssertionError_fail__String_trace_s0_len equ $ - pulsec_com_pulse_lang_AssertionError_fail__String_trace_s0
+pulsec_com_pulse_lang_AssertionError_fail__String_trace_s0_len equ 59
 pulsec_com_pulse_lang_AssertionError_fail__String_trace_s1 db "com.pulse.lang.AssertionError.fail(AssertionError.pulse:39)"
-pulsec_com_pulse_lang_AssertionError_fail__String_trace_s1_len equ $ - pulsec_com_pulse_lang_AssertionError_fail__String_trace_s1
+pulsec_com_pulse_lang_AssertionError_fail__String_trace_s1_len equ 59
 msg0 db "AssertionError"
-msg0_len equ $ - msg0
+msg0_len equ 14
 msg1 db "AssertionError"
-msg1_len equ $ - msg1
+msg1_len equ 14
 msg2 db "AssertionError"
-msg2_len equ $ - msg2
+msg2_len equ 14
 msg3 db "AssertionError: "
-msg3_len equ $ - msg3
+msg3_len equ 16
 
 .code
 pulsec_com_pulse_lang_AssertionError_AssertionError proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -67,7 +67,7 @@ pulsec_com_pulse_lang_AssertionError_AssertionError proc
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
     mov qword ptr [rsp+64], rcx
-    mov ecx, 5
+    mov ecx, 6
     call pulsec_rt_objectNew
     mov ecx, eax
     mov qword ptr [rsp+64], rcx
@@ -78,14 +78,32 @@ pulsec_com_pulse_lang_AssertionError_AssertionError_b0:
     lea rcx, msg0
     mov edx, msg0_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
     mov qword ptr [rsp+72], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
     mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
     xor eax, eax
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+80], eax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+160], rax
     xor eax, eax
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+72], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+112]
     mov dword ptr [rsp+88], eax
     mov rax, qword ptr [rsp+72]
     mov rdx, rax
@@ -113,12 +131,12 @@ pulsec_com_pulse_lang_AssertionError_AssertionError_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_AssertionError_AssertionError endp
 
 pulsec_com_pulse_lang_AssertionError_AssertionError__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -130,12 +148,12 @@ pulsec_com_pulse_lang_AssertionError_AssertionError__String proc
     mov rdx, qword ptr [rsp+16]
     mov r8, qword ptr [rsp+24]
     mov r9, qword ptr [rsp+32]
-    mov qword ptr [rsp+64], rdx
-    mov qword ptr [rsp+72], rcx
-    mov ecx, 5
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov ecx, 6
     call pulsec_rt_objectNew
     mov ecx, eax
-    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+64], rcx
 pulsec_com_pulse_lang_AssertionError_AssertionError__String_b0:
     lea rcx, pulsec_com_pulse_lang_AssertionError_AssertionError__String_trace_s0
     mov edx, pulsec_com_pulse_lang_AssertionError_AssertionError__String_trace_s0_len
@@ -143,18 +161,36 @@ pulsec_com_pulse_lang_AssertionError_AssertionError__String_b0:
     lea rcx, msg1
     mov edx, msg1_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
     mov rax, qword ptr [rsp+80]
-    mov rax, qword ptr [rsp+64]
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+88], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
     call pulsec_rt_arcRetain
     mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+168], rax
     xor eax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+120]
     mov dword ptr [rsp+96], eax
     mov rax, qword ptr [rsp+80]
     mov rdx, rax
@@ -162,7 +198,7 @@ pulsec_com_pulse_lang_AssertionError_AssertionError__String_b0:
     mov r8, rax
     mov eax, dword ptr [rsp+96]
     mov r9d, eax
-    mov rcx, qword ptr [rsp+72]
+    mov rcx, qword ptr [rsp+64]
     cmp ecx, 0
     je pulsec_com_pulse_lang_AssertionError_AssertionError__String_vd_stmt_0_0_0_null
     call pulsec_com_pulse_lang_Throwable_initThrowableState__String_String_Throwable
@@ -178,19 +214,19 @@ pulsec_com_pulse_lang_AssertionError_AssertionError__String_vd_stmt_0_0_0_done:
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+120]
-    mov eax, dword ptr [rsp+72]
+    mov eax, dword ptr [rsp+64]
     jmp pulsec_com_pulse_lang_AssertionError_AssertionError__String_epilogue
 pulsec_com_pulse_lang_AssertionError_AssertionError__String_epilogue:
 pulsec_com_pulse_lang_AssertionError_AssertionError__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_AssertionError_AssertionError__String endp
 
 pulsec_com_pulse_lang_AssertionError_fail proc
-    sub rsp, 120
+    sub rsp, 184
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -209,6 +245,8 @@ pulsec_com_pulse_lang_AssertionError_fail_b0:
     lea rcx, msg2
     mov edx, msg2_len
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+104]
     mov qword ptr [rsp+64], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -229,12 +267,12 @@ pulsec_com_pulse_lang_AssertionError_fail_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    add rsp, 184
     ret
 pulsec_com_pulse_lang_AssertionError_fail endp
 
 pulsec_com_pulse_lang_AssertionError_fail__String proc
-    sub rsp, 136
+    sub rsp, 200
     mov qword ptr [rsp+8], rcx
     mov qword ptr [rsp+16], rdx
     mov qword ptr [rsp+24], r8
@@ -259,6 +297,8 @@ pulsec_com_pulse_lang_AssertionError_fail__String_b0:
     mov edx, pulsec_com_pulse_lang_AssertionError_fail__String_trace_s1_len
     call pulsec_rt_traceUpdateTop
     mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
     mov qword ptr [rsp+80], rax
     mov qword ptr [rsp+32], rax
     mov rcx, rax
@@ -266,18 +306,35 @@ pulsec_com_pulse_lang_AssertionError_fail__String_b0:
     mov rax, qword ptr [rsp+80]
     mov rax, qword ptr [rsp+80]
     mov rdx, rax
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+128], r8
+    mov qword ptr [rsp+136], r9
     mov rax, qword ptr [rsp+64]
     mov rcx, rax
+    mov rdx, qword ptr [rsp+120]
+    mov r8, qword ptr [rsp+128]
+    mov r9, qword ptr [rsp+136]
     call pulsec_com_pulse_lang_String_concat__String
     mov qword ptr [rsp+120], rax
     mov rax, qword ptr [rsp+80]
     mov rcx, rax
     call pulsec_rt_arcRelease
     mov rax, qword ptr [rsp+120]
-    mov dword ptr [rsp+80], eax
-    mov eax, dword ptr [rsp+80]
-    mov ecx, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
     call pulsec_rt_panic
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call pulsec_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
     xor eax, eax
     jmp pulsec_com_pulse_lang_AssertionError_fail__String_epilogue
 pulsec_com_pulse_lang_AssertionError_fail__String_epilogue:
@@ -285,7 +342,7 @@ pulsec_com_pulse_lang_AssertionError_fail__String_epilogue_post:
     mov qword ptr [rsp+40], rax
     call pulsec_rt_tracePop
     mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    add rsp, 200
     ret
 pulsec_com_pulse_lang_AssertionError_fail__String endp
 

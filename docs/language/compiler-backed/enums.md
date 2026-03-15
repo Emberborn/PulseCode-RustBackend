@@ -36,6 +36,11 @@ Not part of the shipped enum baseline yet:
 - switch-specific enum lowering guarantees
 - full `com.pulse.lang.Enum` object-model integration
 
+Current foundational stdlib state:
+
+- `com.pulse.lang.Enum` now exists as the declared enum base type in stdlib
+- it is still a bootstrap base contract, not the full later Java-style enum helper/object surface
+
 ## Runtime Shape
 
 The current backend/runtime strategy is:

@@ -11,6 +11,12 @@ interface Collection {
     int size();
 
     /**
+     * Reports whether the collection currently stores any values.
+     * Use this as the baseline emptiness check across mutable containers.
+     */
+    boolean isEmpty();
+
+    /**
      * Removes all values from the collection.
      * Use this to reset a mutable container to its empty state.
      */
