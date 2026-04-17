@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-const MASM_IDENTIFIER_LIMIT: usize = 140;
+const MASM_IDENTIFIER_LIMIT: usize = 96;
 
 fn append_sanitized(out: &mut String, raw: &str) {
     for c in raw.chars() {

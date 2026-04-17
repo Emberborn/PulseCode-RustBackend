@@ -1,0 +1,68 @@
+package author.compiler;
+
+/**
+ * Renders compiler-facing check and workspace-check status text.
+ */
+public final class CheckSummaryWriter {
+    public static String renderWorkspaceCheckStart(String rootPath, int memberCount, String mode) {
+        return "Workspace check: root="
+            .concat(rootPath)
+            .concat(" members=")
+            .concat(String.valueOf(memberCount))
+            .concat(" mode=")
+            .concat(mode);
+    }
+
+    public static String renderWorkspaceCheckPass(
+        String memberRoot,
+        String packageName,
+        int filesLoaded
+    ) {
+        return "[PASS] "
+            .concat(memberRoot)
+            .concat(" package=")
+            .concat(packageName)
+            .concat(" files=")
+            .concat(String.valueOf(filesLoaded));
+    }
+
+    public static String renderWorkspaceCheckSummary(
+        int passed,
+        int failed,
+        int total
+    ) {
+        return "Workspace check summary: passed="
+            .concat(String.valueOf(passed))
+            .concat(" failed=")
+            .concat(String.valueOf(failed))
+            .concat(" total=")
+            .concat(String.valueOf(total));
+    }
+
+    public static String renderCheckResult(CheckResult result) {
+        if (result.success()) {
+            return "OK: package="
+                .concat(result.packageName())
+                .concat(" imports=")
+                .concat(String.valueOf(result.importCount()))
+                .concat(" classes=")
+                .concat(String.valueOf(result.classCount()))
+                .concat(" files=")
+                .concat(String.valueOf(result.filesLoaded()))
+                .concat("\nCheck summary: mode=")
+                .concat(result.mode())
+                .concat(" project_mode=")
+                .concat(result.projectMode())
+                .concat(" entry=")
+                .concat(result.entryPath())
+                .concat(" source_root=")
+                .concat(result.sourceRoot());
+        }
+        return "Check FAILED: mode="
+            .concat(result.mode())
+            .concat(" entry=")
+            .concat(result.entryPath())
+            .concat(" source_root=")
+            .concat(result.sourceRoot());
+    }
+}

@@ -182,10 +182,12 @@ pub(crate) fn run() {
                 let mut passed = 0usize;
                 let mut failed = 0usize;
                 println!(
-                    "Workspace check: root={} members={} mode={}",
-                    workspace.root.display(),
-                    workspace.member_roots.len(),
-                    mode_label
+                    "{}",
+                    render_workspace_check_start(
+                        &workspace.root,
+                        workspace.member_roots.len(),
+                        mode_label
+                    )
                 );
                 for member_root in &workspace.member_roots {
                     let mut member_flags = cli_flags.clone();
@@ -208,10 +210,12 @@ pub(crate) fn run() {
                         Ok(result) => {
                             passed += 1;
                             println!(
-                                "[PASS] {} package={} files={}",
-                                member_root.display(),
-                                result.root.package.name,
-                                result.files_loaded
+                                "{}",
+                                render_workspace_check_pass(
+                                    member_root,
+                                    &result.root.package.name,
+                                    result.files_loaded
+                                )
                             );
                         }
                         Err(err) => {
@@ -221,10 +225,8 @@ pub(crate) fn run() {
                     }
                 }
                 println!(
-                    "Workspace check summary: passed={} failed={} total={}",
-                    passed,
-                    failed,
-                    workspace.member_roots.len()
+                    "{}",
+                    render_workspace_check_summary(passed, failed, workspace.member_roots.len())
                 );
                 if failed > 0 {
                     emit_error(DIAG_CHECK, "one or more workspace members failed check");
@@ -254,30 +256,31 @@ pub(crate) fn run() {
             ) {
                 Ok(result) => {
                     println!(
-                        "OK: package={} imports={} classes={} files={}",
-                        result.root.package.name,
-                        result.root.imports.len(),
-                        result.merged.classes.len(),
-                        result.files_loaded
-                    );
-                    println!(
-                        "Check summary: mode={} project_mode={} entry={} source_root={}",
-                        mode_label,
-                        if resolved.used_manifest {
-                            "manifest"
-                        } else {
-                            "direct"
-                        },
-                        resolved.entry_path,
-                        resolved.source_root.as_deref().unwrap_or("<none>")
+                        "{}",
+                        render_check_success(
+                            &result.root.package.name,
+                            result.root.imports.len(),
+                            result.merged.classes.len(),
+                            result.files_loaded,
+                            mode_label,
+                            if resolved.used_manifest {
+                                "manifest"
+                            } else {
+                                "direct"
+                            },
+                            &resolved.entry_path,
+                            resolved.source_root.as_deref().unwrap_or("<none>")
+                        )
                     );
                 }
                 Err(err) => {
                     eprintln!(
-                        "Check FAILED: mode={} entry={} source_root={}",
-                        mode_label,
-                        resolved.entry_path,
-                        resolved.source_root.as_deref().unwrap_or("<none>")
+                        "{}",
+                        render_check_failure(
+                            mode_label,
+                            &resolved.entry_path,
+                            resolved.source_root.as_deref().unwrap_or("<none>")
+                        )
                     );
                     emit_error(DIAG_CHECK, &format!("Compile error: {err}"));
                     emit_hint(
@@ -410,10 +413,12 @@ pub(crate) fn run() {
                 let mut failed = 0usize;
                 let mut total = 0usize;
                 println!(
-                    "Workspace test: root={} members={} mode={}",
-                    workspace.root.display(),
-                    workspace.member_roots.len(),
-                    mode_label
+                    "{}",
+                    render_workspace_test_start(
+                        &workspace.root,
+                        workspace.member_roots.len(),
+                        mode_label
+                    )
                 );
                 for member_root in &workspace.member_roots {
                     let mut member_flags = cli_flags.clone();
@@ -438,18 +443,22 @@ pub(crate) fn run() {
                     if tests.is_empty() {
                         failed += 1;
                         eprintln!(
-                            "[FAIL] {} :: no .pulse tests found under '{}'",
-                            member_root.display(),
-                            invocation.tests_root.display()
+                            "{}",
+                            render_workspace_member_no_tests(
+                                member_root,
+                                &invocation.tests_root
+                            )
                         );
                         continue;
                     }
                     println!(
-                        "Member test discovery: member={} tests_root={} source_root={} count={}",
-                        member_root.display(),
-                        invocation.tests_root.display(),
-                        invocation.source_root.display(),
-                        tests.len()
+                        "{}",
+                        render_workspace_member_test_discovery(
+                            member_root,
+                            &invocation.tests_root,
+                            &invocation.source_root,
+                            tests.len()
+                        )
                     );
                     for test_file in &tests {
                         total += 1;
@@ -477,11 +486,11 @@ pub(crate) fn run() {
                     }
                 }
                 println!(
-                    "Workspace test summary: mode={} passed={} failed={} total={}",
-                    mode_label, passed, failed, total
+                    "{}",
+                    render_workspace_test_summary(mode_label, passed, failed, total)
                 );
                 if failed > 0 {
-                    emit_error(DIAG_TEST, "one or more workspace tests failed");
+                    emit_error(DIAG_TEST, &render_workspace_tests_failed());
                     emit_hint("review [FAIL] diagnostics above and re-run for the failing member");
                     process::exit(EXIT_COMMAND_FAILURE);
                 }
@@ -501,33 +510,29 @@ pub(crate) fn run() {
             let tests = match discover_test_files(&invocation.tests_root) {
                 Ok(tests) => tests,
                 Err(err) => {
-                    emit_error(DIAG_TEST, &format!("Test discovery failed: {err}"));
+                    emit_error(DIAG_TEST, &render_test_discovery_failure(&err));
                     emit_hint("ensure the tests directory exists and is readable");
                     process::exit(EXIT_COMMAND_FAILURE);
                 }
             };
             if tests.is_empty() {
-                emit_error(
-                    DIAG_TEST,
-                    &format!(
-                        "Test discovery failed: no .pulse tests found under '{}'",
-                        invocation.tests_root.display()
-                    ),
-                );
+                emit_error(DIAG_TEST, &render_test_no_files(&invocation.tests_root));
                 emit_hint("add .pulse files under tests/ with a main entrypoint");
                 process::exit(EXIT_COMMAND_FAILURE);
             }
             println!(
-                "Test discovery: project_mode={} project_root={} tests_root={} source_root={} count={}",
-                if invocation.used_manifest {
-                    "manifest"
-                } else {
-                    "direct"
-                },
-                invocation.project_root.display(),
-                invocation.tests_root.display(),
-                invocation.source_root.display(),
-                tests.len()
+                "{}",
+                render_test_discovery(
+                    if invocation.used_manifest {
+                        "manifest"
+                    } else {
+                        "direct"
+                    },
+                    &invocation.project_root,
+                    &invocation.tests_root,
+                    &invocation.source_root,
+                    tests.len()
+                )
             );
             let mut passed = 0usize;
             let mut failed = 0usize;
@@ -550,20 +555,359 @@ pub(crate) fn run() {
                 }
             }
             println!(
-                "Test summary: mode={} passed={} failed={} total={}",
-                mode_label,
-                passed,
-                failed,
-                tests.len()
+                "{}",
+                render_test_summary(mode_label, passed, failed, tests.len())
             );
             if failed > 0 {
-                emit_error(DIAG_TEST, "one or more tests failed");
+                emit_error(DIAG_TEST, &render_tests_failed());
                 emit_hint("review [FAIL] diagnostics above and re-run the test command");
                 process::exit(EXIT_COMMAND_FAILURE);
             }
         }
         CliCommand::Help | CliCommand::Version => unreachable!("handled before dispatch"),
     }
+}
+
+fn emit_compiler_bridge_summary_request(mode: &str, values: &[Option<&str>]) -> String {
+    let mut out = String::new();
+    out.push_str(mode);
+    out.push('\n');
+    for value in values {
+        append_bridge_request_raw_value(&mut out, *value);
+    }
+    out
+}
+
+fn render_workspace_check_start(root: &Path, member_count: usize, mode: &str) -> String {
+    let count = member_count.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-workspace-check-start",
+        &[root.to_str(), Some(count.as_str()), Some(mode)],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Workspace check: root={} members={} mode={}",
+            root.display(),
+            member_count,
+            mode
+        )
+    })
+}
+
+fn render_workspace_check_pass(member_root: &Path, package_name: &str, files_loaded: usize) -> String {
+    let files = files_loaded.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-workspace-check-pass",
+        &[member_root.to_str(), Some(package_name), Some(files.as_str())],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "[PASS] {} package={} files={}",
+            member_root.display(),
+            package_name,
+            files_loaded
+        )
+    })
+}
+
+fn render_workspace_check_summary(passed: usize, failed: usize, total: usize) -> String {
+    let passed_value = passed.to_string();
+    let failed_value = failed.to_string();
+    let total_value = total.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-workspace-check-summary",
+        &[
+            Some(passed_value.as_str()),
+            Some(failed_value.as_str()),
+            Some(total_value.as_str()),
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Workspace check summary: passed={} failed={} total={}",
+            passed, failed, total
+        )
+    })
+}
+
+fn render_check_success(
+    package_name: &str,
+    import_count: usize,
+    class_count: usize,
+    files_loaded: usize,
+    mode: &str,
+    project_mode: &str,
+    entry_path: &str,
+    source_root: &str,
+) -> String {
+    let import_value = import_count.to_string();
+    let class_value = class_count.to_string();
+    let files_value = files_loaded.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-check-result",
+        &[
+            Some("true"),
+            Some(package_name),
+            Some(import_value.as_str()),
+            Some(class_value.as_str()),
+            Some(files_value.as_str()),
+            Some(mode),
+            Some(project_mode),
+            Some(entry_path),
+            Some(source_root),
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "OK: package={} imports={} classes={} files={}\nCheck summary: mode={} project_mode={} entry={} source_root={}",
+            package_name,
+            import_count,
+            class_count,
+            files_loaded,
+            mode,
+            project_mode,
+            entry_path,
+            source_root
+        )
+    })
+}
+
+fn render_check_failure(mode: &str, entry_path: &str, source_root: &str) -> String {
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-check-result",
+        &[
+            Some("false"),
+            None,
+            None,
+            None,
+            None,
+            Some(mode),
+            None,
+            Some(entry_path),
+            Some(source_root),
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Check FAILED: mode={} entry={} source_root={}",
+            mode, entry_path, source_root
+        )
+    })
+}
+
+fn render_test_discovery(
+    project_mode: &str,
+    project_root: &Path,
+    tests_root: &Path,
+    source_root: &Path,
+    count: usize,
+) -> String {
+    let count_value = count.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-test-discovery",
+        &[
+            Some("true"),
+            Some("false"),
+            Some(project_mode),
+            project_root.to_str(),
+            None,
+            tests_root.to_str(),
+            source_root.to_str(),
+            Some(count_value.as_str()),
+            Some("false"),
+            None,
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Test discovery: project_mode={} project_root={} tests_root={} source_root={} count={}",
+            project_mode,
+            project_root.display(),
+            tests_root.display(),
+            source_root.display(),
+            count
+        )
+    })
+}
+
+fn render_test_summary(mode: &str, passed: usize, failed: usize, total: usize) -> String {
+    let passed_value = passed.to_string();
+    let failed_value = failed.to_string();
+    let total_value = total.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-test-summary",
+        &[
+            Some("false"),
+            Some(mode),
+            Some(passed_value.as_str()),
+            Some(failed_value.as_str()),
+            Some(total_value.as_str()),
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Test summary: mode={} passed={} failed={} total={}",
+            mode, passed, failed, total
+        )
+    })
+}
+
+fn render_workspace_test_start(root: &Path, member_count: usize, mode: &str) -> String {
+    let count = member_count.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-workspace-test-start",
+        &[root.to_str(), Some(count.as_str()), Some(mode)],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Workspace test: root={} members={} mode={}",
+            root.display(),
+            member_count,
+            mode
+        )
+    })
+}
+
+fn render_workspace_member_test_discovery(
+    member_root: &Path,
+    tests_root: &Path,
+    source_root: &Path,
+    count: usize,
+) -> String {
+    let count_value = count.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-workspace-member-discovery",
+        &[
+            Some("true"),
+            Some("true"),
+            None,
+            None,
+            member_root.to_str(),
+            tests_root.to_str(),
+            source_root.to_str(),
+            Some(count_value.as_str()),
+            Some("false"),
+            None,
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Member test discovery: member={} tests_root={} source_root={} count={}",
+            member_root.display(),
+            tests_root.display(),
+            source_root.display(),
+            count
+        )
+    })
+}
+
+fn render_workspace_test_summary(mode: &str, passed: usize, failed: usize, total: usize) -> String {
+    let passed_value = passed.to_string();
+    let failed_value = failed.to_string();
+    let total_value = total.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-test-summary",
+        &[
+            Some("true"),
+            Some(mode),
+            Some(passed_value.as_str()),
+            Some(failed_value.as_str()),
+            Some(total_value.as_str()),
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Workspace test summary: mode={} passed={} failed={} total={}",
+            mode, passed, failed, total
+        )
+    })
+}
+
+fn render_test_discovery_failure(detail: &str) -> String {
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-test-discovery",
+        &[
+            Some("false"),
+            Some("false"),
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            Some("false"),
+            Some(detail),
+        ],
+    );
+    run_author_build_bridge_request(&request)
+        .unwrap_or_else(|_| format!("Test discovery failed: {detail}"))
+}
+
+fn render_test_no_files(tests_root: &Path) -> String {
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-test-discovery",
+        &[
+            Some("false"),
+            Some("false"),
+            None,
+            None,
+            None,
+            tests_root.to_str(),
+            None,
+            None,
+            Some("true"),
+            None,
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Test discovery failed: no .pulse tests found under '{}'",
+            tests_root.display()
+        )
+    })
+}
+
+fn render_workspace_member_no_tests(member_root: &Path, tests_root: &Path) -> String {
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-test-discovery",
+        &[
+            Some("false"),
+            Some("true"),
+            None,
+            None,
+            member_root.to_str(),
+            tests_root.to_str(),
+            None,
+            None,
+            Some("true"),
+            None,
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "[FAIL] {} :: no .pulse tests found under '{}'",
+            member_root.display(),
+            tests_root.display()
+        )
+    })
+}
+
+fn render_workspace_tests_failed() -> String {
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-tests-failed",
+        &[Some("true"), Some("friendly"), Some("0"), Some("1"), Some("1")],
+    );
+    run_author_build_bridge_request(&request)
+        .unwrap_or_else(|_| "one or more workspace tests failed".to_string())
+}
+
+fn render_tests_failed() -> String {
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-tests-failed",
+        &[Some("false"), Some("friendly"), Some("0"), Some("1"), Some("1")],
+    );
+    run_author_build_bridge_request(&request)
+        .unwrap_or_else(|_| "one or more tests failed".to_string())
 }
 
 #[cfg(test)]

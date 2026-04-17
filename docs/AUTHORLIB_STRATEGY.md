@@ -73,6 +73,13 @@ The current target taxonomy is:
   - assembler/linker/process/env invocation and related toolchain facades
 - `author.compiler.*`
   - compiler-only APIs such as analysis, IR, lowering, diagnostics, codegen support
+  - first live slices now exist through:
+    - `author.compiler.CheckResult` for structured compiler check results
+    - `author.compiler.CheckSummaryWriter` for compiler-facing check/workspace-check status rendering
+    - `author.compiler.TestDiscoveryResult` for structured compiler test discovery success/failure state
+    - `author.compiler.TestResult` for structured compiler test result state
+    - `author.compiler.TestSummaryWriter` for compiler-facing test/workspace-test discovery and summary rendering
+    - `author.compiler.TestDiagnosticWriter` for compiler-facing test discovery/no-tests/aggregate-failure diagnostic text
 - `author.runtime.*`
   - runtime-construction/runtime-service/runtime-object-model support APIs
 - `author.memory.*`

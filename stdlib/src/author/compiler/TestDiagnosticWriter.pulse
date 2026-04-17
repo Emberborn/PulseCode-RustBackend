@@ -1,0 +1,29 @@
+package author.compiler;
+
+/**
+ * Renders compiler-facing test diagnostics while leaving CLI envelopes outside authorlib.
+ */
+public final class TestDiagnosticWriter {
+    public static String renderTestDiscoveryResult(TestDiscoveryResult result) {
+        if (result.noTestsFound()) {
+            if (result.workspaceMember()) {
+                return "[FAIL] "
+                    .concat(result.memberRoot())
+                    .concat(" :: no .pulse tests found under '")
+                    .concat(result.testsRoot())
+                    .concat("'");
+            }
+            return "Test discovery failed: no .pulse tests found under '"
+                .concat(result.testsRoot())
+                .concat("'");
+        }
+        return "Test discovery failed: ".concat(result.detail());
+    }
+
+    public static String renderTestsFailed(TestResult result) {
+        if (result.workspace()) {
+            return "one or more workspace tests failed";
+        }
+        return "one or more tests failed";
+    }
+}

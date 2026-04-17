@@ -279,6 +279,12 @@ fn emit_build_invocation_bridge_source() -> String {
         import author.build.BuildSummaryWriter;
         import author.build.BuildPublicationWriter;
         import author.build.BuildInvocationResolver;
+                import author.compiler.CheckResult;
+                import author.compiler.CheckSummaryWriter;
+                import author.compiler.TestDiscoveryResult;
+                import author.compiler.TestResult;
+                import author.compiler.TestDiagnosticWriter;
+                import author.compiler.TestSummaryWriter;
         import author.toolchain.ToolchainCandidateBridge;
         import author.toolchain.ToolchainCandidatePlan;
         import author.toolchain.ToolchainDiscoveryBridge;
@@ -700,6 +706,62 @@ fn emit_build_invocation_bridge_source() -> String {
                     IO.print(text);
                     return;
                 }}
+                if (mode.equals("compiler-render-workspace-check-start")) {{
+                    String request = Main.readLines(3);
+                    IO.print(CheckSummaryWriter.renderWorkspaceCheckStart(
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.readValue(request, 2)
+                    ));
+                    return;
+                }}
+                if (mode.equals("compiler-render-workspace-check-pass")) {{
+                    String request = Main.readLines(3);
+                    IO.print(CheckSummaryWriter.renderWorkspaceCheckPass(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.parseCount(Main.readValue(request, 2))
+                    ));
+                    return;
+                }}
+                if (mode.equals("compiler-render-workspace-check-summary")) {{
+                    String request = Main.readLines(3);
+                    IO.print(CheckSummaryWriter.renderWorkspaceCheckSummary(
+                        Main.parseCount(Main.readValue(request, 0)),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.parseCount(Main.readValue(request, 2))
+                    ));
+                    return;
+                }}
+                if (mode.equals("compiler-render-check-result")) {{
+                    IO.print(Main.renderCompilerCheckResult(Main.readLines(9)));
+                    return;
+                }}
+                if (mode.equals("compiler-render-test-discovery")) {{
+                    IO.print(Main.renderCompilerTestDiscoveryResult(Main.readLines(10)));
+                    return;
+                }}
+                if (mode.equals("compiler-render-test-summary")) {{
+                    IO.print(Main.renderCompilerTestResult(Main.readLines(5)));
+                    return;
+                }}
+                if (mode.equals("compiler-render-workspace-test-start")) {{
+                    String request = Main.readLines(3);
+                    IO.print(TestSummaryWriter.renderWorkspaceTestStart(
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.readValue(request, 2)
+                    ));
+                    return;
+                }}
+                if (mode.equals("compiler-render-workspace-member-discovery")) {{
+                    IO.print(Main.renderCompilerWorkspaceMemberDiscovery(Main.readLines(10)));
+                    return;
+                }}
+                if (mode.equals("compiler-render-tests-failed")) {{
+                    IO.print(Main.renderCompilerTestsFailed(Main.readLines(5)));
+                    return;
+                }}
                 IO.print("error=1:unknown bridge mode ");
                 IO.print(mode);
                 return;
@@ -711,6 +773,100 @@ fn emit_build_invocation_bridge_source() -> String {
                     return line.substring(0, line.length() - 1);
                 }}
                 return line;
+            }}
+
+            private static String renderCompilerCheckResult(String request) {{
+                CheckResult result;
+                if ("true".equals(Main.readValue(request, 0))) {{
+                    result = CheckResult.success(
+                        Main.readValue(request, 1),
+                        Main.parseCount(Main.readValue(request, 2)),
+                        Main.parseCount(Main.readValue(request, 3)),
+                        Main.parseCount(Main.readValue(request, 4)),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8)
+                    );
+                }} else {{
+                    result = CheckResult.failure(
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8)
+                    );
+                }}
+                return CheckSummaryWriter.renderCheckResult(result);
+            }}
+
+            private static String renderCompilerTestDiscoveryResult(String request) {{
+                TestDiscoveryResult result;
+                if ("true".equals(Main.readValue(request, 0))) {{
+                    if ("true".equals(Main.readValue(request, 1))) {{
+                        result = TestDiscoveryResult.workspaceMemberSuccess(
+                            Main.readValue(request, 4),
+                            Main.readValue(request, 5),
+                            Main.readValue(request, 6),
+                            Main.parseCount(Main.readValue(request, 7))
+                        );
+                    }} else {{
+                        result = TestDiscoveryResult.success(
+                            Main.readValue(request, 2),
+                            Main.readValue(request, 3),
+                            Main.readValue(request, 5),
+                            Main.readValue(request, 6),
+                            Main.parseCount(Main.readValue(request, 7))
+                        );
+                    }}
+                    return TestSummaryWriter.renderTestDiscoveryResult(result);
+                }}
+                if ("true".equals(Main.readValue(request, 8))) {{
+                    if ("true".equals(Main.readValue(request, 1))) {{
+                        result = TestDiscoveryResult.workspaceMemberNoTestsFound(
+                            Main.readValue(request, 4),
+                            Main.readValue(request, 5)
+                        );
+                    }} else {{
+                        result = TestDiscoveryResult.noTestsFound(Main.readValue(request, 5));
+                    }}
+                }} else {{
+                    result = TestDiscoveryResult.failure(Main.readValue(request, 9));
+                }}
+                return TestDiagnosticWriter.renderTestDiscoveryResult(result);
+            }}
+
+            private static String renderCompilerTestResult(String request) {{
+                return TestSummaryWriter.renderTestResult(
+                    new TestResult(
+                        "true".equals(Main.readValue(request, 0)),
+                        Main.readValue(request, 1),
+                        Main.parseCount(Main.readValue(request, 2)),
+                        Main.parseCount(Main.readValue(request, 3)),
+                        Main.parseCount(Main.readValue(request, 4))
+                    )
+                );
+            }}
+
+            private static String renderCompilerWorkspaceMemberDiscovery(String request) {{
+                return TestSummaryWriter.renderTestDiscoveryResult(
+                    TestDiscoveryResult.workspaceMemberSuccess(
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.parseCount(Main.readValue(request, 7))
+                    )
+                );
+            }}
+
+            private static String renderCompilerTestsFailed(String request) {{
+                return TestDiagnosticWriter.renderTestsFailed(
+                    new TestResult(
+                        "true".equals(Main.readValue(request, 0)),
+                        Main.readValue(request, 1),
+                        Main.parseCount(Main.readValue(request, 2)),
+                        Main.parseCount(Main.readValue(request, 3)),
+                        Main.parseCount(Main.readValue(request, 4))
+                    )
+                );
             }}
 
             private static String readLines(int count) {{
@@ -1272,7 +1428,7 @@ fn ensure_author_build_bridge_runner(cache_root: &Path) -> Result<PathBuf, Strin
     let emit_started_at = Instant::now();
     let artifact = match emit_author_build_bridge_with_retry(&backend, &ir, &out_dir) {
         Ok(artifact) => artifact,
-        Err(_err) if cached_exe_path.exists() => {
+        Err(_err) if wait_for_author_build_bridge_exe(&cached_exe_path) => {
             emit_build_resolution_timing("bridge compile backend emit", emit_started_at);
             fs::write(&stamp_path, expected_stamp)
                 .map_err(|e| format!("Failed to write author bridge stamp: {e}"))?;
@@ -1313,10 +1469,23 @@ fn emit_author_build_bridge_with_retry(
     Err(last_err.unwrap_or_else(|| "unknown author bridge emit failure".to_string()))
 }
 
+fn wait_for_author_build_bridge_exe(path: &Path) -> bool {
+    if path.exists() {
+        return true;
+    }
+    for _ in 0..10 {
+        std::thread::sleep(Duration::from_millis(250));
+        if path.exists() {
+            return true;
+        }
+    }
+    false
+}
+
 fn is_transient_author_bridge_output_lock_error(err: &str) -> bool {
     let normalized = err.to_ascii_lowercase();
     let locked_output = normalized.contains("main.exe")
-        || normalized.contains("startup.obj")
+        || normalized.contains(".obj")
         || normalized.contains("\\obj\\")
         || normalized.contains("/obj/");
     locked_output
@@ -1347,7 +1516,31 @@ pub(crate) fn prewarm_author_build_bridge_runner() -> Result<PathBuf, String> {
     let _lock = acquire_author_build_bridge_lock(&cache_root)?;
     emit_build_resolution_timing("bridge lock wait", lock_started_at);
     let ensure_started_at = Instant::now();
-    let exe = ensure_author_build_bridge_runner(&cache_root)?;
+    let mut last_err = None;
+    let mut exe = None;
+    for _ in 0..20 {
+        match ensure_author_build_bridge_runner(&cache_root) {
+            Ok(found) => {
+                exe = Some(found);
+                break;
+            }
+            Err(err) => {
+                if let Ok(found) = resolve_cached_author_build_bridge_runner(&cache_root) {
+                    exe = Some(found);
+                    break;
+                }
+                if is_transient_author_bridge_output_lock_error(&err) {
+                    last_err = Some(err);
+                    std::thread::sleep(Duration::from_millis(500));
+                    continue;
+                }
+                return Err(err);
+            }
+        }
+    }
+    let exe = exe.ok_or_else(|| {
+        last_err.unwrap_or_else(|| "author build bridge prewarm failed".to_string())
+    })?;
     emit_build_resolution_timing("bridge ensure runner", ensure_started_at);
     emit_build_resolution_timing("bridge prewarm total", total_started_at);
     Ok(exe)

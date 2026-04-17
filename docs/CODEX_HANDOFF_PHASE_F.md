@@ -1233,6 +1233,18 @@ Bridge / tooling truths added during the current `F1-97` push:
     - artifact publication
     - build-config-plan writing
     - artifact-stamp writing
+  - `author.compiler.*` now has its first real live slice through `author.compiler.CheckSummaryWriter`
+  - that check slice now also includes `author.compiler.CheckResult`, and `CheckSummaryWriter` now renders the structured authored result instead of separate success/failure tuples
+  - `pulsec check` and workspace-check status rendering now prefer that authored compiler surface through the cached bridge
+  - `author.compiler.*` now also has a second live slice through `author.compiler.TestSummaryWriter`
+  - that test slice now also includes `author.compiler.TestResult`, and `TestSummaryWriter` / `TestDiagnosticWriter` now render structured authored test result state for summary and aggregate-failure text instead of loose tuples
+  - that same test slice now also includes `author.compiler.TestDiscoveryResult`, and discovery success/failure/no-tests/workspace-member-no-tests text now routes through that authored model instead of loose path/detail tuples
+  - `pulsec test` and workspace-test discovery/summary lines now prefer that authored compiler surface through the cached bridge
+  - `author.compiler.*` now also has a third live slice through `author.compiler.TestDiagnosticWriter`
+  - `pulsec test` now prefers that authored compiler surface for discovery-failure/no-tests/aggregate-failure message text
+  - the later authored compiler discovery lift also exposed a bridge-structure truth:
+    - the generated cached bridge dispatcher had become too large to trust as one giant `bridge.internal.Main.main()` body
+    - compiler render branches now dispatch through helper methods inside the generated bridge source instead of keeping all compiler render paths inline
   - Rust `cli/build/mod.rs` now uses bridge-first author-build copy paths for:
     - published artifact file copies
     - published tree copies
@@ -1254,6 +1266,12 @@ Bridge / tooling truths added during the current `F1-97` push:
   - backend symbol truth after the authored build lift:
     - MASM symbol naming now caps long emitted identifiers deterministically with a stable hash suffix
     - this avoids ML64 `identifier too long` failures as larger authored build/toolchain surfaces come online
+  - the first live `author.compiler` bridge slice exposed another real ML64 truth:
+    - bridge rebuilds could still hit object string-table corruption under symbol pressure
+    - reducing the global MASM identifier cap further in `backend/support/naming.rs` stabilized the bridge rebuild and kept the new compiler summary slice live
+  - the later `author.compiler` slices exposed another bootstrap truth:
+    - cold bridge prewarm could still fail too eagerly even after the cached bridge executable became usable
+    - `prewarm_author_build_bridge_runner()` now retries the ensure path and accepts a now-available cached exe after transient output-lock failures
   - this is a worthwhile Rust-side cleanup to keep bootstrap output honest and inspectable now, but the deeper emitter cleanup still belongs to the future Pulse compiler/runtime backend rewrite:
     - shared helpers for repeated type-test / cast / overload-dispatch ladders
     - deduplication of repeated per-method/per-class MASM scaffolding

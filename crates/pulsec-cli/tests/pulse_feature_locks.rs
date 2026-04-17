@@ -112,6 +112,12 @@ enabled = true
         import author.build.BuildPublicationPlanBridge;
         import author.build.BuildSummaryWriter;
         import author.build.BuildPublicationWriter;
+        import author.compiler.CheckResult;
+        import author.compiler.CheckSummaryWriter;
+        import author.compiler.TestDiscoveryResult;
+        import author.compiler.TestResult;
+        import author.compiler.TestDiagnosticWriter;
+        import author.compiler.TestSummaryWriter;
         import author.project.ManifestPackage;
         import author.project.AuthorlibConfig;
         import author.project.CheckInvocation;
@@ -389,6 +395,79 @@ enabled = true
                     "masm-split-stdlib",
                     "workspace/demo/build/distro/debug/bin/demo.exe"
                 );
+                String checkOkText = CheckSummaryWriter.renderCheckResult(
+                    CheckResult.success(
+                        "demo",
+                        2,
+                        3,
+                        4,
+                        "friendly",
+                        "manifest",
+                        "workspace/demo/src/main/pulse/app/core/Main.pulse",
+                        "workspace/demo/src/main/pulse"
+                    )
+                );
+                String checkFailText = CheckSummaryWriter.renderCheckResult(
+                    CheckResult.failure(
+                        "strict",
+                        "workspace/demo/src/main/pulse/app/core/Main.pulse",
+                        "workspace/demo/src/main/pulse"
+                    )
+                );
+                String workspaceCheckText = CheckSummaryWriter.renderWorkspaceCheckSummary(2, 1, 3);
+                String testDiscoveryText = TestSummaryWriter.renderTestDiscoveryResult(
+                    TestDiscoveryResult.success(
+                        "manifest",
+                        "workspace/demo",
+                        "workspace/demo/tests",
+                        "workspace/demo/src/main/pulse",
+                        2
+                    )
+                );
+                String testSummaryText = TestSummaryWriter.renderTestResult(
+                    new TestResult(false, "friendly", 2, 0, 2)
+                );
+                String workspaceTestStartText = TestSummaryWriter.renderWorkspaceTestStart(
+                    "workspace",
+                    2,
+                    "friendly"
+                );
+                String workspaceMemberDiscoveryText =
+                    TestSummaryWriter.renderTestDiscoveryResult(
+                        TestDiscoveryResult.workspaceMemberSuccess(
+                            "workspace/demo",
+                            "workspace/demo/tests",
+                            "workspace/demo/src/main/pulse",
+                            1
+                        )
+                    );
+                String workspaceTestSummaryText =
+                    TestSummaryWriter.renderTestResult(
+                        new TestResult(true, "friendly", 2, 0, 2)
+                    );
+                String testDiscoveryFailureText =
+                    TestDiagnosticWriter.renderTestDiscoveryResult(
+                        TestDiscoveryResult.failure("missing tests root")
+                    );
+                String testNoFilesText =
+                    TestDiagnosticWriter.renderTestDiscoveryResult(
+                        TestDiscoveryResult.noTestsFound("workspace/demo/tests")
+                    );
+                String workspaceMemberNoTestsText =
+                    TestDiagnosticWriter.renderTestDiscoveryResult(
+                        TestDiscoveryResult.workspaceMemberNoTestsFound(
+                            "workspace/demo",
+                            "workspace/demo/tests"
+                        )
+                    );
+                String workspaceTestsFailedText =
+                    TestDiagnosticWriter.renderTestsFailed(
+                        new TestResult(true, "friendly", 0, 1, 1)
+                    );
+                String testsFailedText =
+                    TestDiagnosticWriter.renderTestsFailed(
+                        new TestResult(false, "friendly", 0, 1, 1)
+                    );
                 BuildPublishedArtifact publishedArtifact = BuildPublicationWriter.publishArtifacts(
                     "workspace/demo/build/tmp/backend/debug/main.ir.txt",
                     "workspace/demo/build/tmp/backend/debug/native.plan.json",
@@ -665,6 +744,40 @@ enabled = true
                     && summaryText.contains("Artifact stamp: demo-1.2.3-debug")
                     && summaryText.contains("Entry codegen: masm-split-stdlib")
                     && summaryText.contains("Executable: workspace/demo/build/distro/debug/bin/demo.exe")
+                    && checkOkText.contains("OK: package=demo imports=2 classes=3 files=4")
+                    && checkOkText.contains("Check summary: mode=friendly project_mode=manifest")
+                    && checkFailText.equals(
+                        "Check FAILED: mode=strict entry=workspace/demo/src/main/pulse/app/core/Main.pulse source_root=workspace/demo/src/main/pulse"
+                    )
+                    && workspaceCheckText.equals(
+                        "Workspace check summary: passed=2 failed=1 total=3"
+                    )
+                    && testDiscoveryText.equals(
+                        "Test discovery: project_mode=manifest project_root=workspace/demo tests_root=workspace/demo/tests source_root=workspace/demo/src/main/pulse count=2"
+                    )
+                    && testSummaryText.equals(
+                        "Test summary: mode=friendly passed=2 failed=0 total=2"
+                    )
+                    && workspaceTestStartText.equals(
+                        "Workspace test: root=workspace members=2 mode=friendly"
+                    )
+                    && workspaceMemberDiscoveryText.equals(
+                        "Member test discovery: member=workspace/demo tests_root=workspace/demo/tests source_root=workspace/demo/src/main/pulse count=1"
+                    )
+                    && workspaceTestSummaryText.equals(
+                        "Workspace test summary: mode=friendly passed=2 failed=0 total=2"
+                    )
+                    && testDiscoveryFailureText.equals(
+                        "Test discovery failed: missing tests root"
+                    )
+                    && testNoFilesText.equals(
+                        "Test discovery failed: no .pulse tests found under 'workspace/demo/tests'"
+                    )
+                    && workspaceMemberNoTestsText.equals(
+                        "[FAIL] workspace/demo :: no .pulse tests found under 'workspace/demo/tests'"
+                    )
+                    && workspaceTestsFailedText.equals("one or more workspace tests failed")
+                    && testsFailedText.equals("one or more tests failed")
                     && publishedArtifact.irPath()
                         .equals("workspace/demo/build/distro/debug/metadata/demo-1.2.3-pulsec.ir.txt")
                     && publishedArtifact.nativePlanPath()

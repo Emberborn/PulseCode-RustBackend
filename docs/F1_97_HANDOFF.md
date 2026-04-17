@@ -337,6 +337,25 @@ Current immediate continuation inside that target:
       - artifact publication
       - build-config-plan writing
       - artifact-stamp writing
+  - compiler-facing check/status shaping now also has a first live `author.compiler.*` slice:
+    - `author.compiler.CheckSummaryWriter`
+    - `author.compiler.CheckResult`
+    - `CheckSummaryWriter` now renders a structured authored check result instead of separate success/failure tuple entrypoints
+    - Rust `pulsec check` / workspace-check status rendering now prefers that authored surface through the cached bridge and falls back to Rust string assembly only if the bridge is unavailable
+  - compiler-facing test/discovery shaping now also has a second live `author.compiler.*` slice:
+    - `author.compiler.TestSummaryWriter`
+    - `author.compiler.TestResult`
+    - `author.compiler.TestDiscoveryResult`
+    - `TestSummaryWriter` and `TestDiagnosticWriter` now render structured authored test result state for summary/aggregate-failure text instead of loose summary tuples
+    - `TestSummaryWriter` and `TestDiagnosticWriter` now also render structured authored test discovery success/failure state instead of loose discovery path/detail tuples
+    - Rust `pulsec test` / workspace-test discovery and summary lines now prefer that authored surface through the cached bridge and fall back to Rust string assembly only if the bridge is unavailable
+  - compiler-facing test diagnostic text now also has a third live `author.compiler.*` slice:
+    - `author.compiler.TestDiagnosticWriter`
+    - Rust `pulsec test` now prefers that authored surface for:
+      - test discovery failure text
+      - no-tests-found text
+      - workspace member no-tests-found text
+      - aggregate `one or more tests failed` / `one or more workspace tests failed` text
   - remaining Rust-owned build publication/materialization residue is now:
     - fallback/bootstrap publication-plan mirroring
     - fallback/bootstrap layout materialization mirroring
@@ -352,6 +371,15 @@ Important current compiler truth:
 - the new env/process slice exposed and fixed two real compiler bugs:
   - IR lowering must preserve declared generic return types long enough to substitute owner type parameters during nested call inference; erasing `List<T>.get(int)` too early broke valid chains such as `values.get(index).name().toLowerCase()`
   - semantic/logical expression validation must not recurse one stack frame per `&&` / `||` node across long authorlib contract expressions; the logical-chain visitors in semantics/nullability/lowering are now flattened enough for the large authorlib surface lock to pass honestly
+- the first live `author.compiler` bridge slice exposed one more backend truth:
+  - the cached bridge rebuild could still push ML64/LINK into object string-table corruption under symbol pressure
+  - tightening the global MASM identifier cap further in `backend/support/naming.rs` stabilized that bridge rebuild without backing the compiler slice out
+- the next live `author.compiler` slices exposed one more bridge-bootstrap truth:
+  - cold `__prewarm-author-build-bridge` could still fail even after the cached bridge executable became usable moments later
+  - `prewarm_author_build_bridge_runner()` now retries the ensure path and accepts a now-available cached exe after transient output-lock failures instead of exiting too eagerly
+- the later authored compiler discovery lift exposed one more bridge-structure truth:
+  - the generated cached bridge dispatcher had become too large to trust as one giant `bridge.internal.Main.main()` body
+  - compiler render branches are now routed through helper methods inside the generated bridge source instead of keeping all compiler render paths inline in `Main.main()`
 
 Current parser-direction rule for this slice:
 
