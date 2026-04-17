@@ -1,5 +1,28 @@
 use super::*;
 
+fn collect_logical_operands<'a>(expr: &'a Expr, op: &BinaryOp) -> Vec<&'a Expr> {
+    let mut current = expr;
+    let mut tail = Vec::new();
+    loop {
+        match current {
+            Expr::Binary {
+                left,
+                op: current_op,
+                right,
+            } if current_op == op => {
+                tail.push(right.as_ref());
+                current = left.as_ref();
+            }
+            _ => break,
+        }
+    }
+    let mut out = vec![current];
+    while let Some(next) = tail.pop() {
+        out.push(next);
+    }
+    out
+}
+
 pub(super) fn validate_field_initializer(
     field: &crate::FieldDecl,
     class: &ClassDecl,
@@ -212,7 +235,55 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                 null_state,
             )?;
         }
-        Expr::Binary { left, right, .. } => {
+        Expr::Binary {
+            op: BinaryOp::LogicalAnd,
+            ..
+        } => {
+            let mut current_state = null_state.clone();
+            for operand in collect_logical_operands(expr, &BinaryOp::LogicalAnd) {
+                validate_unboxing_nullability_in_expr(
+                    operand,
+                    class,
+                    class_info,
+                    class_names,
+                    class_index,
+                    fqcn_to_class,
+                    imports,
+                    locals,
+                    in_static_context,
+                    &current_state,
+                )?;
+                let mut next_state = current_state.clone();
+                let mut ignored = current_state.clone();
+                apply_null_flow_narrowing(operand, &mut next_state, &mut ignored);
+                current_state = next_state;
+            }
+        }
+        Expr::Binary {
+            op: BinaryOp::LogicalOr,
+            ..
+        } => {
+            let mut current_state = null_state.clone();
+            for operand in collect_logical_operands(expr, &BinaryOp::LogicalOr) {
+                validate_unboxing_nullability_in_expr(
+                    operand,
+                    class,
+                    class_info,
+                    class_names,
+                    class_index,
+                    fqcn_to_class,
+                    imports,
+                    locals,
+                    in_static_context,
+                    &current_state,
+                )?;
+                let mut ignored = current_state.clone();
+                let mut next_state = current_state.clone();
+                apply_null_flow_narrowing(operand, &mut ignored, &mut next_state);
+                current_state = next_state;
+            }
+        }
+        Expr::Binary { left, .. } => {
             validate_unboxing_nullability_in_expr(
                 left,
                 class,
@@ -225,18 +296,20 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                 in_static_context,
                 null_state,
             )?;
-            validate_unboxing_nullability_in_expr(
-                right,
-                class,
-                class_info,
-                class_names,
-                class_index,
-                fqcn_to_class,
-                imports,
-                locals,
-                in_static_context,
-                null_state,
-            )?;
+            if let Expr::Binary { right, .. } = expr {
+                validate_unboxing_nullability_in_expr(
+                    right,
+                    class,
+                    class_info,
+                    class_names,
+                    class_index,
+                    fqcn_to_class,
+                    imports,
+                    locals,
+                    in_static_context,
+                    null_state,
+                )?;
+            }
         }
         Expr::Conditional {
             condition,
@@ -435,11 +508,14 @@ pub(super) fn validate_unboxing_nullability_for_call_args(
         let Some(vararg_array_ty) = expected_params.last() else {
             return Ok(());
         };
-        let vararg_element_ty = vararg_array_ty.strip_suffix("[]").unwrap_or(vararg_array_ty);
+        let vararg_element_ty = vararg_array_ty
+            .strip_suffix("[]")
+            .unwrap_or(vararg_array_ty);
         if actual_types.len() == fixed_count + 1
             && args.len() == fixed_count + 1
             && (actual_types[fixed_count] == *vararg_array_ty
-                || class_simple_name(&actual_types[fixed_count]) == class_simple_name(vararg_array_ty))
+                || class_simple_name(&actual_types[fixed_count])
+                    == class_simple_name(vararg_array_ty))
         {
             validate_unboxing_nullability(
                 vararg_array_ty,
@@ -461,4 +537,3 @@ pub(super) fn validate_unboxing_nullability_for_call_args(
     }
     Ok(())
 }
-

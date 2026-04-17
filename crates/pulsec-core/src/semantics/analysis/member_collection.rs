@@ -117,7 +117,12 @@ fn validate_class_shape(
     let supported_class_modifiers: &[Modifier] = if class.is_interface {
         &[Modifier::Public, Modifier::Abstract]
     } else if class.is_enum {
-        &[Modifier::Public, Modifier::Private, Modifier::Protected, Modifier::Final]
+        &[
+            Modifier::Public,
+            Modifier::Private,
+            Modifier::Protected,
+            Modifier::Final,
+        ]
     } else {
         &[
             Modifier::Public,
@@ -169,6 +174,13 @@ fn collect_super_class(
     class_type_params: &HashSet<String>,
 ) -> Result<Option<String>, SemanticError> {
     let Some(extends_name) = class.extends.as_deref() else {
+        if !class.is_interface
+            && !class.is_enum
+            && class_fqcn != "pulse.lang.Object"
+            && class.name != "Object"
+        {
+            return Ok(Some("pulse.lang.Object".to_string()));
+        }
         return Ok(None);
     };
 
@@ -374,7 +386,10 @@ fn collect_method_member(
 ) -> Result<(), SemanticError> {
     validate_type_param_list(
         &method.type_params,
-        &format!("type parameters for method '{}.{}'", class.name, method.name),
+        &format!(
+            "type parameters for method '{}.{}'",
+            class.name, method.name
+        ),
     )?;
     let method_type_params = visible_type_params(class, Some(method));
     let method_annotations = validate_annotation_uses(
@@ -598,7 +613,10 @@ fn collect_method_member(
             )));
         }
         if interface_is_default {
-            if interface_is_private || interface_is_static || method.modifiers.contains(&Modifier::Abstract) {
+            if interface_is_private
+                || interface_is_static
+                || method.modifiers.contains(&Modifier::Abstract)
+            {
                 return Err(semantic_error(format!(
                     "Default interface method '{}.{}' cannot be private, static, or abstract",
                     class.name, method.name

@@ -2,14 +2,24 @@
 
 Status legend: `Todo`, `In Progress`, `Blocked`, `Done (Locked)`.
 
+## Historical Archive Notice
+
+This board records the original pre-rebase E3 closure.
+
+Current truth:
+
+- fat/shared build and runtime parity remain live architecture concerns
+- compiler-owned packaging/install scope is removed
+- packaging/install rows below are historical only and are superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+
 ## Scope
-E3 locks behavioral and product parity between fat and shared native output modes. It ensures both modes are valid publication targets, have deterministic packaging/staging behavior, and remain functionally equivalent for supported programs across debug/release and installation flows.
+E3 locked behavioral parity between fat and shared native output modes. The executable/runtime/publication parts remain historically relevant; the packaging/install parts below are archived only and no longer define current compiler scope.
 
 ## E3 Strict Done Policy
-- E3 does not close when both modes merely compile; it closes when both modes are proved equivalent for supported behavior and distribution flows.
-- `Done (Locked)` means parity is backed by executable fixtures, artifact assertions, packaging coverage, and documented support boundaries.
+- E3 did not close when both modes merely compiled; it closed when both modes were proved equivalent for the supported historical behavior and distribution flows.
+- `Done (Locked)` here is a historical closure marker; current live scope is governed by the rebase docs.
 - Any parity claim must be validated by side-by-side fat/shared evidence, not inferred from one mode.
-- Packaging/installer tasks are incomplete unless shared-library builds remain runnable after staging/install.
+- Historical packaging/install tasks below are not current compiler obligations.
 
 ## Workstream A: Parity Contract + Supported-Surface Matrix
 

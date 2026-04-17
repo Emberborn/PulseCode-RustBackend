@@ -60,9 +60,8 @@ impl Parser {
         } else if self.matches_keyword("enum") {
             (false, false, true)
         } else {
-            return Err(self.error_here(
-                "Expected 'class', 'interface', 'enum', or '@interface' declaration",
-            ));
+            return Err(self
+                .error_here("Expected 'class', 'interface', 'enum', or '@interface' declaration"));
         };
         let name = self.expect_identifier("Expected class name")?;
         let type_params = self.parse_optional_type_params()?;
@@ -96,9 +95,7 @@ impl Parser {
             self.parse_type_path_list("Expected interface name after 'extends'")?
         } else if self.matches_keyword("implements") {
             if is_interface {
-                return Err(self.error_here(
-                    "Interfaces cannot use 'implements'; use 'extends'",
-                ));
+                return Err(self.error_here("Interfaces cannot use 'implements'; use 'extends'"));
             }
             self.parse_type_path_list("Expected interface name after 'implements'")?
         } else {

@@ -31,7 +31,7 @@ Date locked: 2026-03-12
 - [x] [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
 - [x] [SHARED_RUNTIME_ABI.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_ABI.md)
 - [x] [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/PulseCode/docs/PROJECT_LAYOUT_CONVENTIONS.md)
-- [x] [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [x] [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
 - [x] [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
 
 ## Validation Commands
@@ -39,7 +39,6 @@ Date locked: 2026-03-12
 - `cargo test -q -p pulsec --test fixture_projects`
 - `cargo test -q -p pulsec --test stage_locks_d`
 - `cargo test -q -p pulsec --test phase_d_cli`
-- `cargo test -q -p pulsec --test packaging_regressions`
 - `cargo test -q -p pulsec`
 
 ## Exit Decision

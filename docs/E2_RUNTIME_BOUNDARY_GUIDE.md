@@ -7,6 +7,17 @@ Date locked: 2026-03-12
 
 This guide summarizes the locked runtime-ownership and ABI boundary for shared PulseCode builds.
 
+## Rebase Note (`RB-11`)
+
+The startup/import sequence documented below is current Windows x64 shared-mode evidence.
+
+It is not the portable runtime intrinsic contract for all targets.
+
+Portable-vs-adapter runtime partitioning now lives in:
+
+- [RUNTIME_INTRINSICS_PARTITION.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_PARTITION.md)
+- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_ABI.md)
+
 ## Ownership Boundary
 
 Executable side owns:

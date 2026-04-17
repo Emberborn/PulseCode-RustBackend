@@ -75,7 +75,8 @@ pub(super) fn resolve_var_or_class(
     }
 
     let current_class_fqcn = format!("{}.{}", class_info.package_name, class.name);
-    if let Some((_owner_fqcn, field)) = lookup_field_in_hierarchy(&current_class_fqcn, name, class_index)
+    if let Some((_owner_fqcn, field)) =
+        lookup_field_in_hierarchy(&current_class_fqcn, name, class_index)
     {
         if in_static_context && !field.is_static {
             return Err(semantic_error(format!(

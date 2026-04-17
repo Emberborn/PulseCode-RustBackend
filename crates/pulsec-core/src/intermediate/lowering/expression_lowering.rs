@@ -1,21 +1,382 @@
 use crate::{BinaryOp, Expr, UnaryOp};
+use std::collections::HashMap;
 
 use super::super::support::{erase_type_for_runtime, lower_binary_op, resolve_enum_constant};
 use super::super::{IrUnaryOp, IrValueId, IrValueKind};
 use super::IrBuilder;
 
 impl IrBuilder {
-    fn lookup_method_return_type(&self, owner: &str, member: &str, arity: usize) -> Option<String> {
-        let simple = owner.rsplit('.').next().unwrap_or(owner);
-        self.method_return_types
-            .get(&(simple.to_string(), member.to_string(), arity))
+    fn split_array_suffix(ty: &str) -> (&str, &str) {
+        let mut base_end = ty.len();
+        while ty[..base_end].ends_with("[]") {
+            base_end -= 2;
+        }
+        (&ty[..base_end], &ty[base_end..])
+    }
+
+    fn split_generic_type(ty: &str) -> Option<(&str, Vec<String>)> {
+        let start = ty.find('<')?;
+        if !ty.ends_with('>') {
+            return None;
+        }
+        let raw = &ty[..start];
+        let mut args = Vec::new();
+        let mut current = String::new();
+        let mut depth = 0usize;
+        for ch in ty[start + 1..ty.len() - 1].chars() {
+            match ch {
+                '<' => {
+                    depth += 1;
+                    current.push(ch);
+                }
+                '>' => {
+                    if depth == 0 {
+                        return None;
+                    }
+                    depth -= 1;
+                    current.push(ch);
+                }
+                ',' if depth == 0 => {
+                    args.push(current.trim().to_string());
+                    current.clear();
+                }
+                _ => current.push(ch),
+            }
+        }
+        if !current.is_empty() {
+            args.push(current.trim().to_string());
+        }
+        Some((raw, args))
+    }
+
+    fn substitute_type_params(ty: &str, bindings: &HashMap<String, String>) -> String {
+        let (base, array_suffix) = Self::split_array_suffix(ty);
+        let Some((raw, args)) = Self::split_generic_type(base) else {
+            return bindings
+                .get(base)
+                .cloned()
+                .unwrap_or_else(|| format!("{}{}", base, array_suffix));
+        };
+        let substituted_base = bindings
+            .get(raw)
             .cloned()
+            .unwrap_or_else(|| raw.to_string());
+        if args.is_empty() {
+            return format!("{}{}", substituted_base, array_suffix);
+        }
+        let rendered_args = args
+            .iter()
+            .map(|arg| Self::substitute_type_params(arg, bindings))
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!("{}<{}>{}", substituted_base, rendered_args, array_suffix)
+    }
+
+    fn bind_owner_type_params(&self, owner: &str, return_ty: &str) -> String {
+        let Some((raw_owner, concrete_args)) = Self::split_generic_type(owner) else {
+            return return_ty.to_string();
+        };
+        let owner_key = raw_owner.rsplit('.').next().unwrap_or(raw_owner);
+        let Some(type_params) = self
+            .class_type_params
+            .get(raw_owner)
+            .or_else(|| self.class_type_params.get(owner_key))
+        else {
+            return return_ty.to_string();
+        };
+        let bindings = type_params
+            .iter()
+            .enumerate()
+            .map(|(idx, param)| {
+                (
+                    param.clone(),
+                    concrete_args
+                        .get(idx)
+                        .cloned()
+                        .unwrap_or_else(|| "Object".to_string()),
+                )
+            })
+            .collect::<HashMap<_, _>>();
+        Self::substitute_type_params(return_ty, &bindings)
+    }
+
+    fn collect_logical_chain<'a>(left: &'a Expr, right: &'a Expr, op: &BinaryOp) -> Vec<&'a Expr> {
+        let mut current = left;
+        let mut tail = Vec::new();
+        tail.push(right);
+        loop {
+            match current {
+                Expr::Binary { left, op: current_op, right } if current_op == op => {
+                    tail.push(right.as_ref());
+                    current = left.as_ref();
+                }
+                _ => break,
+            }
+        }
+        let mut out = vec![current];
+        while let Some(next) = tail.pop() {
+            out.push(next);
+        }
+        out
+    }
+
+    fn infer_expr_type_from_ast(&self, expr: &Expr) -> Option<String> {
+        match expr {
+            Expr::IntLiteral(_) => Some("int".to_string()),
+            Expr::LongLiteral(_) => Some("long".to_string()),
+            Expr::FloatLiteral(_) => Some("float".to_string()),
+            Expr::DoubleLiteral(_) => Some("double".to_string()),
+            Expr::BoolLiteral(_) => Some("boolean".to_string()),
+            Expr::CharLiteral(_) => Some("char".to_string()),
+            Expr::StringLiteral(_) => Some("String".to_string()),
+            Expr::NullLiteral => Some("null".to_string()),
+            Expr::This => Some(self.class_name.clone()),
+            Expr::Super => self
+                .super_class_name
+                .clone()
+                .or_else(|| Some("Object".to_string())),
+            Expr::Var(name) => self
+                .declared_local_types
+                .get(name)
+                .or_else(|| self.declared_field_types.get(name))
+                .cloned()
+                .or_else(|| {
+                    self.local_types
+                        .get(name)
+                        .or_else(|| self.field_types.get(name))
+                        .cloned()
+                })
+                .or_else(|| Some(name.clone())),
+            Expr::Unary { op, expr } => {
+                let operand_ty = self.infer_expr_type_from_ast(expr)?;
+                match op {
+                    UnaryOp::Not => Some("boolean".to_string()),
+                    UnaryOp::Neg => Some(operand_ty),
+                    UnaryOp::BitNot => {
+                        Self::lowered_shift_ty(&operand_ty).or_else(|| Some(operand_ty))
+                    }
+                }
+            }
+            Expr::Cast { ty, .. } => Some(erase_type_for_runtime(ty, &self.visible_type_params)),
+            Expr::InstanceOf { .. } => Some("boolean".to_string()),
+            Expr::Binary { left, op, right } => {
+                match op {
+                    BinaryOp::LogicalAnd
+                    | BinaryOp::LogicalOr
+                    | BinaryOp::Eq
+                    | BinaryOp::NotEq
+                    | BinaryOp::Less
+                    | BinaryOp::LessEq
+                    | BinaryOp::Greater
+                    | BinaryOp::GreaterEq => Some("boolean".to_string()),
+                    _ => {
+                        let left_ty = self.infer_expr_type_from_ast(left)?;
+                        let right_ty = self.infer_expr_type_from_ast(right)?;
+                        match op {
+                            BinaryOp::Add if left_ty == "String" || right_ty == "String" => {
+                                Some("String".to_string())
+                            }
+                            BinaryOp::Add
+                            | BinaryOp::Sub
+                            | BinaryOp::Mul
+                            | BinaryOp::Div
+                            | BinaryOp::Mod => {
+                                Some(Self::lowered_numeric_binary_ty(&left_ty, &right_ty))
+                            }
+                            BinaryOp::BitAnd | BinaryOp::BitOr | BinaryOp::BitXor => {
+                                if left_ty == "boolean" && right_ty == "boolean" {
+                                    Some("boolean".to_string())
+                                } else {
+                                    Self::lowered_integral_binary_ty(&left_ty, &right_ty)
+                                }
+                            }
+                            BinaryOp::ShiftLeft
+                            | BinaryOp::ShiftRight
+                            | BinaryOp::UnsignedShiftRight => {
+                                Self::lowered_shift_ty(&left_ty).or_else(|| Some(left_ty))
+                            }
+                            _ => None,
+                        }
+                    }
+                }
+            }
+            Expr::Conditional {
+                then_expr,
+                else_expr,
+                ..
+            } => {
+                let then_ty = self.infer_expr_type_from_ast(then_expr)?;
+                let else_ty = self.infer_expr_type_from_ast(else_expr)?;
+                if then_ty == "null" {
+                    Some(else_ty)
+                } else {
+                    Some(then_ty)
+                }
+            }
+            Expr::SwitchExpr { cases, default, .. } => {
+                let mut result_ty = self.infer_expr_type_from_ast(default)?;
+                for case in cases {
+                    let case_ty = self.infer_expr_type_from_ast(&case.value)?;
+                    if result_ty == "null" {
+                        result_ty = case_ty;
+                    } else if let Some(promoted) =
+                        Self::lowered_integral_binary_ty(&result_ty, &case_ty).or_else(|| {
+                            if Self::signed_rank(&result_ty).is_some()
+                                || Self::unsigned_rank(&result_ty).is_some()
+                            {
+                                Some(Self::lowered_numeric_binary_ty(&result_ty, &case_ty))
+                            } else {
+                                None
+                            }
+                        })
+                    {
+                        result_ty = promoted;
+                    }
+                }
+                Some(result_ty)
+            }
+            Expr::NewObject { class_name, .. } => Some(class_name.clone()),
+            Expr::NewArray {
+                element_ty,
+                lengths,
+            } => Some(format!("{}{}", element_ty, "[]".repeat(lengths.len()))),
+            Expr::NewArrayInitialized {
+                element_ty,
+                dimensions,
+                ..
+            } => Some(format!("{}{}", element_ty, "[]".repeat(*dimensions))),
+            Expr::Call { callee, args } => {
+                let arg_types = args
+                    .iter()
+                    .map(|arg| self.infer_expr_type_from_ast(arg))
+                    .collect::<Option<Vec<_>>>()?;
+                self.infer_call_target(callee, &arg_types)
+                    .map(|(_, return_ty, _)| return_ty)
+            }
+            Expr::MemberAccess { object, member } => {
+                if let Some((enum_ty, _)) = resolve_enum_constant(expr, member, &self.enum_constants)
+                {
+                    return Some(enum_ty);
+                }
+                let object_ty = self.infer_expr_type_from_ast(object)?;
+                if member == "length" && object_ty.ends_with("[]") {
+                    return Some("int".to_string());
+                }
+                match &**object {
+                    Expr::This | Expr::Super => self
+                        .declared_field_types
+                        .get(member)
+                        .cloned()
+                        .or_else(|| self.field_types.get(member).cloned()),
+                    _ => self.lookup_field_type(&object_ty, member),
+                }
+            }
+            Expr::ArrayAccess { array, .. } => self
+                .infer_expr_type_from_ast(array)?
+                .strip_suffix("[]")
+                .map(|ty| ty.to_string()),
+            Expr::IncDec { target, .. } => self.infer_expr_type_from_ast(target),
+        }
+    }
+
+    fn wrapper_primitive_type_name(ty: &str) -> Option<&'static str> {
+        match ty.rsplit('.').next().unwrap_or(ty) {
+            "Byte" => Some("byte"),
+            "Short" => Some("short"),
+            "Integer" => Some("int"),
+            "Long" => Some("long"),
+            "Float" => Some("float"),
+            "Double" => Some("double"),
+            "Char" => Some("char"),
+            "Boolean" => Some("boolean"),
+            "UByte" => Some("ubyte"),
+            "UShort" => Some("ushort"),
+            "UInteger" => Some("uint"),
+            "ULong" => Some("ulong"),
+            _ => None,
+        }
+    }
+
+    pub(super) fn coerce_runtime_value(
+        &mut self,
+        value_id: IrValueId,
+        target_ty: &str,
+        statement_index: usize,
+    ) -> IrValueId {
+        let actual_ty = self.value_ty(value_id);
+        let actual = actual_ty.rsplit('.').next().unwrap_or(&actual_ty);
+        let target = target_ty.rsplit('.').next().unwrap_or(target_ty);
+        if target == "Object" && Self::wrapper_primitive_type_name(actual).is_some() {
+            return self.push_value(
+                target_ty.to_string(),
+                IrValueKind::Cast {
+                    value: value_id,
+                    ty: target_ty.to_string(),
+                },
+                statement_index,
+            );
+        }
+        self.coerce_numeric_value(value_id, target_ty, statement_index)
+    }
+
+    fn lower_string_value_of(
+        &mut self,
+        value_id: IrValueId,
+        statement_index: usize,
+    ) -> IrValueId {
+        let value_ty = self.value_ty(value_id);
+        if value_ty == "String" {
+            return value_id;
+        }
+        if value_ty == "null" {
+            return self.push_value(
+                "String".to_string(),
+                IrValueKind::StringLiteral("null".to_string()),
+                statement_index,
+            );
+        }
+
+        let owner_id = self.push_value(
+            "String".to_string(),
+            IrValueKind::LocalRef("String".to_string()),
+            statement_index,
+        );
+        let callee_id = self.push_value(
+            "unknown".to_string(),
+            IrValueKind::MemberAccess {
+                object: owner_id,
+                member: "valueOf".to_string(),
+            },
+            statement_index,
+        );
+        self.push_value(
+            "String".to_string(),
+            IrValueKind::Call {
+                callee: callee_id,
+                args: vec![value_id],
+            },
+            statement_index,
+        )
+    }
+
+    fn lookup_method_return_type(
+        &self,
+        owner: &str,
+        member: &str,
+        arg_types: &[String],
+    ) -> Option<String> {
+        let raw_owner = owner.split('<').next().unwrap_or(owner);
+        let simple = raw_owner.rsplit('.').next().unwrap_or(raw_owner);
+        self.method_return_types
+            .get(&(simple.to_string(), member.to_string(), arg_types.to_vec()))
+            .cloned()
+            .map(|return_ty| self.bind_owner_type_params(owner, &return_ty))
     }
 
     fn lookup_unique_method_return_type(&self, member: &str, arity: usize) -> Option<String> {
         let mut found: Option<String> = None;
-        for ((_, method_name, method_arity), return_ty) in &self.method_return_types {
-            if method_name != member || *method_arity != arity {
+        for ((_, method_name, param_types), return_ty) in &self.method_return_types {
+            if method_name != member || param_types.len() != arity {
                 continue;
             }
             match &found {
@@ -27,27 +388,127 @@ impl IrBuilder {
         found
     }
 
-    fn infer_call_return_type(&self, callee: &Expr, arity: usize) -> Option<String> {
-        match callee {
-            Expr::Var(name) => self
-                .lookup_method_return_type(&self.class_name, name, arity)
-                .or_else(|| self.lookup_method_return_type(name, name, arity))
-                .or_else(|| self.lookup_unique_method_return_type(name, arity)),
-            Expr::MemberAccess { object, member } => match &**object {
-                Expr::Var(name) => {
-                    let owner = self
-                        .local_types
-                        .get(name)
-                        .cloned()
-                        .unwrap_or_else(|| name.clone());
-                    self.lookup_method_return_type(&owner, member, arity)
+    fn lookup_field_type(&self, owner: &str, member: &str) -> Option<String> {
+        self.global_field_types
+            .get(&(owner.to_string(), member.to_string()))
+            .cloned()
+            .or_else(|| {
+                let simple = owner.rsplit('.').next().unwrap_or(owner);
+                self.global_field_types
+                    .get(&(simple.to_string(), member.to_string()))
+                    .cloned()
+            })
+    }
+
+    fn compatible_method_signature(
+        &self,
+        owner: &str,
+        member: &str,
+        arg_types: &[String],
+    ) -> Option<(Vec<String>, String, bool)> {
+        let raw_owner = owner.split('<').next().unwrap_or(owner);
+        let simple_owner = raw_owner.rsplit('.').next().unwrap_or(raw_owner);
+        let mut match_found: Option<(Vec<String>, String, bool)> = None;
+        for ((candidate_owner, method_name, sig), return_ty) in &self.method_return_types {
+            if candidate_owner != simple_owner || method_name != member {
+                continue;
+            }
+            let is_varargs = *self
+                .method_varargs
+                .get(&(candidate_owner.clone(), method_name.clone(), sig.clone()))
+                .unwrap_or(&false);
+            if !is_varargs {
+                continue;
+            }
+            if sig.is_empty() {
+                continue;
+            }
+            let fixed_count = sig.len() - 1;
+            if arg_types.len() < fixed_count {
+                continue;
+            }
+            let mut compatible = true;
+            for idx in 0..fixed_count {
+                if sig[idx] != arg_types[idx] {
+                    compatible = false;
+                    break;
                 }
-                Expr::This => self.lookup_method_return_type(&self.class_name, member, arity),
-                Expr::Super => self
-                    .lookup_method_return_type("Object", member, arity)
-                    .or_else(|| self.lookup_method_return_type(&self.class_name, member, arity)),
-                _ => None,
-            },
+            }
+            if !compatible {
+                continue;
+            }
+            let vararg_array_ty = sig.last().cloned().unwrap_or_default();
+            let Some(vararg_element_ty) = vararg_array_ty.strip_suffix("[]") else {
+                continue;
+            };
+            if arg_types.len() == sig.len() && arg_types.last() == Some(&vararg_array_ty) {
+                match_found = Some((sig.clone(), return_ty.clone(), true));
+                break;
+            }
+            for actual_ty in arg_types.iter().skip(fixed_count) {
+                if actual_ty != vararg_element_ty {
+                    compatible = false;
+                    break;
+                }
+            }
+            if compatible {
+                match match_found {
+                    None => match_found = Some((sig.clone(), return_ty.clone(), true)),
+                    Some(_) => return None,
+                }
+            }
+        }
+        match_found
+    }
+
+    fn infer_call_target(
+        &self,
+        callee: &Expr,
+        arg_types: &[String],
+    ) -> Option<(Vec<String>, String, bool)> {
+        match callee {
+            Expr::This => Some((arg_types.to_vec(), "void".to_string(), false)),
+            Expr::Super => Some((arg_types.to_vec(), "void".to_string(), false)),
+            Expr::Var(name) => self
+                .lookup_method_return_type(&self.class_name, name, arg_types)
+                .map(|return_ty| (arg_types.to_vec(), return_ty, false))
+                .or_else(|| {
+                    self.lookup_method_return_type(name, name, arg_types)
+                        .map(|return_ty| (arg_types.to_vec(), return_ty, false))
+                })
+                .or_else(|| self.compatible_method_signature(&self.class_name, name, arg_types))
+                .or_else(|| self.compatible_method_signature(name, name, arg_types))
+                .or_else(|| {
+                    self.lookup_unique_method_return_type(name, arg_types.len())
+                        .map(|return_ty| (arg_types.to_vec(), return_ty, false))
+                }),
+            Expr::MemberAccess { object, member } => {
+                let owner = match &**object {
+                    Expr::Super => self
+                        .super_class_name
+                        .clone()
+                        .unwrap_or_else(|| "Object".to_string()),
+                    _ => self.infer_expr_type_from_ast(object)?,
+                };
+                self.lookup_method_return_type(&owner, member, arg_types)
+                    .map(|return_ty| (arg_types.to_vec(), return_ty, false))
+                    .or_else(|| self.compatible_method_signature(&owner, member, arg_types))
+                    .or_else(|| {
+                        if matches!(&**object, Expr::Super) {
+                            self.lookup_method_return_type(&self.class_name, member, arg_types)
+                                .map(|return_ty| (arg_types.to_vec(), return_ty, false))
+                                .or_else(|| {
+                                    self.compatible_method_signature(
+                                        &self.class_name,
+                                        member,
+                                        arg_types,
+                                    )
+                                })
+                        } else {
+                            None
+                        }
+                    })
+            }
             _ => None,
         }
     }
@@ -111,9 +572,10 @@ impl IrBuilder {
                     }
                 }
                 if let Some(min_expected) = Self::unsigned_widen_target_for_signed(actual) {
-                    if let (Some(expected_rank), Some(min_rank)) =
-                        (Self::unsigned_rank(expected), Self::unsigned_rank(min_expected))
-                    {
+                    if let (Some(expected_rank), Some(min_rank)) = (
+                        Self::unsigned_rank(expected),
+                        Self::unsigned_rank(min_expected),
+                    ) {
                         return expected_rank >= min_rank;
                     }
                 }
@@ -246,8 +708,7 @@ impl IrBuilder {
     }
 
     fn lower_float_bits(raw: &str) -> i64 {
-        let parsed = raw.parse::<f32>().unwrap_or(0.0f32) as f64;
-        parsed.to_bits() as i64
+        raw.parse::<f32>().unwrap_or(0.0f32).to_bits() as i64
     }
 
     fn lower_double_bits(raw: &str) -> i64 {
@@ -265,7 +726,7 @@ impl IrBuilder {
             crate::ArrayInitExpr::Expr(expr) => {
                 let value_id = self.lower_expr(expr, statement_index);
                 if dimensions == 1 {
-                    self.coerce_numeric_value(value_id, element_ty, statement_index)
+                    self.coerce_runtime_value(value_id, element_ty, statement_index)
                 } else {
                     value_id
                 }
@@ -297,26 +758,26 @@ impl IrBuilder {
 
     pub(super) fn lower_expr(&mut self, expr: &Expr, statement_index: usize) -> IrValueId {
         match expr {
-            Expr::IntLiteral(v) => {
-                self.push_value("int".to_string(), IrValueKind::IntLiteral(*v), statement_index)
-            }
-            Expr::LongLiteral(v) => {
-                self.push_value("long".to_string(), IrValueKind::IntLiteral(*v), statement_index)
-            }
-            Expr::FloatLiteral(raw) => {
-                self.push_value(
-                    "float".to_string(),
-                    IrValueKind::IntLiteral(Self::lower_float_bits(raw)),
-                    statement_index,
-                )
-            }
-            Expr::DoubleLiteral(raw) => {
-                self.push_value(
-                    "double".to_string(),
-                    IrValueKind::IntLiteral(Self::lower_double_bits(raw)),
-                    statement_index,
-                )
-            }
+            Expr::IntLiteral(v) => self.push_value(
+                "int".to_string(),
+                IrValueKind::IntLiteral(*v),
+                statement_index,
+            ),
+            Expr::LongLiteral(v) => self.push_value(
+                "long".to_string(),
+                IrValueKind::IntLiteral(*v),
+                statement_index,
+            ),
+            Expr::FloatLiteral(raw) => self.push_value(
+                "float".to_string(),
+                IrValueKind::IntLiteral(Self::lower_float_bits(raw)),
+                statement_index,
+            ),
+            Expr::DoubleLiteral(raw) => self.push_value(
+                "double".to_string(),
+                IrValueKind::IntLiteral(Self::lower_double_bits(raw)),
+                statement_index,
+            ),
             Expr::CharLiteral(v) => self.push_value(
                 "char".to_string(),
                 IrValueKind::IntLiteral(*v as i64),
@@ -332,19 +793,32 @@ impl IrBuilder {
                 IrValueKind::BoolLiteral(*v),
                 statement_index,
             ),
-            Expr::NullLiteral => {
-                self.push_value("null".to_string(), IrValueKind::NullLiteral, statement_index)
-            }
-            Expr::This => {
-                self.push_value(self.class_name.clone(), IrValueKind::ThisRef, statement_index)
-            }
-            Expr::Super => {
-                self.push_value(self.class_name.clone(), IrValueKind::SuperRef, statement_index)
-            }
+            Expr::NullLiteral => self.push_value(
+                "null".to_string(),
+                IrValueKind::NullLiteral,
+                statement_index,
+            ),
+            Expr::This => self.push_value(
+                self.class_name.clone(),
+                IrValueKind::ThisRef,
+                statement_index,
+            ),
+            Expr::Super => self.push_value(
+                self.class_name.clone(),
+                IrValueKind::SuperRef,
+                statement_index,
+            ),
             Expr::Var(v) => self.push_value(
-                self.local_types
+                self.declared_local_types
                     .get(v)
+                    .or_else(|| self.declared_field_types.get(v))
                     .cloned()
+                    .or_else(|| {
+                        self.local_types
+                            .get(v)
+                            .or_else(|| self.field_types.get(v))
+                            .cloned()
+                    })
                     .unwrap_or_else(|| "unknown".to_string()),
                 IrValueKind::LocalRef(v.clone()),
                 statement_index,
@@ -364,10 +838,7 @@ impl IrBuilder {
                 };
                 self.push_value(
                     ty,
-                    IrValueKind::Unary {
-                        op: ir_op,
-                        operand,
-                    },
+                    IrValueKind::Unary { op: ir_op, operand },
                     statement_index,
                 )
             }
@@ -397,40 +868,46 @@ impl IrBuilder {
             }
             Expr::Binary { left, op, right } => {
                 if matches!(op, BinaryOp::LogicalAnd | BinaryOp::LogicalOr) {
-                    let condition = self.lower_expr(left, statement_index);
-                    let right_value = self.lower_expr(right, statement_index);
+                    let operands = Self::collect_logical_chain(left, right, op);
                     let short_value = self.push_value(
                         "boolean".to_string(),
                         IrValueKind::BoolLiteral(matches!(op, BinaryOp::LogicalOr)),
                         statement_index,
                     );
-                    return match op {
-                        BinaryOp::LogicalAnd => self.push_value(
-                            "boolean".to_string(),
-                            IrValueKind::Conditional {
-                                condition,
-                                then_value: right_value,
-                                else_value: short_value,
-                            },
-                            statement_index,
-                        ),
-                        BinaryOp::LogicalOr => self.push_value(
-                            "boolean".to_string(),
-                            IrValueKind::Conditional {
-                                condition,
-                                then_value: short_value,
-                                else_value: right_value,
-                            },
-                            statement_index,
-                        ),
-                        _ => unreachable!(),
-                    };
+                    let mut current_value = self.lower_expr(operands[0], statement_index);
+                    for operand in operands.iter().skip(1) {
+                        let next_value = self.lower_expr(operand, statement_index);
+                        current_value = match op {
+                            BinaryOp::LogicalAnd => self.push_value(
+                                "boolean".to_string(),
+                                IrValueKind::Conditional {
+                                    condition: current_value,
+                                    then_value: next_value,
+                                    else_value: short_value,
+                                },
+                                statement_index,
+                            ),
+                            BinaryOp::LogicalOr => self.push_value(
+                                "boolean".to_string(),
+                                IrValueKind::Conditional {
+                                    condition: current_value,
+                                    then_value: short_value,
+                                    else_value: next_value,
+                                },
+                                statement_index,
+                            ),
+                            _ => unreachable!(),
+                        };
+                    }
+                    return current_value;
                 }
                 let mut left_id = self.lower_expr(left, statement_index);
                 let mut right_id = self.lower_expr(right, statement_index);
                 let left_ty = self.value_ty(left_id);
                 let right_ty = self.value_ty(right_id);
-                if matches!(op, BinaryOp::Add) && left_ty == "String" {
+                if matches!(op, BinaryOp::Add) && (left_ty == "String" || right_ty == "String") {
+                    left_id = self.lower_string_value_of(left_id, statement_index);
+                    right_id = self.lower_string_value_of(right_id, statement_index);
                     let callee_id = self.push_value(
                         "unknown".to_string(),
                         IrValueKind::MemberAccess {
@@ -456,7 +933,7 @@ impl IrBuilder {
                             Self::lowered_numeric_binary_ty(&left_ty, &right_ty)
                         }
                     }
-                    BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div => {
+                    BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div | BinaryOp::Mod => {
                         Self::lowered_numeric_binary_ty(&left_ty, &right_ty)
                     }
                     BinaryOp::BitAnd | BinaryOp::BitOr | BinaryOp::BitXor => {
@@ -468,8 +945,7 @@ impl IrBuilder {
                         }
                     }
                     BinaryOp::ShiftLeft | BinaryOp::ShiftRight | BinaryOp::UnsignedShiftRight => {
-                        Self::lowered_shift_ty(&left_ty)
-                            .unwrap_or_else(|| left_ty.clone())
+                        Self::lowered_shift_ty(&left_ty).unwrap_or_else(|| left_ty.clone())
                     }
                     BinaryOp::Eq
                     | BinaryOp::NotEq
@@ -485,6 +961,7 @@ impl IrBuilder {
                         | BinaryOp::Sub
                         | BinaryOp::Mul
                         | BinaryOp::Div
+                        | BinaryOp::Mod
                         | BinaryOp::BitAnd
                         | BinaryOp::BitOr
                         | BinaryOp::BitXor
@@ -519,11 +996,7 @@ impl IrBuilder {
                 let mut else_id = self.lower_expr(else_expr, statement_index);
                 let then_ty = self.value_ty(then_id);
                 let else_ty = self.value_ty(else_id);
-                let ty = if then_ty == "null" {
-                    else_ty
-                } else {
-                    then_ty
-                };
+                let ty = if then_ty == "null" { else_ty } else { then_ty };
                 then_id = self.coerce_numeric_value(then_id, &ty, statement_index);
                 else_id = self.coerce_numeric_value(else_id, &ty, statement_index);
                 self.push_value(
@@ -536,7 +1009,11 @@ impl IrBuilder {
                     statement_index,
                 )
             }
-            Expr::SwitchExpr { expr, cases, default } => {
+            Expr::SwitchExpr {
+                expr,
+                cases,
+                default,
+            } => {
                 let switch_id = self.lower_expr(expr, statement_index);
                 let mut default_id = self.lower_expr(default, statement_index);
                 let mut lowered_cases = Vec::new();
@@ -549,16 +1026,15 @@ impl IrBuilder {
                     if result_ty == "null" {
                         result_ty = case_ty.clone();
                     } else if let Some(promoted) =
-                        Self::lowered_integral_binary_ty(&result_ty, &case_ty)
-                            .or_else(|| {
-                                if Self::signed_rank(&result_ty).is_some()
-                                    || Self::unsigned_rank(&result_ty).is_some()
-                                {
-                                    Some(Self::lowered_numeric_binary_ty(&result_ty, &case_ty))
-                                } else {
-                                    None
-                                }
-                            })
+                        Self::lowered_integral_binary_ty(&result_ty, &case_ty).or_else(|| {
+                            if Self::signed_rank(&result_ty).is_some()
+                                || Self::unsigned_rank(&result_ty).is_some()
+                            {
+                                Some(Self::lowered_numeric_binary_ty(&result_ty, &case_ty))
+                            } else {
+                                None
+                            }
+                        })
                     {
                         result_ty = promoted;
                     }
@@ -600,7 +1076,10 @@ impl IrBuilder {
                     statement_index,
                 )
             }
-            Expr::NewArray { element_ty, lengths } => {
+            Expr::NewArray {
+                element_ty,
+                lengths,
+            } => {
                 let length_ids = lengths
                     .iter()
                     .map(|length| self.lower_expr(length, statement_index))
@@ -641,14 +1120,85 @@ impl IrBuilder {
                 )
             }
             Expr::Call { callee, args } => {
-                let callee_id = self.lower_expr(callee, statement_index);
-                let arg_ids = args
+                let callee_id = match &**callee {
+                    Expr::This => {
+                        let object_id = self.lower_expr(callee, statement_index);
+                        self.push_value(
+                            "unknown".to_string(),
+                            IrValueKind::MemberAccess {
+                                object: object_id,
+                                member: self
+                                    .class_name
+                                    .rsplit('.')
+                                    .next()
+                                    .unwrap_or(&self.class_name)
+                                    .to_string(),
+                            },
+                            statement_index,
+                        )
+                    }
+                    Expr::Super => {
+                        let owner = self
+                            .super_class_name
+                            .clone()
+                            .unwrap_or_else(|| "Object".to_string());
+                        let ctor_name = owner.rsplit('.').next().unwrap_or(&owner).to_string();
+                        let object_id = self.lower_expr(callee, statement_index);
+                        self.push_value(
+                            "unknown".to_string(),
+                            IrValueKind::MemberAccess {
+                                object: object_id,
+                                member: ctor_name,
+                            },
+                            statement_index,
+                        )
+                    }
+                    _ => self.lower_expr(callee, statement_index),
+                };
+                let mut arg_ids = args
                     .iter()
                     .map(|arg| self.lower_expr(arg, statement_index))
                     .collect::<Vec<_>>();
-                let ty = self
-                    .infer_call_return_type(callee, args.len())
-                    .unwrap_or_else(|| "unknown".to_string());
+                let arg_types = arg_ids
+                    .iter()
+                    .map(|arg| self.value_ty(*arg))
+                    .collect::<Vec<_>>();
+                let mut ty = "unknown".to_string();
+                if let Some((resolved_sig, return_ty, is_varargs)) =
+                    self.infer_call_target(callee, &arg_types)
+                {
+                    ty = return_ty;
+                    if is_varargs && !resolved_sig.is_empty() {
+                        let fixed_count = resolved_sig.len() - 1;
+                        let vararg_array_ty = resolved_sig.last().cloned().unwrap_or_default();
+                        let direct_array_pass = arg_types.len() == resolved_sig.len()
+                            && arg_types.last() == Some(&vararg_array_ty);
+                        if !direct_array_pass {
+                            let element_ty = vararg_array_ty
+                                .strip_suffix("[]")
+                                .unwrap_or(vararg_array_ty.as_str())
+                                .to_string();
+                            let mut packaged_args = arg_ids[..fixed_count].to_vec();
+                            let vararg_values = arg_ids[fixed_count..]
+                                .iter()
+                                .map(|arg| {
+                                    self.coerce_runtime_value(*arg, &element_ty, statement_index)
+                                })
+                                .collect::<Vec<_>>();
+                            let array_id = self.push_value(
+                                vararg_array_ty,
+                                IrValueKind::ArrayNewInitialized {
+                                    element_ty,
+                                    dimensions: 1,
+                                    values: vararg_values,
+                                },
+                                statement_index,
+                            );
+                            packaged_args.push(array_id);
+                            arg_ids = packaged_args;
+                        }
+                    }
+                }
                 self.push_value(
                     ty,
                     IrValueKind::Call {
@@ -677,8 +1227,32 @@ impl IrBuilder {
                         statement_index,
                     );
                 }
+                let member_ty = match &**object {
+                    Expr::Var(name) => {
+                        let owner = self
+                            .declared_local_types
+                            .get(name)
+                            .or_else(|| self.declared_field_types.get(name))
+                            .cloned()
+                            .or_else(|| {
+                                self.local_types
+                                    .get(name)
+                                    .or_else(|| self.field_types.get(name))
+                                    .cloned()
+                            })
+                            .unwrap_or_else(|| name.clone());
+                        self.lookup_field_type(&owner, member)
+                    }
+                    Expr::This | Expr::Super => self
+                        .declared_field_types
+                        .get(member)
+                        .cloned()
+                        .or_else(|| self.field_types.get(member).cloned()),
+                    _ => self.lookup_field_type(&object_ty, member),
+                }
+                .unwrap_or_else(|| "unknown".to_string());
                 self.push_value(
-                    "unknown".to_string(),
+                    member_ty,
                     IrValueKind::MemberAccess {
                         object: object_id,
                         member: member.clone(),
@@ -690,10 +1264,7 @@ impl IrBuilder {
                 let array_id = self.lower_expr(array, statement_index);
                 let index_id = self.lower_expr(index, statement_index);
                 let array_ty = self.value_ty(array_id);
-                let element_ty = array_ty
-                    .strip_suffix("[]")
-                    .unwrap_or("unknown")
-                    .to_string();
+                let element_ty = array_ty.strip_suffix("[]").unwrap_or("unknown").to_string();
                 self.push_value(
                     element_ty.clone(),
                     IrValueKind::ArrayGet {

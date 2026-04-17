@@ -1,5 +1,28 @@
 use super::*;
 
+fn collect_logical_operands<'a>(expr: &'a Expr, op: &BinaryOp) -> Vec<&'a Expr> {
+    let mut current = expr;
+    let mut tail = Vec::new();
+    loop {
+        match current {
+            Expr::Binary {
+                left,
+                op: current_op,
+                right,
+            } if current_op == op => {
+                tail.push(right.as_ref());
+                current = left.as_ref();
+            }
+            _ => break,
+        }
+    }
+    let mut out = vec![current];
+    while let Some(next) = tail.pop() {
+        out.push(next);
+    }
+    out
+}
+
 pub(super) fn infer_null_state_from_assignment(
     target_ty: &str,
     value_ty: &str,
@@ -45,9 +68,7 @@ pub(super) fn null_narrow_target(condition: &Expr) -> Option<(String, bool)> {
     match condition {
         Expr::Binary { left, op, right } => match (left.as_ref(), right.as_ref(), op) {
             (Expr::Var(name), Expr::NullLiteral, BinaryOp::NotEq)
-            | (Expr::NullLiteral, Expr::Var(name), BinaryOp::NotEq) => {
-                Some((name.clone(), true))
-            }
+            | (Expr::NullLiteral, Expr::Var(name), BinaryOp::NotEq) => Some((name.clone(), true)),
             (Expr::Var(name), Expr::NullLiteral, BinaryOp::Eq)
             | (Expr::NullLiteral, Expr::Var(name), BinaryOp::Eq) => Some((name.clone(), false)),
             _ => None,
@@ -148,6 +169,32 @@ pub(super) fn validate_null_deref(
         Expr::Unary { expr, .. } => validate_null_deref(expr, null_state)?,
         Expr::Cast { expr, .. } => validate_null_deref(expr, null_state)?,
         Expr::InstanceOf { expr, .. } => validate_null_deref(expr, null_state)?,
+        Expr::Binary {
+            op: BinaryOp::LogicalAnd,
+            ..
+        } => {
+            let mut current_state = null_state.clone();
+            for operand in collect_logical_operands(expr, &BinaryOp::LogicalAnd) {
+                validate_null_deref(operand, &current_state)?;
+                let mut next_state = current_state.clone();
+                let mut ignored = current_state.clone();
+                apply_null_flow_narrowing(operand, &mut next_state, &mut ignored);
+                current_state = next_state;
+            }
+        }
+        Expr::Binary {
+            op: BinaryOp::LogicalOr,
+            ..
+        } => {
+            let mut current_state = null_state.clone();
+            for operand in collect_logical_operands(expr, &BinaryOp::LogicalOr) {
+                validate_null_deref(operand, &current_state)?;
+                let mut ignored = current_state.clone();
+                let mut next_state = current_state.clone();
+                apply_null_flow_narrowing(operand, &mut ignored, &mut next_state);
+                current_state = next_state;
+            }
+        }
         Expr::Binary { left, right, .. } => {
             validate_null_deref(left, null_state)?;
             validate_null_deref(right, null_state)?;
@@ -192,4 +239,3 @@ fn validate_array_init_null_deref(
         }
     }
 }
-

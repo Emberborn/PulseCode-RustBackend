@@ -1,17 +1,19 @@
 use thiserror::Error;
 
+pub mod intermediate;
+mod prelude;
 pub(crate) mod parser;
 pub(crate) mod semantics;
-pub mod intermediate;
 
 #[cfg(test)]
 mod tests;
 
-pub use parser::{parse, parse_with_source_name};
 pub use intermediate::{
     lower_to_ir, lower_to_ir_with_contexts, IrClass, IrField, IrMethod, IrParam, IrProgram,
     IrVisibility,
 };
+pub use parser::{parse, parse_with_source_name};
+pub use prelude::{implicit_prelude_packages, IMPLICIT_PRELUDE_PACKAGES};
 pub use semantics::{
     analyze, analyze_with_class_contexts, analyze_with_class_packages,
     analyze_with_class_packages_and_imports,
@@ -190,6 +192,7 @@ pub enum Stmt {
         source_line: usize,
     },
     Try {
+        resources: Vec<TryResource>,
         body: Vec<Stmt>,
         catches: Vec<CatchClause>,
         finally_block: Option<Vec<Stmt>>,
@@ -251,6 +254,72 @@ pub struct CatchClause {
     pub ty: String,
     pub name: String,
     pub body: Vec<Stmt>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TryResource {
+    pub ty: String,
+    pub name: String,
+    pub init: Expr,
+}
+
+pub fn desugar_try_with_resources(
+    resources: &[TryResource],
+    body: &[Stmt],
+    catches: &[CatchClause],
+    finally_block: Option<&[Stmt]>,
+    source_line: usize,
+) -> Stmt {
+    let lowered_body = desugar_try_resource_body(resources, body, source_line);
+    Stmt::Try {
+        resources: Vec::new(),
+        body: lowered_body,
+        catches: catches.to_vec(),
+        finally_block: finally_block.map(|stmts| stmts.to_vec()),
+        source_line,
+    }
+}
+
+fn desugar_try_resource_body(resources: &[TryResource], body: &[Stmt], source_line: usize) -> Vec<Stmt> {
+    let Some((first, rest)) = resources.split_first() else {
+        return body.to_vec();
+    };
+
+    let close_guard = Stmt::If {
+        condition: Expr::Binary {
+            left: Box::new(Expr::Var(first.name.clone())),
+            op: BinaryOp::NotEq,
+            right: Box::new(Expr::NullLiteral),
+        },
+        then_branch: vec![Stmt::ExprStmt(
+            Expr::Call {
+                callee: Box::new(Expr::MemberAccess {
+                    object: Box::new(Expr::Var(first.name.clone())),
+                    member: "close".to_string(),
+                }),
+                args: Vec::new(),
+            },
+            source_line,
+        )],
+        else_branch: None,
+        source_line,
+    };
+
+    vec![
+        Stmt::VarDecl {
+            ty: first.ty.clone(),
+            name: first.name.clone(),
+            init: Some(first.init.clone()),
+            source_line,
+        },
+        Stmt::Try {
+            resources: Vec::new(),
+            body: desugar_try_resource_body(rest, body, source_line),
+            catches: Vec::new(),
+            finally_block: Some(vec![close_guard]),
+            source_line,
+        },
+    ]
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -350,6 +419,7 @@ pub enum BinaryOp {
     Sub,
     Mul,
     Div,
+    Mod,
     Eq,
     NotEq,
     Less,
@@ -748,12 +818,10 @@ fn parse_escape_sequence(
                 }
                 value.push(digit);
             }
-            let code = u32::from_str_radix(&value, 16).map_err(|_| {
-                LexError::InvalidEscape(position, format!("\\u{value}"), context)
-            })?;
-            char::from_u32(code).ok_or_else(|| {
-                LexError::InvalidEscape(position, format!("\\u{value}"), context)
-            })
+            let code = u32::from_str_radix(&value, 16)
+                .map_err(|_| LexError::InvalidEscape(position, format!("\\u{value}"), context))?;
+            char::from_u32(code)
+                .ok_or_else(|| LexError::InvalidEscape(position, format!("\\u{value}"), context))
         }
         other => Err(LexError::InvalidEscape(
             position,
@@ -763,9 +831,7 @@ fn parse_escape_sequence(
     }
 }
 
-fn consume_number_literal(
-    chars: &mut std::iter::Peekable<std::str::CharIndices<'_>>,
-) -> String {
+fn consume_number_literal(chars: &mut std::iter::Peekable<std::str::CharIndices<'_>>) -> String {
     let mut text = String::new();
     let Some((_, first)) = chars.next() else {
         return text;
@@ -846,7 +912,9 @@ fn consume_numeric_suffix(
     allow_long_suffix: bool,
 ) {
     if let Some((_, suffix)) = chars.peek().copied() {
-        if matches!(suffix, 'f' | 'F' | 'd' | 'D') || (allow_long_suffix && matches!(suffix, 'l' | 'L')) {
+        if matches!(suffix, 'f' | 'F' | 'd' | 'D')
+            || (allow_long_suffix && matches!(suffix, 'l' | 'L'))
+        {
             text.push(suffix);
             chars.next();
         }
@@ -888,16 +956,16 @@ fn validate_number_literal(text: &str, position: usize) -> Result<(), LexError> 
         return Ok(());
     }
 
-    let (digits, radix) = if let Some(rest) = body.strip_prefix("0x").or_else(|| body.strip_prefix("0X"))
-    {
-        (rest, 16)
-    } else if let Some(rest) = body.strip_prefix("0b").or_else(|| body.strip_prefix("0B")) {
-        (rest, 2)
-    } else if body.len() > 1 && body.starts_with('0') {
-        (&body[1..], 8)
-    } else {
-        (body, 10)
-    };
+    let (digits, radix) =
+        if let Some(rest) = body.strip_prefix("0x").or_else(|| body.strip_prefix("0X")) {
+            (rest, 16)
+        } else if let Some(rest) = body.strip_prefix("0b").or_else(|| body.strip_prefix("0B")) {
+            (rest, 2)
+        } else if body.len() > 1 && body.starts_with('0') {
+            (&body[1..], 8)
+        } else {
+            (body, 10)
+        };
 
     validate_numeric_group(digits, radix, position, text)?;
     let normalized = digits.replace('_', "");
@@ -911,7 +979,9 @@ fn split_numeric_suffix(text: &str) -> (&str, Option<char>) {
     let mut chars = text.chars();
     let last = chars.next_back();
     match last {
-        Some(suffix @ ('l' | 'L' | 'f' | 'F' | 'd' | 'D')) => (&text[..text.len() - 1], Some(suffix)),
+        Some(suffix @ ('l' | 'L' | 'f' | 'F' | 'd' | 'D')) => {
+            (&text[..text.len() - 1], Some(suffix))
+        }
         _ => (text, None),
     }
 }

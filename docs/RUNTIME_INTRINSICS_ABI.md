@@ -7,6 +7,39 @@ Define a stable boundary between:
 
 This keeps backend/platform details behind a narrow ABI while letting most runtime logic move into PulseCode source.
 
+## RB-11 Runtime Partition Note
+
+This document now freezes the portable Pulse/runtime bridge surface first.
+
+It does not treat raw OS imports, startup entry names, or one adapter's allocator/process/time hooks as portable runtime truth.
+
+Current partition source of truth:
+
+- [RUNTIME_INTRINSICS_PARTITION.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_PARTITION.md)
+
+## Portable Contract vs Adapter-Specific Service Glue
+
+Portable contract in this document means:
+
+- user-visible runtime-backed methods and intrinsics that belong to the language/stdlib surface
+- backend-private runtime procedures that support the language/runtime model
+- symbol and semantic expectations that later adapters must preserve even when the underlying OS/service mechanism changes
+
+That portable contract currently includes:
+
+- `com.pulse.rt.Intrinsics.*`
+- `com.pulse.memory.Memory.*`
+- stdlib-owned runtime-backed `System.currentTimeMillis()`, `System.nanoTime()`, and `System.exit(int)`
+- backend-private runtime procedures such as `pulsec_rt_throw` and `pulsec_rt_traceUpdateTop`
+
+Adapter-specific service glue means:
+
+- raw OS imports such as `GetStdHandle`, `WriteFile`, `ExitProcess`, `GetProcessHeap`, `HeapAlloc`, `HeapFree`, and `GetSystemTimeAsFileTime`
+- startup entry names such as `mainCRTStartup`
+- target-specific process, heap, time, and loader mechanics
+
+Those details remain real for the current Windows x64 host/bootstrap adapter, but they are no longer presented here as the portable ABI baseline.
+
 ## ABI Version Lock (C2-13)
 - Locked transition target: `abi_version = v2` (64-bit handle ABI).
 - Compiler build artifacts (`native.plan.json`) must emit runtime ABI version metadata.
@@ -25,10 +58,18 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
 - `System.out` is currently treated as a runtime-managed singleton handle in backend lowering.
   - It is intentionally not initialized via PulseCode source.
   - The language surface is locked as immutable (`public static final`) and semantic assignment to `System.out` is rejected.
-  - `stdlib/src/com/pulse/lang/IO.pulse` and `PrintStream.pulse` now delegate to `Intrinsics.consoleWrite*`.
+- `stdlib/src/com/pulse/lang/IO.pulse` and `PrintStream.pulse` now delegate to `Intrinsics.consoleWrite*`.
+- `stdlib/src/com/pulse/lang/System.pulse` now exposes `System.in`, which delegates through `ConsoleReader` to `Intrinsics.consoleReadLine()`.
+- The shipped stdin policy is intentionally minimal and line-oriented:
+  - blank lines return `""`
+  - end-of-input before any bytes returns `null`
+  - prompt behavior is stdlib-owned through `ConsoleReader.readLine(String prompt)` rather than a second runtime ABI symbol
  - `com.pulse.lang.String` class surface exists and delegates to String intrinsics:
    - `length()`
    - `concat(String)`
+   - backend-private stdlib bridge methods:
+     - `runtimeLength(String)`
+     - `runtimeConcat(String, String)`
    - `valueOf(int|boolean)` (static)
 - M3 coverage lock:
   - `com.pulse.collections` (`Array`, `ArrayList`, `LinkedList`, `HashSet`, `HashMap`, queue/deque adapters)
@@ -40,6 +81,7 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
 ## Intrinsic Surface (Current)
 - `Intrinsics.consoleWrite(String|int|boolean) -> void`
 - `Intrinsics.consoleWriteLine(String|int|boolean) -> void`
+- `Intrinsics.consoleReadLine() -> String`
 - `Intrinsics.panic(String) -> void` (prints message and terminates process with non-zero exit)
 - `Intrinsics.stringConcat(String, String) -> String`
 - `Intrinsics.stringLength(String) -> int`
@@ -49,8 +91,13 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
 - `Intrinsics.parseBoolean(String) -> boolean`
 - `Intrinsics.objectClassName(Object) -> String`
 - `Intrinsics.objectHashCode(Object) -> int`
-- `Class.runtimeSimpleName(String) -> String`
-- `Class.runtimePackageName(String) -> String`
+- `Intrinsics.hostExists(String) -> boolean`
+- `Intrinsics.hostIsFile(String) -> boolean`
+- `Intrinsics.hostIsDirectory(String) -> boolean`
+- `Intrinsics.hostReadAllText(String) -> String`
+- `Intrinsics.hostListChildren(String) -> long`
+- `String.runtimeConcat(String, String) -> String`
+- `String.runtimeLength(String) -> int`
 - `String.runtimeCharAt(String, int) -> char`
 - `Double.runtimeCharAt(String, int) -> char`
 - `Long.runtimeParse(String) -> long`
@@ -60,7 +107,6 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
 - `ULong.runtimeParse(String) -> ulong`
 - `ULong.runtimeToString(ulong) -> String`
 - floating wrapper parse/format does not add new runtime ABI in F1; `Float` / `Double` text conversion is currently stdlib-owned on top of the shipped numeric/string surface
-- `String.runtimeSubstring(String, int, int) -> String`
 - `String.runtimeFromChar(char) -> String`
 - Collections/array runtime surface:
   - `Intrinsics.arrayNew(int) -> long`
@@ -74,6 +120,7 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
   - `Intrinsics.arraySetString(long, int, String) -> void`
   - `Intrinsics.listNew() -> long`
   - `Intrinsics.listSize(long) -> int`
+  - `Intrinsics.listKind(long) -> int`
   - `Intrinsics.listClear(long) -> void`
   - `Intrinsics.listAddInt(long, int) -> void`
   - `Intrinsics.listAddString(long, String) -> void`
@@ -99,6 +146,7 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
 ## Native Symbols (Current)
 - `pulsec_rt_consoleWrite`
 - `pulsec_rt_consoleWriteLine`
+- `pulsec_rt_consoleReadLine`
 - `pulsec_rt_consoleErrorWrite`
 - `pulsec_rt_consoleErrorWriteLine`
 - `pulsec_rt_panic`
@@ -117,10 +165,15 @@ This keeps backend/platform details behind a narrow ABI while letting most runti
   - `pulsec_rt_parseULong`
   - `pulsec_rt_objectClassName`
   - `pulsec_rt_objectHashCode`
+  - `pulsec_rt_hostExists`
+  - `pulsec_rt_hostIsFile`
+  - `pulsec_rt_hostIsDirectory`
+  - `pulsec_rt_hostReadAllText`
+  - `pulsec_rt_hostListChildren`
+  - `pulsec_rt_hostPathAlloc`
   - `pulsec_rt_classSimpleName`
   - `pulsec_rt_classPackageName`
   - `pulsec_rt_stringCharAt`
-  - `pulsec_rt_stringSubstring`
   - `pulsec_rt_charToString`
   - `pulsec_rt_currentTimeMillis`
   - `pulsec_rt_nanoTime`
@@ -147,6 +200,7 @@ Collections/array bridge:
 - `pulsec_rt_arraySetString`
 - `pulsec_rt_listNew`
 - `pulsec_rt_listSize`
+- `pulsec_rt_listKind`
 - `pulsec_rt_listClear`
 - `pulsec_rt_listAddInt`
 - `pulsec_rt_listAddString`
@@ -244,6 +298,7 @@ Build artifact lock:
   - `strategy: "arc"`
   - `header_schema: "pulsec.arc.header.v1"`
   - `allocator.schema: "pulsec.alloc.policy.v1"`
+  - current active Windows x64 host/bootstrap adapter metadata:
   - `allocator.backend: "win64-process-heap"`
   - full `arc_header` layout fields above
 
@@ -273,10 +328,11 @@ C2-08 heap/allocation hardening (completed and locked):
 - fixed shared array element tables are no longer part of the target contract.
 - `arrayNew(length)` storage sizing is based on requested runtime length (`length * 8` bytes per lane), bounded by runtime memory/OOM behavior rather than fixed table index caps.
 - `arrayNewMulti(dimCount, lengthsPtr)` recursively builds nested arrays by composing `arrayNew` and `arraySetString` over the reference lane.
-- allocation path uses `GetProcessHeap` + `HeapAlloc`/`HeapFree` in native runtime shims.
+- current Windows x64 host/bootstrap adapter implementation uses `GetProcessHeap` + `HeapAlloc`/`HeapFree` in native runtime shims.
 - alignment contract for array lanes: allocator-provided Win64 heap alignment (satisfies 4-byte element alignment for primitive int lanes and 8-byte alignment for handle lanes).
 - allocator policy lock (`runtime.memory_model.allocator`):
   - `schema: "pulsec.alloc.policy.v1"`
+  - current active Windows x64 host/bootstrap adapter metadata:
   - `backend: "win64-process-heap"`
   - `slot_capacity: 4294967295`
   - `slot_capacity_initial: 63`
@@ -546,9 +602,10 @@ C2-07 failure-semantics lock:
   - weak token generation increment overflow is non-recoverable (`Weak generation overflow`, non-zero exit)
   - no `wrap-to-1` generation behavior is allowed in locked runtime paths
 
-## ABI Notes
-- Target: `x86_64-pc-windows-msvc`
-- Calling convention: Win64 system ABI
+## Current Windows x64 Host/Bootstrap Adapter Notes
+- `RB-11` rule: these are current adapter notes, not the portable runtime ABI baseline.
+- Current implemented adapter target: `x86_64-pc-windows-msvc`
+- Current implemented adapter calling convention: Win64 system ABI
 - Current value bridge for console intrinsics:
   - backend lowers literals to byte buffers
   - runtime write symbol takes `(ptr, len)` in standard register ABI slots

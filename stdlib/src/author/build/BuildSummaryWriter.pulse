@@ -1,0 +1,87 @@
+package author.build;
+
+import pulse.io.Path;
+import pulse.lang.StringBuilder;
+
+/**
+ * Renders the user-visible build summary contract for CLI build output.
+ */
+public final class BuildSummaryWriter {
+    public static String renderBuildSummary(
+        int classes,
+        int methods,
+        int fields,
+        int filesLoaded,
+        String profile,
+        String target,
+        String outputMode,
+        String outputEntry,
+        String runtimeDebugAllocator,
+        String runtimeCycleCollector,
+        boolean usedManifest,
+        String sourceRoot,
+        String outputRoot,
+        String irArtifactPath,
+        String nativePlanPath,
+        String objectPath,
+        String linkReportPath,
+        String buildConfigPlanPath,
+        String packageName,
+        String packageVersion,
+        String entryCodegen,
+        String executablePath
+    ) {
+        StringBuilder out = new StringBuilder();
+        out.append("Build IR ready: classes=")
+            .append(classes)
+            .append(" methods=")
+            .append(methods)
+            .append(" fields=")
+            .append(fields)
+            .append(" files=")
+            .append(filesLoaded)
+            .append('\n');
+        out.append("Build mode: profile=")
+            .append(profile)
+            .append(" target=")
+            .append(target)
+            .append(" output_mode=")
+            .append(outputMode)
+            .append(" output_entry=")
+            .append(outputEntry)
+            .append(" runtime_debug_allocator=")
+            .append(runtimeDebugAllocator)
+            .append(" runtime_cycle_collector=")
+            .append(runtimeCycleCollector)
+            .append(" project_mode=")
+            .append(usedManifest ? "manifest" : "direct")
+            .append(" source_root=")
+            .append(BuildSummaryWriter.displayOrNone(sourceRoot))
+            .append(" output_dir=")
+            .append(outputRoot)
+            .append('\n');
+        out.append("IR artifact: ").append(irArtifactPath).append('\n');
+        out.append("Native plan: ").append(nativePlanPath).append('\n');
+        out.append("Object scaffold: ").append(objectPath).append('\n');
+        out.append("Link report: ").append(linkReportPath).append('\n');
+        out.append("Build config plan: ").append(buildConfigPlanPath).append('\n');
+        out.append("Artifact stamp: ")
+            .append(BuildPublicationWriter.artifactStamp(packageName, packageVersion, profile))
+            .append('\n');
+        out.append("Entry codegen: ").append(entryCodegen).append('\n');
+        if (executablePath == null || executablePath.isEmpty()) {
+            out.append("Executable: not produced (no linker available or link failed)\n");
+        } else {
+            out.append("Executable: ").append(executablePath).append('\n');
+        }
+        out.append("Native backend spike (Phase B) is complete; next is runtime hardening in Phase C.\n");
+        return out.toString();
+    }
+
+    private static String displayOrNone(String value) {
+        if (value == null || value.isEmpty()) {
+            return "<none>";
+        }
+        return Path.normalize(value);
+    }
+}

@@ -1,0 +1,1131 @@
+package pulse.lang;
+
+import pulse.rt.Intrinsics;
+
+/**
+ * Runtime-backed immutable string value.
+ */
+public final class String implements CharSequence, Comparable {
+    /**
+     * Returns the number of characters in this string.
+     * Use this before indexing or for empty-string checks.
+     */
+    public int length() {
+        return String.runtimeLength(this);
+    }
+
+    /**
+     * Reports whether this string has zero length.
+     * Use this for the common empty-string fast path.
+     */
+    public boolean isEmpty() {
+        return this.length() == 0;
+    }
+
+    /**
+     * Returns a new string containing this value followed by the other value.
+     * Use this to build combined text when a mutable builder is not needed.
+     */
+    public String concat(String other) {
+        return String.runtimeConcat(this, other);
+    }
+
+    /**
+     * Returns the character at the supplied index.
+     * Use this when implementing indexing, search, or substring logic over immutable text.
+     */
+    public char charAt(int index) {
+        return String.runtimeCharAt(this, index);
+    }
+
+    /**
+     * Returns a substring from the supplied begin index to the end of the string.
+     * Use this when slicing trailing text from an immutable string value.
+     */
+    public String substring(int beginIndex) {
+        return this.substring(beginIndex, this.length());
+    }
+
+    /**
+     * Returns a substring over the supplied half-open range.
+     * Use this when slicing immutable text with Java-like begin/end bounds.
+     */
+    public String substring(int beginIndex, int endIndex) {
+        int length = this.length();
+        if (beginIndex < 0 || endIndex < beginIndex || endIndex > length) {
+            Intrinsics.panic("String.substring range out of bounds");
+        }
+        if (beginIndex == 0 && endIndex == length) {
+            return this;
+        }
+        String result = "";
+        int index = beginIndex;
+        while (index < endIndex) {
+            result = result.concat(String.runtimeFromChar(this.charAt(index)));
+            index = index + 1;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a subsequence over the supplied half-open range.
+     * Use this when code is typed as `CharSequence` but still needs string slicing.
+     */
+    public String subSequence(int beginIndex, int endIndex) {
+        return this.substring(beginIndex, endIndex);
+    }
+
+    /**
+     * Reports whether this string has the same content as the supplied object.
+     * Use this for Java-like string content equality instead of reference equality.
+     */
+    public boolean equals(Object other) {
+        if (!(other instanceof String)) {
+            return false;
+        }
+        String text = (String) other;
+        if (this.length() != text.length()) {
+            return false;
+        }
+        int i = 0;
+        while (i < this.length()) {
+            if (this.charAt(i) != text.charAt(i)) {
+                return false;
+            }
+            i = i + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Reports whether this string has the same content as the supplied character sequence.
+     * Use this for Java-like text equality when callers are typed against `CharSequence`.
+     */
+    public boolean contentEquals(CharSequence other) {
+        if (other == null) {
+            return false;
+        }
+        int ownLength = this.length();
+        if (ownLength != other.length()) {
+            return false;
+        }
+        int index = 0;
+        while (index < ownLength) {
+            if (this.charAt(index) != other.charAt(index)) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Returns a content-based hash code for this string.
+     * Use this when string values participate in Java-like hashed containers or equality contracts.
+     */
+    public int hashCode() {
+        int hash = 0;
+        int index = 0;
+        int length = this.length();
+        while (index < length) {
+            hash = (hash * 31) + this.charAt(index);
+            index = index + 1;
+        }
+        return hash;
+    }
+
+    /**
+     * Orders this string against another string using lexicographic character comparison.
+     * Use this when code is typed against `Comparable` or needs deterministic text ordering.
+     */
+    public int compareTo(Object other) {
+        if (!(other instanceof String)) {
+            Intrinsics.panic("String.compareTo requires String");
+        }
+        String text = (String) other;
+        int ownLength = this.length();
+        int otherLength = text.length();
+        int limit = ownLength;
+        if (otherLength < limit) {
+            limit = otherLength;
+        }
+        int i = 0;
+        while (i < limit) {
+            char left = this.charAt(i);
+            char right = text.charAt(i);
+            if (left < right) {
+                return -1;
+            }
+            if (left > right) {
+                return 1;
+            }
+            i = i + 1;
+        }
+        if (ownLength < otherLength) {
+            return -1;
+        }
+        if (ownLength > otherLength) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Reports whether this string begins with the supplied prefix.
+     * Use this for Java-like prefix checks in parsing and path/text handling.
+     */
+    public boolean startsWith(String prefix) {
+        return this.indexOf(prefix) == 0;
+    }
+
+    /**
+     * Reports whether this string begins with the supplied prefix at the supplied offset.
+     * Use this for Java-like prefix checks when scanning from a known position.
+     */
+    public boolean startsWith(String prefix, int offset) {
+        return this.indexOf(prefix, offset) == offset;
+    }
+
+    /**
+     * Reports whether the supplied bounded region of this string matches the supplied bounded region of the other string.
+     * Use this for Java-like region comparison without allocating temporary substring copies.
+     */
+    public boolean regionMatches(int toffset, String other, int ooffset, int len) {
+        return this.regionMatches(false, toffset, other, ooffset, len);
+    }
+
+    /**
+     * Reports whether the supplied bounded region of this string matches the supplied bounded region of the other string,
+     * optionally using ASCII case-insensitive comparison.
+     * Use this for Java-like region comparison without allocating temporary substring copies.
+     */
+    public boolean regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
+        if (other == null) {
+            return false;
+        }
+        if (toffset < 0 || ooffset < 0 || len < 0) {
+            return false;
+        }
+        int ownLength = this.length();
+        int otherLength = other.length();
+        if ((toffset + len) > ownLength || (ooffset + len) > otherLength) {
+            return false;
+        }
+        int index = 0;
+        while (index < len) {
+            char left = this.charAt(toffset + index);
+            char right = other.charAt(ooffset + index);
+            if (ignoreCase) {
+                left = String.toLowerAscii(left);
+                right = String.toLowerAscii(right);
+            }
+            if (left != right) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Reports whether this string ends with the supplied suffix.
+     * Use this for Java-like suffix checks in parsing and path/text handling.
+     */
+    public boolean endsWith(String suffix) {
+        int suffixLength = suffix.length();
+        int ownLength = this.length();
+        String slice = "";
+        if (suffixLength > ownLength) {
+            return false;
+        }
+        slice = this.substring(ownLength - suffixLength, ownLength);
+        return slice.equals(suffix);
+    }
+
+    /**
+     * Reports whether this string contains the supplied substring.
+     * Use this for Java-like containment checks in parsing and diagnostics.
+     */
+    public boolean contains(String text) {
+        return this.indexOf(text) >= 0;
+    }
+
+    /**
+     * Reports whether this string contains the supplied character sequence.
+     * Use this for Java-like containment checks when code is typed against `CharSequence`.
+     */
+    public boolean contains(CharSequence text) {
+        if (text == null) {
+            return false;
+        }
+        return this.contains(String.valueOf((Object) text));
+    }
+
+    /**
+     * Reports whether this string contains the supplied character.
+     * Use this for Java-like single-character containment checks without wrapping into a string.
+     */
+    public boolean contains(char value) {
+        return this.indexOf(value) >= 0;
+    }
+
+    /**
+     * Returns the first index of the supplied character, or `-1` when it is absent.
+     * Use this for Java-like single-character forward search.
+     */
+    public int indexOf(char value) {
+        return this.indexOf(value, 0);
+    }
+
+    /**
+     * Returns the first index of the supplied character at or after the supplied start index, or `-1` when absent.
+     * Use this for Java-like single-character forward search from a known position.
+     */
+    public int indexOf(char value, int fromIndex) {
+        int start = fromIndex;
+        int length = this.length();
+        if (start < 0) {
+            start = 0;
+        }
+        while (start < length) {
+            if (this.charAt(start) == value) {
+                return start;
+            }
+            start = start + 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the first index of the supplied substring, or `-1` when it is absent.
+     * Use this for Java-like forward search over immutable text.
+     */
+    public int indexOf(String text) {
+        return this.indexOf(text, 0);
+    }
+
+    /**
+     * Returns the first index of the supplied substring at or after the supplied start index, or `-1` when absent.
+     * Use this for Java-like forward search when scanning should begin from a known position.
+     */
+    public int indexOf(String text, int fromIndex) {
+        int needleLength = text.length();
+        int haystackLength = this.length();
+        int start = fromIndex;
+        if (needleLength == 0) {
+            if (start < 0) {
+                return 0;
+            }
+            if (start > haystackLength) {
+                return haystackLength;
+            }
+            return start;
+        }
+        if (start < 0) {
+            start = 0;
+        }
+        if (needleLength > haystackLength) {
+            return -1;
+        }
+        int limit = haystackLength - needleLength;
+        if (start > limit) {
+            return -1;
+        }
+        while (start <= limit) {
+            int i = 0;
+            boolean match = true;
+            while (i < needleLength) {
+                if (this.charAt(start + i) != text.charAt(i)) {
+                    match = false;
+                    i = needleLength;
+                } else {
+                    i = i + 1;
+                }
+            }
+            if (match) {
+                return start;
+            }
+            start = start + 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the last index of the supplied substring, or `-1` when it is absent.
+     * Use this for Java-like reverse search over immutable text.
+     */
+    public int lastIndexOf(String text) {
+        return this.lastIndexOf(text, this.length());
+    }
+
+    /**
+     * Returns the last index of the supplied character, or `-1` when it is absent.
+     * Use this for Java-like single-character reverse search.
+     */
+    public int lastIndexOf(char value) {
+        return this.lastIndexOf(value, this.length() - 1);
+    }
+
+    /**
+     * Returns the last index of the supplied character at or before the supplied start index, or `-1` when absent.
+     * Use this for Java-like single-character reverse search from a known boundary.
+     */
+    public int lastIndexOf(char value, int fromIndex) {
+        int start = fromIndex;
+        int length = this.length();
+        if (start >= length) {
+            start = length - 1;
+        }
+        while (start >= 0) {
+            if (this.charAt(start) == value) {
+                return start;
+            }
+            start = start - 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the last index of the supplied substring at or before the supplied start index, or `-1` when absent.
+     * Use this for Java-like reverse search when scanning should stop at a known boundary.
+     */
+    public int lastIndexOf(String text, int fromIndex) {
+        int needleLength = text.length();
+        int haystackLength = this.length();
+        if (needleLength == 0) {
+            if (fromIndex < 0) {
+                return -1;
+            }
+            if (fromIndex > haystackLength) {
+                return haystackLength;
+            }
+            return fromIndex;
+        }
+        if (needleLength > haystackLength) {
+            return -1;
+        }
+        int start = fromIndex;
+        int limit = haystackLength - needleLength;
+        if (start > limit) {
+            start = limit;
+        }
+        while (start >= 0) {
+            int i = 0;
+            boolean match = true;
+            while (i < needleLength) {
+                if (this.charAt(start + i) != text.charAt(i)) {
+                    match = false;
+                    i = needleLength;
+                } else {
+                    i = i + 1;
+                }
+            }
+            if (match) {
+                return start;
+            }
+            start = start - 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns a copy of this string with leading and trailing ASCII whitespace removed.
+     * Use this for the current Java-close trim baseline in text-processing flows.
+     */
+    public String trim() {
+        int start = 0;
+        int end = this.length();
+        while (start < end) {
+            char current = this.charAt(start);
+            if (current == ' ' || current == '\t' || current == '\n' || current == '\r') {
+                start = start + 1;
+            } else {
+                break;
+            }
+        }
+        while (end > start) {
+            char current = this.charAt(end - 1);
+            if (current == ' ' || current == '\t' || current == '\n' || current == '\r') {
+                end = end - 1;
+            } else {
+                break;
+            }
+        }
+        return this.substring(start, end);
+    }
+
+    /**
+     * Reports whether this string is empty or contains only ASCII whitespace.
+     * Use this for Java-like blank checks without allocating a trimmed copy.
+     */
+    public boolean isBlank() {
+        int index = 0;
+        int length = this.length();
+        while (index < length) {
+            if (!String.isAsciiWhitespace(this.charAt(index))) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Returns a copy of this string with leading and trailing ASCII whitespace removed.
+     * Use this as the current Pulse-owned strip baseline without introducing Unicode whitespace policy yet.
+     */
+    public String strip() {
+        return this.trim();
+    }
+
+    /**
+     * Returns a copy of this string with leading ASCII whitespace removed.
+     * Use this for Java-like leading-strip flows without manual index arithmetic.
+     */
+    public String stripLeading() {
+        int start = 0;
+        int end = this.length();
+        while (start < end && String.isAsciiWhitespace(this.charAt(start))) {
+            start = start + 1;
+        }
+        return this.substring(start, end);
+    }
+
+    /**
+     * Returns a copy of this string with trailing ASCII whitespace removed.
+     * Use this for Java-like trailing-strip flows without manual index arithmetic.
+     */
+    public String stripTrailing() {
+        int end = this.length();
+        while (end > 0 && String.isAsciiWhitespace(this.charAt(end - 1))) {
+            end = end - 1;
+        }
+        return this.substring(0, end);
+    }
+
+    /**
+     * Returns a copy of this string with ASCII letters converted to lower case.
+     * Use this for the current Java-close case-normalization baseline without pushing locale policy yet.
+     */
+    public String toLowerCase() {
+        String result = "";
+        int index = 0;
+        int length = this.length();
+        while (index < length) {
+            result = result.concat(String.valueOf(String.toLowerAscii(this.charAt(index))));
+            index = index + 1;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a copy of this string with ASCII letters converted to upper case.
+     * Use this for the current Java-close case-normalization baseline without pushing locale policy yet.
+     */
+    public String toUpperCase() {
+        String result = "";
+        int index = 0;
+        int length = this.length();
+        while (index < length) {
+            result = result.concat(String.valueOf(String.toUpperAscii(this.charAt(index))));
+            index = index + 1;
+        }
+        return result;
+    }
+
+    /**
+     * Reports whether this string equals the supplied string after ASCII case normalization.
+     * Use this for the current Java-close case-insensitive comparison baseline without locale-sensitive rules.
+     */
+    public boolean equalsIgnoreCase(String other) {
+        if (other == null) {
+            return false;
+        }
+        if (this.length() != other.length()) {
+            return false;
+        }
+        int index = 0;
+        int length = this.length();
+        while (index < length) {
+            if (String.toLowerAscii(this.charAt(index)) != String.toLowerAscii(other.charAt(index))) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Returns a copy of this string with every occurrence of the target text replaced by the replacement text.
+     * Use this for practical immutable text rewriting without manual search/concatenation loops.
+     */
+    public String replace(String target, String replacement) {
+        if (target == null) {
+            Intrinsics.panic("String.replace target must not be null");
+        }
+        if (replacement == null) {
+            Intrinsics.panic("String.replace replacement must not be null");
+        }
+        if (target.isEmpty()) {
+            return this;
+        }
+
+        int match = this.indexOf(target);
+        if (match < 0) {
+            return this;
+        }
+
+        String result = "";
+        int cursor = 0;
+        int targetLength = target.length();
+        while (match >= 0) {
+            result = result.concat(this.substring(cursor, match));
+            result = result.concat(replacement);
+            cursor = match + targetLength;
+            match = this.indexOf(target, cursor);
+        }
+        result = result.concat(this.substring(cursor));
+        return result;
+    }
+
+    /**
+     * Returns a copy of this string with every occurrence of the target character replaced by the replacement character.
+     * Use this for practical immutable character rewriting without wrapping values into one-character strings.
+     */
+    public String replace(char target, char replacement) {
+        String result = "";
+        int index = 0;
+        int length = this.length();
+        while (index < length) {
+            char current = this.charAt(index);
+            if (current == target) {
+                result = result.concat(String.valueOf(replacement));
+            } else {
+                result = result.concat(String.valueOf(current));
+            }
+            index = index + 1;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a copy of this string repeated the supplied number of times.
+     * Use this for practical padding and generated-text flows without manual concatenation loops.
+     */
+    public String repeat(int count) {
+        if (count <= 0) {
+            return "";
+        }
+        String result = "";
+        int i = 0;
+        while (i < count) {
+            result = result.concat(this);
+            i = i + 1;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a copy of this string with the supplied prefix removed when present.
+     * Use this for practical text normalization without manual prefix checks and substring arithmetic.
+     */
+    public String removePrefix(String prefix) {
+        if (prefix == null) {
+            Intrinsics.panic("String.removePrefix prefix must not be null");
+        }
+        if (!this.startsWith(prefix)) {
+            return this;
+        }
+        return this.substring(prefix.length());
+    }
+
+    /**
+     * Returns a copy of this string with the supplied suffix removed when present.
+     * Use this for practical text normalization without manual suffix checks and substring arithmetic.
+     */
+    public String removeSuffix(String suffix) {
+        if (suffix == null) {
+            Intrinsics.panic("String.removeSuffix suffix must not be null");
+        }
+        if (!this.endsWith(suffix)) {
+            return this;
+        }
+        return this.substring(0, this.length() - suffix.length());
+    }
+
+    /**
+     * Returns a left-padded copy of this string up to the supplied width.
+     * Use this for practical fixed-width formatting while keeping the behavior Pulse-owned.
+     */
+    public String padLeft(int width, char padding) {
+        int missing = width - this.length();
+        if (missing <= 0) {
+            return this;
+        }
+        String prefix = "";
+        while (missing > 0) {
+            prefix = prefix.concat(String.valueOf(padding));
+            missing = missing - 1;
+        }
+        return prefix.concat(this);
+    }
+
+    /**
+     * Returns a right-padded copy of this string up to the supplied width.
+     * Use this for practical fixed-width formatting while keeping the behavior Pulse-owned.
+     */
+    public String padRight(int width, char padding) {
+        int missing = width - this.length();
+        if (missing <= 0) {
+            return this;
+        }
+        String suffix = "";
+        while (missing > 0) {
+            suffix = suffix.concat(String.valueOf(padding));
+            missing = missing - 1;
+        }
+        return this.concat(suffix);
+    }
+
+    /**
+     * Splits this string on a literal character delimiter while preserving empty segments.
+     * Use this for practical non-regex text splitting without pulling collection types into `pulse.lang`.
+     */
+    public String[] split(char delimiter) {
+        int parts = 1;
+        int index = 0;
+        int length = this.length();
+        while (index < length) {
+            if (this.charAt(index) == delimiter) {
+                parts = parts + 1;
+            }
+            index = index + 1;
+        }
+
+        String[] out = new String[parts];
+        int partIndex = 0;
+        int start = 0;
+        index = 0;
+        while (index < length) {
+            if (this.charAt(index) == delimiter) {
+                out[partIndex] = this.substring(start, index);
+                partIndex = partIndex + 1;
+                start = index + 1;
+            }
+            index = index + 1;
+        }
+        out[partIndex] = this.substring(start, length);
+        return out;
+    }
+
+    /**
+     * Splits this string on a literal string delimiter while preserving empty segments.
+     * Use this for practical non-regex text splitting when a multi-character separator is required.
+     */
+    public String[] split(String delimiter) {
+        if (delimiter == null) {
+            Intrinsics.panic("String.split delimiter must not be null");
+        }
+        if (delimiter.length() == 0) {
+            Intrinsics.panic("String.split delimiter must not be empty");
+        }
+
+        int parts = 1;
+        int cursor = 0;
+        int match = this.indexOf(delimiter, cursor);
+        int delimiterLength = delimiter.length();
+        while (match >= 0) {
+            parts = parts + 1;
+            cursor = match + delimiterLength;
+            match = this.indexOf(delimiter, cursor);
+        }
+
+        String[] out = new String[parts];
+        int partIndex = 0;
+        cursor = 0;
+        match = this.indexOf(delimiter, cursor);
+        while (match >= 0) {
+            out[partIndex] = this.substring(cursor, match);
+            partIndex = partIndex + 1;
+            cursor = match + delimiterLength;
+            match = this.indexOf(delimiter, cursor);
+        }
+        out[partIndex] = this.substring(cursor, this.length());
+        return out;
+    }
+
+    /**
+     * Joins string parts with a delimiter while rendering null elements as `"null"`.
+     * Use this for practical array-based text assembly without requiring collection helpers.
+     */
+    public static String join(String delimiter, String[] parts) {
+        if (delimiter == null) {
+            Intrinsics.panic("String.join delimiter must not be null");
+        }
+        if (parts == null) {
+            Intrinsics.panic("String.join parts must not be null");
+        }
+
+        String result = "";
+        int index = 0;
+        while (index < parts.length) {
+            if (index > 0) {
+                result = result.concat(delimiter);
+            }
+            result = result.concat(String.valueOf((Object) parts[index]));
+            index = index + 1;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the characters of this string as a new array.
+     * Use this for Java-like text processing without exposing the runtime string storage directly.
+     */
+    public char[] toCharArray() {
+        int length = this.length();
+        char[] out = new char[length];
+        int index = 0;
+        while (index < length) {
+            out[index] = this.charAt(index);
+            index = index + 1;
+        }
+        return out;
+    }
+
+    /**
+     * Copies a bounded range of this string into the supplied destination array.
+     * Use this for Java-like direct char-buffer population without exposing runtime string storage.
+     */
+    public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
+        if (dst == null) {
+            Intrinsics.panic("String.getChars destination must not be null");
+        }
+        if (srcBegin < 0 || srcEnd < srcBegin || srcEnd > this.length()) {
+            Intrinsics.panic("String.getChars source range out of bounds");
+        }
+        int count = srcEnd - srcBegin;
+        if (dstBegin < 0 || (dstBegin + count) > dst.length) {
+            Intrinsics.panic("String.getChars destination range out of bounds");
+        }
+        int index = 0;
+        while (index < count) {
+            dst[dstBegin + index] = this.charAt(srcBegin + index);
+            index = index + 1;
+        }
+    }
+
+    /**
+     * Converts an integer value into its string representation.
+     * Use this when formatting numeric output.
+     */
+    public static String valueOf(int value) {
+        if (value == 0) {
+            return "0";
+        }
+        if (value == Integer.MIN_VALUE) {
+            return "-2147483648";
+        }
+
+        int current = value;
+        boolean negative = current < 0;
+        if (negative) {
+            current = -current;
+        }
+
+        String digits = "";
+        while (current > 0) {
+            int digit = current % 10;
+            digits = String.digitText(digit).concat(digits);
+            current = current / 10;
+        }
+
+        if (negative) {
+            return "-".concat(digits);
+        }
+        return digits;
+    }
+
+    /**
+     * Converts a byte value into its string representation.
+     * Use this when formatting narrow signed integral values through Java-like APIs.
+     */
+    public static String valueOf(byte value) {
+        return valueOf((int) value);
+    }
+
+    /**
+     * Converts a short value into its string representation.
+     * Use this when formatting narrow signed integral values through Java-like APIs.
+     */
+    public static String valueOf(short value) {
+        return valueOf((int) value);
+    }
+
+    /**
+     * Converts a long value into its string representation.
+     * Use this when formatting wide integer output through Java-like APIs.
+     */
+    public static String valueOf(long value) {
+        return Long.toString(value);
+    }
+
+    /**
+     * Converts an unsigned byte value into its string representation.
+     * Use this when formatting retained Pulse unsigned-byte values through the standard string surface.
+     */
+    public static String valueOf(ubyte value) {
+        return valueOf((int) value);
+    }
+
+    /**
+     * Converts an unsigned short value into its string representation.
+     * Use this when formatting retained Pulse unsigned-short values through the standard string surface.
+     */
+    public static String valueOf(ushort value) {
+        return valueOf((int) value);
+    }
+
+    /**
+     * Converts an unsigned int value into its string representation.
+     * Use this when formatting retained Pulse unsigned-int values through the standard string surface.
+     */
+    public static String valueOf(uint value) {
+        return UInteger.toString(value);
+    }
+
+    /**
+     * Converts an unsigned long value into its string representation.
+     * Use this when formatting retained Pulse unsigned-long values through the standard string surface.
+     */
+    public static String valueOf(ulong value) {
+        return ULong.toString(value);
+    }
+
+    /**
+     * Converts a boolean value into its string representation.
+     * Use this when formatting boolean output.
+     */
+    public static String valueOf(boolean value) {
+        if (value) {
+            return "true";
+        }
+        return "false";
+    }
+
+    /**
+     * Converts a character value into its string representation.
+     * Use this when formatting character data into string-based APIs.
+     */
+    public static String valueOf(char value) {
+        return String.runtimeFromChar(value);
+    }
+
+    /**
+     * Converts a character array into a string.
+     * Use this for Java-like char-buffer formatting without routing through collection types.
+     */
+    public static String valueOf(char[] value) {
+        return String.copyValueOf(value);
+    }
+
+    /**
+     * Converts a bounded character-array range into a string.
+     * Use this for Java-like char-buffer slicing and text assembly.
+     */
+    public static String valueOf(char[] value, int offset, int count) {
+        return String.copyValueOf(value, offset, count);
+    }
+
+    /**
+     * Converts a float value into its string representation.
+     * Use this when formatting single-precision values through Java-like APIs.
+     */
+    public static String valueOf(float value) {
+        return Float.toString(value);
+    }
+
+    /**
+     * Converts a double value into its string representation.
+     * Use this when formatting double-precision values through Java-like APIs.
+     */
+    public static String valueOf(double value) {
+        return Double.toString(value);
+    }
+
+    /**
+     * Converts an object reference into its string representation.
+     * Use this for Java-like formatting where `null` should become `"null"`.
+     */
+    public static String valueOf(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof String) {
+            return (String) value;
+        }
+        return value.toString();
+    }
+
+    /**
+     * Copies a character array into a new string.
+     * Use this for Java-like char-buffer ownership where the source array should not be exposed.
+     */
+    public static String copyValueOf(char[] value) {
+        if (value == null) {
+            Intrinsics.panic("String.copyValueOf value must not be null");
+        }
+        return String.copyValueOf(value, 0, value.length);
+    }
+
+    /**
+     * Copies a bounded character-array range into a new string.
+     * Use this for Java-like char-buffer slicing with explicit offset and count.
+     */
+    public static String copyValueOf(char[] value, int offset, int count) {
+        if (value == null) {
+            Intrinsics.panic("String.copyValueOf value must not be null");
+        }
+        if (offset < 0 || count < 0 || offset > value.length || (offset + count) > value.length) {
+            Intrinsics.panic("String.copyValueOf range out of bounds");
+        }
+        String result = "";
+        int index = 0;
+        while (index < count) {
+            result = result.concat(String.valueOf(value[offset + index]));
+            index = index + 1;
+        }
+        return result;
+    }
+
+    /**
+     * Runtime-backed helper for indexed character access.
+     * Use this only inside the stdlib `String` implementation.
+     */
+    private static char runtimeCharAt(String value, int index) {
+        return '\0';
+    }
+
+    /**
+     * Runtime-backed helper for string length.
+     * Use this only inside the stdlib `String` implementation.
+     */
+    private static int runtimeLength(String value) {
+        return 0;
+    }
+
+    /**
+     * Runtime-backed helper for string concatenation.
+     * Use this only inside the stdlib `String` implementation.
+     */
+    private static String runtimeConcat(String left, String right) {
+        return "";
+    }
+
+    /**
+     * Runtime-backed helper that converts a single character into a string.
+     * Use this only inside the stdlib `String` implementation.
+     */
+    private static String runtimeFromChar(char value) {
+        return "";
+    }
+
+    /**
+     * Returns the one-character decimal text for the supplied digit.
+     * Use this internally for stdlib-owned integer formatting.
+     */
+    private static String digitText(int digit) {
+        if (digit == 0) {
+            return "0";
+        }
+        if (digit == 1) {
+            return "1";
+        }
+        if (digit == 2) {
+            return "2";
+        }
+        if (digit == 3) {
+            return "3";
+        }
+        if (digit == 4) {
+            return "4";
+        }
+        if (digit == 5) {
+            return "5";
+        }
+        if (digit == 6) {
+            return "6";
+        }
+        if (digit == 7) {
+            return "7";
+        }
+        if (digit == 8) {
+            return "8";
+        }
+        return "9";
+    }
+
+    private static char toLowerAscii(char value) {
+        if (value == 'A') { return 'a'; }
+        if (value == 'B') { return 'b'; }
+        if (value == 'C') { return 'c'; }
+        if (value == 'D') { return 'd'; }
+        if (value == 'E') { return 'e'; }
+        if (value == 'F') { return 'f'; }
+        if (value == 'G') { return 'g'; }
+        if (value == 'H') { return 'h'; }
+        if (value == 'I') { return 'i'; }
+        if (value == 'J') { return 'j'; }
+        if (value == 'K') { return 'k'; }
+        if (value == 'L') { return 'l'; }
+        if (value == 'M') { return 'm'; }
+        if (value == 'N') { return 'n'; }
+        if (value == 'O') { return 'o'; }
+        if (value == 'P') { return 'p'; }
+        if (value == 'Q') { return 'q'; }
+        if (value == 'R') { return 'r'; }
+        if (value == 'S') { return 's'; }
+        if (value == 'T') { return 't'; }
+        if (value == 'U') { return 'u'; }
+        if (value == 'V') { return 'v'; }
+        if (value == 'W') { return 'w'; }
+        if (value == 'X') { return 'x'; }
+        if (value == 'Y') { return 'y'; }
+        if (value == 'Z') { return 'z'; }
+        return value;
+    }
+
+    private static char toUpperAscii(char value) {
+        if (value == 'a') { return 'A'; }
+        if (value == 'b') { return 'B'; }
+        if (value == 'c') { return 'C'; }
+        if (value == 'd') { return 'D'; }
+        if (value == 'e') { return 'E'; }
+        if (value == 'f') { return 'F'; }
+        if (value == 'g') { return 'G'; }
+        if (value == 'h') { return 'H'; }
+        if (value == 'i') { return 'I'; }
+        if (value == 'j') { return 'J'; }
+        if (value == 'k') { return 'K'; }
+        if (value == 'l') { return 'L'; }
+        if (value == 'm') { return 'M'; }
+        if (value == 'n') { return 'N'; }
+        if (value == 'o') { return 'O'; }
+        if (value == 'p') { return 'P'; }
+        if (value == 'q') { return 'Q'; }
+        if (value == 'r') { return 'R'; }
+        if (value == 's') { return 'S'; }
+        if (value == 't') { return 'T'; }
+        if (value == 'u') { return 'U'; }
+        if (value == 'v') { return 'V'; }
+        if (value == 'w') { return 'W'; }
+        if (value == 'x') { return 'X'; }
+        if (value == 'y') { return 'Y'; }
+        if (value == 'z') { return 'Z'; }
+        return value;
+    }
+
+    private static boolean isAsciiWhitespace(char value) {
+        return value == ' ' || value == '\t' || value == '\n' || value == '\r';
+    }
+}

@@ -13,12 +13,10 @@ Default project layout follows the Gradle-style structure below.
     assets/
     sanity/
     tmp/
-    staging/
     distro/
       debug/
       release/
       libraries/
-      package/
   src/
     main/
       pulse/
@@ -42,16 +40,12 @@ Default project layout follows the Gradle-style structure below.
   - `build/assets` (resource copies)
   - `build/sanity` (backup copy of source tree used for build)
   - `build/tmp` (temporary workspace)
-  - `build/staging` (MSI/package staging inputs)
-  - `build/distro/package` (packaging reports/artifacts)
-  - `build/staging` subdirs:
-    - `bin`, `assets`, `icons`, `licenses`, `docs`, `config`, `data`, `libraries`, `metadata`, `logs`, `obj`
 - Resource/payload staging copies directory contents into the destination bucket; it does not wrap them in an extra source-folder layer.
 - `src/main/resources` is copied into `build/assets` as content-only files/directories, not under an extra `resources/` wrapper.
 - For manifest/profile builds, those same resource contents are also published into `build/distro/<profile>` root so the runnable output includes its payload files/directories.
 - `build/distro/release` is deliverable-only: stamped executable plus published resources.
 - `build/distro/debug` includes the stamped executable/resources plus debug diagnostics (`*-build.config.plan.json`, `*-native.link.txt`, `*-native.plan.json`, `*-pulsec.ir.txt`, `stamp.txt`).
-- Release/debug diagnostic internals that are not published to distro remain available under `build/tmp` for pipeline handoff and packaging.
+- Release/debug diagnostic internals that are not published to distro remain available under `build/tmp` for build/debug workflow support.
 - Shared-mode profile builds use a nested runnable layout:
   - `build/distro/<profile>/bin`
     - stamped application executable
@@ -69,6 +63,12 @@ Default project layout follows the Gradle-style structure below.
   - no `.pdb` or other sidecar symbol artifacts are currently published in either shared profile
 - Shared-mode `bin/launch.txt` resolves runtime payloads by relative sibling location:
   - build output: `../lib/pulsecore-<pulsec-semver>.dll`
+
+## Historical Packaging Note
+
+Older pre-rebase docs may still mention `build/staging` or `build/distro/package` as part of the old compiler-owned packaging pipeline.
+
+Those directories are no longer part of the live compiler contract after [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md).
 
 ## E3 Parity Layout Rule
 

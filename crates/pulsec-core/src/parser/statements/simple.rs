@@ -1,5 +1,5 @@
-use super::*;
 use super::super::shared::tokens::can_start_type_name;
+use super::*;
 
 impl Parser {
     pub(crate) fn parse_simple_statement(&mut self) -> Result<Stmt, ParseError> {
@@ -122,7 +122,8 @@ impl Parser {
             }
         }
         while self.peek_n(idx).kind == TokenKind::Symbol && self.peek_n(idx).lexeme == "[" {
-            if self.peek_n(idx + 1).kind != TokenKind::Symbol || self.peek_n(idx + 1).lexeme != "]" {
+            if self.peek_n(idx + 1).kind != TokenKind::Symbol || self.peek_n(idx + 1).lexeme != "]"
+            {
                 return false;
             }
             idx += 2;
@@ -170,6 +171,8 @@ impl Parser {
             Some(BinaryOp::Mul)
         } else if self.matches_symbol("/") && self.matches_symbol("=") {
             Some(BinaryOp::Div)
+        } else if self.matches_symbol("%") && self.matches_symbol("=") {
+            Some(BinaryOp::Mod)
         } else if self.matches_symbol("&") && self.matches_symbol("=") {
             Some(BinaryOp::BitAnd)
         } else if self.matches_symbol("|") && self.matches_symbol("=") {

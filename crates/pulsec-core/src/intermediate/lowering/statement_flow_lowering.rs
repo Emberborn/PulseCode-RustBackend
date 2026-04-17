@@ -13,7 +13,7 @@ impl IrBuilder {
                     .unwrap_or(iterable_ty)
                     .to_string()
             } else {
-                "com.pulse.lang.Object".to_string()
+                "pulse.lang.Object".to_string()
             }
         } else {
             declared_ty.to_string()
@@ -207,14 +207,16 @@ impl IrBuilder {
             let array_local = format!("__foreach{}_array", stmt_index);
             let index_local = format!("__foreach{}_index", stmt_index);
             let length_local = format!("__foreach{}_length", stmt_index);
-            self.local_types
-                .insert(array_local.clone(), "com.pulse.collections.Array".to_string());
+            self.local_types.insert(
+                array_local.clone(),
+                "pulse.collections.Array".to_string(),
+            );
 
             self.emit(
                 current,
                 IrInstr::DeclareLocal {
                     name: array_local.clone(),
-                    ty: "com.pulse.collections.Array".to_string(),
+                    ty: "pulse.collections.Array".to_string(),
                     source: source.clone(),
                 },
             );
@@ -371,12 +373,12 @@ impl IrBuilder {
             current,
             IrInstr::DeclareLocal {
                 name: iter_local.clone(),
-                ty: "com.pulse.lang.Iterator".to_string(),
+                ty: "pulse.lang.Iterator".to_string(),
                 source: source.clone(),
             },
         );
         self.local_types
-            .insert(iter_local.clone(), "com.pulse.lang.Iterator".to_string());
+            .insert(iter_local.clone(), "pulse.lang.Iterator".to_string());
         let iterator_value = self.lower_expr(
             &Expr::Call {
                 callee: Box::new(Expr::MemberAccess {
@@ -511,7 +513,9 @@ impl IrBuilder {
 
             let case_ctx = LoopContext {
                 break_target: after_block,
-                continue_target: loop_ctx.map(|ctx| ctx.continue_target).unwrap_or(after_block),
+                continue_target: loop_ctx
+                    .map(|ctx| ctx.continue_target)
+                    .unwrap_or(after_block),
             };
             let case_end = self.lower_stmts(&case.body, case_block, Some(&case_ctx), try_ctx);
             if !self.is_terminated(case_end) {

@@ -3,7 +3,7 @@
 Status legend: `Todo`, `In Progress`, `Blocked`, `Done (Locked)`.
 
 ## Scope
-F2 turns PulseCode from a project that can be worked on by insiders into one that external developers can realistically learn, adopt, navigate, and succeed with. It covers the language specification, reference and tutorial documentation, style guidance, API documentation generation, starter templates, onboarding flows, and the developer-experience contract around docs staying aligned with the actual language/toolchain. Feature documentation is expected to land during F1; F2 turns that growing body of truthful docs into a coherent, externally usable documentation system.
+F2 turns PulseCode from a project that can be worked on by insiders into one that external developers can realistically learn, adopt, navigate, and succeed with. It covers the language specification, reference and tutorial documentation, style guidance, API documentation generation, starter templates, onboarding flows, and the developer-experience contract around docs staying aligned with the actual language/toolchain. Feature documentation is expected to land during F1; F2 turns that growing body of truthful docs into a coherent, externally usable documentation system, including the distinction between public `stdlib` guidance and any later `authorlib` documentation needed for compiler/runtime authors.
 
 ## F2 Strict Done Policy
 - F2 is not complete when docs merely exist; they must be accurate, navigable, and aligned with current compiler/runtime behavior.

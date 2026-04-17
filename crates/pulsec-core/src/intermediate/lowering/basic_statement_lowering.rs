@@ -23,8 +23,17 @@ impl IrBuilder {
         } else {
             erase_type_for_runtime(ty, &self.visible_type_params)
         };
+        let declared_ty = if ty == "var" {
+            init_lowered
+                .map(|lowered| self.value_ty(lowered))
+                .unwrap_or_else(|| "unknown".to_string())
+        } else {
+            ty.to_string()
+        };
         self.local_types
             .insert(name.to_string(), runtime_ty.clone());
+        self.declared_local_types
+            .insert(name.to_string(), declared_ty);
         let source = self.source_loc(stmt_index, source_line);
         self.emit(
             current,
@@ -35,7 +44,7 @@ impl IrBuilder {
             },
         );
         if let Some(lowered) = init_lowered {
-            let value = self.coerce_numeric_value(lowered, &runtime_ty, stmt_index);
+            let value = self.coerce_runtime_value(lowered, &runtime_ty, stmt_index);
             self.emit(
                 current,
                 IrInstr::StoreLocal {
@@ -65,7 +74,7 @@ impl IrBuilder {
                 .unwrap_or("unknown")
                 .to_string();
             let lowered = self.lower_expr(value, stmt_index);
-            let value_id = self.coerce_numeric_value(lowered, &element_ty, stmt_index);
+            let value_id = self.coerce_runtime_value(lowered, &element_ty, stmt_index);
             let store_value = self.push_value(
                 "void".to_string(),
                 IrValueKind::ArraySet {
@@ -89,7 +98,7 @@ impl IrBuilder {
         let target_value = self.lower_expr(target, stmt_index);
         let target_ty = self.value_ty(target_value);
         let lowered = self.lower_expr(value, stmt_index);
-        let value_id = self.coerce_numeric_value(lowered, &target_ty, stmt_index);
+        let value_id = self.coerce_runtime_value(lowered, &target_ty, stmt_index);
         self.emit(
             current,
             IrInstr::Eval {
@@ -143,7 +152,7 @@ impl IrBuilder {
                 },
                 stmt_index,
             );
-            let composed = self.coerce_numeric_value(composed, &element_ty, stmt_index);
+            let composed = self.coerce_runtime_value(composed, &element_ty, stmt_index);
             let store = self.push_value(
                 "void".to_string(),
                 IrValueKind::ArraySet {
@@ -176,7 +185,7 @@ impl IrBuilder {
             },
             stmt_index,
         );
-        let composed = self.coerce_numeric_value(composed, &target_ty, stmt_index);
+        let composed = self.coerce_runtime_value(composed, &target_ty, stmt_index);
         self.emit(
             current,
             IrInstr::Eval {
@@ -222,7 +231,7 @@ impl IrBuilder {
         let value_id = value.map(|v| {
             let lowered = self.lower_expr(v, stmt_index);
             if let Some(return_ty) = self.return_type.clone() {
-                self.coerce_numeric_value(lowered, &return_ty, stmt_index)
+                self.coerce_runtime_value(lowered, &return_ty, stmt_index)
             } else {
                 lowered
             }

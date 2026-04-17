@@ -22,7 +22,7 @@ impl IrBuilder {
             current,
             IrInstr::DeclareLocal {
                 name: pending_local.clone(),
-                ty: "com.pulse.lang.Throwable".to_string(),
+                ty: "pulse.lang.Throwable".to_string(),
                 source: source.clone(),
             },
         );
@@ -67,7 +67,7 @@ impl IrBuilder {
         }
 
         let pending_value = self.push_value(
-            "com.pulse.lang.Throwable".to_string(),
+            "pulse.lang.Throwable".to_string(),
             IrValueKind::TakePendingException,
             stmt_index,
         );
@@ -86,7 +86,7 @@ impl IrBuilder {
                 let catch_block = self.new_block();
                 let next_dispatch = self.new_block();
                 let pending_value = self.push_value(
-                    "com.pulse.lang.Throwable".to_string(),
+                    "pulse.lang.Throwable".to_string(),
                     IrValueKind::LocalRef(pending_local.clone()),
                     stmt_index,
                 );
@@ -178,7 +178,7 @@ impl IrBuilder {
             );
             if !self.is_terminated(finally_end) {
                 let pending_value = self.push_value(
-                    "com.pulse.lang.Throwable".to_string(),
+                    "pulse.lang.Throwable".to_string(),
                     IrValueKind::LocalRef(pending_local.clone()),
                     stmt_index,
                 );
@@ -204,7 +204,7 @@ impl IrBuilder {
         }
 
         let pending_throwable = self.push_value(
-            "com.pulse.lang.Throwable".to_string(),
+            "pulse.lang.Throwable".to_string(),
             IrValueKind::LocalRef(pending_local),
             stmt_index,
         );

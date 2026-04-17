@@ -1,4 +1,4 @@
-use crate::Stmt;
+use crate::{desugar_try_with_resources, Stmt};
 
 use super::{IrBuilder, LoopContext, TryContext};
 
@@ -35,12 +35,18 @@ impl IrBuilder {
             Stmt::Assign { target, value, .. } => {
                 self.lower_assign(target, value, current, stmt_index, source_line)
             }
-            Stmt::CompoundAssign { target, op, value, .. } => {
-                self.lower_compound_assign(target, *op, value, current, stmt_index, source_line)
+            Stmt::CompoundAssign {
+                target, op, value, ..
+            } => self.lower_compound_assign(target, *op, value, current, stmt_index, source_line),
+            Stmt::ExprStmt(expr, ..) => {
+                self.lower_expr_stmt(expr, current, stmt_index, source_line)
             }
-            Stmt::ExprStmt(expr, ..) => self.lower_expr_stmt(expr, current, stmt_index, source_line),
-            Stmt::Return(value, ..) => self.lower_return(value.as_ref(), current, stmt_index, source_line),
-            Stmt::Break { .. } => self.lower_break_or_stop(loop_ctx, current, stmt_index, source_line),
+            Stmt::Return(value, ..) => {
+                self.lower_return(value.as_ref(), current, stmt_index, source_line)
+            }
+            Stmt::Break { .. } => {
+                self.lower_break_or_stop(loop_ctx, current, stmt_index, source_line)
+            }
             Stmt::Continue { .. } => {
                 self.lower_continue_or_stop(loop_ctx, current, stmt_index, source_line)
             }
@@ -48,23 +54,43 @@ impl IrBuilder {
                 self.lower_throw_stmt(expr, current, try_ctx, stmt_index, source_line)
             }
             Stmt::Try {
+                resources,
                 body,
                 catches,
                 finally_block,
                 ..
-            } => self.lower_try(
-                body,
-                catches,
-                finally_block.as_deref(),
+            } => {
+                if resources.is_empty() {
+                    self.lower_try(
+                        body,
+                        catches,
+                        finally_block.as_deref(),
+                        current,
+                        loop_ctx,
+                        try_ctx,
+                        stmt_index,
+                        source_line,
+                    )
+                } else {
+                    let rewritten = desugar_try_with_resources(
+                        resources,
+                        body,
+                        catches,
+                        finally_block.as_deref(),
+                        source_line,
+                    );
+                    self.lower_stmt(&rewritten, current, loop_ctx, try_ctx)
+                }
+            }
+            Stmt::Assert {
+                condition, message, ..
+            } => self.lower_assert_stmt(
+                condition,
+                message.as_ref(),
                 current,
-                loop_ctx,
-                try_ctx,
                 stmt_index,
                 source_line,
             ),
-            Stmt::Assert { condition, message, .. } => {
-                self.lower_assert_stmt(condition, message.as_ref(), current, stmt_index, source_line)
-            }
             Stmt::If {
                 condition,
                 then_branch,
@@ -80,10 +106,12 @@ impl IrBuilder {
                 stmt_index,
                 source_line,
             ),
-            Stmt::While { condition, body, .. } => {
-                self.lower_while_stmt(condition, body, current, try_ctx, stmt_index, source_line)
-            }
-            Stmt::DoWhile { body, condition, .. } => {
+            Stmt::While {
+                condition, body, ..
+            } => self.lower_while_stmt(condition, body, current, try_ctx, stmt_index, source_line),
+            Stmt::DoWhile {
+                body, condition, ..
+            } => {
                 self.lower_do_while_stmt(body, condition, current, try_ctx, stmt_index, source_line)
             }
             Stmt::For {
@@ -109,7 +137,16 @@ impl IrBuilder {
                 iterable,
                 body,
                 ..
-            } => self.lower_foreach(ty, name, iterable, body, current, try_ctx, stmt_index, source_line),
+            } => self.lower_foreach(
+                ty,
+                name,
+                iterable,
+                body,
+                current,
+                try_ctx,
+                stmt_index,
+                source_line,
+            ),
             Stmt::Switch {
                 expr,
                 cases,

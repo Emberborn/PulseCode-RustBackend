@@ -11,7 +11,7 @@
 - [RUNTIME_OWNERSHIP_POLICY.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_POLICY.md)
 - [SHARED_RUNTIME_STATE_LAYOUT.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_STATE_LAYOUT.md)
 - [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
-- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
 
 ## Lock Suites
 
@@ -19,7 +19,6 @@
 - `cargo test -q -p pulsec --test stage_locks_c3`
 - `cargo test -q -p pulsec --test stage_locks_d`
 - `cargo test -q -p pulsec --test phase_d_cli`
-- `cargo test -q -p pulsec --test packaging_regressions`
 - `cargo test -q -p pulsec`
 
 ## Key E2 Coverage

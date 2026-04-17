@@ -1,19 +1,23 @@
+mod adapters;
 mod analysis;
 mod emission;
+mod host_bootstrap;
 mod support;
+mod target_neutral;
 
-use std::env;
 use std::collections::{BTreeMap, HashMap, HashSet};
+use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
-use pulsec_core::{IrClass, IrMethod, IrProgram, IrVisibility};
+pub(crate) use self::adapters::resolve_plan_target_adapter_metadata;
+pub(crate) use self::support::PlanTargetAdapterMetadata;
+pub use self::host_bootstrap::RustHostBootstrapBackend;
 use pulsec_core::intermediate::{
-    IrBinaryOp, IrBlock, IrField, IrFieldInit, IrInstr, IrTerminator, IrUnaryOp, IrValueId,
+    IrBinaryOp, IrBlock, IrField, IrFieldInit, IrFieldInitArg, IrInstr, IrTerminator, IrUnaryOp, IrValueId,
     IrValueKind,
 };
-pub use self::analysis::NoopNativeBackend;
+use pulsec_core::{IrClass, IrMethod, IrProgram, IrVisibility};
 
 const TRACE_PUSH_SYMBOL: &str = "pulsec_rt_tracePush";
 const TRACE_UPDATE_SYMBOL: &str = "pulsec_rt_traceUpdateTop";
@@ -68,25 +72,16 @@ const OBJECT_HASH_CODE_SYMBOL: &str = "pulsec_rt_objectHashCode";
 const SYSTEM_CURRENT_TIME_MILLIS_SYMBOL: &str = "pulsec_rt_currentTimeMillis";
 const SYSTEM_NANO_TIME_SYMBOL: &str = "pulsec_rt_nanoTime";
 const SYSTEM_EXIT_SYMBOL: &str = "pulsec_rt_systemExit";
-const CLASS_SIMPLE_NAME_SYMBOL: &str = "pulsec_rt_classSimpleName";
-const CLASS_PACKAGE_NAME_SYMBOL: &str = "pulsec_rt_classPackageName";
 const STRING_CHAR_AT_SYMBOL: &str = "pulsec_rt_stringCharAt";
-const STRING_SUBSTRING_SYMBOL: &str = "pulsec_rt_stringSubstring";
 const CHAR_TO_STRING_SYMBOL: &str = "pulsec_rt_charToString";
-const LONG_TO_STRING_SYMBOL: &str = "pulsec_rt_longToString";
-const PARSE_LONG_SYMBOL: &str = "pulsec_rt_parseLong";
-const UINT_TO_STRING_SYMBOL: &str = "pulsec_rt_uintToString";
-const PARSE_UINT_SYMBOL: &str = "pulsec_rt_parseUInt";
-const ULONG_TO_STRING_SYMBOL: &str = "pulsec_rt_ulongToString";
-const PARSE_ULONG_SYMBOL: &str = "pulsec_rt_parseULong";
-const CHAR_RUNTIME_CHAR_AT_SYMBOL: &str = "pulsec_rt_stringCharAt";
 const DISPATCH_NULL_PANIC_SYMBOL: &str = "pulsec_rt_dispatchNullReceiverPanic";
 const DISPATCH_TYPE_PANIC_SYMBOL: &str = "pulsec_rt_dispatchInvalidTypePanic";
 
-const STRING_SLOT_BYTES: u32 = 256;
+const STRING_SLOT_BYTES: u32 = 4096;
 const ARC_ARG_SPILL_STRIDE: usize = 8;
 const ARC_ARG_SPILL_MAX: usize = 4;
-const ARC_SCRATCH_EXTRA_SLOTS: usize = 6;
+const ARC_SCRATCH_EXTRA_SLOTS: usize = 7;
+const MAX_NESTED_CALL_ARG_PRESERVE_DEPTH: usize = 256;
 const FRAME_BUDGET_WARN_BYTES: usize = 1024;
 const FRAME_BUDGET_FAIL_BYTES: usize = 4096;
 const ARC_HANDLE_SLOT_MASK: u32 = 0xFFFF_FFFF;
@@ -118,6 +113,13 @@ pub struct NativeLinkPlan {
     pub runtime_owned_objects: Vec<PathBuf>,
     pub system_inputs: Vec<PathBuf>,
     pub shared_runtime_exports: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SharedLinkArtifacts {
+    pub exe_path: Option<PathBuf>,
+    pub runtime_library_path: PathBuf,
+    pub runtime_import_library_path: PathBuf,
 }
 
 pub trait BackendAdapter {

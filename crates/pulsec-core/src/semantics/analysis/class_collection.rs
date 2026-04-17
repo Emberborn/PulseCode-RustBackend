@@ -76,7 +76,8 @@ pub(super) fn validate_class_relationships(
             validate_interface_inheritance(class_fqcn, class_index)?;
         }
         for implemented in &class_info.interfaces {
-            let iface = class_index.get(implemented).ok_or_else(|| {
+            let implemented_erased = erase_generic_type_name(implemented);
+            let iface = class_index.get(&implemented_erased).ok_or_else(|| {
                 semantic_error(format!(
                     "Unknown interface '{}' for '{}'",
                     implemented, class_info.simple_name
@@ -90,7 +91,8 @@ pub(super) fn validate_class_relationships(
             }
         }
         if let Some(super_name) = class_info.super_class.as_deref() {
-            let super_info = class_index.get(super_name).ok_or_else(|| {
+            let super_name_erased = erase_generic_type_name(super_name);
+            let super_info = class_index.get(&super_name_erased).ok_or_else(|| {
                 semantic_error(format!(
                     "Unknown superclass '{}' for '{}'",
                     super_name, class_fqcn

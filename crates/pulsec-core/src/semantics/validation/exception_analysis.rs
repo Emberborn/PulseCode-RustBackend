@@ -1,6 +1,36 @@
 use super::*;
 use crate::ArrayInitExpr;
 
+fn current_class_self_type(class: &ClassDecl, class_info: &ClassInfo) -> String {
+    let fqcn = format!("{}.{}", class_info.package_name, class.name);
+    if class_info.type_params.is_empty() {
+        fqcn
+    } else {
+        format!("{}<{}>", fqcn, class_info.type_params.join(", "))
+    }
+}
+
+fn instantiate_constructor_signature(
+    signature: &ConstructorSignature,
+    owner_info: &ClassInfo,
+    owner_ty: &str,
+) -> ConstructorSignature {
+    let bindings = build_type_param_bindings(&owner_info.type_params, &generic_type_args(owner_ty));
+    ConstructorSignature {
+        param_types: signature
+            .param_types
+            .iter()
+            .map(|ty| instantiate_type_params_with_defaults(ty, &bindings, &owner_info.type_params))
+            .collect(),
+        declared_throws: signature
+            .declared_throws
+            .iter()
+            .map(|ty| instantiate_type_params_with_defaults(ty, &bindings, &owner_info.type_params))
+            .collect(),
+        is_varargs: signature.is_varargs,
+    }
+}
+
 pub(super) fn validate_method_exception_contract(
     method: &MethodDecl,
     class: &ClassDecl,
@@ -430,7 +460,7 @@ fn collect_stmt_checked_exceptions(
                 if iterable_ty.ends_with("[]") {
                     iterable_ty.trim_end_matches("[]").to_string()
                 } else {
-                    "com.pulse.lang.Object".to_string()
+                    "pulse.lang.Object".to_string()
                 }
             } else {
                 ty.clone()
@@ -521,11 +551,32 @@ fn collect_stmt_checked_exceptions(
             Ok(escaping)
         }
         Stmt::Try {
+            resources,
             body,
             catches,
             finally_block,
-            ..
+            source_line,
         } => {
+            if !resources.is_empty() {
+                return collect_stmt_checked_exceptions(
+                    &crate::desugar_try_with_resources(
+                        resources,
+                        body,
+                        catches,
+                        finally_block.as_deref(),
+                        *source_line,
+                    ),
+                    method,
+                    class,
+                    class_info,
+                    class_names,
+                    class_index,
+                    fqcn_to_class,
+                    imports,
+                    locals,
+                    in_static_context,
+                );
+            }
             let mut escaping = collect_block_checked_exceptions(
                 body,
                 method,
@@ -1065,12 +1116,81 @@ fn resolve_call_declared_throws(
     let current_class_fqcn = format!("{}.{}", class_info.package_name, class.name);
 
     let signature = match callee {
+        Expr::This => {
+            let instantiated_ctors = class_info
+                .constructors
+                .iter()
+                .map(|ctor| {
+                    instantiate_constructor_signature(
+                        ctor,
+                        class_info,
+                        &current_class_self_type(class, class_info),
+                    )
+                })
+                .collect::<Vec<_>>();
+            select_best_constructor_overload(&arg_types, &instantiated_ctors, class_index)?
+                .map(|ctor| MethodSignature {
+                    type_params: Vec::new(),
+                    param_types: ctor.param_types.clone(),
+                    return_type: "void".to_string(),
+                    declared_throws: ctor.declared_throws.clone(),
+                    is_varargs: ctor.is_varargs,
+                    is_static: false,
+                    is_final: true,
+                    is_abstract: false,
+                    visibility: MemberVisibility::Public,
+                })
+        }
+        Expr::Super => {
+            let Some(super_class) = class_info.super_class.as_deref() else {
+                return Ok(Vec::new());
+            };
+            let Some(target_class) = class_index.get(super_class) else {
+                return Ok(Vec::new());
+            };
+            let instantiated_ctors = target_class
+                .constructors
+                .iter()
+                .map(|ctor| instantiate_constructor_signature(ctor, target_class, super_class))
+                .collect::<Vec<_>>();
+            select_best_constructor_overload(&arg_types, &instantiated_ctors, class_index)?
+                .map(|ctor| MethodSignature {
+                    type_params: Vec::new(),
+                    param_types: ctor.param_types.clone(),
+                    return_type: "void".to_string(),
+                    declared_throws: ctor.declared_throws.clone(),
+                    is_varargs: ctor.is_varargs,
+                    is_static: false,
+                    is_final: true,
+                    is_abstract: false,
+                    visibility: MemberVisibility::Public,
+                })
+        }
         Expr::Var(name) => {
             if resolve_class_fqcn(name, &class_info.package_name, imports, class_index)?.is_some() {
                 return Ok(Vec::new());
             }
-            if let Some((_, candidates)) = lookup_method_candidates(&current_class_fqcn, name, class_index) {
-                select_best_method_overload(name, &arg_types, &candidates, class_index)?.cloned()
+            if let Some(candidates) =
+                lookup_method_candidates(&current_class_fqcn, name, class_index)
+            {
+                let instantiated_candidates = candidates
+                    .iter()
+                    .map(|candidate| {
+                        instantiate_resolved_method_candidate(
+                            candidate,
+                            class_index,
+                            &current_class_fqcn,
+                            &arg_types,
+                        )
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                select_best_resolved_method_candidate(
+                    name,
+                    &arg_types,
+                    &instantiated_candidates,
+                    class_index,
+                )?
+                .map(|candidate| candidate.signature.clone())
             } else {
                 resolve_imported_static_method(
                     name,
@@ -1104,7 +1224,7 @@ fn resolve_call_declared_throws(
             } else {
                 owner_class(&receiver, class_names)?
             };
-            let (_, candidates) =
+            let candidates =
                 lookup_method_candidates(&owner, member, class_index).ok_or_else(|| {
                     semantic_error(format!(
                         "No method '{}.{}' matches argument types ({})",
@@ -1113,7 +1233,24 @@ fn resolve_call_declared_throws(
                         arg_types.join(",")
                     ))
                 })?;
-            select_best_method_overload(member, &arg_types, &candidates, class_index)?.cloned()
+            let instantiated_candidates = candidates
+                .iter()
+                .map(|candidate| {
+                    instantiate_resolved_method_candidate(
+                        candidate,
+                        class_index,
+                        &receiver.ty,
+                        &arg_types,
+                    )
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            select_best_resolved_method_candidate(
+                member,
+                &arg_types,
+                &instantiated_candidates,
+                class_index,
+            )?
+            .map(|candidate| candidate.signature.clone())
         }
         _ => None,
     };
@@ -1152,11 +1289,24 @@ fn resolve_constructor_declared_throws(
         locals,
         in_static_context,
     )?;
-    let class_fqcn =
-        resolve_class_fqcn(class_name, &class_info.package_name, imports, class_index)?
-            .ok_or_else(|| semantic_error(format!("Unknown class '{}' in constructor call", class_name)))?;
+    let generic_arity = collect_generic_arity(class_index);
+    let available_type_params = HashSet::new();
+    let simple_to_fqcns = collect_simple_to_fqcns(class_index);
+    let canonical_class_ty = canonicalize_type_name_in_scope(
+        class_name,
+        &class_info.package_name,
+        imports,
+        &simple_to_fqcns,
+        &collect_fqcn_names(class_index),
+        &generic_arity,
+        &available_type_params,
+    )?;
+    let class_fqcn = erase_generic_type_name(&canonical_class_ty);
     let target_class = class_index.get(&class_fqcn).ok_or_else(|| {
-        semantic_error(format!("Unknown class '{}' in constructor call", class_name))
+        semantic_error(format!(
+            "Unknown class '{}' in constructor call",
+            class_name
+        ))
     })?;
 
     if target_class.constructors.is_empty() && arg_types.is_empty() {

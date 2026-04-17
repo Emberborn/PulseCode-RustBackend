@@ -1,6 +1,6 @@
+mod common;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -29,7 +29,7 @@ fn write_file(path: &Path, contents: &str) {
 }
 
 fn run_pulsec(args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    common::pulsec_command()
         .args(args)
         .output()
         .expect("run pulsec")
@@ -86,7 +86,11 @@ fn lock_cast_fail_02_rejects_byte_overflow_literal_assignment() {
             }
         }"#,
     );
-    assert_check_fails(&entry, &src_root, "Implicit numeric conversion 'int' -> 'byte'");
+    assert_check_fails(
+        &entry,
+        &src_root,
+        "Implicit numeric conversion 'int' -> 'byte'",
+    );
 }
 
 #[test]
@@ -122,7 +126,11 @@ fn lock_cast_fail_04_rejects_long_to_int_without_cast() {
             }
         }"#,
     );
-    assert_check_fails(&entry, &src_root, "Implicit numeric conversion 'long' -> 'int'");
+    assert_check_fails(
+        &entry,
+        &src_root,
+        "Implicit numeric conversion 'long' -> 'int'",
+    );
 }
 
 #[test]
@@ -140,5 +148,10 @@ fn lock_cast_fail_05_rejects_float_to_int_without_cast() {
             }
         }"#,
     );
-    assert_check_fails(&entry, &src_root, "Implicit numeric conversion 'float' -> 'int'");
+    assert_check_fails(
+        &entry,
+        &src_root,
+        "Implicit numeric conversion 'float' -> 'int'",
+    );
 }
+

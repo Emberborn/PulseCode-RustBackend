@@ -1,3 +1,7 @@
+mod common;
+// Target-neutral project lifecycle/publication coverage. This uses the current
+// host/bootstrap lane only as a transport for portable workflow assertions.
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -5,7 +9,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 fn run_pulsec(args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    common::pulsec_command()
         .args(args)
         .output()
         .expect("run pulsec")
@@ -56,12 +60,19 @@ fn replace_manifest_entry(project: &Path, entry: &str) {
     let manifest_path = project.join("pulsec.toml");
     let manifest = fs::read_to_string(&manifest_path)
         .expect("read manifest")
-        .replace("entry = \"app/main/Main.pulse\"", &format!("entry = \"{}\"", entry));
+        .replace(
+            "entry = \"app/main/Main.pulse\"",
+            &format!("entry = \"{}\"", entry),
+        );
     fs::write(&manifest_path, manifest).expect("write manifest");
 }
 
 fn write_resource_file(project: &Path, relative: &str, content: &str) {
-    let path = project.join("src").join("main").join("resources").join(relative);
+    let path = project
+        .join("src")
+        .join("main")
+        .join("resources")
+        .join(relative);
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).expect("create resource dir");
     }
@@ -72,7 +83,10 @@ fn set_manifest_output_mode(project: &Path, mode: &str) {
     let manifest_path = project.join("pulsec.toml");
     let manifest = fs::read_to_string(&manifest_path)
         .expect("read manifest")
-        .replace("output_mode = \"fat\"", &format!("output_mode = \"{}\"", mode));
+        .replace(
+            "output_mode = \"fat\"",
+            &format!("output_mode = \"{}\"", mode),
+        );
     fs::write(&manifest_path, manifest).expect("write manifest");
 }
 
@@ -100,17 +114,23 @@ fn install_runtime_mix_fixture(project: &Path) {
     let test_root = project.join("src").join("test").join("pulse");
     let _ = fs::remove_dir_all(main_root.join("app").join("main"));
     copy_dir_recursive(
-        &fixture_root("runtime_mix").join("src").join("app").join("runtime"),
+        &fixture_root("runtime_mix")
+            .join("src")
+            .join("app")
+            .join("runtime"),
         &main_root.join("app").join("runtime"),
     );
     replace_manifest_entry(project, "app/runtime/Main.pulse");
-    let smoke = test_root.join("app").join("runtime").join("LifecycleSmokeTest.pulse");
+    let smoke = test_root
+        .join("app")
+        .join("runtime")
+        .join("LifecycleSmokeTest.pulse");
     if let Some(parent) = smoke.parent() {
         fs::create_dir_all(parent).expect("create test dir");
     }
     fs::write(
         smoke,
-        "package app.runtime.tests;\nimport static com.pulse.lang.IO.*;\nclass LifecycleSmokeTest { public static void main() { println(\"runtime_test_ok\"); } }\n",
+        "package app.runtime.tests;\nimport static pulse.lang.IO.*;\nclass LifecycleSmokeTest { public static void main() { println(\"runtime_test_ok\"); } }\n",
     )
     .expect("write smoke test");
 }
@@ -127,13 +147,16 @@ fn install_object_interface_mix_fixture(project: &Path) {
         &main_root.join("app").join("mixed"),
     );
     replace_manifest_entry(project, "app/mixed/Main.pulse");
-    let smoke = test_root.join("app").join("mixed").join("LifecycleSmokeTest.pulse");
+    let smoke = test_root
+        .join("app")
+        .join("mixed")
+        .join("LifecycleSmokeTest.pulse");
     if let Some(parent) = smoke.parent() {
         fs::create_dir_all(parent).expect("create test dir");
     }
     fs::write(
         smoke,
-        "package app.mixed.tests;\nimport com.pulse.lang.IO;\nclass LifecycleSmokeTest { public static void main() { IO.println(\"mixed_test_ok\"); } }\n",
+        "package app.mixed.tests;\nimport pulse.lang.IO;\nclass LifecycleSmokeTest { public static void main() { IO.println(\"mixed_test_ok\"); } }\n",
     )
     .expect("write smoke test");
 }
@@ -192,16 +215,28 @@ fn d5_02_cli_project_lifecycle_runs_end_to_end_on_real_fixture_project() {
     let release_dir = project.join("build").join("distro").join("release");
     assert!(exe.exists(), "missing exe '{}'", exe.display());
     assert!(
-        asm_dir.join("app").join("runtime").join("Main.asm").exists(),
+        asm_dir
+            .join("app")
+            .join("runtime")
+            .join("Main.asm")
+            .exists(),
         "missing asm copy '{}'",
-        asm_dir.join("app").join("runtime").join("Main.asm").display()
+        asm_dir
+            .join("app")
+            .join("runtime")
+            .join("Main.asm")
+            .display()
     );
     assert!(
         !asm_dir.join("pulsec.ir.txt").exists(),
         "ir should not be copied into asm dir"
     );
     assert!(
-        generated_dir.join("app").join("runtime").join("Main.obj").exists(),
+        generated_dir
+            .join("app")
+            .join("runtime")
+            .join("Main.obj")
+            .exists(),
         "missing generated obj '{}'",
         generated_dir
             .join("app")
@@ -210,7 +245,11 @@ fn d5_02_cli_project_lifecycle_runs_end_to_end_on_real_fixture_project() {
             .display()
     );
     assert!(
-        !generated_dir.join("app").join("runtime").join("Main.asm").exists(),
+        !generated_dir
+            .join("app")
+            .join("runtime")
+            .join("Main.asm")
+            .exists(),
         "asm should not be copied into generated dir"
     );
     assert!(
@@ -243,15 +282,21 @@ fn d5_02_cli_project_lifecycle_runs_end_to_end_on_real_fixture_project() {
         "release dir should not publish build config diagnostics"
     );
     assert!(
-        !release_dir.join("runtime_lifecycle-0.1.0-native.link.txt").exists(),
+        !release_dir
+            .join("runtime_lifecycle-0.1.0-native.link.txt")
+            .exists(),
         "release dir should not publish link diagnostics"
     );
     assert!(
-        !release_dir.join("runtime_lifecycle-0.1.0-native.plan.json").exists(),
+        !release_dir
+            .join("runtime_lifecycle-0.1.0-native.plan.json")
+            .exists(),
         "release dir should not publish native plan diagnostics"
     );
     assert!(
-        !release_dir.join("runtime_lifecycle-0.1.0-pulsec.ir.txt").exists(),
+        !release_dir
+            .join("runtime_lifecycle-0.1.0-pulsec.ir.txt")
+            .exists(),
         "release dir should not publish ir diagnostics"
     );
     assert!(
@@ -272,48 +317,6 @@ fn d5_02_cli_project_lifecycle_runs_end_to_end_on_real_fixture_project() {
     let test_stdout = norm(&test.stdout);
     assert!(test_stdout.contains("Test discovery:"));
     assert!(test_stdout.contains("passed=1 failed=0 total=1"));
-
-    let package = run_pulsec(&["package", "--project-root", project.to_str().expect("utf8")]);
-    assert!(
-        package.status.success(),
-        "package should succeed\nstdout:\n{}\nstderr:\n{}",
-        norm(&package.stdout),
-        norm(&package.stderr)
-    );
-    let package_stdout = norm(&package.stdout);
-    assert!(package_stdout.contains("Package summary: mode=staged status=ready"));
-    assert!(package_stdout.contains("Signing: status=unsigned"));
-    let staged_exe = project
-        .join("build")
-        .join("staging")
-        .join("bin")
-        .join("runtime_lifecycle-0.1.0.exe");
-    let staged_assets = project.join("build").join("staging").join("assets");
-    let package_report = project
-        .join("build")
-        .join("distro")
-        .join("package")
-        .join("package.report.txt");
-    assert!(staged_exe.exists(), "missing staged exe '{}'", staged_exe.display());
-    assert!(
-        staged_assets.join("payload.txt").exists(),
-        "expected staged asset file at '{}'",
-        staged_assets.join("payload.txt").display()
-    );
-    assert!(
-        staged_assets.join("images").join("icon.txt").exists(),
-        "expected staged asset file at '{}'",
-        staged_assets.join("images").join("icon.txt").display()
-    );
-    assert!(
-        !staged_assets.join("resources").exists(),
-        "assets dir should not wrap contents in a resources folder"
-    );
-    assert!(package_report.exists(), "missing package report '{}'", package_report.display());
-    let report = fs::read_to_string(package_report).expect("read package report");
-    assert!(report.contains("mode=staged"));
-    assert!(report.contains("status=ready"));
-    assert!(report.contains("signing_status=unsigned"));
 }
 
 #[test]
@@ -354,8 +357,15 @@ fn e1_11_shared_profile_build_publishes_bin_lib_and_metadata_layout() {
     let release_exe = release_bin.join("shared_layout-0.1.0.exe");
     let release_launch = release_bin.join("launch.txt");
     assert!(release_bin.exists(), "missing shared release bin dir");
-    assert!(release_exe.exists(), "missing shared release exe '{}'", release_exe.display());
-    assert!(release_launch.exists(), "missing shared release launch metadata");
+    assert!(
+        release_exe.exists(),
+        "missing shared release exe '{}'",
+        release_exe.display()
+    );
+    assert!(
+        release_launch.exists(),
+        "missing shared release launch metadata"
+    );
     assert!(
         release_bin.join("payload.txt").exists(),
         "missing shared release payload '{}' ",
@@ -372,11 +382,15 @@ fn e1_11_shared_profile_build_publishes_bin_lib_and_metadata_layout() {
     );
     let version = env!("CARGO_PKG_VERSION");
     assert!(
-        release_bin.join(format!("pulsecore-{version}.dll")).exists(),
+        release_bin
+            .join(format!("pulsecore-{version}.dll"))
+            .exists(),
         "missing shared release runtime library"
     );
     assert!(
-        release_bin.join(format!("pulsecore-{version}.lib")).exists(),
+        release_bin
+            .join(format!("pulsecore-{version}.lib"))
+            .exists(),
         "missing shared release import library"
     );
     let release_launch_text = norm(&fs::read(release_launch).expect("read shared release launch"));
@@ -392,13 +406,17 @@ fn e1_11_shared_profile_build_publishes_bin_lib_and_metadata_layout() {
     assert!(release_launch_text.contains("missing_runtime_policy=deterministic-fail-fast"));
     assert!(release_launch_text.contains("missing_import_policy=deterministic-fail-fast"));
     assert!(release_launch_text.contains("runtime_abi_mismatch_message=Runtime ABI mismatch"));
-    assert!(release_launch_text.contains("object_model_abi_mismatch_message=Object model ABI mismatch"));
+    assert!(
+        release_launch_text.contains("object_model_abi_mismatch_message=Object model ABI mismatch")
+    );
     assert!(release_launch_text.contains("required_runtime_imports=pulsec_rt_init"));
     assert!(release_launch_text.contains("runtime_library=pulsecore-"));
     assert!(release_launch_text.contains(".dll"));
     assert!(release_launch_text.contains("runtime_import_library=pulsecore-"));
     assert!(release_launch_text.contains(".lib"));
-    let release_run = Command::new(&release_exe).output().expect("run shared release exe");
+    let release_run = Command::new(&release_exe)
+        .output()
+        .expect("run shared release exe");
     assert!(release_run.status.success(), "shared release exe failed");
     assert_eq!(norm(&release_run.stdout), "runtime_mix_ok\n");
 
@@ -423,8 +441,15 @@ fn e1_11_shared_profile_build_publishes_bin_lib_and_metadata_layout() {
     let debug_launch = debug_bin.join("launch.txt");
     assert!(debug_bin.exists(), "missing shared debug bin dir");
     assert!(debug_metadata.exists(), "missing shared debug metadata dir");
-    assert!(debug_exe.exists(), "missing shared debug exe '{}'", debug_exe.display());
-    assert!(debug_launch.exists(), "missing shared debug launch metadata");
+    assert!(
+        debug_exe.exists(),
+        "missing shared debug exe '{}'",
+        debug_exe.display()
+    );
+    assert!(
+        debug_launch.exists(),
+        "missing shared debug launch metadata"
+    );
     assert!(
         debug_bin.join("payload.txt").exists(),
         "missing shared debug payload"
@@ -462,7 +487,9 @@ fn e1_11_shared_profile_build_publishes_bin_lib_and_metadata_layout() {
     assert!(debug_launch_text.contains("schema=pulsec.shared.launch.v1"));
     assert!(debug_launch_text.contains("runtime_library=pulsecore-"));
     assert!(debug_launch_text.contains("runtime_import_library=pulsecore-"));
-    let debug_run = Command::new(&debug_exe).output().expect("run shared debug exe");
+    let debug_run = Command::new(&debug_exe)
+        .output()
+        .expect("run shared debug exe");
     assert!(debug_run.status.success(), "shared debug exe failed");
     assert_eq!(norm(&debug_run.stdout), "runtime_mix_ok\n");
 }
@@ -492,10 +519,16 @@ fn e1_13_shared_profile_debug_release_publication_rules_are_locked() {
     set_manifest_output_mode(&project, "shared");
 
     let release_build = run_pulsec(&["build", "--project-root", project.to_str().expect("utf8")]);
-    assert!(release_build.status.success(), "shared release build should succeed");
+    assert!(
+        release_build.status.success(),
+        "shared release build should succeed"
+    );
 
     let release_dir = project.join("build").join("distro").join("release");
-    assert!(release_dir.join("bin").exists(), "missing shared release bin dir");
+    assert!(
+        release_dir.join("bin").exists(),
+        "missing shared release bin dir"
+    );
     assert!(
         !release_dir.join("metadata").exists(),
         "shared release must not publish debug metadata dir"
@@ -522,11 +555,17 @@ fn e1_13_shared_profile_debug_release_publication_rules_are_locked() {
         "--profile",
         "debug",
     ]);
-    assert!(debug_build.status.success(), "shared debug build should succeed");
+    assert!(
+        debug_build.status.success(),
+        "shared debug build should succeed"
+    );
 
     let debug_dir = project.join("build").join("distro").join("debug");
     let debug_metadata = debug_dir.join("metadata");
-    assert!(debug_dir.join("bin").exists(), "missing shared debug bin dir");
+    assert!(
+        debug_dir.join("bin").exists(),
+        "missing shared debug bin dir"
+    );
     assert!(debug_metadata.exists(), "missing shared debug metadata dir");
     for file in [
         "shared_profile_rules-0.1.0-build.config.plan.json",
@@ -542,7 +581,9 @@ fn e1_13_shared_profile_debug_release_publication_rules_are_locked() {
         );
     }
     assert!(
-        !debug_dir.join("shared_profile_rules-0.1.0-build.config.plan.json").exists(),
+        !debug_dir
+            .join("shared_profile_rules-0.1.0-build.config.plan.json")
+            .exists(),
         "shared debug metadata must stay under metadata/"
     );
     assert_no_pdb_files(&debug_dir);
@@ -560,7 +601,10 @@ fn e3_07_debug_release_behavior_and_developer_visible_outputs_are_locked_for_fat
         "--path",
         root.to_str().expect("root utf8"),
     ]);
-    assert!(fat_new.status.success(), "fat project scaffold should succeed");
+    assert!(
+        fat_new.status.success(),
+        "fat project scaffold should succeed"
+    );
     let fat_project = root.join("fat_profile_parity");
     install_runtime_mix_fixture(&fat_project);
     write_resource_file(&fat_project, "payload.txt", "payload");
@@ -573,14 +617,24 @@ fn e3_07_debug_release_behavior_and_developer_visible_outputs_are_locked_for_fat
         "--path",
         root.to_str().expect("root utf8"),
     ]);
-    assert!(shared_new.status.success(), "shared project scaffold should succeed");
+    assert!(
+        shared_new.status.success(),
+        "shared project scaffold should succeed"
+    );
     let shared_project = root.join("shared_profile_parity");
     install_runtime_mix_fixture(&shared_project);
     write_resource_file(&shared_project, "payload.txt", "payload");
     set_manifest_output_mode(&shared_project, "shared");
 
-    let fat_release = run_pulsec(&["build", "--project-root", fat_project.to_str().expect("utf8")]);
-    assert!(fat_release.status.success(), "fat release build should succeed");
+    let fat_release = run_pulsec(&[
+        "build",
+        "--project-root",
+        fat_project.to_str().expect("utf8"),
+    ]);
+    assert!(
+        fat_release.status.success(),
+        "fat release build should succeed"
+    );
     let fat_release_exe = fat_project
         .join("build")
         .join("distro")
@@ -588,13 +642,24 @@ fn e3_07_debug_release_behavior_and_developer_visible_outputs_are_locked_for_fat
         .join("fat_profile_parity-0.1.0.exe");
     assert!(fat_release_exe.exists(), "missing fat release exe");
     assert_eq!(
-        norm(&Command::new(&fat_release_exe).output().expect("run fat release exe").stdout),
+        norm(
+            &Command::new(&fat_release_exe)
+                .output()
+                .expect("run fat release exe")
+                .stdout
+        ),
         "runtime_mix_ok\n"
     );
     let fat_release_dir = fat_project.join("build").join("distro").join("release");
-    assert!(!fat_release_dir.join("fat_profile_parity-0.1.0-native.link.txt").exists());
-    assert!(!fat_release_dir.join("fat_profile_parity-0.1.0-native.plan.json").exists());
-    assert!(!fat_release_dir.join("fat_profile_parity-0.1.0-pulsec.ir.txt").exists());
+    assert!(!fat_release_dir
+        .join("fat_profile_parity-0.1.0-native.link.txt")
+        .exists());
+    assert!(!fat_release_dir
+        .join("fat_profile_parity-0.1.0-native.plan.json")
+        .exists());
+    assert!(!fat_release_dir
+        .join("fat_profile_parity-0.1.0-pulsec.ir.txt")
+        .exists());
     assert!(!fat_release_dir.join("stamp.txt").exists());
 
     let fat_debug = run_pulsec(&[
@@ -609,7 +674,12 @@ fn e3_07_debug_release_behavior_and_developer_visible_outputs_are_locked_for_fat
     let fat_debug_exe = fat_debug_dir.join("fat_profile_parity-0.1.0.exe");
     assert!(fat_debug_exe.exists(), "missing fat debug exe");
     assert_eq!(
-        norm(&Command::new(&fat_debug_exe).output().expect("run fat debug exe").stdout),
+        norm(
+            &Command::new(&fat_debug_exe)
+                .output()
+                .expect("run fat debug exe")
+                .stdout
+        ),
         "runtime_mix_ok\n"
     );
     for file in [
@@ -619,19 +689,33 @@ fn e3_07_debug_release_behavior_and_developer_visible_outputs_are_locked_for_fat
         "fat_profile_parity-0.1.0-pulsec.ir.txt",
         "stamp.txt",
     ] {
-        assert!(fat_debug_dir.join(file).exists(), "missing fat debug diagnostic '{file}'");
+        assert!(
+            fat_debug_dir.join(file).exists(),
+            "missing fat debug diagnostic '{file}'"
+        );
     }
 
-    let shared_release =
-        run_pulsec(&["build", "--project-root", shared_project.to_str().expect("utf8")]);
-    assert!(shared_release.status.success(), "shared release build should succeed");
+    let shared_release = run_pulsec(&[
+        "build",
+        "--project-root",
+        shared_project.to_str().expect("utf8"),
+    ]);
+    assert!(
+        shared_release.status.success(),
+        "shared release build should succeed"
+    );
     let shared_release_dir = shared_project.join("build").join("distro").join("release");
     let shared_release_exe = shared_release_dir
         .join("bin")
         .join("shared_profile_parity-0.1.0.exe");
     assert!(shared_release_exe.exists(), "missing shared release exe");
     assert_eq!(
-        norm(&Command::new(&shared_release_exe).output().expect("run shared release exe").stdout),
+        norm(
+            &Command::new(&shared_release_exe)
+                .output()
+                .expect("run shared release exe")
+                .stdout
+        ),
         "runtime_mix_ok\n"
     );
     assert!(shared_release_dir.join("bin").join("payload.txt").exists());
@@ -644,14 +728,22 @@ fn e3_07_debug_release_behavior_and_developer_visible_outputs_are_locked_for_fat
         "--profile",
         "debug",
     ]);
-    assert!(shared_debug.status.success(), "shared debug build should succeed");
+    assert!(
+        shared_debug.status.success(),
+        "shared debug build should succeed"
+    );
     let shared_debug_dir = shared_project.join("build").join("distro").join("debug");
     let shared_debug_exe = shared_debug_dir
         .join("bin")
         .join("shared_profile_parity-0.1.0.exe");
     assert!(shared_debug_exe.exists(), "missing shared debug exe");
     assert_eq!(
-        norm(&Command::new(&shared_debug_exe).output().expect("run shared debug exe").stdout),
+        norm(
+            &Command::new(&shared_debug_exe)
+                .output()
+                .expect("run shared debug exe")
+                .stdout
+        ),
         "runtime_mix_ok\n"
     );
     let shared_metadata = shared_debug_dir.join("metadata");
@@ -684,7 +776,10 @@ fn d5_02_cli_workspace_lifecycle_runs_on_real_fixture_members() {
         "--path",
         workspace_root.to_str().expect("workspace utf8"),
     ]);
-    assert!(runtime_new.status.success(), "runtime app scaffold must succeed");
+    assert!(
+        runtime_new.status.success(),
+        "runtime app scaffold must succeed"
+    );
     let battle_new = run_pulsec(&[
         "new",
         "battle_app",
@@ -693,7 +788,10 @@ fn d5_02_cli_workspace_lifecycle_runs_on_real_fixture_members() {
         "--path",
         workspace_root.to_str().expect("workspace utf8"),
     ]);
-    assert!(battle_new.status.success(), "battle app scaffold must succeed");
+    assert!(
+        battle_new.status.success(),
+        "battle app scaffold must succeed"
+    );
 
     install_runtime_mix_fixture(&workspace_root.join("runtime_app"));
     install_object_interface_mix_fixture(&workspace_root.join("battle_app"));
@@ -753,39 +851,6 @@ fn d5_02_cli_workspace_lifecycle_runs_on_real_fixture_members() {
     assert!(test_stdout.contains("runtime_app"));
     assert!(test_stdout.contains("battle_app"));
     assert!(test_stdout.contains("passed=2 failed=0 total=2"));
-
-    let package = run_pulsec(&[
-        "package",
-        "--project-root",
-        workspace_root.to_str().expect("workspace utf8"),
-    ]);
-    assert!(
-        package.status.success(),
-        "workspace package should succeed\nstdout:\n{}\nstderr:\n{}",
-        norm(&package.stdout),
-        norm(&package.stderr)
-    );
-    let package_stdout = norm(&package.stdout);
-    assert!(package_stdout.contains("Workspace package:"));
-    assert!(package_stdout.contains("runtime_app"));
-    assert!(package_stdout.contains("battle_app"));
-    assert!(package_stdout.contains("failed=0 total=2"));
-    assert!(
-        workspace_root
-            .join("runtime_app")
-            .join("build")
-            .join("distro")
-            .join("package")
-            .join("package.report.txt")
-            .exists()
-    );
-    assert!(
-        workspace_root
-            .join("battle_app")
-            .join("build")
-            .join("distro")
-            .join("package")
-            .join("package.report.txt")
-            .exists()
-    );
 }
+
+

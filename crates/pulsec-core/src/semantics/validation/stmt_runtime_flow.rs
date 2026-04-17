@@ -51,13 +51,13 @@ pub(super) fn validate_foreach_stmt(
 
     let native_array_baseline = iterable_ty.ty.ends_with("[]");
     let array_baseline =
-        types_compatible("com.pulse.collections.Array", &iterable_ty.ty, class_index);
+        types_compatible("pulse.collections.Array", &iterable_ty.ty, class_index);
     let iterable_baseline =
-        types_compatible("com.pulse.lang.Iterable", &iterable_ty.ty, class_index);
+        types_compatible("pulse.lang.Iterable", &iterable_ty.ty, class_index);
 
     if !native_array_baseline && !array_baseline && !iterable_baseline {
         return Err(semantic_error(format!(
-            "Foreach source in '{}.{}' must be a native array, com.pulse.lang.Iterable, or com.pulse.collections.Array, got '{}'",
+            "Foreach source in '{}.{}' must be a native array, pulse.lang.Iterable, or pulse.collections.Array, got '{}'",
             class.name, method.name, iterable_ty.ty
         )));
     }
@@ -70,10 +70,10 @@ pub(super) fn validate_foreach_stmt(
                 .unwrap_or(&iterable_ty.ty)
                 .to_string()
         } else if iterable_baseline {
-            "com.pulse.lang.Object".to_string()
+            "pulse.lang.Object".to_string()
         } else {
             return Err(semantic_error(format!(
-                "Foreach local variable inference in '{}.{}' is currently supported for native arrays and com.pulse.lang.Iterable, got '{}'",
+                "Foreach local variable inference in '{}.{}' is currently supported for native arrays and pulse.lang.Iterable, got '{}'",
                 class.name, method.name, iterable_ty.ty
             )));
         }
@@ -95,16 +95,23 @@ pub(super) fn validate_foreach_stmt(
         }
     }
 
-    if array_baseline && inferred_ty != "int" && !is_string_type(&inferred_ty) {
+    if array_baseline
+        && !iterable_baseline
+        && inferred_ty != "int"
+        && !is_string_type(&inferred_ty)
+    {
         return Err(semantic_error(format!(
-            "Foreach over com.pulse.collections.Array currently supports loop variables of type 'int' or 'String', got '{}'",
+            "Foreach over pulse.collections.Array currently supports loop variables of type 'int' or 'String', got '{}'",
             inferred_ty
         )));
     }
 
-    if iterable_baseline && !types_compatible(&inferred_ty, "com.pulse.lang.Object", class_index) {
+    if iterable_baseline
+        && !array_baseline
+        && !types_compatible(&inferred_ty, "pulse.lang.Object", class_index)
+    {
         return Err(semantic_error(format!(
-            "Foreach over com.pulse.lang.Iterable currently requires loop variable type 'Object' (or an assignable supertype), got '{}'",
+            "Foreach over pulse.lang.Iterable currently requires loop variable type 'Object' (or an assignable supertype), got '{}'",
             inferred_ty
         )));
     }
@@ -480,7 +487,7 @@ pub(super) fn validate_throw_stmt(
     }
 
     validate_assignable(
-        "com.pulse.lang.Throwable",
+        "pulse.lang.Throwable",
         &thrown.ty,
         Some(expr),
         &format!("throw operand in '{}.{}'", class.name, method.name),
@@ -493,12 +500,12 @@ pub(super) fn validate_throw_stmt(
             "Throw operand in '{}.{}' cannot be null in the current F1 baseline",
             class.name, method.name
         ))),
-        Expr::Var(name) if matches!(null_state.get(name), Some(NullState::Null)) => Err(
-            semantic_error(format!(
+        Expr::Var(name) if matches!(null_state.get(name), Some(NullState::Null)) => {
+            Err(semantic_error(format!(
                 "Throw operand '{}' in '{}.{}' is definitely null in the current F1 baseline",
                 name, class.name, method.name
-            )),
-        ),
+            )))
+        }
         _ => Ok(true),
     }
 }

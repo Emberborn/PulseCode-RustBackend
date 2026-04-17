@@ -1,35 +1,36 @@
 mod build;
-mod config;
 mod command_line;
+pub(crate) mod config;
 mod manifest;
 mod output;
-mod package;
 mod project;
+pub(crate) mod target_model;
 mod testing;
 
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{HashMap, HashSet},
     env, fs,
     path::{Path, PathBuf, MAIN_SEPARATOR},
     process,
 };
 
-use pulsec_core::{
-    analyze_with_class_contexts, lower_to_ir_with_contexts, ClassContext, ImportDecl,
-    IrProgram, Program,
-};
-use crate::backend::{BackendAdapter, BackendArtifact, NoopNativeBackend};
 use self::build::*;
-use self::config::*;
 use self::command_line::{new_template_name, parse_command, parse_flags, parse_new_flags};
+use self::config::*;
 use self::manifest::*;
 use self::output::{
     emit_error, emit_hint, print_build_usage, print_check_usage, print_help, print_new_usage,
-    print_package_usage, print_test_usage, print_version,
+    print_test_usage, print_version,
 };
-use self::package::*;
 use self::project::*;
 use self::testing::*;
+use crate::backend::{
+    resolve_plan_target_adapter_metadata, BackendAdapter, BackendArtifact, RustHostBootstrapBackend,
+};
+use pulsec_core::{
+    analyze_with_class_contexts, lower_to_ir_with_contexts, ClassContext, ImportDecl, IrProgram,
+    Program,
+};
 
 const EXIT_OK: i32 = 0;
 const EXIT_COMMAND_FAILURE: i32 = 1;
@@ -42,7 +43,6 @@ const DIAG_COMMAND: &str = "PULSEC:E_COMMAND";
 const DIAG_CHECK: &str = "PULSEC:E_CHECK_FAILED";
 const DIAG_BUILD: &str = "PULSEC:E_BUILD_FAILED";
 const DIAG_TEST: &str = "PULSEC:E_TEST_FAILED";
-const DIAG_PACKAGE: &str = "PULSEC:E_PACKAGE_FAILED";
 #[allow(dead_code)]
 const DIAG_NOT_IMPLEMENTED: &str = "PULSEC:E_NOT_IMPLEMENTED";
 
@@ -52,7 +52,7 @@ enum CliCommand {
     Check,
     Build,
     Test,
-    Package,
+    PrewarmAuthorBuildBridge,
     Help,
     Version,
 }
@@ -99,8 +99,21 @@ pub(crate) fn run() {
 
     let command_args = &args[2..];
     match command {
+        CliCommand::PrewarmAuthorBuildBridge => match prewarm_author_build_bridge_runner() {
+            Ok(path) => {
+                println!("Author build bridge ready: {}", path.display());
+                process::exit(EXIT_OK);
+            }
+            Err(err) => {
+                emit_error(DIAG_COMMAND, &format!("Author build bridge prewarm failed: {err}"));
+                process::exit(EXIT_COMMAND_FAILURE);
+            }
+        },
         CliCommand::New => {
-            if command_args.iter().any(|arg| arg == "--help" || arg == "-h") {
+            if command_args
+                .iter()
+                .any(|arg| arg == "--help" || arg == "-h")
+            {
                 print_new_usage(false);
                 process::exit(EXIT_OK);
             }
@@ -137,7 +150,10 @@ pub(crate) fn run() {
             }
         }
         CliCommand::Check => {
-            if command_args.iter().any(|arg| arg == "--help" || arg == "-h") {
+            if command_args
+                .iter()
+                .any(|arg| arg == "--help" || arg == "-h")
+            {
                 print_check_usage(false);
                 process::exit(EXIT_OK);
             }
@@ -183,7 +199,12 @@ pub(crate) fn run() {
                             continue;
                         }
                     };
-                    match check_project(&resolved.entry_path, resolved.source_root.as_deref(), strict) {
+                    match check_project_with_authorlib(
+                        &resolved.entry_path,
+                        resolved.source_root.as_deref(),
+                        strict,
+                        resolved.authorlib_enabled,
+                    ) {
                         Ok(result) => {
                             passed += 1;
                             println!(
@@ -207,7 +228,9 @@ pub(crate) fn run() {
                 );
                 if failed > 0 {
                     emit_error(DIAG_CHECK, "one or more workspace members failed check");
-                    emit_hint("inspect [FAIL] lines and re-run on the failing member with --project-root");
+                    emit_hint(
+                        "inspect [FAIL] lines and re-run on the failing member with --project-root",
+                    );
                     process::exit(EXIT_COMMAND_FAILURE);
                 }
                 process::exit(EXIT_OK);
@@ -223,10 +246,11 @@ pub(crate) fn run() {
             };
             let strict = cli_flags.strict_package && !cli_flags.friendly;
             let mode_label = if strict { "strict" } else { "friendly" };
-            match check_project(
+            match check_project_with_authorlib(
                 &resolved.entry_path,
                 resolved.source_root.as_deref(),
                 strict,
+                resolved.authorlib_enabled,
             ) {
                 Ok(result) => {
                     println!(
@@ -245,10 +269,7 @@ pub(crate) fn run() {
                             "direct"
                         },
                         resolved.entry_path,
-                        resolved
-                            .source_root
-                            .as_deref()
-                            .unwrap_or("<none>")
+                        resolved.source_root.as_deref().unwrap_or("<none>")
                     );
                 }
                 Err(err) => {
@@ -256,19 +277,21 @@ pub(crate) fn run() {
                         "Check FAILED: mode={} entry={} source_root={}",
                         mode_label,
                         resolved.entry_path,
-                        resolved
-                            .source_root
-                            .as_deref()
-                            .unwrap_or("<none>")
+                        resolved.source_root.as_deref().unwrap_or("<none>")
                     );
                     emit_error(DIAG_CHECK, &format!("Compile error: {err}"));
-                    emit_hint("re-run with '--friendly' for layout warnings or inspect imports/packages");
+                    emit_hint(
+                        "re-run with '--friendly' for layout warnings or inspect imports/packages",
+                    );
                     process::exit(EXIT_COMMAND_FAILURE);
                 }
             }
         }
         CliCommand::Build => {
-            if command_args.iter().any(|arg| arg == "--help" || arg == "-h") {
+            if command_args
+                .iter()
+                .any(|arg| arg == "--help" || arg == "-h")
+            {
                 print_build_usage(false);
                 process::exit(EXIT_OK);
             }
@@ -320,17 +343,6 @@ pub(crate) fn run() {
                     };
                     println!("[PASS] {}", member_root.display());
                     print_build_summary(&build);
-                    if cli_flags.msi {
-                        match run_package_pipeline(&build, &member_flags, true) {
-                            Ok(report) => {
-                                print_package_summary(&report);
-                            }
-                            Err(PackageError::Failed(message)) => {
-                                failed += 1;
-                                eprintln!("[FAIL] {} :: {}", member_root.display(), message);
-                            }
-                        }
-                    }
                 }
                 println!(
                     "Workspace build summary: failed={} total={}",
@@ -339,7 +351,9 @@ pub(crate) fn run() {
                 );
                 if failed > 0 {
                     emit_error(DIAG_BUILD, "one or more workspace members failed build");
-                    emit_hint("inspect [FAIL] lines and re-run on the failing member with --project-root");
+                    emit_hint(
+                        "inspect [FAIL] lines and re-run on the failing member with --project-root",
+                    );
                     process::exit(EXIT_COMMAND_FAILURE);
                 }
                 process::exit(EXIT_OK);
@@ -362,21 +376,12 @@ pub(crate) fn run() {
                 }
             };
             print_build_summary(&build);
-            if cli_flags.msi {
-                match run_package_pipeline(&build, &cli_flags, true) {
-                    Ok(report) => {
-                        print_package_summary(&report);
-                    }
-                    Err(PackageError::Failed(message)) => {
-                        emit_error(DIAG_PACKAGE, &format!("Package error: {message}"));
-                        emit_hint("re-run package with '--staging-dir <dir>' to verify filesystem permissions");
-                        process::exit(EXIT_COMMAND_FAILURE);
-                    }
-                }
-            }
         }
         CliCommand::Test => {
-            if command_args.iter().any(|arg| arg == "--help" || arg == "-h") {
+            if command_args
+                .iter()
+                .any(|arg| arg == "--help" || arg == "-h")
+            {
                 print_test_usage(false);
                 process::exit(EXIT_OK);
             }
@@ -449,10 +454,11 @@ pub(crate) fn run() {
                     for test_file in &tests {
                         total += 1;
                         let display_name = display_test_name(&invocation.tests_root, test_file);
-                        match check_project(
+                        match check_project_with_authorlib(
                             &test_file.display().to_string(),
                             Some(&invocation.source_root.display().to_string()),
                             strict,
+                            invocation.authorlib_enabled,
                         ) {
                             Ok(_) => {
                                 passed += 1;
@@ -460,7 +466,12 @@ pub(crate) fn run() {
                             }
                             Err(err) => {
                                 failed += 1;
-                                eprintln!("[FAIL] {}::{} :: {}", member_root.display(), display_name, err);
+                                eprintln!(
+                                    "[FAIL] {}::{} :: {}",
+                                    member_root.display(),
+                                    display_name,
+                                    err
+                                );
                             }
                         }
                     }
@@ -522,10 +533,11 @@ pub(crate) fn run() {
             let mut failed = 0usize;
             for test_file in &tests {
                 let display_name = display_test_name(&invocation.tests_root, test_file);
-                match check_project(
+                match check_project_with_authorlib(
                     &test_file.display().to_string(),
                     Some(&invocation.source_root.display().to_string()),
                     strict,
+                    invocation.authorlib_enabled,
                 ) {
                     Ok(_) => {
                         passed += 1;
@@ -550,114 +562,17 @@ pub(crate) fn run() {
                 process::exit(EXIT_COMMAND_FAILURE);
             }
         }
-        CliCommand::Package => {
-            if command_args.iter().any(|arg| arg == "--help" || arg == "-h") {
-                print_package_usage(false);
-                process::exit(EXIT_OK);
-            }
-            let (entry_arg, flag_args) = split_optional_entry_arg(command_args);
-            let cli_flags = match parse_flags(CliCommand::Package, flag_args) {
-                Ok(flags) => flags,
-                Err(msg) => {
-                    emit_error(DIAG_USAGE, &msg);
-                    emit_hint("run 'pulsec package --help' to see accepted flags");
-                    print_package_usage(true);
-                    process::exit(EXIT_USAGE_ERROR);
-                }
-            };
-            let workspace = match resolve_workspace_context(entry_arg, &cli_flags) {
-                Ok(workspace) => workspace,
-                Err(msg) => {
-                    emit_error(DIAG_USAGE, &msg);
-                    emit_hint("fix [workspace].members paths or run against a member project root");
-                    print_package_usage(true);
-                    process::exit(EXIT_USAGE_ERROR);
-                }
-            };
-            if let Some(workspace) = workspace {
-                let mut failed = 0usize;
-                println!(
-                    "Workspace package: root={} members={}",
-                    workspace.root.display(),
-                    workspace.member_roots.len()
-                );
-                for member_root in &workspace.member_roots {
-                    let mut member_flags = cli_flags.clone();
-                    member_flags.project_root = Some(member_root.display().to_string());
-                    member_flags.source_root = None;
-                    let resolved = match resolve_build_invocation(None, &member_flags) {
-                        Ok(config) => config,
-                        Err(err) => {
-                            failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), err);
-                            continue;
-                        }
-                    };
-                    let build = match execute_build_pipeline(&resolved, &member_flags) {
-                        Ok(build) => build,
-                        Err(err) => {
-                            failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), err);
-                            continue;
-                        }
-                    };
-                    match run_package_pipeline(&build, &member_flags, false) {
-                        Ok(report) => {
-                            println!("[PASS] {}", member_root.display());
-                            print_package_summary(&report);
-                        }
-                        Err(PackageError::Failed(message)) => {
-                            failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), message);
-                        }
-                    }
-                }
-                println!(
-                    "Workspace package summary: failed={} total={}",
-                    failed,
-                    workspace.member_roots.len()
-                );
-                if failed > 0 {
-                    emit_error(DIAG_PACKAGE, "one or more workspace members failed package");
-                    emit_hint("inspect [FAIL] lines and re-run on the failing member with --project-root");
-                    process::exit(EXIT_COMMAND_FAILURE);
-                }
-                process::exit(EXIT_OK);
-            }
-            let resolved = match resolve_build_invocation(entry_arg, &cli_flags) {
-                Ok(config) => config,
-                Err(msg) => {
-                    emit_error(DIAG_USAGE, &msg);
-                    emit_hint("provide <entry.pulse> or set [sources].entry in pulsec.toml");
-                    print_package_usage(true);
-                    process::exit(EXIT_USAGE_ERROR);
-                }
-            };
-            let build = match execute_build_pipeline(&resolved, &cli_flags) {
-                Ok(build) => build,
-                Err(err) => {
-                    emit_error(DIAG_PACKAGE, &format!("Compile error: {err}"));
-                    emit_hint("run 'pulsec check' before packaging to resolve compile issues");
-                    process::exit(EXIT_COMMAND_FAILURE);
-                }
-            };
-            match run_package_pipeline(&build, &cli_flags, false) {
-                Ok(report) => {
-                    print_package_summary(&report);
-                }
-                Err(PackageError::Failed(message)) => {
-                    emit_error(DIAG_PACKAGE, &format!("Package error: {message}"));
-                    emit_hint("check output directory permissions and retry");
-                    process::exit(EXIT_COMMAND_FAILURE);
-                }
-            }
-        }
         CliCommand::Help | CliCommand::Version => unreachable!("handled before dispatch"),
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::target_model::{
+        canonical_target_ids, cli_target_error_text, resolve_target_descriptor, TargetLaneKind,
+        TargetSupportLevel, LINUX_X64_TARGET_ID, MACOS_ARM64_TARGET_ID, PULSEOS_X64_TARGET_ID,
+        WINDOWS_X64_TARGET_ID,
+    };
     use super::*;
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -692,16 +607,11 @@ mod tests {
         assert_eq!(parsed.source_root.as_deref(), Some("src"));
         assert!(parsed.profile.is_none());
         assert!(parsed.target.is_none());
-        assert!(parsed.packaging_mode.is_none());
         assert!(parsed.runtime_debug_allocator.is_none());
         assert!(parsed.runtime_cycle_collector.is_none());
         assert!(parsed.out_dir.is_none());
-        assert!(!parsed.msi);
-        assert!(parsed.staging_dir.is_none());
         assert!(parsed.assembler.is_none());
         assert_eq!(parsed.linker.as_deref(), Some(r"C:\tools\link.exe"));
-        assert!(parsed.wix.is_none());
-        assert!(parsed.signtool.is_none());
     }
 
     #[test]
@@ -717,42 +627,27 @@ mod tests {
         let flags = vec!["--linker".to_string(), r"C:\tools\link.exe".to_string()];
         let err =
             parse_flags(CliCommand::Check, &flags).expect_err("check must reject linker override");
-        assert!(err.contains("--linker is only valid for 'build' or 'package'"));
+        assert!(err.contains("--linker is only valid for 'build'"));
     }
 
     #[test]
-    fn parse_flags_accepts_wix_path() {
-        let flags = vec!["--wix".to_string(), r"C:\Program Files\WiX Toolset v6.0\bin\wix.exe".to_string()];
-        let parsed = parse_flags(CliCommand::Package, &flags).expect("wix flag should parse");
-        assert_eq!(
-            parsed.wix.as_deref(),
-            Some(r"C:\Program Files\WiX Toolset v6.0\bin\wix.exe")
-        );
-    }
-
-    #[test]
-    fn parse_flags_rejects_wix_on_check() {
-        let flags = vec!["--wix".to_string(), r"C:\tools\wix.exe".to_string()];
-        let err = parse_flags(CliCommand::Check, &flags).expect_err("check must reject wix override");
-        assert!(err.contains("--wix is only valid for 'build' or 'package'"));
-    }
-
-    #[test]
-    fn parse_flags_accepts_signtool_path() {
-        let flags = vec!["--signtool".to_string(), r"C:\Program Files (x86)\Windows Kits\10\bin\signtool.exe".to_string()];
-        let parsed = parse_flags(CliCommand::Package, &flags).expect("signtool flag should parse");
-        assert_eq!(
-            parsed.signtool.as_deref(),
-            Some(r"C:\Program Files (x86)\Windows Kits\10\bin\signtool.exe")
-        );
-    }
-
-    #[test]
-    fn parse_flags_rejects_signtool_on_check() {
-        let flags = vec!["--signtool".to_string(), r"C:\tools\signtool.exe".to_string()];
-        let err =
-            parse_flags(CliCommand::Check, &flags).expect_err("check must reject signtool override");
-        assert!(err.contains("--signtool is only valid for 'build' or 'package'"));
+    fn parse_flags_build_rejects_removed_packaging_flags() {
+        for flag in [
+            "--packaging-mode",
+            "--msi",
+            "--staging-dir",
+            "--wix",
+            "--signtool",
+        ] {
+            let flags = if flag == "--msi" {
+                vec![flag.to_string()]
+            } else {
+                vec![flag.to_string(), "value".to_string()]
+            };
+            let err = parse_flags(CliCommand::Build, &flags)
+                .expect_err("removed packaging flag should fail");
+            assert!(err.contains(&format!("Unknown flag '{}'", flag)));
+        }
     }
 
     #[test]
@@ -785,9 +680,7 @@ mod tests {
             "--profile".to_string(),
             "release".to_string(),
             "--target".to_string(),
-            "native-x64".to_string(),
-            "--packaging-mode".to_string(),
-            "staged".to_string(),
+            "windows-x64".to_string(),
             "--output-mode".to_string(),
             "shared".to_string(),
             "--runtime-debug-allocator".to_string(),
@@ -801,13 +694,109 @@ mod tests {
         ];
         let parsed = parse_flags(CliCommand::Build, &flags).expect("build flags should parse");
         assert_eq!(parsed.profile.as_deref(), Some("release"));
-        assert_eq!(parsed.target.as_deref(), Some("native-x64"));
-        assert_eq!(parsed.packaging_mode.as_deref(), Some("staged"));
+        assert_eq!(parsed.target.as_deref(), Some("windows-x64"));
         assert_eq!(parsed.output_mode.as_deref(), Some("shared"));
         assert_eq!(parsed.runtime_debug_allocator.as_deref(), Some("on"));
         assert_eq!(parsed.runtime_cycle_collector.as_deref(), Some("off"));
         assert_eq!(parsed.assembler.as_deref(), Some(r"C:\tools\ml64.exe"));
         assert_eq!(parsed.out_dir.as_deref(), Some("out\\bin"));
+    }
+
+    #[test]
+    fn parse_flags_build_accepts_other_canonical_targets() {
+        let pulseos = parse_flags(
+            CliCommand::Build,
+            &["--target".to_string(), "pulseos-x64".to_string()],
+        )
+        .expect("pulseos target should parse");
+        assert_eq!(pulseos.target.as_deref(), Some("pulseos-x64"));
+
+        let linux = parse_flags(
+            CliCommand::Build,
+            &["--target".to_string(), "linux-x64".to_string()],
+        )
+        .expect("linux target should parse");
+        assert_eq!(linux.target.as_deref(), Some("linux-x64"));
+
+        let macos = parse_flags(
+            CliCommand::Build,
+            &["--target".to_string(), "macos-arm64".to_string()],
+        )
+        .expect("macos target should parse");
+        assert_eq!(macos.target.as_deref(), Some("macos-arm64"));
+    }
+
+    #[test]
+    fn parse_flags_build_rejects_removed_native_x64_alias() {
+        let err = parse_flags(
+            CliCommand::Build,
+            &["--target".to_string(), "native-x64".to_string()],
+        )
+        .expect_err("removed target alias should fail");
+        assert_eq!(
+            err,
+            format!("--target requires one of: {}", cli_target_error_text())
+        );
+    }
+
+    #[test]
+    fn parse_flags_build_rejects_unknown_target_with_taxonomy_message() {
+        let err = parse_flags(
+            CliCommand::Build,
+            &["--target".to_string(), "native-arm64".to_string()],
+        )
+        .expect_err("unknown target should fail");
+        assert_eq!(
+            err,
+            format!("--target requires one of: {}", cli_target_error_text())
+        );
+    }
+
+    #[test]
+    fn target_taxonomy_defines_immediate_and_later_target_ids() {
+        assert_eq!(
+            canonical_target_ids(),
+            &[
+                WINDOWS_X64_TARGET_ID,
+                PULSEOS_X64_TARGET_ID,
+                LINUX_X64_TARGET_ID,
+                MACOS_ARM64_TARGET_ID,
+            ]
+        );
+
+        let windows = resolve_target_descriptor(WINDOWS_X64_TARGET_ID).expect("windows target");
+        assert_eq!(windows.os_family, "windows");
+        assert_eq!(windows.arch, "x64");
+        assert_eq!(windows.support_level, TargetSupportLevel::Immediate);
+        assert_eq!(windows.lane_name, "windows-x64-host-bootstrap");
+        assert_eq!(windows.lane_kind, TargetLaneKind::HostBootstrap);
+
+        let pulseos = resolve_target_descriptor(PULSEOS_X64_TARGET_ID).expect("pulseos target");
+        assert_eq!(pulseos.os_family, "pulseos");
+        assert_eq!(pulseos.arch, "x64");
+        assert_eq!(pulseos.support_level, TargetSupportLevel::Immediate);
+        assert_eq!(pulseos.lane_name, "pulseos-x64-first-slice");
+        assert_eq!(pulseos.lane_kind, TargetLaneKind::FirstSliceContract);
+
+        let linux = resolve_target_descriptor(LINUX_X64_TARGET_ID).expect("linux target");
+        assert_eq!(linux.os_family, "linux");
+        assert_eq!(linux.arch, "x64");
+        assert_eq!(linux.support_level, TargetSupportLevel::Later);
+        assert_eq!(linux.lane_name, "linux-x64-planned");
+        assert_eq!(linux.lane_kind, TargetLaneKind::Planned);
+
+        let macos = resolve_target_descriptor(MACOS_ARM64_TARGET_ID).expect("macos target");
+        assert_eq!(macos.os_family, "macos");
+        assert_eq!(macos.arch, "arm64");
+        assert_eq!(macos.support_level, TargetSupportLevel::Later);
+        assert_eq!(macos.lane_name, "macos-arm64-planned");
+        assert_eq!(macos.lane_kind, TargetLaneKind::Planned);
+    }
+
+    #[test]
+    fn target_taxonomy_exposes_only_canonical_public_target_ids() {
+        assert!(resolve_target_descriptor("native-x64").is_none());
+        assert_eq!(canonical_target_ids().len(), 4);
     }
 
     #[test]
@@ -822,15 +811,8 @@ mod tests {
     }
 
     #[test]
-    fn parse_flags_package_accepts_msi_and_staging_dir() {
-        let flags = vec![
-            "--msi".to_string(),
-            "--staging-dir".to_string(),
-            "pkg_out".to_string(),
-        ];
-        let parsed = parse_flags(CliCommand::Package, &flags).expect("package flags should parse");
-        assert!(parsed.msi);
-        assert_eq!(parsed.staging_dir.as_deref(), Some("pkg_out"));
+    fn parse_command_rejects_removed_package_command() {
+        assert_eq!(parse_command("package"), None);
     }
 
     #[test]
@@ -879,8 +861,7 @@ mod tests {
 
             [build]
             profile = "release"
-            target = "native-x64"
-            packaging_mode = "staged"
+            target = "pulseos-x64"
             output_mode = "fat"
             output_entry = "main"
             runtime_debug_allocator = "on"
@@ -890,13 +871,6 @@ mod tests {
             [toolchain]
             linker = "C:/toolchain/link.exe"
             assembler = "C:/toolchain/ml64.exe"
-            wix = "C:/toolchain/wix.exe"
-            signtool = "C:/toolchain/signtool.exe"
-
-            [package.metadata]
-            publisher = "Pulse Labs"
-            channel = "stable"
-            signing_mode = "unsigned"
             "#,
         );
         let parsed = load_manifest_config(&manifest).expect("manifest should parse");
@@ -908,18 +882,11 @@ mod tests {
         assert_eq!(parsed.sources.test_pulse.as_deref(), Some("src/test/pulse"));
         assert_eq!(parsed.sources.entry.as_deref(), Some("app/main/Main.pulse"));
         assert_eq!(parsed.build.profile.as_deref(), Some("release"));
-        assert_eq!(parsed.build.target.as_deref(), Some("native-x64"));
-        assert_eq!(parsed.build.packaging_mode.as_deref(), Some("staged"));
+        assert_eq!(parsed.build.target.as_deref(), Some("pulseos-x64"));
         assert_eq!(parsed.build.output_mode.as_deref(), Some("fat"));
         assert_eq!(parsed.build.output_entry.as_deref(), Some("main"));
-        assert_eq!(
-            parsed.build.runtime_debug_allocator.as_deref(),
-            Some("on")
-        );
-        assert_eq!(
-            parsed.build.runtime_cycle_collector.as_deref(),
-            Some("off")
-        );
+        assert_eq!(parsed.build.runtime_debug_allocator.as_deref(), Some("on"));
+        assert_eq!(parsed.build.runtime_cycle_collector.as_deref(), Some("off"));
         assert_eq!(parsed.build.out_dir.as_deref(), Some("dist"));
         assert_eq!(
             parsed.toolchain.linker.as_deref(),
@@ -928,19 +895,6 @@ mod tests {
         assert_eq!(
             parsed.toolchain.assembler.as_deref(),
             Some("C:/toolchain/ml64.exe")
-        );
-        assert_eq!(parsed.toolchain.wix.as_deref(), Some("C:/toolchain/wix.exe"));
-        assert_eq!(
-            parsed.toolchain.signtool.as_deref(),
-            Some("C:/toolchain/signtool.exe")
-        );
-        assert_eq!(
-            package.metadata.get("publisher").map(|s| s.as_str()),
-            Some("Pulse Labs")
-        );
-        assert_eq!(
-            package.metadata.get("signing_mode").map(|s| s.as_str()),
-            Some("unsigned")
         );
         let _ = fs::remove_dir_all(root);
     }
@@ -1053,13 +1007,31 @@ mod tests {
             output_mode = "shared"
             "#,
         );
-        let err = load_manifest_config(&bad_output).expect_err("missing split output entry should fail");
-        assert!(err.contains("[build].output_entry is required when [build].output_mode is 'shared'"));
+        let err =
+            load_manifest_config(&bad_output).expect_err("missing split output entry should fail");
+        assert!(
+            err.contains("[build].output_entry is required when [build].output_mode is 'shared'")
+        );
+
+        let removed_alias = root.join("removed_alias.toml");
+        write_file(
+            &removed_alias,
+            r#"
+            [package]
+            name = "demo"
+            version = "1.0.0"
+
+            [build]
+            target = "native-x64"
+            "#,
+        );
+        let err = load_manifest_config(&removed_alias).expect_err("removed alias should fail");
+        assert!(err.contains("[build].target must be one of: windows-x64, pulseos-x64, linux-x64, macos-arm64"));
         let _ = fs::remove_dir_all(root);
     }
 
     #[test]
-    fn manifest_v1_rejects_invalid_signing_mode() {
+    fn manifest_v1_rejects_removed_package_metadata_section() {
         let root = unique_temp_root();
         let manifest = root.join("pulsec.toml");
         write_file(
@@ -1074,11 +1046,12 @@ mod tests {
             entry = "app/main/Main.pulse"
 
             [package.metadata]
-            signing_mode = "certmagic"
+            publisher = "Pulse Labs"
             "#,
         );
-        let err = load_manifest_config(&manifest).expect_err("invalid signing mode should fail");
-        assert!(err.contains("[package.metadata].signing_mode must be 'unsigned' or 'signtool'"));
+        let err =
+            load_manifest_config(&manifest).expect_err("package metadata section should fail");
+        assert!(err.contains("unknown section '[package.metadata]'"));
         let _ = fs::remove_dir_all(root);
     }
 
@@ -1150,7 +1123,9 @@ mod tests {
             true,
         );
         assert!(result.is_err());
-        assert!(result.expect_err("expected cycle").contains("Import cycle detected"));
+        assert!(result
+            .expect_err("expected cycle")
+            .contains("Import cycle detected"));
 
         let _ = fs::remove_dir_all(root);
     }
@@ -1168,7 +1143,7 @@ mod tests {
             r#"
             package app.core;
 
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
 
             class Util {
@@ -1187,7 +1162,7 @@ mod tests {
             r#"
             package app.other;
 
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
 
             class OtherUtil {
@@ -1251,7 +1226,7 @@ mod tests {
             r#"
             package app.shared;
 
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
 
             class Util {
@@ -1280,7 +1255,7 @@ mod tests {
             Some(src_root.to_str().expect("src utf8")),
             true,
         );
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "supported import sample failed: {:?}", result);
 
         let _ = fs::remove_dir_all(root);
     }
@@ -1298,7 +1273,7 @@ mod tests {
             r#"
             package app.shared;
 
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
 
             class Util {
@@ -1364,7 +1339,7 @@ mod tests {
             r#"
             package app.shared;
 
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
 
             class Util {
@@ -1414,7 +1389,7 @@ mod tests {
             &util_a,
             r#"
             package app.shared;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
             }
@@ -1424,7 +1399,7 @@ mod tests {
             &util_b,
             r#"
             package app.tools;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
             }
@@ -1470,7 +1445,7 @@ mod tests {
             r#"
             package app.shared;
 
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
 
             class Util {
@@ -1484,7 +1459,7 @@ mod tests {
             &util_b,
             r#"
             package app.tools;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
                 public static int two() {
@@ -1528,7 +1503,7 @@ mod tests {
             &util,
             r#"
             package app.core;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
                 public static int two() {
@@ -1542,7 +1517,7 @@ mod tests {
             r#"
             package app.core;
 
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
 
             class Main {
@@ -1558,7 +1533,7 @@ mod tests {
             Some(src_root.to_str().expect("src utf8")),
             true,
         );
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "supported import sample failed: {:?}", result);
 
         let _ = fs::remove_dir_all(root);
     }
@@ -1574,7 +1549,7 @@ mod tests {
             &util,
             r#"
             package app.shared;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
                 public static int two() {
@@ -1588,7 +1563,7 @@ mod tests {
             r#"
             package app.core;
 
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
 
             class Main {
@@ -1622,22 +1597,38 @@ mod tests {
             &main,
             r#"
             package app.core;
-            import com.pulse.lang.System;
-            import com.pulse.lang.IO;
-            import com.pulse.lang.ConsoleWriter;
-            import com.pulse.lang.String;
-            import com.pulse.math.Math;
-            import com.pulse.math.Random;
-            import com.pulse.collections.Collection;
-            import com.pulse.collections.ArrayList;
-            import com.pulse.collections.Set;
-            import com.pulse.collections.HashSet;
-            import com.pulse.collections.HashMap;
-            import com.pulse.collections.Queue;
-            import com.pulse.collections.Deque;
-            import com.pulse.collections.LinkedList;
-            import com.pulse.collections.List;
-            import com.pulse.rt.Intrinsics;
+            import pulse.lang.System;
+            import pulse.lang.IO;
+            import pulse.lang.ConsoleReader;
+            import pulse.lang.ConsoleWriter;
+            import pulse.lang.String;
+            import pulse.math.Math;
+            import pulse.math.Random;
+            import pulse.time.Clock;
+            import pulse.time.TimeSource;
+            import pulse.collections.Collection;
+            import pulse.collections.Array;
+            import pulse.collections.ArrayList;
+            import pulse.collections.Set;
+            import pulse.collections.HashSet;
+            import pulse.collections.HashMap;
+            import pulse.collections.MapEntry;
+            import pulse.collections.Collections;
+            import pulse.collections.Queue;
+            import pulse.collections.Deque;
+            import pulse.collections.LinkedList;
+            import pulse.collections.List;
+            import pulse.util.Arrays;
+            import pulse.util.Objects;
+            import pulse.util.Optional;
+            import pulse.util.Properties;
+            import pulse.util.Scanner;
+            import pulse.util.StringJoiner;
+            import pulse.util.StringTokenizer;
+            import pulse.util.TextCursor;
+            import pulse.util.UUID;
+            import pulse.rt.Intrinsics;
+            import pulse.io.ResourceScope;
 
             class Main {
                 public static void main() {
@@ -1646,21 +1637,51 @@ mod tests {
                     col.clear();
                     list.add(3);
                     System.out.println("sys");
+                    ConsoleReader input = System.in;
+                    IO.println(input.readLineOrDefault("fallback"));
                     IO.println(9);
                     IO.println(Math.abs(-5));
+                    IO.println(Objects.toString(null, "none"));
+                    Optional maybe = Optional.ofNullable("ok");
+                    IO.println(Boolean.toString(maybe.isPresent()));
+                    Properties props = new Properties();
+                    props.setProperty("mode", "dev");
+                    IO.println(props.getProperty("mode", "none"));
+                    TextCursor cursor = new TextCursor("x=1");
+                    IO.println(cursor.readIdentifier());
+                    Scanner scanner = new Scanner("1 true");
+                    IO.println(scanner.nextInt());
+                    StringJoiner joiner = new StringJoiner(", ", "[", "]");
+                    joiner.add("a").add("b");
+                    IO.println(joiner.toString());
+                    StringTokenizer tokenizer = new StringTokenizer("a,b", ",");
+                    IO.println(tokenizer.nextToken());
+                    UUID uuid = UUID.fromString("123e4567-e89b-42d3-a456-426614174000");
+                    IO.println(uuid.version());
                     IO.println(list.size());
                     IO.println(String.valueOf(true));
                     Random r = new Random(7);
                     IO.println(r.nextInt(10));
+                    Clock clock = Clock.systemUTC();
+                    IO.println(clock.isFixed());
+                    TimeSource source = TimeSource.processMonotonic();
+                    IO.println(source.isFixed());
                     Set s = new HashSet();
                     s.add("x");
                     HashMap m = new HashMap();
                     m.put("k", "v");
+                    Set entries = m.entrySet();
+                    IO.println(Arrays.contains(new Array(0), "x"));
+                    IO.println(Collections.singleton("x").contains("x"));
+                    IO.println(entries.size());
                     Queue q = new LinkedList();
                     q.offer(1);
                     Deque d = new LinkedList();
                     d.addFirst(2);
-                    Intrinsics.consoleWriteLine(7);
+                    System.out.flush();
+                    ResourceScope scope = new ResourceScope();
+                    IO.println(scope.isOpen());
+                    Intrinsics.consoleWriteLine("7");
                 }
             }
             "#,
@@ -1671,7 +1692,7 @@ mod tests {
             Some(src_root.to_str().expect("src utf8")),
             true,
         );
-        assert!(result.is_ok());
+        assert!(result.is_ok(), "supported import sample failed: {:?}", result);
 
         let _ = fs::remove_dir_all(root);
     }
@@ -1686,7 +1707,7 @@ mod tests {
             &main,
             r#"
             package app.core;
-            import com.pulse.lang.System;
+            import pulse.lang.System;
 
             class Main {
                 public static void main() {
@@ -1708,8 +1729,8 @@ mod tests {
                 .merged
                 .classes
                 .iter()
-                .any(|c| c.name == "ConsoleWriter"),
-            "expected stdlib class 'ConsoleWriter' to be loaded into merged program"
+                .any(|c| c.name == "System"),
+            "expected imported stdlib class 'System' to be loaded into merged program"
         );
 
         let _ = fs::remove_dir_all(root);
@@ -1725,7 +1746,7 @@ mod tests {
             &main,
             r#"
             package app.core;
-            import com.pulse.time.Clock;
+            import pulse.time.TimeMachine;
 
             class Main {
                 public static void main() {
@@ -1741,8 +1762,8 @@ mod tests {
         );
         assert!(result.is_err());
         assert!(result
-            .expect_err("expected unknown com.pulse import error")
-            .contains("Unknown com.pulse import 'com.pulse.time.Clock'"));
+            .expect_err("expected unknown pulse import error")
+            .contains("Unknown pulse import 'pulse.time.TimeMachine'"));
 
         let _ = fs::remove_dir_all(root);
     }
@@ -1758,7 +1779,7 @@ mod tests {
             &main_broad,
             r#"
             package app.core;
-            import com;
+            import pulse;
 
             class MainBroad {
                 public static void main() {
@@ -1770,7 +1791,7 @@ mod tests {
             &main_wild,
             r#"
             package app.core;
-            import com.pulse.ghost.*;
+            import pulse.ghost.*;
 
             class MainWild {
                 public static void main() {
@@ -1797,7 +1818,131 @@ mod tests {
         assert!(wild_result.is_err());
         assert!(wild_result
             .expect_err("expected wildcard import error")
-            .contains("Unknown com.pulse wildcard import 'com.pulse.ghost'"));
+            .contains("Unknown pulse wildcard import 'pulse.ghost'"));
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn check_project_accepts_prelude_usage_without_explicit_imports() {
+        let root = unique_temp_root();
+        let src_root = root.join("src");
+        let main = src_root.join("app/core/Main.pulse");
+
+        write_file(
+            &main,
+            r#"
+            package app.core;
+
+            class Main {
+                public static void main() {
+                    List values = new ArrayList();
+                    Collection base = values;
+                    IO.println(base.size());
+                }
+            }
+            "#,
+        );
+
+        let result = check_project(
+            main.to_str().expect("main utf8"),
+            Some(src_root.to_str().expect("src utf8")),
+            true,
+        );
+        assert!(result.is_ok(), "prelude/default import sample failed: {:?}", result);
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn check_project_rejects_authorlib_import_without_manifest_opt_in() {
+        let root = unique_temp_root();
+        let src_root = root.join("src");
+        let main = src_root.join("app/core/Main.pulse");
+
+        write_file(
+            &main,
+            r#"
+            package app.core;
+            import author.project.ProjectLayout;
+
+            class Main {
+                public static void main() {
+                }
+            }
+            "#,
+        );
+
+        let result = check_project(
+            main.to_str().expect("main utf8"),
+            Some(src_root.to_str().expect("src utf8")),
+            true,
+        );
+        assert!(result.is_err());
+        assert!(result
+            .expect_err("expected authorlib gate error")
+            .contains("requires [authorlib].enabled = true"));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn check_project_accepts_authorlib_import_with_manifest_opt_in() {
+        let root = unique_temp_root();
+        let src_root = root.join("src/main/pulse");
+        let main = src_root.join("app/core/Main.pulse");
+        let manifest = root.join("pulsec.toml");
+
+        write_file(
+            &main,
+            r#"
+            package app.core;
+            import author.project.ProjectLayout;
+
+            class Main {
+                public static void main() {
+                    ProjectLayout layout = ProjectLayout.defaults(".");
+                }
+            }
+            "#,
+        );
+        write_file(
+            &manifest,
+            r#"
+            [package]
+            name = "author_ok"
+            version = "1.0.0"
+
+            [authorlib]
+            enabled = true
+
+            [sources]
+            main_pulse = "src/main/pulse"
+            entry = "app/core/Main.pulse"
+            "#,
+        );
+
+        let resolved = resolve_check_invocation(None, &CliFlags {
+            strict_package: true,
+            friendly: false,
+            project_root: Some(root.display().to_string()),
+            source_root: None,
+            profile: None,
+            target: None,
+            output_mode: None,
+            runtime_debug_allocator: None,
+            runtime_cycle_collector: None,
+            out_dir: None,
+            assembler: None,
+            linker: None,
+        }).expect("resolve manifest invocation");
+
+        let result = check_project_with_authorlib(
+            &resolved.entry_path,
+            resolved.source_root.as_deref(),
+            true,
+            resolved.authorlib_enabled,
+        );
+        assert!(result.is_ok(), "expected authorlib import success: {result:?}");
 
         let _ = fs::remove_dir_all(root);
     }
@@ -1814,7 +1959,7 @@ mod tests {
             &local_util,
             r#"
             package app.core;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
                 public static int pick() {
@@ -1827,7 +1972,7 @@ mod tests {
             &shared_util,
             r#"
             package app.shared;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
                 public static String pick() {
@@ -1873,7 +2018,7 @@ mod tests {
             &tools_util,
             r#"
             package app.tools;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
                 public static String two() {
@@ -1886,7 +2031,7 @@ mod tests {
             &shared_util,
             r#"
             package app.shared;
-            import com.pulse.lang.IO;
+            import pulse.lang.IO;
 
             class Util {
                 public static int two() {
@@ -1921,14 +2066,3 @@ mod tests {
         let _ = fs::remove_dir_all(root);
     }
 }
-
-
-
-
-
-
-
-
-
-
-

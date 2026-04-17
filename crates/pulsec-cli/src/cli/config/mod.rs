@@ -1,4 +1,45 @@
+use super::target_model::default_target_id;
 use super::*;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+
+fn build_resolution_timing_enabled() -> bool {
+    env::var_os("PULSEC_TIMING_BUILD_RESOLUTION").is_some()
+}
+
+fn emit_build_resolution_timing(label: &str, started_at: Instant) {
+    if build_resolution_timing_enabled() {
+        eprintln!(
+            "[timing][build-resolution] {}: {} ms",
+            label,
+            started_at.elapsed().as_millis()
+        );
+    }
+}
+
+fn author_build_bridge_workspace_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(|path| path.parent())
+        .unwrap_or_else(|| Path::new("."))
+        .to_path_buf()
+}
+
+struct AuthorBuildBridgeLock {
+    path: PathBuf,
+}
+
+const AUTHOR_BUILD_BRIDGE_LOCK_INFO_FILE: &str = "owner.txt";
+const AUTHOR_BUILD_BRIDGE_LOCK_POLL_INTERVAL: Duration = Duration::from_millis(10);
+const AUTHOR_BUILD_BRIDGE_LOCK_ORPHANED_INFO_GRACE: Duration = Duration::from_secs(1);
+const AUTHOR_BUILD_BRIDGE_LOCK_STALE_AFTER: Duration = Duration::from_secs(30);
+
+impl Drop for AuthorBuildBridgeLock {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.path);
+    }
+}
 
 pub(super) fn split_optional_entry_arg(args: &[String]) -> (Option<&str>, &[String]) {
     if args.is_empty() {
@@ -16,18 +57,17 @@ pub(super) struct CheckInvocation {
     pub(super) entry_path: String,
     pub(super) source_root: Option<String>,
     pub(super) used_manifest: bool,
+    pub(super) authorlib_enabled: bool,
 }
 
 #[derive(Debug, Clone)]
 pub(super) struct BuildInvocation {
     pub(super) entry_path: String,
     pub(super) source_root: Option<String>,
-    pub(super) project_root: PathBuf,
-    pub(super) build_workspace_root: PathBuf,
     pub(super) build_root: PathBuf,
+    pub(super) output_root: PathBuf,
     pub(super) main_pulse_root: PathBuf,
     pub(super) main_resources_root: PathBuf,
-    pub(super) tests_root: PathBuf,
     pub(super) build_asm_dir: PathBuf,
     pub(super) build_generated_dir: PathBuf,
     pub(super) build_assets_dir: PathBuf,
@@ -35,33 +75,16 @@ pub(super) struct BuildInvocation {
     pub(super) build_tmp_dir: PathBuf,
     pub(super) profile: String,
     pub(super) target: String,
-    pub(super) packaging_mode: String,
     pub(super) output_mode: String,
     pub(super) output_entry: String,
     pub(super) runtime_debug_allocator: String,
     pub(super) runtime_cycle_collector: String,
     pub(super) assembler: Option<String>,
     pub(super) linker: Option<String>,
-    pub(super) wix: Option<String>,
-    pub(super) signtool: Option<String>,
     pub(super) package_name: Option<String>,
     pub(super) package_version: Option<String>,
-    pub(super) package_publisher: Option<String>,
-    pub(super) package_identifier: Option<String>,
-    pub(super) package_install_scope: Option<String>,
-    pub(super) package_entrypoints: Option<String>,
-    pub(super) package_icons: Option<String>,
-    pub(super) package_assets: Option<String>,
-    pub(super) package_license: Option<String>,
-    pub(super) package_readme: Option<String>,
-    pub(super) package_config: Option<String>,
-    pub(super) package_data: Option<String>,
-    pub(super) package_libraries: Option<String>,
-    pub(super) package_signing_mode: Option<String>,
-    pub(super) package_signing_certificate: Option<String>,
-    pub(super) package_signing_subject: Option<String>,
-    pub(super) package_signing_timestamp_url: Option<String>,
     pub(super) used_manifest: bool,
+    pub(super) authorlib_enabled: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -70,6 +93,7 @@ pub(super) struct TestInvocation {
     pub(super) source_root: PathBuf,
     pub(super) tests_root: PathBuf,
     pub(super) used_manifest: bool,
+    pub(super) authorlib_enabled: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -78,67 +102,6 @@ pub(super) struct BuildRun {
     pub(super) files_loaded: usize,
     pub(super) artifact: BackendArtifact,
     pub(super) build_config_plan_path: PathBuf,
-}
-
-#[derive(Debug, Clone)]
-pub(super) struct PackageReport {
-    pub(super) mode: String,
-    pub(super) status: String,
-    pub(super) staging_dir: PathBuf,
-    pub(super) report_path: PathBuf,
-    pub(super) entry: String,
-    pub(super) profile: String,
-    pub(super) source_root: Option<String>,
-    pub(super) build_output_dir: PathBuf,
-    pub(super) executable: Option<PathBuf>,
-    pub(super) artifact_stamp: String,
-    pub(super) package_name: String,
-    pub(super) package_version: String,
-    pub(super) msi_output: Option<PathBuf>,
-    pub(super) msi_build_log: Option<PathBuf>,
-    pub(super) signing_status: String,
-    pub(super) signing_backend: String,
-    pub(super) signing_policy: String,
-    pub(super) signing_reason: String,
-    pub(super) signing_target: Option<PathBuf>,
-    pub(super) signing_plan: Option<PathBuf>,
-    pub(super) signing_log: Option<PathBuf>,
-    pub(super) tests_total: usize,
-    pub(super) tests_failed: usize,
-}
-
-#[derive(Debug, Clone)]
-pub(super) enum PackageError {
-    Failed(String),
-}
-
-#[derive(Debug, Clone)]
-pub(super) struct WixToolProbe {
-    pub(super) status: String,
-    pub(super) path: Option<PathBuf>,
-    pub(super) version: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-pub(super) struct SigningToolProbe {
-    pub(super) status: String,
-    pub(super) path: Option<PathBuf>,
-    pub(super) version: Option<String>,
-}
-
-#[derive(Debug, Clone)]
-pub(super) struct SigningOutcome {
-    pub(super) status: String,
-    pub(super) backend: String,
-    pub(super) policy: String,
-    pub(super) reason: String,
-    pub(super) target: Option<PathBuf>,
-    pub(super) plan_path: PathBuf,
-    pub(super) log_path: Option<PathBuf>,
-    pub(super) tool_status: String,
-    pub(super) tool_path: Option<PathBuf>,
-    pub(super) tool_version: Option<String>,
-    pub(super) fatal_error: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -159,7 +122,6 @@ pub(super) struct ManifestSources {
 pub(super) struct ManifestBuild {
     pub(super) profile: Option<String>,
     pub(super) target: Option<String>,
-    pub(super) packaging_mode: Option<String>,
     pub(super) output_mode: Option<String>,
     pub(super) output_entry: Option<String>,
     pub(super) runtime_debug_allocator: Option<String>,
@@ -177,15 +139,12 @@ pub(super) struct ManifestBuild {
 pub(super) struct ManifestToolchain {
     pub(super) linker: Option<String>,
     pub(super) assembler: Option<String>,
-    pub(super) wix: Option<String>,
-    pub(super) signtool: Option<String>,
 }
 
 #[derive(Debug, Clone)]
 pub(super) struct ManifestPackage {
     pub(super) name: String,
     pub(super) version: String,
-    pub(super) metadata: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone)]
@@ -194,9 +153,15 @@ pub(super) struct ManifestWorkspace {
 }
 
 #[derive(Debug, Clone)]
+pub(super) struct ManifestAuthorlib {
+    pub(super) enabled: bool,
+}
+
+#[derive(Debug, Clone)]
 pub(super) struct ManifestConfig {
     pub(super) package: Option<ManifestPackage>,
     pub(super) workspace: Option<ManifestWorkspace>,
+    pub(super) authorlib: Option<ManifestAuthorlib>,
     pub(super) sources: ManifestSources,
     pub(super) build: ManifestBuild,
     pub(super) toolchain: ManifestToolchain,
@@ -216,21 +181,1199 @@ pub(super) fn normalize_output_mode(raw: &str) -> Option<&'static str> {
     }
 }
 
+fn resolve_build_invocation_via_authorlib(
+    entry_arg: Option<&str>,
+    flags: &CliFlags,
+) -> Result<BuildInvocation, String> {
+    let total_started_at = Instant::now();
+    let direct_source_root_override = flags.source_root.clone();
+    let direct_entry_override = if let Some(entry) = entry_arg {
+        Some(entry.to_string())
+    } else if let Some(src_root) = direct_source_root_override.as_ref() {
+        discover_entry_from_source_root(Path::new(src_root))?
+            .map(|path| path.display().to_string())
+    } else {
+        None
+    };
+    let cache_root = author_build_bridge_cache_root();
+    let bridge_lock_started_at = Instant::now();
+    let _lock = acquire_author_build_bridge_lock(&cache_root)?;
+    emit_build_resolution_timing("bridge lock wait", bridge_lock_started_at);
+    let exe = resolve_cached_author_build_bridge_runner(&cache_root)?;
+    emit_build_resolution_timing("bridge resolve cached runner", bridge_lock_started_at);
+    let request_text = emit_build_invocation_bridge_request(
+        &bridge_start_path(entry_arg, flags)?,
+        flags.project_root.as_deref(),
+        direct_source_root_override.as_deref(),
+        direct_entry_override.as_deref(),
+        flags.profile.as_deref(),
+        flags.target.as_deref(),
+        flags.output_mode.as_deref(),
+        flags.runtime_debug_allocator.as_deref(),
+        flags.runtime_cycle_collector.as_deref(),
+        flags.out_dir.as_deref(),
+        flags.assembler.as_deref(),
+        flags.linker.as_deref(),
+    );
+    let run_started_at = Instant::now();
+    let bridge_result = run_author_build_bridge_request_inner(&cache_root, &exe, &request_text)
+        .and_then(|stdout| parse_build_invocation_bridge_output(&stdout));
+    emit_build_resolution_timing("bridge exe run", run_started_at);
+    emit_build_resolution_timing("bridge total", total_started_at);
+    bridge_result
+}
+
+fn bridge_start_path(entry_arg: Option<&str>, flags: &CliFlags) -> Result<String, String> {
+    if let Some(root) = &flags.project_root {
+        return Ok(root.clone());
+    }
+    if let Some(entry) = entry_arg {
+        return Ok(entry.to_string());
+    }
+    env::current_dir()
+        .map(|path| path.display().to_string())
+        .map_err(|e| format!("Failed to resolve current directory for author bridge: {e}"))
+}
+
+fn emit_build_invocation_bridge_source() -> String {
+    let debug_prelude = if env::var_os("PULSEC_DEBUG_AUTHOR_BRIDGE").is_some() {
+        r#"
+                IO.print("bridge:before_resolve\n");
+        "#
+    } else {
+        ""
+    };
+    let debug_after_resolve = if env::var_os("PULSEC_DEBUG_AUTHOR_BRIDGE").is_some() {
+        r#"
+                IO.print("bridge:after_resolve\n");
+        "#
+    } else {
+        ""
+    };
+    let debug_request = if env::var_os("PULSEC_DEBUG_AUTHOR_BRIDGE").is_some() {
+        r#"
+                IO.print("bridge:request=");
+                IO.print(request);
+                IO.print("\n");
+        "#
+    } else {
+        ""
+    };
+    let debug_after_render = if env::var_os("PULSEC_DEBUG_AUTHOR_BRIDGE").is_some() {
+        r#"
+                IO.print("bridge:after_render\n");
+        "#
+    } else {
+        ""
+    };
+    format!(
+        r#"
+        package bridge.internal;
+
+        import author.build.BuildInvocation;
+        import author.build.BuildInvocationBridge;
+        import author.build.BuildPublishedArtifact;
+        import author.build.BuildPublishedArtifactBridge;
+        import author.build.BuildPublicationPlan;
+        import author.build.BuildPublicationPlanBridge;
+        import author.build.BuildSummaryWriter;
+        import author.build.BuildPublicationWriter;
+        import author.build.BuildInvocationResolver;
+        import author.toolchain.ToolchainCandidateBridge;
+        import author.toolchain.ToolchainCandidatePlan;
+        import author.toolchain.ToolchainDiscoveryBridge;
+        import author.toolchain.ToolchainDiscoveryPlan;
+        import author.toolchain.ToolchainDiscoveryResolver;
+        import author.toolchain.ToolchainDiscoveryResult;
+        import author.toolchain.ToolchainDiscoveryResultBridge;
+        import author.toolchain.ToolchainHostFilesystem;
+        import author.toolchain.ToolchainProcessResultBridge;
+        import pulse.collections.ArrayList;
+        import pulse.lang.IO;
+        import pulse.lang.Integer;
+        import pulse.lang.System;
+        import pulse.process.ProcessEnvironment;
+        import pulse.process.ProcessEnvironmentVariable;
+        import pulse.process.ProcessPlan;
+        import pulse.process.ProcessResult;
+        import pulse.process.Processes;
+
+        class Main {{
+            public static void main() {{
+                {debug_prelude}
+                String mode = Main.readLine();
+                if (mode == null) {{
+                    mode = "";
+                }}
+                if (mode.equals("build")) {{
+                    String request = Main.readLines(12);
+                    {debug_request}
+                    BuildInvocation invocation = BuildInvocationResolver.resolveBuildInvocation(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8),
+                        Main.readValue(request, 9),
+                        Main.readValue(request, 10),
+                        Main.readValue(request, 11)
+                    );
+                    {debug_after_resolve}
+                    String text = BuildInvocationBridge.toBridgeText(invocation);
+                    {debug_after_render}
+                    IO.print(text);
+                    return;
+                }}
+                if (mode.equals("toolchain-discovery")) {{
+                    ToolchainDiscoveryPlan plan = ToolchainDiscoveryResolver.planWindowsDiscovery();
+                    String text = ToolchainDiscoveryBridge.toBridgeText(plan);
+                    IO.print(text);
+                    return;
+                }}
+                if (mode.equals("toolchain-probe")) {{
+                    ToolchainDiscoveryPlan plan = ToolchainDiscoveryResolver.planWindowsDiscovery();
+                    ToolchainDiscoveryResult result = ToolchainDiscoveryResolver.probeWindowsDiscovery(plan);
+                    String text = ToolchainDiscoveryResultBridge.toBridgeText(result);
+                    IO.print(text);
+                    return;
+                }}
+                if (mode.equals("toolchain-probe-custom")) {{
+                    String request = Main.readLines(5);
+                    ToolchainDiscoveryPlan plan = new ToolchainDiscoveryPlan(
+                        Main.parseLines(Main.readValue(request, 0)),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.parseLines(Main.readValue(request, 3)),
+                        Main.readValue(request, 4)
+                    );
+                    ToolchainDiscoveryResult result = ToolchainDiscoveryResolver.probeWindowsDiscovery(plan);
+                    String text = ToolchainDiscoveryResultBridge.toBridgeText(result);
+                    IO.print(text);
+                    return;
+                }}
+                if (mode.equals("toolchain-candidates")) {{
+                    String request = Main.readLines(3);
+                    ToolchainCandidatePlan plan = ToolchainDiscoveryResolver.planCandidates(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2)
+                    );
+                    String text = ToolchainCandidateBridge.toBridgeText(plan);
+                    IO.print(text);
+                    return;
+                }}
+                if (mode.equals("toolchain-write-response-file")) {{
+                    String request = Main.readLines(2);
+                    int argumentCount = Main.parseCount(Main.readValue(request, 1));
+                    ArrayList<String> arguments = new ArrayList<String>();
+                    int argumentIndex = 0;
+                    while (argumentIndex < argumentCount) {{
+                        arguments.add(Main.decodeValue(Main.readLine()));
+                        argumentIndex = argumentIndex + 1;
+                    }}
+                    String writtenPath = ToolchainHostFilesystem.writeResponseFile(
+                        Main.readValue(request, 0),
+                        arguments
+                    );
+                    IO.print(writtenPath);
+                    return;
+                }}
+                if (mode.equals("toolchain-execute-process")) {{
+                    String request = Main.readLines(7);
+                    int overrideCount = Main.parseCount(Main.readValue(request, 5));
+                    int argumentCount = Main.parseCount(Main.readValue(request, 6));
+                    ArrayList<ProcessEnvironmentVariable> overrides =
+                        new ArrayList<ProcessEnvironmentVariable>();
+                    int overrideIndex = 0;
+                    while (overrideIndex < overrideCount) {{
+                        String name = Main.decodeValue(Main.readLine());
+                        String value = Main.decodeValue(Main.readLine());
+                        overrides.add(new ProcessEnvironmentVariable(name, value));
+                        overrideIndex = overrideIndex + 1;
+                    }}
+                    ArrayList<String> arguments = new ArrayList<String>();
+                    int argumentIndex = 0;
+                    while (argumentIndex < argumentCount) {{
+                        arguments.add(Main.decodeValue(Main.readLine()));
+                        argumentIndex = argumentIndex + 1;
+                    }}
+                    ProcessPlan process = new ProcessPlan(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        arguments,
+                        new ProcessEnvironment(
+                            Main.readValue(request, 4).equals("true"),
+                            overrides
+                        )
+                    );
+                    ProcessResult result = Processes.execute(
+                        process,
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3)
+                    );
+                    IO.print(ToolchainProcessResultBridge.toBridgeText(result));
+                    return;
+                }}
+                if (mode.equals("build-write-launch-metadata")) {{
+                    String request = Main.readLines(7);
+                    String writtenPath = BuildPublicationWriter.writeSharedRuntimeLookupMetadata(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6)
+                    );
+                    if (writtenPath != null) {{
+                        IO.print(writtenPath);
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-write-artifact-stamp")) {{
+                    String request = Main.readLines(5);
+                    String writtenPath = BuildPublicationWriter.writeArtifactStamp(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4)
+                    );
+                    if (writtenPath != null) {{
+                        IO.print(writtenPath);
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-copy-file")) {{
+                    String request = Main.readLines(2);
+                    String writtenPath = BuildPublicationWriter.copyFile(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1)
+                    );
+                    if (writtenPath != null) {{
+                        IO.print(writtenPath);
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-copy-recursive")) {{
+                    String request = Main.readLines(2);
+                    String writtenPath = BuildPublicationWriter.copyRecursive(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1)
+                    );
+                    if (writtenPath != null) {{
+                        IO.print(writtenPath);
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-copy-recursive-extension")) {{
+                    String request = Main.readLines(3);
+                    String writtenPath = BuildPublicationWriter.copyRecursiveMatchingExtension(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2)
+                    );
+                    if (writtenPath != null) {{
+                        IO.print(writtenPath);
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-materialize-layout")) {{
+                    String request = Main.readLines(11);
+                    String writtenPath = BuildPublicationWriter.materializeBuildLayout(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8),
+                        Main.readValue(request, 9),
+                        Main.readValue(request, 10)
+                    );
+                    if (writtenPath != null) {{
+                        IO.print(writtenPath);
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-publication-plan")) {{
+                    String request = Main.readLines(19);
+                    BuildPublicationPlan plan = BuildPublicationWriter.resolvePublicationPlan(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8),
+                        Main.readValue(request, 9),
+                        Main.readValue(request, 10),
+                        Main.readValue(request, 11),
+                        Main.readValue(request, 12),
+                        Main.readValue(request, 13),
+                        Main.readValue(request, 14),
+                        Main.readValue(request, 15),
+                        Main.readValue(request, 16),
+                        Main.readValue(request, 17).equals("true"),
+                        Main.readValue(request, 18).equals("true")
+                    );
+                    IO.print(BuildPublicationPlanBridge.toBridgeText(plan));
+                    return;
+                }}
+                if (mode.equals("build-write-config-plan")) {{
+                    String request = Main.readLines(41);
+                    String writtenPath = BuildPublicationWriter.writeBuildConfigPlan(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8),
+                        Main.readValue(request, 9),
+                        Main.readValue(request, 10),
+                        Main.readValue(request, 11),
+                        Main.readValue(request, 12),
+                        Main.readValue(request, 13),
+                        Main.readValue(request, 14),
+                        Main.readValue(request, 15),
+                        Main.readValue(request, 16),
+                        Main.readValue(request, 17),
+                        Main.readValue(request, 18),
+                        Main.readValue(request, 19),
+                        Main.readValue(request, 20),
+                        Main.readValue(request, 21),
+                        Main.readValue(request, 22),
+                        Main.readValue(request, 23),
+                        Main.readValue(request, 24),
+                        Main.readValue(request, 25),
+                        Main.readValue(request, 26),
+                        Main.readValue(request, 27),
+                        Main.readValue(request, 28),
+                        Main.readValue(request, 29),
+                        Main.readValue(request, 30),
+                        Main.readValue(request, 31),
+                        Main.readValue(request, 32),
+                        Main.readValue(request, 33),
+                        Main.readValue(request, 34),
+                        Main.readValue(request, 35),
+                        Main.readValue(request, 36),
+                        Main.readValue(request, 37),
+                        Main.readValue(request, 38),
+                        Main.readValue(request, 39),
+                        Main.readValue(request, 40)
+                    );
+                    if (writtenPath != null) {{
+                        IO.print(writtenPath);
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-publish-artifacts")) {{
+                    String request = Main.readLines(22);
+                    BuildPublishedArtifact published = BuildPublicationWriter.publishArtifacts(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8),
+                        Main.readValue(request, 9).equals("true"),
+                        Main.readValue(request, 10).equals("true"),
+                        Main.readValue(request, 11).equals("true"),
+                        Main.readValue(request, 12),
+                        Main.readValue(request, 13),
+                        Main.readValue(request, 14),
+                        Main.readValue(request, 15),
+                        Main.readValue(request, 16),
+                        Main.readValue(request, 17),
+                        Main.readValue(request, 18),
+                        Main.readValue(request, 19),
+                        Main.readValue(request, 20),
+                        Main.readValue(request, 21)
+                    );
+                    if (published != null) {{
+                        IO.print(BuildPublishedArtifactBridge.toBridgeText(published));
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-finalize-artifacts")) {{
+                    String request = Main.readLines(53);
+                    String text = BuildPublicationWriter.finalizeBuildBridgeText(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8),
+                        Main.readValue(request, 9),
+                        Main.readValue(request, 10),
+                        Main.readValue(request, 11),
+                        Main.readValue(request, 12),
+                        Main.readValue(request, 13),
+                        Main.readValue(request, 14),
+                        Main.readValue(request, 15),
+                        Main.readValue(request, 16),
+                        Main.readValue(request, 17),
+                        Main.readValue(request, 18),
+                        Main.readValue(request, 19),
+                        Main.readValue(request, 20),
+                        Main.readValue(request, 21),
+                        Main.readValue(request, 22),
+                        Main.readValue(request, 23),
+                        Main.readValue(request, 24),
+                        Main.readValue(request, 25),
+                        Main.readValue(request, 26),
+                        Main.readValue(request, 27).equals("true"),
+                        Main.readValue(request, 28).equals("true"),
+                        Main.readValue(request, 29),
+                        Main.readValue(request, 30),
+                        Main.readValue(request, 31),
+                        Main.readValue(request, 32),
+                        Main.readValue(request, 33),
+                        Main.readValue(request, 34),
+                        Main.readValue(request, 35),
+                        Main.readValue(request, 36),
+                        Main.readValue(request, 37),
+                        Main.readValue(request, 38),
+                        Main.readValue(request, 39),
+                        Main.readValue(request, 40),
+                        Main.readValue(request, 41),
+                        Main.readValue(request, 42),
+                        Main.readValue(request, 43),
+                        Main.readValue(request, 44),
+                        Main.readValue(request, 45),
+                        Main.readValue(request, 46),
+                        Main.readValue(request, 47),
+                        Main.readValue(request, 48),
+                        Main.readValue(request, 49),
+                        Main.readValue(request, 50),
+                        Main.readValue(request, 51),
+                        Main.readValue(request, 52)
+                    );
+                    if (text != null) {{
+                        IO.print(text);
+                    }}
+                    return;
+                }}
+                if (mode.equals("build-render-summary")) {{
+                    String request = Main.readLines(22);
+                    String text = BuildSummaryWriter.renderBuildSummary(
+                        Main.parseCount(Main.readValue(request, 0)),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.parseCount(Main.readValue(request, 2)),
+                        Main.parseCount(Main.readValue(request, 3)),
+                        Main.readValue(request, 4),
+                        Main.readValue(request, 5),
+                        Main.readValue(request, 6),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8),
+                        Main.readValue(request, 9),
+                        Main.readValue(request, 10).equals("true"),
+                        Main.readValue(request, 11),
+                        Main.readValue(request, 12),
+                        Main.readValue(request, 13),
+                        Main.readValue(request, 14),
+                        Main.readValue(request, 15),
+                        Main.readValue(request, 16),
+                        Main.readValue(request, 17),
+                        Main.readValue(request, 18),
+                        Main.readValue(request, 19),
+                        Main.readValue(request, 20),
+                        Main.readValue(request, 21)
+                    );
+                    IO.print(text);
+                    return;
+                }}
+                IO.print("error=1:unknown bridge mode ");
+                IO.print(mode);
+                return;
+            }}
+
+            private static String readLine() {{
+                String line = System.in.readLine();
+                if (line != null && line.endsWith("\r")) {{
+                    return line.substring(0, line.length() - 1);
+                }}
+                return line;
+            }}
+
+            private static String readLines(int count) {{
+                String request = "";
+                int index = 0;
+                while (index < count) {{
+                    String line = Main.readLine();
+                    if (line == null) {{
+                        line = "";
+                    }}
+                    request = request.concat(line);
+                    request = request.concat("\n");
+                    index = index + 1;
+                }}
+                return request;
+            }}
+
+            private static String readValue(String request, int index) {{
+                String[] lines = request.split("\n");
+                if (index < 0 || index >= lines.length) {{
+                    return null;
+                }}
+                String line = lines[index];
+                if (line.endsWith("\r")) {{
+                    line = line.substring(0, line.length() - 1);
+                }}
+                return Main.decodeValue(line);
+            }}
+
+            private static String decodeValue(String encoded) {{
+                int separator = encoded.indexOf(':');
+                if (separator < 0) {{
+                    return null;
+                }}
+                String present = encoded.substring(0, separator);
+                if (present.equals("0")) {{
+                    return null;
+                }}
+                return Main.unescape(encoded.substring(separator + 1));
+            }}
+
+            private static ArrayList<String> parseLines(String value) {{
+                ArrayList<String> out = new ArrayList<String>();
+                if (value == null || value.isEmpty()) {{
+                    return out;
+                }}
+                String[] lines = value.split("\n");
+                int index = 0;
+                while (index < lines.length) {{
+                    String line = lines[index];
+                    if (line != null && line.endsWith("\r")) {{
+                        line = line.substring(0, line.length() - 1);
+                    }}
+                    if (line != null && !line.isEmpty()) {{
+                        out.add(line);
+                    }}
+                    index = index + 1;
+                }}
+                return out;
+            }}
+
+            private static int parseCount(String value) {{
+                if (value == null || value.isEmpty()) {{
+                    return 0;
+                }}
+                return Integer.intValue(Integer.parse(value));
+            }}
+
+            private static String unescape(String value) {{
+                String out = "";
+                int index = 0;
+                while (index < value.length()) {{
+                    char ch = value.charAt(index);
+                    if (ch != '\\' || (index + 1) >= value.length()) {{
+                        out = out.concat(String.valueOf(ch));
+                        index = index + 1;
+                        continue;
+                    }}
+                    char escaped = value.charAt(index + 1);
+                    if (escaped == 'n') {{
+                        out = out.concat("\n");
+                    }} else if (escaped == 'r') {{
+                        out = out.concat("\r");
+                    }} else if (escaped == '\\') {{
+                        out = out.concat("\\");
+                    }} else {{
+                        out = out.concat("\\");
+                        out = out.concat(String.valueOf(escaped));
+                    }}
+                    index = index + 2;
+                }}
+                return out;
+            }}
+        }}
+        "#,
+        debug_prelude = debug_prelude,
+        debug_request = debug_request,
+        debug_after_resolve = debug_after_resolve,
+        debug_after_render = debug_after_render,
+    )
+}
+
+fn emit_build_invocation_bridge_request(
+    start_path: &str,
+    project_root_override: Option<&str>,
+    source_root_override: Option<&str>,
+    entry_path_override: Option<&str>,
+    profile_override: Option<&str>,
+    target_override: Option<&str>,
+    output_mode_override: Option<&str>,
+    runtime_debug_allocator_override: Option<&str>,
+    runtime_cycle_collector_override: Option<&str>,
+    out_dir_override: Option<&str>,
+    assembler_override: Option<&str>,
+    linker_override: Option<&str>,
+) -> String {
+    let mut out = String::new();
+    out.push_str("build\n");
+    append_bridge_request_value(&mut out, "startPath", Some(start_path));
+    append_bridge_request_value(&mut out, "projectRootOverride", project_root_override);
+    append_bridge_request_value(&mut out, "sourceRootOverride", source_root_override);
+    append_bridge_request_value(&mut out, "entryPathOverride", entry_path_override);
+    append_bridge_request_value(&mut out, "profileOverride", profile_override);
+    append_bridge_request_value(&mut out, "targetOverride", target_override);
+    append_bridge_request_value(&mut out, "outputModeOverride", output_mode_override);
+    append_bridge_request_value(
+        &mut out,
+        "runtimeDebugAllocatorOverride",
+        runtime_debug_allocator_override,
+    );
+    append_bridge_request_value(
+        &mut out,
+        "runtimeCycleCollectorOverride",
+        runtime_cycle_collector_override,
+    );
+    append_bridge_request_value(&mut out, "outDirOverride", out_dir_override);
+    append_bridge_request_value(&mut out, "assemblerOverride", assembler_override);
+    append_bridge_request_value(&mut out, "linkerOverride", linker_override);
+    out
+}
+
+pub(crate) fn append_bridge_request_value(out: &mut String, _key: &str, value: Option<&str>) {
+    match value {
+        Some(value) => {
+            out.push_str("1:");
+            out.push_str(&escape_bridge_value(&normalize_bridge_path(value)));
+        }
+        None => out.push_str("0:"),
+    }
+    out.push('\n');
+}
+
+pub(crate) fn append_bridge_request_raw_value(out: &mut String, value: Option<&str>) {
+    match value {
+        Some(value) => {
+            out.push_str("1:");
+            out.push_str(&escape_bridge_value(value));
+        }
+        None => out.push_str("0:"),
+    }
+    out.push('\n');
+}
+
+fn escape_bridge_value(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for ch in value.chars() {
+        match ch {
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            _ => out.push(ch),
+        }
+    }
+    out
+}
+
+pub(crate) fn normalize_bridge_path(value: &str) -> String {
+    value.replace('\\', "/")
+}
+
+fn parse_build_invocation_bridge_output(text: &str) -> Result<BuildInvocation, String> {
+    let mut values = HashMap::new();
+    for line in text.lines() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let (key, raw) = line
+            .split_once('=')
+            .ok_or_else(|| format!("invalid author bridge line '{}'", line))?;
+        let (present, encoded) = raw
+            .split_once(':')
+            .ok_or_else(|| format!("invalid author bridge value '{}'", line))?;
+        let value = match present {
+            "0" => None,
+            "1" => Some(unescape_bridge_value(encoded)?),
+            _ => return Err(format!("invalid author bridge presence tag '{}'", present)),
+        };
+        values.insert(key.to_string(), value);
+    }
+
+    Ok(BuildInvocation {
+        entry_path: required_bridge_value(&values, "entryPath")?,
+        source_root: Some(required_bridge_value(&values, "sourceRoot")?),
+        build_root: PathBuf::from(required_bridge_value(&values, "buildRoot")?),
+        output_root: PathBuf::from(required_bridge_value(&values, "outputRoot")?),
+        main_pulse_root: PathBuf::from(required_bridge_value(&values, "mainPulseRoot")?),
+        main_resources_root: PathBuf::from(required_bridge_value(&values, "mainResourcesRoot")?),
+        build_asm_dir: PathBuf::from(required_bridge_value(&values, "asmRoot")?),
+        build_generated_dir: PathBuf::from(required_bridge_value(&values, "generatedRoot")?),
+        build_assets_dir: PathBuf::from(required_bridge_value(&values, "assetsRoot")?),
+        build_sanity_dir: PathBuf::from(required_bridge_value(&values, "sanityRoot")?),
+        build_tmp_dir: PathBuf::from(required_bridge_value(&values, "tmpRoot")?),
+        profile: required_bridge_value(&values, "profile")?,
+        target: required_bridge_value(&values, "target")?,
+        output_mode: required_bridge_value(&values, "outputMode")?,
+        output_entry: required_bridge_value(&values, "outputEntry")?,
+        runtime_debug_allocator: required_bridge_value(&values, "runtimeDebugAllocator")?,
+        runtime_cycle_collector: required_bridge_value(&values, "runtimeCycleCollector")?,
+        assembler: optional_bridge_value(&values, "assembler"),
+        linker: optional_bridge_value(&values, "linker"),
+        package_name: optional_bridge_value(&values, "packageName"),
+        package_version: optional_bridge_value(&values, "packageVersion"),
+        used_manifest: parse_bridge_bool(&values, "usedManifest")?,
+        authorlib_enabled: parse_bridge_bool(&values, "authorlibEnabled")?,
+    })
+}
+
+fn required_bridge_value(
+    values: &HashMap<String, Option<String>>,
+    key: &str,
+) -> Result<String, String> {
+    values
+        .get(key)
+        .ok_or_else(|| format!("author bridge missing key '{}'", key))?
+        .clone()
+        .ok_or_else(|| format!("author bridge key '{}' must not be null", key))
+}
+
+fn optional_bridge_value(values: &HashMap<String, Option<String>>, key: &str) -> Option<String> {
+    values.get(key).cloned().flatten()
+}
+
+fn parse_bridge_bool(
+    values: &HashMap<String, Option<String>>,
+    key: &str,
+) -> Result<bool, String> {
+    match required_bridge_value(values, key)?.as_str() {
+        "true" => Ok(true),
+        "false" => Ok(false),
+        other => Err(format!("author bridge key '{}' has invalid boolean '{}'", key, other)),
+    }
+}
+
+fn unescape_bridge_value(value: &str) -> Result<String, String> {
+    let mut out = String::with_capacity(value.len());
+    let mut chars = value.chars();
+    while let Some(ch) = chars.next() {
+        if ch != '\\' {
+            out.push(ch);
+            continue;
+        }
+        match chars.next() {
+            Some('n') => out.push('\n'),
+            Some('r') => out.push('\r'),
+            Some('\\') => out.push('\\'),
+            Some(other) => {
+                out.push('\\');
+                out.push(other);
+            }
+            None => return Err("author bridge ended inside escape sequence".to_string()),
+        }
+    }
+    Ok(out)
+}
+
+fn author_build_bridge_cache_root() -> PathBuf {
+    author_build_bridge_workspace_root()
+        .join("target")
+        .join("author_build_bridge")
+}
+
+fn run_author_build_bridge_request_inner(
+    cache_root: &Path,
+    exe: &Path,
+    request_text: &str,
+) -> Result<String, String> {
+    let mut child = std::process::Command::new(exe)
+        .current_dir(author_build_bridge_workspace_root())
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .map_err(|e| format!("failed to run author build bridge: {e}"))?;
+    {
+        use std::io::Write;
+        let stdin = child
+            .stdin
+            .as_mut()
+            .ok_or_else(|| "author build bridge stdin unavailable".to_string())?;
+        stdin
+            .write_all(request_text.as_bytes())
+            .map_err(|e| format!("failed to write author build bridge request: {e}"))?;
+    }
+    let output = child
+        .wait_with_output()
+        .map_err(|e| format!("failed to collect author build bridge output: {e}"))?;
+    if output.status.success() {
+        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+    } else {
+        Err(format!(
+            "author build bridge failed with status {:?} at {}\nstdout:\n{}\nstderr:\n{}",
+            output.status.code(),
+            cache_root.display(),
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        ))
+    }
+}
+
+pub(crate) fn run_author_build_bridge_request(request_text: &str) -> Result<String, String> {
+    let cache_root = author_build_bridge_cache_root();
+    let _lock = acquire_author_build_bridge_lock(&cache_root)?;
+    let exe = resolve_cached_author_build_bridge_runner(&cache_root)?;
+    run_author_build_bridge_request_inner(&cache_root, &exe, request_text)
+}
+
+fn hash_bridge_source_tree(hasher: &mut DefaultHasher, root: &Path, extension: &str) {
+    let mut entries = match fs::read_dir(root) {
+        Ok(entries) => entries.flatten().collect::<Vec<_>>(),
+        Err(_) => return,
+    };
+    entries.sort_by_key(|entry| entry.path());
+    for entry in entries {
+        let path = entry.path();
+        if path.is_dir() {
+            hash_bridge_source_tree(hasher, &path, extension);
+            continue;
+        }
+        if path.extension().and_then(|value| value.to_str()) != Some(extension) {
+            continue;
+        }
+        path.display().to_string().hash(hasher);
+        if let Ok(metadata) = fs::metadata(&path) {
+            metadata.len().hash(hasher);
+            metadata
+                .modified()
+                .ok()
+                .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|duration| duration.as_nanos())
+                .unwrap_or_default()
+                .hash(hasher);
+        }
+    }
+}
+
+fn current_author_build_bridge_input_fingerprint() -> String {
+    let workspace_root = author_build_bridge_workspace_root();
+    let mut hasher = DefaultHasher::new();
+    hash_bridge_source_tree(&mut hasher, &workspace_root.join("crates").join("pulsec-cli").join("src"), "rs");
+    hash_bridge_source_tree(&mut hasher, &workspace_root.join("crates").join("pulsec-core").join("src"), "rs");
+    hash_bridge_source_tree(&mut hasher, &workspace_root.join("stdlib").join("src"), "pulse");
+    format!("{:016x}", hasher.finish())
+}
+
+fn author_build_bridge_stamp(_cache_root: &Path) -> String {
+    let source = emit_build_invocation_bridge_source();
+    let mut hasher = DefaultHasher::new();
+    source.hash(&mut hasher);
+    format!(
+        "source={:016x}\ninputs={}\n",
+        hasher.finish(),
+        current_author_build_bridge_input_fingerprint()
+    )
+}
+
+fn author_build_bridge_build_dir(cache_root: &Path, expected_stamp: &str) -> PathBuf {
+    let mut hasher = DefaultHasher::new();
+    expected_stamp.hash(&mut hasher);
+    cache_root.join("builds").join(format!("{:016x}", hasher.finish()))
+}
+
+fn author_build_bridge_lock_info_path(lock_path: &Path) -> PathBuf {
+    lock_path.join(AUTHOR_BUILD_BRIDGE_LOCK_INFO_FILE)
+}
+
+fn current_unix_millis() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis()
+}
+
+fn write_author_build_bridge_lock_info(lock_path: &Path) -> Result<(), String> {
+    fs::write(
+        author_build_bridge_lock_info_path(lock_path),
+        format!(
+            "pid={}\nstarted_ms={}\n",
+            std::process::id(),
+            current_unix_millis()
+        ),
+    )
+    .map_err(|err| format!("Failed to write author bridge lock owner info: {err}"))
+}
+
+fn author_build_bridge_lock_age(path: &Path) -> Result<Option<Duration>, String> {
+    let metadata = match fs::metadata(path) {
+        Ok(metadata) => metadata,
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => return Ok(None),
+        Err(err) => return Err(format!("Failed to stat author bridge lock '{}': {err}", path.display())),
+    };
+    let modified = metadata
+        .modified()
+        .or_else(|_| metadata.created())
+        .ok();
+    Ok(modified.and_then(|time| SystemTime::now().duration_since(time).ok()))
+}
+
+fn author_build_bridge_lock_started_at(lock_path: &Path) -> Result<Option<u128>, String> {
+    let info_path = author_build_bridge_lock_info_path(lock_path);
+    let text = match fs::read_to_string(&info_path) {
+        Ok(text) => text,
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => return Ok(None),
+        Err(err) => {
+            return Err(format!(
+                "Failed to read author bridge lock owner info '{}': {err}",
+                info_path.display()
+            ))
+        }
+    };
+    for line in text.lines() {
+        if let Some(value) = line.strip_prefix("started_ms=") {
+            let parsed = value.parse::<u128>().map_err(|err| {
+                format!(
+                    "Invalid author bridge lock owner info '{}': {err}",
+                    info_path.display()
+                )
+            })?;
+            return Ok(Some(parsed));
+        }
+    }
+    Ok(None)
+}
+
+fn remove_author_build_bridge_lock(lock_path: &Path) -> Result<(), String> {
+    match fs::remove_dir_all(lock_path) {
+        Ok(()) => Ok(()),
+        Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => Ok(()),
+        Err(err) => Err(format!(
+            "Failed to remove stale author bridge lock '{}': {err}",
+            lock_path.display()
+        )),
+    }
+}
+
+fn reclaim_stale_author_build_bridge_lock(lock_path: &Path) -> Result<bool, String> {
+    if !lock_path.exists() {
+        return Ok(false);
+    }
+    let now_ms = current_unix_millis();
+    if let Some(started_ms) = author_build_bridge_lock_started_at(lock_path)? {
+        if now_ms.saturating_sub(started_ms) >= AUTHOR_BUILD_BRIDGE_LOCK_STALE_AFTER.as_millis() {
+            remove_author_build_bridge_lock(lock_path)?;
+            return Ok(true);
+        }
+        return Ok(false);
+    }
+    if let Some(age) = author_build_bridge_lock_age(lock_path)? {
+        if age >= AUTHOR_BUILD_BRIDGE_LOCK_ORPHANED_INFO_GRACE {
+            remove_author_build_bridge_lock(lock_path)?;
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn acquire_author_build_bridge_lock(cache_root: &Path) -> Result<AuthorBuildBridgeLock, String> {
+    fs::create_dir_all(cache_root)
+        .map_err(|e| format!("Failed to create author bridge cache dir: {e}"))?;
+    let lock_path = cache_root.join("lock");
+    for _ in 0..10_000 {
+        match fs::create_dir(&lock_path) {
+            Ok(()) => {
+                if let Err(err) = write_author_build_bridge_lock_info(&lock_path) {
+                    let _ = fs::remove_dir_all(&lock_path);
+                    return Err(err);
+                }
+                return Ok(AuthorBuildBridgeLock { path: lock_path });
+            }
+            Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => {
+                if reclaim_stale_author_build_bridge_lock(&lock_path)? {
+                    continue;
+                }
+                std::thread::sleep(AUTHOR_BUILD_BRIDGE_LOCK_POLL_INTERVAL);
+            }
+            Err(err) => return Err(format!("Failed to acquire author bridge lock: {err}")),
+        }
+    }
+    Err("Timed out waiting for author bridge lock".to_string())
+}
+
+fn ensure_author_build_bridge_runner(cache_root: &Path) -> Result<PathBuf, String> {
+    let expected_stamp = author_build_bridge_stamp(cache_root);
+    let stamp_path = cache_root.join("stamp.txt");
+    let build_dir = author_build_bridge_build_dir(cache_root, &expected_stamp);
+    let exe_path = build_dir.join("main.exe");
+    if exe_path.exists()
+        && fs::read_to_string(&stamp_path)
+            .map(|text| text == expected_stamp)
+            .unwrap_or(false)
+    {
+        return Ok(exe_path);
+    }
+
+    let src_root = cache_root.join("src");
+    let entry = src_root.join("bridge/internal/Main.pulse");
+    fs::create_dir_all(entry.parent().ok_or_else(|| "missing bridge parent".to_string())?)
+        .map_err(|e| format!("Failed to create author bridge source root: {e}"))?;
+    fs::write(
+        &entry,
+        emit_build_invocation_bridge_source(),
+    )
+    .map_err(|e| format!("Failed to write author bridge source: {e}"))?;
+
+    let check_started_at = Instant::now();
+    let result = check_project_with_authorlib(
+        entry.to_str()
+            .ok_or_else(|| "author bridge entry path must be utf-8".to_string())?,
+        Some(
+            src_root
+                .to_str()
+                .ok_or_else(|| "author bridge source root must be utf-8".to_string())?,
+        ),
+        true,
+        true,
+    )?;
+    emit_build_resolution_timing("bridge compile check_project_with_authorlib", check_started_at);
+    if result.class_contexts.len() != result.merged.classes.len() {
+        return Err(format!(
+            "author bridge class context mismatch: {} contexts for {} classes",
+            result.class_contexts.len(),
+            result.merged.classes.len()
+        ));
+    }
+    let ir_started_at = Instant::now();
+    let ir = lower_to_ir_with_contexts(&result.merged, &result.class_contexts)
+        .map_err(|e| format!("author bridge IR lowering failed: {e}"))?;
+    emit_build_resolution_timing("bridge compile lower_to_ir", ir_started_at);
+    let backend = RustHostBootstrapBackend {
+        linker_override: None,
+        target_id: default_target_id().to_string(),
+        output_mode: "fat".to_string(),
+        output_entry: "main".to_string(),
+        emit_statement_trace_metadata: false,
+    };
+    let out_dir = build_dir;
+    let cached_exe_path = out_dir.join("main.exe");
+    let emit_started_at = Instant::now();
+    let artifact = match emit_author_build_bridge_with_retry(&backend, &ir, &out_dir) {
+        Ok(artifact) => artifact,
+        Err(_err) if cached_exe_path.exists() => {
+            emit_build_resolution_timing("bridge compile backend emit", emit_started_at);
+            fs::write(&stamp_path, expected_stamp)
+                .map_err(|e| format!("Failed to write author bridge stamp: {e}"))?;
+            return Ok(cached_exe_path);
+        }
+        Err(err) => return Err(format!("author bridge backend emit failed: {err}")),
+    };
+    emit_build_resolution_timing("bridge compile backend emit", emit_started_at);
+    let built_exe = artifact
+        .exe_path
+        .ok_or_else(|| "author bridge did not produce an executable".to_string())?;
+    fs::write(&stamp_path, expected_stamp)
+        .map_err(|e| format!("Failed to write author bridge stamp: {e}"))?;
+    Ok(built_exe)
+}
+
+fn emit_author_build_bridge_with_retry(
+    backend: &RustHostBootstrapBackend,
+    ir: &pulsec_core::intermediate::IrProgram,
+    out_dir: &Path,
+) -> Result<crate::backend::BackendArtifact, String> {
+    let mut last_err = None;
+    let max_attempts = 40usize;
+    for attempt in 0..max_attempts {
+        match backend.emit(ir, out_dir) {
+            Ok(artifact) => return Ok(artifact),
+            Err(err) => {
+                let text = err.to_string();
+                if attempt + 1 < max_attempts && is_transient_author_bridge_output_lock_error(&text) {
+                    std::thread::sleep(Duration::from_millis(1_000));
+                    last_err = Some(text);
+                    continue;
+                }
+                return Err(text);
+            }
+        }
+    }
+    Err(last_err.unwrap_or_else(|| "unknown author bridge emit failure".to_string()))
+}
+
+fn is_transient_author_bridge_output_lock_error(err: &str) -> bool {
+    let normalized = err.to_ascii_lowercase();
+    let locked_output = normalized.contains("main.exe")
+        || normalized.contains("startup.obj")
+        || normalized.contains("\\obj\\")
+        || normalized.contains("/obj/");
+    locked_output
+        && (normalized.contains("permission denied") || normalized.contains("cannot open file"))
+}
+
+fn resolve_cached_author_build_bridge_runner(cache_root: &Path) -> Result<PathBuf, String> {
+    let expected_stamp = author_build_bridge_stamp(cache_root);
+    let stamp_path = cache_root.join("stamp.txt");
+    let exe_path = author_build_bridge_build_dir(cache_root, &expected_stamp).join("main.exe");
+    if exe_path.exists()
+        && fs::read_to_string(&stamp_path)
+            .map(|text| text == expected_stamp)
+            .unwrap_or(false)
+    {
+        return Ok(exe_path);
+    }
+    Err(format!(
+        "author build bridge cache is missing or stale at '{}'; run 'pulsec __prewarm-author-build-bridge' first",
+        cache_root.display()
+    ))
+}
+
+pub(crate) fn prewarm_author_build_bridge_runner() -> Result<PathBuf, String> {
+    let total_started_at = Instant::now();
+    let cache_root = author_build_bridge_cache_root();
+    let lock_started_at = Instant::now();
+    let _lock = acquire_author_build_bridge_lock(&cache_root)?;
+    emit_build_resolution_timing("bridge lock wait", lock_started_at);
+    let ensure_started_at = Instant::now();
+    let exe = ensure_author_build_bridge_runner(&cache_root)?;
+    emit_build_resolution_timing("bridge ensure runner", ensure_started_at);
+    emit_build_resolution_timing("bridge prewarm total", total_started_at);
+    Ok(exe)
+}
+
 pub(super) fn resolve_check_invocation(
     entry_arg: Option<&str>,
     flags: &CliFlags,
 ) -> Result<CheckInvocation, String> {
     let mut used_manifest = false;
+    let mut authorlib_enabled = false;
     let manifest_info = find_and_load_manifest_for_check(entry_arg, flags)?;
     let mut source_root = flags.source_root.clone();
     let mut entry_path = entry_arg.map(|s| s.to_string());
 
     if let Some((manifest_path, manifest_config)) = manifest_info {
         used_manifest = true;
+        authorlib_enabled = manifest_config
+            .authorlib
+            .as_ref()
+            .map(|cfg| cfg.enabled)
+            .unwrap_or(false);
         let _manifest_identity = manifest_config
             .package
             .as_ref()
-            .map(|pkg| (&pkg.name, &pkg.version, pkg.metadata.len()));
+            .map(|pkg| (&pkg.name, &pkg.version));
         let project_root = manifest_path
             .parent()
             .ok_or_else(|| format!("Invalid manifest path '{}'", manifest_path.display()))?;
@@ -273,10 +1416,34 @@ pub(super) fn resolve_check_invocation(
         entry_path,
         source_root,
         used_manifest,
+        authorlib_enabled,
     })
 }
 
 pub(super) fn resolve_build_invocation(
+    entry_arg: Option<&str>,
+    flags: &CliFlags,
+) -> Result<BuildInvocation, String> {
+    let bridge_attempt_started_at = Instant::now();
+    match resolve_build_invocation_via_authorlib(entry_arg, flags) {
+        Ok(invocation) => {
+            emit_build_resolution_timing("authorlib bridge selected", bridge_attempt_started_at);
+            Ok(invocation)
+        }
+        Err(err) => {
+            emit_build_resolution_timing("authorlib bridge failed", bridge_attempt_started_at);
+            if build_resolution_timing_enabled() {
+                eprintln!("[timing][build-resolution] bridge failure: {err}");
+            }
+            let fallback_started_at = Instant::now();
+            let resolved = resolve_build_invocation_fallback(entry_arg, flags);
+            emit_build_resolution_timing("fallback total", fallback_started_at);
+            resolved
+        }
+    }
+}
+
+fn resolve_build_invocation_fallback(
     entry_arg: Option<&str>,
     flags: &CliFlags,
 ) -> Result<BuildInvocation, String> {
@@ -287,7 +1454,6 @@ pub(super) fn resolve_build_invocation(
     let mut entry_path = entry_arg.map(|s| s.to_string());
     let mut manifest_profile: Option<String> = None;
     let mut manifest_target: Option<String> = None;
-    let mut manifest_packaging_mode: Option<String> = None;
     let mut manifest_output_mode: Option<String> = None;
     let mut manifest_output_entry: Option<String> = None;
     let mut manifest_runtime_debug_allocator: Option<String> = None;
@@ -295,10 +1461,7 @@ pub(super) fn resolve_build_invocation(
     let mut manifest_out_dir: Option<String> = None;
     let mut manifest_linker: Option<String> = None;
     let mut manifest_assembler: Option<String> = None;
-    let mut manifest_wix: Option<String> = None;
-    let mut manifest_signtool: Option<String> = None;
     let mut manifest_main_resources: Option<String> = None;
-    let mut manifest_test_pulse: Option<String> = None;
     let mut manifest_asm_dir: Option<String> = None;
     let mut manifest_generated_dir: Option<String> = None;
     let mut manifest_assets_dir: Option<String> = None;
@@ -307,29 +1470,20 @@ pub(super) fn resolve_build_invocation(
     let mut manifest_distro_dir: Option<String> = None;
     let mut package_name: Option<String> = None;
     let mut package_version: Option<String> = None;
-    let mut package_publisher: Option<String> = None;
-    let mut package_identifier: Option<String> = None;
-    let mut package_install_scope: Option<String> = None;
-    let mut package_entrypoints: Option<String> = None;
-    let mut package_icons: Option<String> = None;
-    let mut package_assets: Option<String> = None;
-    let mut package_license: Option<String> = None;
-    let mut package_readme: Option<String> = None;
-    let mut package_config: Option<String> = None;
-    let mut package_data: Option<String> = None;
-    let mut package_libraries: Option<String> = None;
-    let mut package_signing_mode: Option<String> = None;
-    let mut package_signing_certificate: Option<String> = None;
-    let mut package_signing_subject: Option<String> = None;
-    let mut package_signing_timestamp_url: Option<String> = None;
+    let mut authorlib_enabled = false;
 
     if let Some((manifest_path, manifest_config)) = manifest_info {
         used_manifest = true;
+        authorlib_enabled = manifest_config
+            .authorlib
+            .as_ref()
+            .map(|cfg| cfg.enabled)
+            .unwrap_or(false);
         let _manifest_identity = (
             manifest_config
                 .package
                 .as_ref()
-                .map(|pkg| (&pkg.name, &pkg.version, pkg.metadata.len())),
+                .map(|pkg| (&pkg.name, &pkg.version)),
             manifest_config.sources.test_resources.as_deref(),
             manifest_config.sources.api_pulse.as_deref(),
             manifest_config.sources.api_resources.as_deref(),
@@ -339,22 +1493,6 @@ pub(super) fn resolve_build_invocation(
         if let Some(package) = manifest_config.package.as_ref() {
             package_name = Some(package.name.clone());
             package_version = Some(package.version.clone());
-            package_publisher = package.metadata.get("publisher").cloned();
-            package_identifier = package.metadata.get("identifier").cloned();
-            package_install_scope = package.metadata.get("install_scope").cloned();
-            package_entrypoints = package.metadata.get("entrypoints").cloned();
-            package_icons = package.metadata.get("icons").cloned();
-            package_assets = package.metadata.get("assets").cloned();
-            package_license = package.metadata.get("license").cloned();
-            package_readme = package.metadata.get("readme").cloned();
-            package_config = package.metadata.get("config").cloned();
-            package_data = package.metadata.get("data").cloned();
-            package_libraries = package.metadata.get("libraries").cloned();
-            package_signing_mode = package.metadata.get("signing_mode").cloned();
-            package_signing_certificate = package.metadata.get("signing_certificate").cloned();
-            package_signing_subject = package.metadata.get("signing_subject").cloned();
-            package_signing_timestamp_url =
-                package.metadata.get("signing_timestamp_url").cloned();
         }
         let root = manifest_path
             .parent()
@@ -363,7 +1501,6 @@ pub(super) fn resolve_build_invocation(
         project_root = Some(root.clone());
         manifest_profile = manifest_config.build.profile;
         manifest_target = manifest_config.build.target;
-        manifest_packaging_mode = manifest_config.build.packaging_mode;
         manifest_output_mode = manifest_config.build.output_mode;
         manifest_output_entry = manifest_config.build.output_entry;
         manifest_runtime_debug_allocator = manifest_config.build.runtime_debug_allocator;
@@ -371,15 +1508,12 @@ pub(super) fn resolve_build_invocation(
         manifest_out_dir = manifest_config.build.out_dir;
         manifest_linker = manifest_config.toolchain.linker;
         manifest_assembler = manifest_config.toolchain.assembler;
-        manifest_wix = manifest_config.toolchain.wix;
-        manifest_signtool = manifest_config.toolchain.signtool;
         let manifest_main_pulse = manifest_config
             .sources
             .main_pulse
             .clone()
             .or_else(|| Some(manifest_config.sources.root.clone()));
         manifest_main_resources = manifest_config.sources.main_resources.clone();
-        manifest_test_pulse = manifest_config.sources.test_pulse.clone();
         manifest_asm_dir = manifest_config.build.asm_dir.clone();
         manifest_generated_dir = manifest_config.build.generated_dir.clone();
         manifest_assets_dir = manifest_config.build.assets_dir.clone();
@@ -388,8 +1522,7 @@ pub(super) fn resolve_build_invocation(
         manifest_distro_dir = manifest_config.build.distro_dir.clone();
 
         if source_root.is_none() {
-            let main_pulse = manifest_main_pulse
-                .unwrap_or_else(|| "src/main/pulse".to_string());
+            let main_pulse = manifest_main_pulse.unwrap_or_else(|| "src/main/pulse".to_string());
             source_root = Some(root.join(main_pulse).display().to_string());
         }
         if entry_path.is_none() {
@@ -404,33 +1537,12 @@ pub(super) fn resolve_build_invocation(
         }
     }
 
-    if source_root.is_none() {
-        source_root = Some("src/main/pulse".to_string());
-    }
-    if entry_path.is_none() {
-        if let Some(src) = &source_root {
-            if let Some(discovered) = discover_entry_from_source_root(Path::new(src))? {
-                entry_path = Some(discovered.display().to_string());
-            }
-        }
-    }
-    let Some(entry_path) = entry_path else {
-        return Err(
-            "Missing entry file for 'build'. Provide <entry.pulse> or set [sources].entry in pulsec.toml"
-                .to_string(),
-        );
-    };
-
     let profile = if let Some(cli_profile) = &flags.profile {
         cli_profile.clone()
     } else if let Some(manifest_profile) = manifest_profile {
         match manifest_profile.as_str() {
             "debug" | "release" => manifest_profile,
-            _ => {
-                return Err(
-                    "Manifest [build].profile must be 'debug' or 'release'".to_string(),
-                )
-            }
+            _ => return Err("Manifest [build].profile must be 'debug' or 'release'".to_string()),
         }
     } else {
         "release".to_string()
@@ -439,12 +1551,7 @@ pub(super) fn resolve_build_invocation(
         .target
         .clone()
         .or(manifest_target)
-        .unwrap_or_else(|| "native-x64".to_string());
-    let packaging_mode = flags
-        .packaging_mode
-        .clone()
-        .or(manifest_packaging_mode)
-        .unwrap_or_else(|| "staged".to_string());
+        .unwrap_or_else(|| default_target_id().to_string());
     let output_mode = flags
         .output_mode
         .clone()
@@ -470,17 +1577,35 @@ pub(super) fn resolve_build_invocation(
         canonical_existing_path(Path::new(src))
             .ok()
             .and_then(|p| p.parent().map(|parent| parent.to_path_buf()))
-            .or_else(|| absolutize(Path::new(src)).and_then(|p| p.parent().map(|parent| parent.to_path_buf())))
-            .unwrap_or_else(|| {
-                env::current_dir()
-                    .unwrap_or_else(|_| PathBuf::from("."))
+            .or_else(|| {
+                absolutize(Path::new(src))
+                    .and_then(|p| p.parent().map(|parent| parent.to_path_buf()))
             })
+            .unwrap_or_else(|| env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
     } else {
         env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
     };
+    let project_root = project_root.unwrap_or_else(|| base_root.clone());
+
+    if source_root.is_none() {
+        source_root = Some(project_root.join("src/main/pulse").display().to_string());
+    }
+    if entry_path.is_none() {
+        if let Some(src) = &source_root {
+            if let Some(discovered) = discover_entry_from_source_root(Path::new(src))? {
+                entry_path = Some(discovered.display().to_string());
+            }
+        }
+    }
+    let Some(entry_path) = entry_path else {
+        return Err(
+            "Missing entry file for 'build'. Provide <entry.pulse> or set [sources].entry in pulsec.toml"
+                .to_string(),
+        );
+    };
 
     let configured_out_dir = flags.out_dir.clone().or(manifest_out_dir.clone());
-    let build_root = if let Some(out_dir) = configured_out_dir {
+    let output_root = if let Some(out_dir) = configured_out_dir {
         let out_path = PathBuf::from(out_dir);
         if out_path.is_absolute() {
             out_path
@@ -496,9 +1621,8 @@ pub(super) fn resolve_build_invocation(
         // Preserve direct-mode artifact layout used by fixture suites.
         base_root.join("build")
     };
+    let build_root = base_root.join("build");
 
-    let project_root = project_root.unwrap_or_else(|| base_root.clone());
-    let build_workspace_root = project_root.join("build");
     let main_pulse_root = source_root
         .as_ref()
         .map(PathBuf::from)
@@ -508,28 +1632,33 @@ pub(super) fn resolve_build_invocation(
         manifest_main_resources.as_deref(),
         "src/main/resources",
     );
-    let tests_root = resolve_layout_path(&project_root, manifest_test_pulse.as_deref(), "src/test/pulse");
-    let build_asm_dir = resolve_layout_path(&project_root, manifest_asm_dir.as_deref(), "build/asm");
+    let build_asm_dir =
+        resolve_layout_path(&project_root, manifest_asm_dir.as_deref(), "build/asm");
     let build_generated_dir = resolve_layout_path(
         &project_root,
         manifest_generated_dir.as_deref(),
         "build/generated",
     );
-    let build_assets_dir =
-        resolve_layout_path(&project_root, manifest_assets_dir.as_deref(), "build/assets");
-    let build_sanity_dir =
-        resolve_layout_path(&project_root, manifest_sanity_dir.as_deref(), "build/sanity");
-    let build_tmp_dir = resolve_layout_path(&project_root, manifest_tmp_dir.as_deref(), "build/tmp");
+    let build_assets_dir = resolve_layout_path(
+        &project_root,
+        manifest_assets_dir.as_deref(),
+        "build/assets",
+    );
+    let build_sanity_dir = resolve_layout_path(
+        &project_root,
+        manifest_sanity_dir.as_deref(),
+        "build/sanity",
+    );
+    let build_tmp_dir =
+        resolve_layout_path(&project_root, manifest_tmp_dir.as_deref(), "build/tmp");
 
     Ok(BuildInvocation {
         entry_path,
         source_root,
-        project_root: project_root.clone(),
-        build_workspace_root,
         build_root,
+        output_root,
         main_pulse_root,
         main_resources_root,
-        tests_root,
         build_asm_dir,
         build_generated_dir,
         build_assets_dir,
@@ -537,33 +1666,279 @@ pub(super) fn resolve_build_invocation(
         build_tmp_dir,
         profile,
         target,
-        packaging_mode,
-        output_mode,
+        output_mode: normalize_output_mode(&output_mode)
+            .ok_or_else(|| "Manifest [build].output_mode must be 'fat' or 'shared'".to_string())?
+            .to_string(),
         output_entry,
         runtime_debug_allocator,
         runtime_cycle_collector,
         assembler: flags.assembler.clone().or(manifest_assembler),
-        linker: manifest_linker,
-        wix: flags.wix.clone().or(manifest_wix),
-        signtool: flags.signtool.clone().or(manifest_signtool),
+        linker: flags.linker.clone().or(manifest_linker),
         package_name,
         package_version,
-        package_publisher,
-        package_identifier,
-        package_install_scope,
-        package_entrypoints,
-        package_icons,
-        package_assets,
-        package_license,
-        package_readme,
-        package_config,
-        package_data,
-        package_libraries,
-        package_signing_mode,
-        package_signing_certificate,
-        package_signing_subject,
-        package_signing_timestamp_url,
         used_manifest,
+        authorlib_enabled,
     })
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::OnceLock;
+
+    fn ensure_author_build_bridge_ready_for_tests() {
+        static READY: OnceLock<()> = OnceLock::new();
+        READY.get_or_init(|| {
+            prewarm_author_build_bridge_runner().expect("prewarm author build bridge for tests");
+        });
+    }
+    use std::sync::atomic::{AtomicU64, Ordering};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn unique_temp_root() -> PathBuf {
+        static NEXT_ID: AtomicU64 = AtomicU64::new(1);
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time")
+            .as_nanos();
+        let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
+        let root = std::env::temp_dir().join(format!(
+            "pulsec_config_resolve_{}_{}_{}",
+            std::process::id(),
+            nanos,
+            id
+        ));
+        fs::create_dir_all(&root).expect("create temp root");
+        root
+    }
+
+    fn write_file(path: &Path, contents: &str) {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).expect("create parent");
+        }
+        fs::write(path, contents).expect("write file");
+    }
+
+    fn path_text(path: &Path) -> String {
+        path.display()
+            .to_string()
+            .replace("\\\\?\\", "")
+            .replace('\\', "/")
+    }
+
+    fn default_flags(project_root: &Path) -> CliFlags {
+        CliFlags {
+            strict_package: true,
+            friendly: false,
+            project_root: Some(project_root.display().to_string()),
+            source_root: None,
+            profile: None,
+            target: None,
+            output_mode: None,
+            runtime_debug_allocator: None,
+            runtime_cycle_collector: None,
+            out_dir: None,
+            assembler: None,
+            linker: None,
+        }
+    }
+
+    #[test]
+    fn author_build_bridge_lock_reclaims_stale_owner_directory() {
+        let cache_root = unique_temp_root();
+        let lock_path = cache_root.join("lock");
+        fs::create_dir_all(&lock_path).expect("create stale lock dir");
+        fs::write(
+            author_build_bridge_lock_info_path(&lock_path),
+            format!(
+                "pid=1\nstarted_ms={}\n",
+                current_unix_millis()
+                    .saturating_sub(AUTHOR_BUILD_BRIDGE_LOCK_STALE_AFTER.as_millis() + 1)
+            ),
+        )
+        .expect("write stale lock info");
+
+        let lock = acquire_author_build_bridge_lock(&cache_root).expect("recover stale lock");
+        assert!(author_build_bridge_lock_info_path(&lock.path).exists());
+        drop(lock);
+
+        let _ = fs::remove_dir_all(cache_root);
+    }
+
+    #[test]
+    fn resolve_build_invocation_direct_mode_anchors_source_root_under_project_root() {
+        ensure_author_build_bridge_ready_for_tests();
+        let root = unique_temp_root();
+        let entry = root.join("src/main/pulse/app/core/Main.pulse");
+        write_file(
+            &entry,
+            r#"
+            package app.core;
+            class Main {
+                public static void main() {
+                }
+            }
+            "#,
+        );
+
+        let resolved =
+            resolve_build_invocation(None, &default_flags(&root)).expect("resolve direct build");
+        let expected_source_root = path_text(&root.join("src/main/pulse"));
+        let expected_entry = path_text(&entry);
+
+        assert_eq!(
+            resolved
+                .source_root
+                .as_deref()
+                .map(|value| value.replace('\\', "/")),
+            Some(expected_source_root)
+        );
+        assert_eq!(resolved.entry_path.replace('\\', "/"), expected_entry);
+        assert_eq!(resolved.build_root, root.join("build"));
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+
+    #[test]
+    fn resolve_build_invocation_via_authorlib_bridge_executes_direct_mode() {
+        ensure_author_build_bridge_ready_for_tests();
+        let root = unique_temp_root();
+        let entry = root.join("src/main/pulse/app/core/Main.pulse");
+        write_file(
+            &entry,
+            r#"
+            package app.core;
+            class Main {
+                public static void main() {
+                }
+            }
+            "#,
+        );
+
+        let resolved = resolve_build_invocation_via_authorlib(None, &default_flags(&root))
+            .expect("resolve direct build through authorlib bridge");
+
+        assert_eq!(
+            resolved
+                .source_root
+                .as_deref()
+                .map(|value| value.replace('\\', "/")),
+            Some(path_text(&root.join("src/main/pulse")))
+        );
+        assert_eq!(resolved.entry_path.replace('\\', "/"), path_text(&entry));
+        assert!(!resolved.used_manifest);
+        assert!(!resolved.authorlib_enabled);
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn resolve_build_invocation_via_authorlib_bridge_honors_project_root_manifest() {
+        ensure_author_build_bridge_ready_for_tests();
+        let root = unique_temp_root();
+        write_file(
+            &root.join("pulsec.toml"),
+            r#"
+            [package]
+            name = "demo"
+            version = "0.1.0"
+
+            [sources]
+            main_pulse = "src/main/pulse"
+            entry = "app/core/Main.pulse"
+
+            [authorlib]
+            enabled = true
+            "#,
+        );
+        let entry = root.join("src/main/pulse/app/core/Main.pulse");
+        write_file(
+            &entry,
+            r#"
+            package app.core;
+            import author.build.BuildInvocationResolver;
+            class Main {
+                public static void main() {
+                }
+            }
+            "#,
+        );
+
+        let resolved = resolve_build_invocation_via_authorlib(None, &default_flags(&root))
+            .expect("resolve manifest-backed build through authorlib bridge");
+
+        assert!(resolved.used_manifest);
+        assert!(resolved.authorlib_enabled);
+        assert_eq!(
+            resolved
+                .source_root
+                .as_deref()
+                .map(|value| value.replace('\\', "/")),
+            Some(path_text(&root.join("src/main/pulse")))
+        );
+        assert_eq!(resolved.entry_path.replace('\\', "/"), path_text(&entry));
+
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn resolve_build_invocation_manifest_follows_author_build_output_mode_and_toolchain_precedence() {
+        ensure_author_build_bridge_ready_for_tests();
+        let root = unique_temp_root();
+        write_file(
+            &root.join("pulsec.toml"),
+            r#"
+            [package]
+            name = "demo"
+            version = "0.1.0"
+
+            [sources]
+            main_pulse = "src/main/pulse"
+            entry = "app/core/Main.pulse"
+
+            [build]
+            profile = "debug"
+            output_mode = "single_exe"
+
+            [toolchain]
+            assembler = "manifest-asm"
+            linker = "manifest-link"
+            "#,
+        );
+        let entry = root.join("src/main/pulse/app/core/Main.pulse");
+        write_file(
+            &entry,
+            r#"
+            package app.core;
+            class Main {
+                public static void main() {
+                }
+            }
+            "#,
+        );
+        let mut flags = default_flags(&root);
+        flags.assembler = Some("cli-asm".to_string());
+        flags.linker = Some("cli-link".to_string());
+
+        let resolved =
+            resolve_build_invocation(None, &flags).expect("resolve manifest-backed build");
+
+        assert_eq!(resolved.output_mode, "fat");
+        assert_eq!(resolved.assembler.as_deref(), Some("cli-asm"));
+        assert_eq!(resolved.linker.as_deref(), Some("cli-link"));
+        assert_eq!(resolved.profile, "debug");
+        assert!(
+            path_text(&resolved.build_root).ends_with("/build"),
+            "unexpected build root: {}",
+            path_text(&resolved.build_root)
+        );
+        assert!(
+            path_text(&resolved.build_asm_dir).ends_with("/build/asm"),
+            "unexpected asm dir: {}",
+            path_text(&resolved.build_asm_dir)
+        );
+
+        let _ = fs::remove_dir_all(root);
+    }
+}

@@ -1,0 +1,127 @@
+package pulse.lang;
+import pulse.rt.Intrinsics;
+
+/**
+ * Root throwable type for PulseCode error values.
+ */
+public class Throwable extends Object {
+    private String typeName;
+    private String message;
+    private Throwable cause;
+
+    /**
+     * Creates a throwable with no detail message or cause.
+     * Use this for generic error construction when no extra detail is needed.
+     */
+    public Throwable() {
+        this.typeName = "Throwable";
+        this.message = null;
+        this.cause = null;
+    }
+
+    /**
+     * Creates a throwable with the supplied message text.
+     * Use this when propagating a human-readable error description.
+     */
+    public Throwable(String message) {
+        this.typeName = "Throwable";
+        this.message = message;
+        this.cause = null;
+    }
+
+    /**
+     * Creates a throwable with both a detail message and a cause.
+     * Use this when preserving a lower-level failure while adding higher-level context.
+     */
+    public Throwable(String message, Throwable cause) {
+        this.typeName = "Throwable";
+        this.message = message;
+        this.cause = cause;
+    }
+
+    /**
+     * Initializes the throwable state from subclass constructors.
+     * Use this when a subtype needs Java-like constructor overloads without duplicating field ownership.
+     */
+    protected void initThrowableState(String typeName, String message, Throwable cause) {
+        this.typeName = typeName;
+        this.message = message;
+        this.cause = cause;
+    }
+
+    /**
+     * Returns the stored throwable message.
+     * Use this when reporting or formatting error details.
+     */
+    public String getMessage() {
+        return this.message;
+    }
+
+    /**
+     * Returns the wrapped cause when one exists.
+     * Use this when preserving or inspecting chained failure state.
+     */
+    public Throwable getCause() {
+        return this.cause;
+    }
+
+    /**
+     * Assigns a cause to this throwable once.
+     * Use this when a throwable must be created first and linked to its cause later.
+     */
+    public Throwable initCause(Throwable cause) {
+        if (cause == this) {
+            Intrinsics.panic("Self-causation is not permitted");
+        }
+        if (this.cause != null) {
+            Intrinsics.panic("Cause already initialized");
+        }
+        this.cause = cause;
+        return this;
+    }
+
+    /**
+     * Formats a Java-like type-plus-message display string for a throwable subtype.
+     * Use this from subclass `toString()` implementations instead of duplicating message checks.
+     */
+    protected String formatThrowable(String typeName) {
+        String message = this.getMessage();
+        if (message == null || message.length() == 0) {
+            return typeName;
+        }
+        String text = typeName.concat(": ");
+        return text.concat(message);
+    }
+
+    /**
+     * Returns the throwable text plus its cause chain.
+     * Use this when the full failure chain needs to be rendered for fail-fast output.
+     */
+    public String describe() {
+        String text = this.toString();
+        Throwable cause = this.getCause();
+        if (cause == null) {
+            return text;
+        }
+        text = text.concat("\nCaused by: ");
+        String causeText = cause.describe();
+        return text.concat(causeText);
+    }
+
+    /**
+     * Returns a display form for the throwable.
+     * Use this when emitting the throwable directly as text.
+     */
+    public String toString() {
+        return this.formatThrowable(this.typeName);
+    }
+
+    /**
+     * Terminates the current program using this throwable as the fail-fast payload.
+     * This is the current stdlib bridge for uncaught throwable termination after runtime
+     * exception propagation has reached the fail-fast boundary.
+     */
+    public void panic() {
+        Intrinsics.panic(this.describe());
+    }
+}

@@ -1,4 +1,4 @@
 status=linked
-linker=C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717\bin\Hostx64\x64\link.exe
+linker=link.exe
 entry_codegen=masm-split-stdlib
-exe=\\?\D:\Programming\codex\PulseCode\crates\pulsec-cli\tests\fixtures\runtime_mix\build\main.exe
+exe=G:/Programming/Rust/PulseCode/crates/pulsec-cli/tests/fixtures/runtime_mix/build\main.exe

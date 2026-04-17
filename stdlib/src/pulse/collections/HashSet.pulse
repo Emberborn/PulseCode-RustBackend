@@ -1,0 +1,199 @@
+package pulse.collections;
+
+import pulse.lang.Iterator;
+import pulse.lang.Object;
+
+/**
+ * Unique-value set implementation built on the raw-object map baseline.
+ */
+public class HashSet<T> implements Set<T> {
+    private HashMap<T, Object> entries;
+    private Object present;
+
+    /**
+     * Creates an empty set.
+     */
+    public HashSet() {
+        this.entries = new HashMap();
+        this.present = "present";
+    }
+
+    /**
+     * Returns the number of unique values in the set.
+     */
+    public int size() {
+        return this.entries.size();
+    }
+
+    /**
+     * Reports whether the set currently stores any values.
+     */
+    public boolean isEmpty() {
+        return this.entries.isEmpty();
+    }
+
+    /**
+     * Removes all values from the set.
+     */
+    public void clear() {
+        this.entries.clear();
+    }
+
+    /**
+     * Adds one raw-object value without routing through public overloads.
+     */
+    private boolean addValue(Object value) {
+        if (this.entries.containsKey(value)) {
+            return false;
+        }
+        this.entries.put(value, this.present);
+        return true;
+    }
+
+    /**
+     * Creates an owned string copy for bulk-copy helper paths.
+     */
+    private String copyStringValue(String value) {
+        return value.substring(0, value.length());
+    }
+
+    /**
+     * Copies one iterated value into the current stable helper lane when possible.
+     */
+    private boolean addCopiedValue(Object value) {
+        if (value instanceof String) {
+            return this.add(this.copyStringValue((String) value));
+        }
+        return this.add(value);
+    }
+
+    /**
+     * Reports whether the supplied raw-object value is present without routing through public overloads.
+     */
+    private boolean containsValue(Object value) {
+        return this.entries.containsKey(value);
+    }
+
+    /**
+     * Adds one raw-object value to the set when it is not already present.
+     */
+    public boolean add(T value) {
+        return this.addValue(value);
+    }
+
+    /**
+     * Adds all values exposed by the supplied collection into this set.
+     */
+    public boolean addAll(Collection<T> values) {
+        if (values == this) {
+            return false;
+        }
+        boolean changed = false;
+        Iterator items = values.iterator();
+        while (items.hasNext()) {
+            if (this.addCopiedValue(items.next())) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Adds one string value to the set.
+     */
+    public boolean add(String value) {
+        return this.addValue(value);
+    }
+
+    /**
+     * Removes the supplied raw-object value when it is present.
+     */
+    public boolean remove(T value) {
+        return this.entries.remove(value) != null;
+    }
+
+    /**
+     * Removes the supplied string value when it is present.
+     */
+    public boolean remove(String value) {
+        HashMap rawEntries = this.entries;
+        return rawEntries.remove(value) != null;
+    }
+
+    /**
+     * Reports whether every value in the supplied collection is present in this set.
+     */
+    public boolean containsAll(Collection<T> values) {
+        Iterator items = values.iterator();
+        while (items.hasNext()) {
+            if (!this.contains(items.next())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Removes every value in the supplied collection from this set.
+     */
+    public boolean removeAll(Collection<T> values) {
+        if (values == this) {
+            boolean changed = !this.isEmpty();
+            this.clear();
+            return changed;
+        }
+        boolean changed = false;
+        Iterator items = values.iterator();
+        while (items.hasNext()) {
+            if (this.remove(items.next())) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Retains only the values from the supplied collection in this set.
+     */
+    public boolean retainAll(Collection<T> values) {
+        if (values == this) {
+            return false;
+        }
+        int originalSize = this.size();
+        HashSet<T> allowed = new HashSet();
+        allowed.addAll(values);
+
+        ArrayList<T> current = new ArrayList();
+        current.addAll(this);
+
+        Iterator items = current.iterator();
+        while (items.hasNext()) {
+            Object value = items.next();
+            if (!allowed.contains(value)) {
+                this.remove(value);
+            }
+        }
+        return this.size() != originalSize;
+    }
+
+    /**
+     * Reports whether the supplied raw-object value is present in the set.
+     */
+    public boolean contains(T value) {
+        return this.containsValue(value);
+    }
+
+    /**
+     * Reports whether the supplied string value is present in the set.
+     */
+    public boolean contains(String value) {
+        return this.containsValue(value);
+    }
+
+    /**
+     * Returns an iterator over the currently stored set values.
+     */
+    public Iterator iterator() {
+        return this.entries.keyIterator();
+    }
+}

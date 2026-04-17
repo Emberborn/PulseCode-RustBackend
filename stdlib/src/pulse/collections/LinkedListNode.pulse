@@ -1,0 +1,96 @@
+package pulse.collections;
+
+import pulse.lang.Integer;
+import pulse.lang.Object;
+
+/**
+ * Internal node used by the raw-object linked collection storage.
+ */
+final class LinkedListNode {
+    private Object value;
+    private int intValue;
+    private boolean intValueActive;
+    private LinkedListNode previous;
+    private LinkedListNode next;
+
+    /**
+     * Creates one linked-list node carrying the supplied value.
+     */
+    public LinkedListNode(Object value) {
+        this.value = value;
+        this.intValue = 0;
+        this.intValueActive = false;
+        this.previous = null;
+        this.next = null;
+    }
+
+    /**
+     * Returns the value carried by this node.
+     */
+    public Object getValue() {
+        if (this.intValueActive) {
+            return Integer.boxObject(this.intValue);
+        }
+        return this.value;
+    }
+
+    /**
+     * Replaces the value carried by this node.
+     */
+    public void setValue(Object value) {
+        this.value = value;
+        this.intValue = 0;
+        this.intValueActive = false;
+    }
+
+    /**
+     * Reports whether this node currently stores an int helper value.
+     */
+    public boolean hasIntValue() {
+        return this.intValueActive;
+    }
+
+    /**
+     * Returns the int helper value carried by this node.
+     */
+    public int getIntValue() {
+        return this.intValue;
+    }
+
+    /**
+     * Replaces the value carried by this node with an int helper value.
+     */
+    public void setIntValue(int value) {
+        this.value = null;
+        this.intValue = value;
+        this.intValueActive = true;
+    }
+
+    /**
+     * Returns the previous node in the chain.
+     */
+    public LinkedListNode getPrevious() {
+        return this.previous;
+    }
+
+    /**
+     * Replaces the previous node link.
+     */
+    public void setPrevious(LinkedListNode previous) {
+        this.previous = previous;
+    }
+
+    /**
+     * Returns the next node in the chain.
+     */
+    public LinkedListNode getNext() {
+        return this.next;
+    }
+
+    /**
+     * Replaces the next node link.
+     */
+    public void setNext(LinkedListNode next) {
+        this.next = next;
+    }
+}

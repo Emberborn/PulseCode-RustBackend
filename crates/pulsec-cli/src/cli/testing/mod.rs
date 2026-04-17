@@ -3,14 +3,20 @@ use super::*;
 pub(super) fn resolve_test_invocation(flags: &CliFlags) -> Result<TestInvocation, String> {
     let manifest_info = find_and_load_manifest_for_check(None, flags)?;
     let mut used_manifest = false;
+    let mut authorlib_enabled = false;
     let mut manifest_main_pulse: Option<String> = None;
     let mut manifest_test_pulse: Option<String> = None;
     let project_root = if let Some((manifest_path, manifest_config)) = manifest_info {
         used_manifest = true;
+        authorlib_enabled = manifest_config
+            .authorlib
+            .as_ref()
+            .map(|cfg| cfg.enabled)
+            .unwrap_or(false);
         let _manifest_identity = manifest_config
             .package
             .as_ref()
-            .map(|pkg| (&pkg.name, &pkg.version, pkg.metadata.len()));
+            .map(|pkg| (&pkg.name, &pkg.version));
         manifest_main_pulse = manifest_config
             .sources
             .main_pulse
@@ -40,10 +46,7 @@ pub(super) fn resolve_test_invocation(flags: &CliFlags) -> Result<TestInvocation
         project_root.join("src/main/pulse")
     };
     let tests_root = if used_manifest {
-        project_root.join(
-            manifest_test_pulse
-                .unwrap_or_else(|| "src/test/pulse".to_string()),
-        )
+        project_root.join(manifest_test_pulse.unwrap_or_else(|| "src/test/pulse".to_string()))
     } else {
         project_root.join("tests")
     };
@@ -52,6 +55,7 @@ pub(super) fn resolve_test_invocation(flags: &CliFlags) -> Result<TestInvocation
         source_root,
         tests_root,
         used_manifest,
+        authorlib_enabled,
     })
 }
 
@@ -72,5 +76,3 @@ pub(super) fn display_test_name(tests_root: &Path, file: &Path) -> String {
         file.display().to_string()
     }
 }
-
-

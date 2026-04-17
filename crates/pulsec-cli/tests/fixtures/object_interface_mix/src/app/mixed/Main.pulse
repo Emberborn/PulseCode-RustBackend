@@ -1,5 +1,5 @@
 package app.mixed;
-import com.pulse.lang.IO;
+import pulse.lang.IO;
 
 class Main {
     public static void main() {

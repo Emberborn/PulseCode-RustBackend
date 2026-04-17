@@ -49,7 +49,10 @@ impl Parser {
         Ok(name)
     }
 
-    pub(crate) fn expect_non_array_type_name(&mut self, message: &str) -> Result<String, ParseError> {
+    pub(crate) fn expect_non_array_type_name(
+        &mut self,
+        message: &str,
+    ) -> Result<String, ParseError> {
         let kind = self.peek().kind.clone();
         if kind != TokenKind::Identifier && kind != TokenKind::Keyword {
             return Err(self.error_here(message));

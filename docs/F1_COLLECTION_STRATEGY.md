@@ -75,7 +75,7 @@ This hardening is spread across:
 - `F1-53`
 - `F1-54`
 - `F1-55`
-- later generic closure under `F1-68`
+- later value-kind/final-shape closure under `F1-109` and `F1-110` after the now-locked `F1-108` generic public-surface work
 
 ## Public Ownership Rules
 
@@ -113,7 +113,9 @@ The current bootstrap APIs are allowed to exist before self-host, but only under
 - `F1-53` iteration contract
 - `F1-54` utility/container family expansion
 - `F1-55` runtime/nullability/ownership hardening
-- `F1-68` generic collection closure
+- `F1-108` generic collection public-surface closure
+- `F1-109` self-host collection value-kind closure
+- `F1-110` final Java-close collection-shape closure
 
 ## Honest Summary
 

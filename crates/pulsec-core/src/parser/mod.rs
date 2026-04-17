@@ -1,17 +1,17 @@
 use crate::{
     Annotation, BinaryOp, CatchClause, ClassDecl, ClassMember, CompileError, Expr, FieldDecl,
-    ImportDecl, IncDecOp, MethodDecl, Modifier, PackageDecl, ParamDecl, ParseError, Program,
-    Stmt, SwitchCase, SwitchExprCase, Token, TokenKind, UnaryOp,
+    ImportDecl, IncDecOp, MethodDecl, Modifier, PackageDecl, ParamDecl, ParseError, Program, Stmt,
+    SwitchCase, SwitchExprCase, Token, TokenKind, TryResource, UnaryOp,
 };
 
 #[path = "declarations/mod.rs"]
 mod declarations;
 #[path = "expressions/mod.rs"]
 mod expressions;
-#[path = "statements/mod.rs"]
-mod statements;
 #[path = "shared/mod.rs"]
 mod shared;
+#[path = "statements/mod.rs"]
+mod statements;
 
 pub fn parse(source: &str) -> Result<Program, CompileError> {
     parse_with_source_name(source, "<memory>")

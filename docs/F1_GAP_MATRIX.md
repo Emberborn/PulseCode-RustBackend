@@ -24,7 +24,7 @@ Status legend:
 | `final` | Real | Real class/method/field baseline where currently supported |
 | general annotations | Missing | Only `@Override` is real today |
 | `@Override` | Real | Real semantic contract |
-| generics | Missing | No honest current generics baseline |
+| generics | Real | Compile-time instantiated generics with erased runtime are implemented for classes/interfaces/methods, with the selected collection-wide generic closure already locked separately |
 | arrays as types | Partial | Array type identity exists, but Java-close array surface is not complete |
 
 ## Statements And Control Flow
@@ -37,13 +37,13 @@ Status legend:
 | `while` | Real | Real semantic baseline |
 | `do-while` | Real | Real semantic baseline |
 | `for` | Real | Real semantic baseline |
-| enhanced-for / foreach | Missing | Not yet implemented |
+| enhanced-for / foreach | Real | Iterable object streams, stdlib `Array` lane-aware/object-stream iteration, and native-array foreach are all implemented in the shipped F1 baseline |
 | `switch` | Real | Current literal case baseline is real |
 | `break` / `continue` | Real | Real semantic baseline |
 | `return` | Real | Real semantic baseline |
 | `throw` | Missing | Exception-flow syntax not implemented |
 | `try` / `catch` / `finally` | Missing | Exception-flow syntax not implemented |
-| try-with-resources | Missing | Not implemented |
+| try-with-resources | Real | Declaration-form resources are implemented on the shipped `AutoCloseable` lifecycle model; later Java-shape tightening can still return for effectively-final external operands or suppressed-exception parity |
 | `assert` | Missing | Not implemented |
 | `synchronized` statement | Missing | Not implemented as a real statement/runtime feature |
 

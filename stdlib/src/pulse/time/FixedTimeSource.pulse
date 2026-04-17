@@ -1,0 +1,58 @@
+package pulse.time;
+import pulse.lang.Object;
+
+/**
+ * Internal fixed monotonic time-source implementation for deterministic elapsed-time reads.
+ */
+final class FixedTimeSource implements TimeSource {
+    private long nanos;
+
+    FixedTimeSource(long nanos) {
+        this.nanos = nanos;
+    }
+
+    /**
+     * Reports that this source is deterministic and fixed.
+     * Use this when callers need to branch on fixed versus runtime-backed elapsed-time behavior.
+     */
+    public boolean isFixed() {
+        return true;
+    }
+
+    /**
+     * Returns the fixed monotonic nanosecond-style reading.
+     * Use this as the deterministic elapsed-time source for tests and simulations.
+     */
+    public long nanos() {
+        return this.nanos;
+    }
+
+    /**
+     * Reports value equality for fixed monotonic sources.
+     * Use this to compare deterministic elapsed-time sources by their pinned reading.
+     */
+    public boolean equals(Object other) {
+        if (!(other instanceof FixedTimeSource)) {
+            return false;
+        }
+        FixedTimeSource value = (FixedTimeSource) other;
+        return this.nanos == value.nanos;
+    }
+
+    /**
+     * Returns a stable hash code derived from the fixed monotonic reading.
+     * Use this when fixed elapsed-time sources participate in maps, sets, or diagnostics.
+     */
+    public int hashCode() {
+        long mixed = this.nanos ^ (this.nanos >>> 32);
+        return (int) mixed;
+    }
+
+    /**
+     * Formats this source for diagnostics.
+     * Use this when code needs a readable description of a deterministic fixed elapsed-time source.
+     */
+    public String toString() {
+        return "TimeSource[fixed=".concat(pulse.lang.Long.toString(this.nanos)).concat("ns]");
+    }
+}

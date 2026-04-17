@@ -82,8 +82,13 @@ pub(super) fn canonicalize_type_name_in_scope(
         return Ok(format!("{}{}", raw_base, array_suffix));
     }
 
-    let resolved =
-        resolve_type_base_fqcn(raw_base, current_package, imports, simple_to_fqcns, fqcn_names)?;
+    let resolved = resolve_type_base_fqcn(
+        raw_base,
+        current_package,
+        imports,
+        simple_to_fqcns,
+        fqcn_names,
+    )?;
     let expected_arity = generic_arity.get(&resolved).copied().unwrap_or(0);
     if generic_args.is_empty() {
         return Ok(format!("{}{}", resolved, array_suffix));
@@ -176,7 +181,10 @@ pub(super) fn split_generic_type(ty: &str) -> Result<(&str, Vec<String>), Semant
     Ok((raw, args))
 }
 
-pub(super) fn validate_type_param_list(type_params: &[String], context: &str) -> Result<(), SemanticError> {
+pub(super) fn validate_type_param_list(
+    type_params: &[String],
+    context: &str,
+) -> Result<(), SemanticError> {
     let mut seen = HashSet::new();
     for param in type_params {
         if is_builtin_type(param) {
@@ -195,7 +203,10 @@ pub(super) fn validate_type_param_list(type_params: &[String], context: &str) ->
     Ok(())
 }
 
-pub(super) fn visible_type_params(class: &ClassDecl, method: Option<&MethodDecl>) -> HashSet<String> {
+pub(super) fn visible_type_params(
+    class: &ClassDecl,
+    method: Option<&MethodDecl>,
+) -> HashSet<String> {
     let mut visible = class.type_params.iter().cloned().collect::<HashSet<_>>();
     if let Some(method) = method {
         visible.extend(method.type_params.iter().cloned());
@@ -273,7 +284,7 @@ pub(super) fn resolve_type_base_fqcn(
 
     let _ = simple_to_fqcns;
     let mut prelude = Vec::new();
-    for package in ["com.pulse.io", "com.pulse.math", "com.pulse.collections", "com.pulse.lang"] {
+    for package in crate::implicit_prelude_packages() {
         let candidate = format!("{}.{}", package, base);
         if fqcn_names.contains(&candidate) {
             prelude.push(candidate);
@@ -319,10 +330,7 @@ pub(super) fn erase_generic_type_name(ty: &str) -> String {
     format!("{}{}", raw, array_suffix)
 }
 
-pub(super) fn substitute_type_params(
-    ty: &str,
-    bindings: &HashMap<String, String>,
-) -> String {
+pub(super) fn substitute_type_params(ty: &str, bindings: &HashMap<String, String>) -> String {
     let (base, array_suffix) = split_array_suffix(ty);
     let Ok((raw, args)) = split_generic_type(base) else {
         return bindings
@@ -331,7 +339,10 @@ pub(super) fn substitute_type_params(
             .unwrap_or_else(|| format!("{}{}", base, array_suffix));
     };
 
-    let substituted_base = bindings.get(raw).cloned().unwrap_or_else(|| raw.to_string());
+    let substituted_base = bindings
+        .get(raw)
+        .cloned()
+        .unwrap_or_else(|| raw.to_string());
     if args.is_empty() {
         return format!("{}{}", substituted_base, array_suffix);
     }
@@ -353,7 +364,7 @@ pub(super) fn build_type_param_bindings(
         let bound = concrete_args
             .get(idx)
             .cloned()
-            .unwrap_or_else(|| "com.pulse.lang.Object".to_string());
+            .unwrap_or_else(|| "pulse.lang.Object".to_string());
         bindings.insert(type_param.clone(), bound);
     }
     bindings
@@ -366,13 +377,11 @@ pub(super) fn bind_missing_type_params(
     for type_param in type_params {
         bindings
             .entry(type_param.clone())
-            .or_insert_with(|| "com.pulse.lang.Object".to_string());
+            .or_insert_with(|| "pulse.lang.Object".to_string());
     }
 }
 
-pub(super) fn generic_type_components(
-    ty: &str,
-) -> Option<(String, Vec<String>, String)> {
+pub(super) fn generic_type_components(ty: &str) -> Option<(String, Vec<String>, String)> {
     let (base, array_suffix) = split_array_suffix(ty);
     let Ok((raw, args)) = split_generic_type(base) else {
         return None;
@@ -434,7 +443,9 @@ pub(super) fn collect_type_param_bindings(
     }
 }
 
-pub(super) fn collect_generic_arity(class_index: &HashMap<String, ClassInfo>) -> HashMap<String, usize> {
+pub(super) fn collect_generic_arity(
+    class_index: &HashMap<String, ClassInfo>,
+) -> HashMap<String, usize> {
     let mut out = HashMap::new();
     for (name, info) in class_index {
         if name.contains('.') {

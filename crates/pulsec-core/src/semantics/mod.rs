@@ -1,8 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    is_builtin_type, BinaryOp, CatchClause, ClassContext, ClassDecl, ClassMember, Expr,
-    ImportDecl, IncDecOp, MethodDecl, Modifier, Program, SemanticError, Stmt, UnaryOp,
+    implicit_prelude_packages,
+    is_builtin_type, BinaryOp, CatchClause, ClassContext, ClassDecl, ClassMember, Expr, ImportDecl,
+    IncDecOp, MethodDecl, Modifier, Program, SemanticError, Stmt, UnaryOp,
 };
 
 #[path = "bootstrap/builtins.rs"]
@@ -98,8 +99,6 @@ use member_collection::*;
 mod modifier_validation;
 use modifier_validation::*;
 
-
-
 #[derive(Debug, Clone)]
 struct FieldInfo {
     ty: String,
@@ -110,7 +109,7 @@ struct FieldInfo {
     visibility: MemberVisibility,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct MethodSignature {
     type_params: Vec<String>,
     param_types: Vec<String>,
@@ -121,6 +120,12 @@ struct MethodSignature {
     is_final: bool,
     is_abstract: bool,
     visibility: MemberVisibility,
+}
+
+#[derive(Debug, Clone)]
+struct ResolvedMethodCandidate {
+    owner_fqcn: String,
+    signature: MethodSignature,
 }
 
 #[derive(Debug, Clone)]
@@ -262,11 +267,15 @@ fn stmt_guarantees_return(stmt: &Stmt) -> bool {
                 && block_guarantees_return(default_body)
         }
         Stmt::Try {
+            resources,
             body,
             catches,
             finally_block,
             ..
         } => {
+            if !resources.is_empty() {
+                return false;
+            }
             if let Some(finally_block) = finally_block {
                 if block_guarantees_return(finally_block) {
                     return true;
@@ -275,7 +284,9 @@ fn stmt_guarantees_return(stmt: &Stmt) -> bool {
 
             !catches.is_empty()
                 && block_guarantees_return(body)
-                && catches.iter().all(|catch_clause| block_guarantees_return(&catch_clause.body))
+                && catches
+                    .iter()
+                    .all(|catch_clause| block_guarantees_return(&catch_clause.body))
         }
         Stmt::Assert { .. } => false,
         Stmt::ForEach { .. } => false,
@@ -294,16 +305,15 @@ fn build_fqcn_index(class_index: &HashMap<String, ClassInfo>) -> HashMap<String,
 }
 
 fn is_throwable_type(ty: &str, class_index: &HashMap<String, ClassInfo>) -> bool {
-    types_compatible("com.pulse.lang.Throwable", ty, class_index)
+    types_compatible("pulse.lang.Throwable", ty, class_index)
 }
 
 fn is_runtime_exception_type(ty: &str, class_index: &HashMap<String, ClassInfo>) -> bool {
-    types_compatible("com.pulse.lang.RuntimeException", ty, class_index)
+    types_compatible("pulse.lang.RuntimeException", ty, class_index)
 }
 
 fn is_checked_exception_type(ty: &str, class_index: &HashMap<String, ClassInfo>) -> bool {
-    is_throwable_type(ty, class_index)
-        && !is_runtime_exception_type(ty, class_index)
+    is_throwable_type(ty, class_index) && !is_runtime_exception_type(ty, class_index)
 }
 
 fn collect_fqcn_names(class_index: &HashMap<String, ClassInfo>) -> HashSet<String> {
@@ -312,6 +322,19 @@ fn collect_fqcn_names(class_index: &HashMap<String, ClassInfo>) -> HashSet<Strin
         .filter(|name| name.contains('.'))
         .cloned()
         .collect()
+}
+
+fn collect_simple_to_fqcns(class_index: &HashMap<String, ClassInfo>) -> HashMap<String, Vec<String>> {
+    let mut out: HashMap<String, Vec<String>> = HashMap::new();
+    for fqcn in class_index.keys().filter(|name| name.contains('.')) {
+        let simple = class_simple_name(fqcn).to_string();
+        out.entry(simple).or_default().push(fqcn.clone());
+    }
+    for values in out.values_mut() {
+        values.sort();
+        values.dedup();
+    }
+    out
 }
 
 fn resolve_class_fqcn(
@@ -382,7 +405,7 @@ fn resolve_class_fqcn(
     }
 
     let mut prelude = Vec::new();
-    for package in ["com.pulse.io", "com.pulse.math", "com.pulse.collections", "com.pulse.lang"] {
+    for package in implicit_prelude_packages() {
         let candidate = format!("{}.{}", package, name);
         if class_index.contains_key(&candidate) {
             prelude.push(candidate);
@@ -608,8 +631,7 @@ fn resolve_imported_static_method(
             candidate.signature.is_varargs,
             arg_types,
             class_index,
-        )
-        {
+        ) {
             match best_score {
                 None => {
                     best_score = Some(score);

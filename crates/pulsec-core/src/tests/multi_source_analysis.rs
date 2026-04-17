@@ -42,20 +42,21 @@ fn check_rejects_ambiguous_type_in_field_declaration() {
     "#;
     let shared = r#"
         package app.shared;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Util {
         }
     "#;
     let tools = r#"
         package app.tools;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Util {
         }
     "#;
 
-    let err = analyze_merged_with_contexts(&[main, shared, tools]).expect_err("ambiguous field type should fail");
+    let err = analyze_merged_with_contexts(&[main, shared, tools])
+        .expect_err("ambiguous field type should fail");
     assert!(err.to_string().contains("Ambiguous type reference 'Util'"));
 }
 
@@ -76,20 +77,21 @@ fn check_rejects_ambiguous_type_in_method_param() {
     "#;
     let shared = r#"
         package app.shared;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Util {
         }
     "#;
     let tools = r#"
         package app.tools;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Util {
         }
     "#;
 
-    let err = analyze_merged_with_contexts(&[main, shared, tools]).expect_err("ambiguous param type should fail");
+    let err = analyze_merged_with_contexts(&[main, shared, tools])
+        .expect_err("ambiguous param type should fail");
     assert!(err.to_string().contains("Ambiguous type reference 'Util'"));
 }
 
@@ -110,20 +112,21 @@ fn check_rejects_ambiguous_type_in_method_return() {
     "#;
     let shared = r#"
         package app.shared;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Util {
         }
     "#;
     let tools = r#"
         package app.tools;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Util {
         }
     "#;
 
-    let err = analyze_merged_with_contexts(&[main, shared, tools]).expect_err("ambiguous return type should fail");
+    let err = analyze_merged_with_contexts(&[main, shared, tools])
+        .expect_err("ambiguous return type should fail");
     assert!(err.to_string().contains("Ambiguous type reference 'Util'"));
 }
 
@@ -142,20 +145,21 @@ fn check_rejects_ambiguous_type_in_local_declaration() {
     "#;
     let shared = r#"
         package app.shared;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Util {
         }
     "#;
     let tools = r#"
         package app.tools;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Util {
         }
     "#;
 
-    let err = analyze_merged_with_contexts(&[main, shared, tools]).expect_err("ambiguous local type should fail");
+    let err = analyze_merged_with_contexts(&[main, shared, tools])
+        .expect_err("ambiguous local type should fail");
     assert!(err.to_string().contains("Ambiguous type reference 'Util'"));
 }
 
@@ -163,7 +167,7 @@ fn check_rejects_ambiguous_type_in_local_declaration() {
 fn check_accepts_non_void_method_with_if_else_definite_return() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public int pick(int x) {
@@ -186,7 +190,7 @@ fn check_accepts_non_void_method_with_if_else_definite_return() {
 fn check_rejects_non_boolean_for_condition() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -206,7 +210,7 @@ fn check_rejects_constructor_signature_mismatch() {
     let src = r#"
         package app.core;
 
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
 
         class Player {
@@ -328,8 +332,9 @@ fn check_rejects_protected_access_through_base_receiver_from_subclass_across_pac
         }
     "#;
 
-    let err = analyze_merged_with_contexts(&[base, derived, main])
-        .expect_err("subclass should not access protected member through base receiver across packages");
+    let err = analyze_merged_with_contexts(&[base, derived, main]).expect_err(
+        "subclass should not access protected member through base receiver across packages",
+    );
     assert!(err
         .to_string()
         .contains("Cannot access protected field 'Base.hp' through receiver type 'Base'"));

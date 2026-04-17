@@ -23,6 +23,7 @@ pub(super) fn analyze_impl(
     let mut class_index: HashMap<String, ClassInfo> = HashMap::new();
     let mut entrypoint_count = 0usize;
     let mut override_requirements = Vec::new();
+    let mut visible_generic_arity = declared_generic_arity.clone();
 
     builtins::inject_builtin_library_symbols(
         &mut class_names,
@@ -30,6 +31,9 @@ pub(super) fn analyze_impl(
         &mut simple_to_fqcns,
         &mut class_index,
     )?;
+    for (fqcn, info) in &class_index {
+        visible_generic_arity.entry(fqcn.clone()).or_insert(info.generic_arity);
+    }
 
     for (idx, class) in program.classes.iter().enumerate() {
         validate_type_param_list(
@@ -42,7 +46,7 @@ pub(super) fn analyze_impl(
             &class_contexts[idx],
             &simple_to_fqcns,
             &fqcn_names,
-            &declared_generic_arity,
+            &visible_generic_arity,
             &declared_annotation_fqcns,
             &mut entrypoint_count,
             &mut override_requirements,

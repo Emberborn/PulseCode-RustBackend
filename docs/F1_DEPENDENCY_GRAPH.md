@@ -100,6 +100,7 @@ Important sequencing truth:
 These tasks become meaningful once the feature families above are landing:
 
 - `F1-65` metadata/import/prelude wiring
+- `F1-107A` Pulse-side feature/behavior lock model
 - `F1-66` large multi-file fixtures
 - `F1-67` stress/performance guards
 - `F1-68` compatibility notes
@@ -142,7 +143,7 @@ To keep momentum high, F1 should be executed in larger batches:
 7. Concurrency/network policy+implementation batch
    - `F1-86` .. `F1-95`
 8. Integration/docs/validation closure batch
-   - `F1-65` .. `F1-82`
+   - `F1-65` .. `F1-82`, `F1-107A`
 
 ## Planning Rule
 

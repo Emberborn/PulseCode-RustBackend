@@ -1,4 +1,21 @@
 use super::*;
+use crate::backend::adapters::{
+    resolve_active_adapter_artifact_contract, resolve_active_adapter_startup_loader_contract,
+    resolve_active_backend_contract, resolve_planned_link_plan,
+    resolve_requested_target_artifact_contract,
+    resolve_requested_target_executable_loading_proof_target,
+    resolve_requested_target_runtime_service_contract,
+    resolve_requested_target_startup_loader_contract, TargetArtifactContract,
+    TargetExecutableLoadingProofTarget, TargetStartupLoaderContract,
+};
+use crate::backend::host_bootstrap::{
+    resolve_host_bootstrap_runtime_contract, resolve_runtime_ownership_model,
+    HostBootstrapRuntimeContract, RuntimeOwnershipModel,
+};
+use crate::backend::resolve_plan_target_adapter_metadata;
+
+#[cfg(test)]
+use crate::cli::target_model::WINDOWS_X64_TARGET_ID;
 
 fn render_class_size_table(ir: &IrProgram) -> String {
     let mut rows = ir
@@ -147,49 +164,18 @@ pub(crate) fn shared_runtime_artifact_names() -> (String, String) {
     )
 }
 
-fn planned_startup_object_path() -> PathBuf {
-    PathBuf::from("obj").join("runtime").join("Startup.obj")
-}
-
-fn planned_runtime_owned_object_paths() -> Vec<PathBuf> {
-    vec![
-        PathBuf::from("obj")
-            .join("com")
-            .join("pulse")
-            .join("lang")
-            .join("IO.obj"),
-    ]
-}
-
-fn planned_app_owned_object_paths(ir: &IrProgram) -> Vec<PathBuf> {
-    let mut objects = ir
-        .classes
-        .iter()
-        .map(|class| {
-            PathBuf::from("obj")
-                .join(package_to_path(&class.package_name))
-                .join(format!("{}.obj", class.name))
-        })
-        .collect::<Vec<_>>();
-    objects.sort();
-    objects
-}
-
 fn render_link_plan_topology(
     ir: &IrProgram,
+    target_id: &str,
     output_mode: &str,
     link_plan: Option<&NativeLinkPlan>,
 ) -> String {
-    let planned = NativeLinkPlan {
-        startup_objects: vec![planned_startup_object_path()],
-        app_owned_objects: planned_app_owned_object_paths(ir),
-        runtime_owned_objects: planned_runtime_owned_object_paths(),
-        system_inputs: vec![PathBuf::from("kernel32.lib")],
-        shared_runtime_exports: Vec::new(),
-    };
+    let planned =
+        resolve_planned_link_plan(target_id, ir).expect("planned link plan should resolve");
     let link_plan = link_plan.unwrap_or(&planned);
     let render_paths = |paths: &[PathBuf], owner: &str, kind: &str| -> String {
-        paths.iter()
+        paths
+            .iter()
             .map(|path| {
                 format!(
                     "{{ \"path\": \"{}\", \"owner\": \"{}\", \"kind\": \"{}\" }}",
@@ -201,8 +187,13 @@ fn render_link_plan_topology(
             .collect::<Vec<_>>()
             .join(", ")
     };
-    let startup_objects = render_paths(&link_plan.startup_objects, "app_executable", "startup_object");
-    let app_owned_objects = render_paths(&link_plan.app_owned_objects, "app_executable", "app_object");
+    let startup_objects = render_paths(
+        &link_plan.startup_objects,
+        "app_executable",
+        "startup_object",
+    );
+    let app_owned_objects =
+        render_paths(&link_plan.app_owned_objects, "app_executable", "app_object");
     let runtime_owned_objects = render_paths(
         &link_plan.runtime_owned_objects,
         "shared_runtime_candidate",
@@ -235,11 +226,7 @@ fn render_link_plan_topology(
             "    ]\n",
             "  }}"
         ),
-        startup_objects,
-        app_owned_objects,
-        runtime_owned_objects,
-        system_inputs,
-        link_targets
+        startup_objects, app_owned_objects, runtime_owned_objects, system_inputs, link_targets
     )
 }
 
@@ -255,12 +242,8 @@ fn render_shared_runtime_abi_boundary(output_mode: &str) -> String {
         "\"pulsec_rt_obj_*\"",
     ]
     .join(", ");
-    let forbidden_private_export_patterns = [
-        "\"rt_*\"",
-        "\"pulsec_rt_obj_*\"",
-        "\"pulsec_rt_class_*\"",
-    ]
-    .join(", ");
+    let forbidden_private_export_patterns =
+        ["\"rt_*\"", "\"pulsec_rt_obj_*\"", "\"pulsec_rt_class_*\""].join(", ");
     let runtime_role = if output_mode == "shared" {
         "\"shared_runtime_library\""
     } else {
@@ -370,9 +353,431 @@ fn render_shared_boundary_contract(output_mode: &str) -> String {
     )
 }
 
+fn render_target_adapter_metadata(target_id: &str, output_mode: &str) -> String {
+    let metadata = resolve_plan_target_adapter_metadata(target_id, output_mode)
+        .expect("target adapter metadata should resolve");
+    let requested = metadata.requested_target;
+    let active = metadata.active_target;
+    format!(
+        concat!(
+            "{{\n",
+            "    \"requested\": {{\n",
+            "      \"target_id\": \"{}\",\n",
+            "      \"os_family\": \"{}\",\n",
+            "      \"arch\": \"{}\",\n",
+            "      \"support_level\": \"{}\",\n",
+            "      \"lane_name\": \"{}\",\n",
+            "      \"lane_kind\": \"{}\",\n",
+            "      \"bootstrap_status\": \"{}\",\n",
+            "      \"strategic_status\": \"{}\",\n",
+            "      \"adapter_status\": \"{}\"\n",
+            "    }},\n",
+            "    \"active\": {{\n",
+            "      \"target_id\": \"{}\",\n",
+            "      \"os_family\": \"{}\",\n",
+            "      \"arch\": \"{}\",\n",
+            "      \"support_level\": \"{}\",\n",
+            "      \"lane_name\": \"{}\",\n",
+            "      \"lane_kind\": \"{}\",\n",
+            "      \"bootstrap_status\": \"{}\",\n",
+            "      \"strategic_status\": \"{}\",\n",
+            "      \"adapter_status\": \"{}\"\n",
+            "    }},\n",
+            "    \"resolution\": \"{}\",\n",
+            "    \"artifact_family\": {{\n",
+            "      \"id\": \"{}\",\n",
+            "      \"status\": \"{}\"\n",
+            "    }},\n",
+            "    \"runtime_abi_family\": {{\n",
+            "      \"id\": \"{}\",\n",
+            "      \"status\": \"{}\"\n",
+            "    }}\n",
+            "  }}"
+        ),
+        requested.target_id,
+        requested.os_family,
+        requested.arch,
+        requested.support_level.as_str(),
+        requested.lane_name,
+        requested.lane_kind.as_str(),
+        requested.bootstrap_status(),
+        requested.strategic_status(),
+        requested.adapter_status(),
+        active.target_id,
+        active.os_family,
+        active.arch,
+        active.support_level.as_str(),
+        active.lane_name,
+        active.lane_kind.as_str(),
+        active.bootstrap_status(),
+        active.strategic_status(),
+        active.adapter_status(),
+        metadata.resolution,
+        metadata.artifact_family,
+        metadata.artifact_status,
+        metadata.runtime_abi_family,
+        metadata.runtime_abi_status
+    )
+}
+
+fn render_host_bootstrap_runtime_contract(target_id: &str) -> String {
+    let contract: HostBootstrapRuntimeContract = resolve_host_bootstrap_runtime_contract(target_id)
+        .expect("host bootstrap runtime contract should resolve");
+    format!(
+        concat!(
+            "{{\n",
+            "    \"schema\": \"{}\",\n",
+            "    \"contract_status\": \"{}\",\n",
+            "    \"implementation_owner\": \"{}\",\n",
+            "    \"purpose\": \"{}\",\n",
+            "    \"lifecycle_procedures\": [{}],\n",
+            "    \"core_runtime_procedures\": [{}],\n",
+            "    \"trace_exception_procedures\": [{}],\n",
+            "    \"portable_stdlib_bridge\": {{\n",
+            "      \"families\": [{}],\n",
+            "      \"required_procedures\": [{}],\n",
+            "      \"required_procedure_count\": {}\n",
+            "    }},\n",
+            "    \"adapter_owned_exclusions\": {{\n",
+            "      \"runtime_service_imports\": [{}],\n",
+            "      \"startup_entry\": \"adapter-owned\",\n",
+            "      \"system_inputs\": \"adapter-owned\",\n",
+            "      \"artifact_publication\": \"adapter-owned\"\n",
+            "    }}\n",
+            "  }}"
+        ),
+        contract.schema,
+        contract.contract_status,
+        contract.implementation_owner,
+        contract.purpose,
+        render_str_slice(contract.lifecycle_procedures),
+        render_str_slice(contract.core_runtime_procedures),
+        render_str_slice(contract.trace_exception_procedures),
+        render_str_slice(contract.portable_stdlib_bridge_families),
+        render_string_array(&contract.portable_stdlib_bridge_symbols),
+        contract.portable_stdlib_bridge_symbols.len(),
+        render_str_slice(contract.adapter_service_imports)
+    )
+}
+
+fn render_requested_target_runtime_service_contract(target_id: &str) -> String {
+    let Some(contract) = resolve_requested_target_runtime_service_contract(target_id)
+        .expect("requested target runtime-service contract should resolve")
+    else {
+        return "null".to_string();
+    };
+
+    format!(
+        concat!(
+            "{{\n",
+            "    \"schema\": \"{}\",\n",
+            "    \"contract_status\": \"{}\",\n",
+            "    \"target_id\": \"{}\",\n",
+            "    \"implementation_status\": \"{}\",\n",
+            "    \"purpose\": \"{}\",\n",
+            "    \"console\": {{\n",
+            "      \"capabilities\": [{}],\n",
+            "      \"text_encoding\": \"{}\"\n",
+            "    }},\n",
+            "    \"panic\": {{\n",
+            "      \"capabilities\": [{}],\n",
+            "      \"behavior\": \"{}\"\n",
+            "    }},\n",
+            "    \"process\": {{\n",
+            "      \"capabilities\": [{}],\n",
+            "      \"exit_code_type\": \"{}\"\n",
+            "    }},\n",
+            "    \"minimal_path_file_seams\": {{\n",
+            "      \"path_capabilities\": [{}],\n",
+            "      \"file_capabilities\": [{}],\n",
+            "      \"handle_model\": \"{}\"\n",
+            "    }},\n",
+            "    \"minimal_service_seams\": {{\n",
+            "      \"capabilities\": [{}],\n",
+            "      \"payload_shape\": \"service-specific-binary-layout-deferred\"\n",
+            "    }},\n",
+            "    \"deferred_items\": [{}]\n",
+            "  }}"
+        ),
+        contract.schema,
+        contract.contract_status,
+        contract.target_id,
+        contract.implementation_status,
+        contract.purpose,
+        render_str_slice(contract.console_capabilities),
+        contract.text_encoding,
+        render_str_slice(contract.panic_capabilities),
+        contract.panic_behavior,
+        render_str_slice(contract.process_capabilities),
+        contract.exit_code_type,
+        render_str_slice(contract.path_capabilities),
+        render_str_slice(contract.file_capabilities),
+        contract.handle_model,
+        render_str_slice(contract.service_capabilities),
+        render_str_slice(contract.deferred_items)
+    )
+}
+
+fn render_runtime_ownership_model(target_id: &str) -> String {
+    let model: RuntimeOwnershipModel =
+        resolve_runtime_ownership_model(target_id).expect("runtime ownership model should resolve");
+    let requested_target_service_contract_schema =
+        if let Some(schema) = model.requested_target_service_contract_schema {
+            format!("\"{}\"", schema)
+        } else {
+            "null".to_string()
+        };
+
+    format!(
+        concat!(
+            "{{\n",
+            "    \"schema\": \"{}\",\n",
+            "    \"contract_status\": \"{}\",\n",
+            "    \"pulse_owned_surface\": {{\n",
+            "      \"namespace_families\": [{}],\n",
+            "      \"ownership_rule\": \"{}\"\n",
+            "    }},\n",
+            "    \"rust_host_bootstrap_owned_surface\": {{\n",
+            "      \"retained_runtime_contract_schema\": \"{}\",\n",
+            "      \"procedure_families\": [{}],\n",
+            "      \"portable_bridge_families\": [{}],\n",
+            "      \"runtime_private_state_families\": [{}]\n",
+            "    }},\n",
+            "    \"adapter_owned_surface\": {{\n",
+            "      \"active_categories\": [{}],\n",
+            "      \"active_adapter_service_imports\": [{}],\n",
+            "      \"requested_target_service_contract_schema\": {},\n",
+            "      \"requested_target_service_contract_status\": \"{}\",\n",
+            "      \"startup_loader_publication\": \"adapter-owned\"\n",
+            "    }},\n",
+            "    \"forbidden_blends\": [{}]\n",
+            "  }}"
+        ),
+        model.schema,
+        model.contract_status,
+        render_str_slice(model.pulse_owned_namespace_families),
+        model.pulse_owned_rule,
+        model.retained_host_bootstrap_runtime_schema,
+        render_str_slice(model.host_bootstrap_procedure_families),
+        render_str_slice(model.host_bootstrap_bridge_families),
+        render_str_slice(model.host_bootstrap_runtime_state_families),
+        render_str_slice(model.active_adapter_owned_categories),
+        render_str_slice(model.active_adapter_service_imports),
+        requested_target_service_contract_schema,
+        model.requested_target_service_contract_status,
+        render_str_slice(model.forbidden_blends)
+    )
+}
+
+fn render_artifact_contract(contract: &TargetArtifactContract) -> String {
+    format!(
+        concat!(
+            "{{\n",
+            "    \"schema\": \"{}\",\n",
+            "    \"target_id\": \"{}\",\n",
+            "    \"requested_output_mode\": \"{}\",\n",
+            "    \"contract_status\": \"{}\",\n",
+            "    \"implementation_status\": \"{}\",\n",
+            "    \"artifact_family\": \"{}\",\n",
+            "    \"requested_output_mode_status\": \"{}\",\n",
+            "    \"executable_artifact_kind\": \"{}\",\n",
+            "    \"runtime_packaging\": \"{}\",\n",
+            "    \"publication_shape\": \"{}\",\n",
+            "    \"companion_artifact_kinds\": [{}],\n",
+            "    \"naming_policy\": \"{}\",\n",
+            "    \"deferred_items\": [{}]\n",
+            "  }}"
+        ),
+        contract.schema,
+        contract.target_id,
+        contract.requested_output_mode,
+        contract.contract_status,
+        contract.implementation_status,
+        contract.artifact_family,
+        contract.requested_output_mode_status,
+        contract.executable_artifact_kind,
+        contract.runtime_packaging,
+        contract.publication_shape,
+        render_str_slice(contract.companion_artifact_kinds),
+        contract.naming_policy,
+        render_str_slice(contract.deferred_items)
+    )
+}
+
+fn render_artifact_contracts(target_id: &str, output_mode: &str) -> String {
+    let active = resolve_active_adapter_artifact_contract(target_id, output_mode)
+        .expect("active adapter artifact contract should resolve");
+    let requested = resolve_requested_target_artifact_contract(target_id, output_mode)
+        .expect("requested target artifact contract should resolve");
+    let requested_render = if let Some(contract) = requested.as_ref() {
+        render_artifact_contract(contract)
+    } else {
+        "null".to_string()
+    };
+
+    format!(
+        concat!(
+            "{{\n",
+            "    \"active_adapter\": {},\n",
+            "    \"requested_target\": {}\n",
+            "  }}"
+        ),
+        render_artifact_contract(&active),
+        requested_render
+    )
+}
+
+fn render_startup_loader_contract(contract: &TargetStartupLoaderContract) -> String {
+    let loader_manifest_schema = if let Some(schema) = contract.loader_manifest_schema {
+        format!("\"{}\"", schema)
+    } else {
+        "null".to_string()
+    };
+    let loader_manifest_path = if let Some(path) = contract.loader_manifest_path {
+        format!("\"{}\"", path)
+    } else {
+        "null".to_string()
+    };
+
+    format!(
+        concat!(
+            "{{\n",
+            "    \"schema\": \"{}\",\n",
+            "    \"target_id\": \"{}\",\n",
+            "    \"requested_output_mode\": \"{}\",\n",
+            "    \"contract_status\": \"{}\",\n",
+            "    \"implementation_status\": \"{}\",\n",
+            "    \"startup_entry_symbol\": \"{}\",\n",
+            "    \"startup_entry_abi\": \"{}\",\n",
+            "    \"loader_handoff_kind\": \"{}\",\n",
+            "    \"runtime_bootstrap_sequence\": [{}],\n",
+            "    \"loader_expectations\": [{}],\n",
+            "    \"publication_shape\": \"{}\",\n",
+            "    \"published_artifacts\": [{}],\n",
+            "    \"loader_manifest_schema\": {},\n",
+            "    \"loader_manifest_path\": {},\n",
+            "    \"runtime_companion_policy\": \"{}\",\n",
+            "    \"debug_metadata_policy\": \"{}\",\n",
+            "    \"deferred_items\": [{}]\n",
+            "  }}"
+        ),
+        contract.schema,
+        contract.target_id,
+        contract.requested_output_mode,
+        contract.contract_status,
+        contract.implementation_status,
+        contract.startup_entry_symbol,
+        contract.startup_entry_abi,
+        contract.loader_handoff_kind,
+        render_str_slice(contract.runtime_bootstrap_sequence),
+        render_str_slice(contract.loader_expectations),
+        contract.publication_shape,
+        render_str_slice(contract.published_artifacts),
+        loader_manifest_schema,
+        loader_manifest_path,
+        contract.runtime_companion_policy,
+        contract.debug_metadata_policy,
+        render_str_slice(contract.deferred_items)
+    )
+}
+
+fn render_startup_loader_contracts(target_id: &str, output_mode: &str) -> String {
+    let active = resolve_active_adapter_startup_loader_contract(target_id, output_mode)
+        .expect("active adapter startup/loader contract should resolve");
+    let requested = resolve_requested_target_startup_loader_contract(target_id, output_mode)
+        .expect("requested target startup/loader contract should resolve");
+    let requested_render = if let Some(contract) = requested.as_ref() {
+        render_startup_loader_contract(contract)
+    } else {
+        "null".to_string()
+    };
+
+    format!(
+        concat!(
+            "{{\n",
+            "    \"active_adapter\": {},\n",
+            "    \"requested_target\": {}\n",
+            "  }}"
+        ),
+        render_startup_loader_contract(&active),
+        requested_render
+    )
+}
+
+fn render_executable_loading_proof_target(target: &TargetExecutableLoadingProofTarget) -> String {
+    format!(
+        concat!(
+            "{{\n",
+            "    \"schema\": \"{}\",\n",
+            "    \"target_id\": \"{}\",\n",
+            "    \"requested_output_mode\": \"{}\",\n",
+            "    \"proof_status\": \"{}\",\n",
+            "    \"implementation_status\": \"{}\",\n",
+            "    \"validation_mode\": \"{}\",\n",
+            "    \"startup_loader_contract_schema\": \"{}\",\n",
+            "    \"artifact_contract_schema\": \"{}\",\n",
+            "    \"runtime_service_contract_schema\": \"{}\",\n",
+            "    \"required_published_artifacts\": [{}],\n",
+            "    \"required_startup_entry_symbol\": \"{}\",\n",
+            "    \"required_loader_manifest_schema\": \"{}\",\n",
+            "    \"required_loader_manifest_path\": \"{}\",\n",
+            "    \"required_loader_capabilities\": [{}],\n",
+            "    \"required_runtime_bootstrap_sequence\": [{}],\n",
+            "    \"success_conditions\": [{}],\n",
+            "    \"excluded_claims\": [{}]\n",
+            "  }}"
+        ),
+        target.schema,
+        target.target_id,
+        target.requested_output_mode,
+        target.proof_status,
+        target.implementation_status,
+        target.validation_mode,
+        target.startup_loader_contract_schema,
+        target.artifact_contract_schema,
+        target.runtime_service_contract_schema,
+        render_str_slice(target.required_published_artifacts),
+        target.required_startup_entry_symbol,
+        target.required_loader_manifest_schema,
+        target.required_loader_manifest_path,
+        render_str_slice(target.required_loader_capabilities),
+        render_str_slice(target.required_runtime_bootstrap_sequence),
+        render_str_slice(target.success_conditions),
+        render_str_slice(target.excluded_claims)
+    )
+}
+
+fn render_requested_target_executable_loading_proof_target(
+    target_id: &str,
+    output_mode: &str,
+) -> String {
+    let Some(target) =
+        resolve_requested_target_executable_loading_proof_target(target_id, output_mode)
+            .expect("requested target executable-loading proof target should resolve")
+    else {
+        return "null".to_string();
+    };
+
+    render_executable_loading_proof_target(&target)
+}
+
+fn render_str_slice(values: &[&str]) -> String {
+    values
+        .iter()
+        .map(|value| format!("\"{}\"", value))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
 #[cfg(test)]
 pub(crate) fn render_native_build_plan(ir: &IrProgram, ir_path: &Path) -> String {
-    render_native_build_plan_with_output_mode(ir, ir_path, "fat", "main")
+    render_native_build_plan_with_target_and_output_mode(
+        ir,
+        ir_path,
+        WINDOWS_X64_TARGET_ID,
+        "fat",
+        "main",
+    )
 }
 
 #[cfg(test)]
@@ -382,9 +787,27 @@ pub(crate) fn render_native_build_plan_with_output_mode(
     output_mode: &str,
     output_entry: &str,
 ) -> String {
+    render_native_build_plan_with_target_and_output_mode(
+        ir,
+        ir_path,
+        WINDOWS_X64_TARGET_ID,
+        output_mode,
+        output_entry,
+    )
+}
+
+#[cfg(test)]
+pub(crate) fn render_native_build_plan_with_target_and_output_mode(
+    ir: &IrProgram,
+    ir_path: &Path,
+    target_id: &str,
+    output_mode: &str,
+    output_entry: &str,
+) -> String {
     render_native_build_plan_with_output_mode_and_link_plan(
         ir,
         ir_path,
+        target_id,
         output_mode,
         output_entry,
         None,
@@ -394,6 +817,7 @@ pub(crate) fn render_native_build_plan_with_output_mode(
 pub(crate) fn render_native_build_plan_with_output_mode_and_link_plan(
     ir: &IrProgram,
     ir_path: &Path,
+    target_id: &str,
     output_mode: &str,
     output_entry: &str,
     link_plan: Option<&NativeLinkPlan>,
@@ -402,7 +826,8 @@ pub(crate) fn render_native_build_plan_with_output_mode_and_link_plan(
     let debug_alloc_enabled = debug_allocator_enabled();
     let runtime_abi = emitted_runtime_abi_version();
     let object_model_abi = emitted_object_model_abi_version();
-    let contract = default_backend_contract();
+    let contract =
+        resolve_active_backend_contract(target_id).expect("active backend contract should resolve");
     let mut classes = ir
         .classes
         .iter()
@@ -428,8 +853,17 @@ pub(crate) fn render_native_build_plan_with_output_mode_and_link_plan(
     let class_size_table = render_class_size_table(ir);
     let dispatch_slot_table = render_dispatch_slot_table(ir);
     let type_id_table = render_type_id_table(ir);
+    let target_adapter_metadata = render_target_adapter_metadata(target_id, output_mode);
+    let host_bootstrap_runtime = render_host_bootstrap_runtime_contract(target_id);
+    let requested_target_runtime_service_abi =
+        render_requested_target_runtime_service_contract(target_id);
+    let runtime_ownership_model = render_runtime_ownership_model(target_id);
+    let artifact_contracts = render_artifact_contracts(target_id, output_mode);
+    let startup_loader_contracts = render_startup_loader_contracts(target_id, output_mode);
+    let requested_target_executable_loading_proof_target =
+        render_requested_target_executable_loading_proof_target(target_id, output_mode);
     let outputs_topology = render_native_outputs_topology(output_mode, output_entry);
-    let link_plan_topology = render_link_plan_topology(ir, output_mode, link_plan);
+    let link_plan_topology = render_link_plan_topology(ir, target_id, output_mode, link_plan);
     let shared_runtime_abi = render_shared_runtime_abi_boundary(output_mode);
     let shared_boundary_contract = render_shared_boundary_contract(output_mode);
 
@@ -437,6 +871,13 @@ pub(crate) fn render_native_build_plan_with_output_mode_and_link_plan(
         concat!(
             "{{\n",
             "  \"schema\": \"pulsec.native.plan.v1\",\n",
+            "  \"target_adapter\": {},\n",
+            "  \"host_bootstrap_runtime\": {},\n",
+            "  \"requested_target_runtime_service_abi\": {},\n",
+            "  \"runtime_ownership_model\": {},\n",
+            "  \"artifact_contracts\": {},\n",
+            "  \"startup_loader_contracts\": {},\n",
+            "  \"requested_target_executable_loading_proof_target\": {},\n",
             "  \"target\": {{\n",
             "    \"triple\": \"{}\",\n",
             "    \"object_format\": \"{}\"\n",
@@ -615,6 +1056,13 @@ pub(crate) fn render_native_build_plan_with_output_mode_and_link_plan(
             "  \"class_names\": [{}]\n",
             "}}\n"
         ),
+        target_adapter_metadata,
+        host_bootstrap_runtime,
+        requested_target_runtime_service_abi,
+        runtime_ownership_model,
+        artifact_contracts,
+        startup_loader_contracts,
+        requested_target_executable_loading_proof_target,
         contract.target_triple,
         contract.object_format,
         contract.entry_symbol,

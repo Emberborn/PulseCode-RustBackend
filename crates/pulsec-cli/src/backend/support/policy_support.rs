@@ -1,6 +1,23 @@
 use super::*;
 
+use crate::cli::target_model::{
+    resolve_target_descriptor, TargetDescriptor, WINDOWS_X64_TARGET_ID,
+};
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct PlanTargetAdapterMetadata {
+    pub(crate) requested_target: TargetDescriptor,
+    pub(crate) active_target: TargetDescriptor,
+    pub(crate) resolution: &'static str,
+    pub(crate) artifact_family: &'static str,
+    pub(crate) artifact_status: &'static str,
+    pub(crate) runtime_abi_family: &'static str,
+    pub(crate) runtime_abi_status: &'static str,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct BackendContract {
+    pub(crate) target_descriptor: &'static TargetDescriptor,
     pub(crate) target_triple: &'static str,
     pub(crate) object_format: &'static str,
     pub(crate) entry_symbol: &'static str,
@@ -8,84 +25,80 @@ pub(crate) struct BackendContract {
     pub(crate) runtime_symbols: &'static [&'static str],
 }
 
-pub(crate) fn default_backend_contract() -> BackendContract {
+pub(crate) fn windows_x64_backend_contract() -> BackendContract {
     BackendContract {
+        target_descriptor: resolve_target_descriptor(WINDOWS_X64_TARGET_ID)
+            .expect("windows target descriptor"),
         target_triple: "x86_64-pc-windows-msvc",
         object_format: "coff",
         entry_symbol: "main",
         calling_convention: "system",
         runtime_symbols: &[
-            "com.pulse.rt.Intrinsics.consoleWriteLine",
-            "com.pulse.rt.Intrinsics.consoleWrite",
-            "com.pulse.rt.Intrinsics.consoleErrorWriteLine",
-            "com.pulse.rt.Intrinsics.consoleErrorWrite",
-            "com.pulse.rt.Intrinsics.panic",
-            "com.pulse.rt.Intrinsics.stringConcat",
-            "com.pulse.rt.Intrinsics.stringLength",
-            "com.pulse.rt.Intrinsics.intToString",
-            "com.pulse.rt.Intrinsics.booleanToString",
-            "com.pulse.rt.Intrinsics.parseInt",
-            "com.pulse.rt.Intrinsics.parseBoolean",
-            "com.pulse.rt.Intrinsics.objectClassName",
-            "com.pulse.rt.Intrinsics.objectHashCode",
-            "com.pulse.lang.Class.runtimeSimpleName",
-            "com.pulse.lang.Class.runtimePackageName",
-            "com.pulse.lang.String.runtimeCharAt",
-            "com.pulse.lang.String.runtimeSubstring",
-            "com.pulse.lang.String.runtimeFromChar",
-            "com.pulse.lang.Char.runtimeCharAt",
-            "com.pulse.lang.Double.runtimeCharAt",
-            "com.pulse.lang.Long.runtimeParse",
-            "com.pulse.lang.Long.runtimeToString",
-            "com.pulse.lang.UInteger.runtimeParse",
-            "com.pulse.lang.UInteger.runtimeToString",
-            "com.pulse.lang.ULong.runtimeParse",
-            "com.pulse.lang.ULong.runtimeToString",
-            "com.pulse.rt.Intrinsics.pushExceptionHandler",
-            "com.pulse.rt.Intrinsics.popExceptionHandler",
-            "com.pulse.rt.Intrinsics.takePendingException",
-            "com.pulse.rt.Intrinsics.throwPending",
-            "com.pulse.rt.Intrinsics.arrayNew",
-            "com.pulse.rt.Intrinsics.arrayNewMulti",
-            "com.pulse.rt.Intrinsics.arrayLength",
-            "com.pulse.rt.Intrinsics.arrayGetInt",
-            "com.pulse.rt.Intrinsics.arraySetInt",
-            "com.pulse.rt.Intrinsics.arrayGetLong",
-            "com.pulse.rt.Intrinsics.arraySetLong",
-            "com.pulse.rt.Intrinsics.arrayGetString",
-            "com.pulse.rt.Intrinsics.arraySetString",
-            "com.pulse.rt.Intrinsics.listNew",
-            "com.pulse.rt.Intrinsics.listSize",
-            "com.pulse.rt.Intrinsics.listClear",
-            "com.pulse.rt.Intrinsics.listAddInt",
-            "com.pulse.rt.Intrinsics.listAddString",
-            "com.pulse.rt.Intrinsics.listGetInt",
-            "com.pulse.rt.Intrinsics.listGetString",
-            "com.pulse.rt.Intrinsics.mapNew",
-            "com.pulse.rt.Intrinsics.mapSize",
-            "com.pulse.rt.Intrinsics.mapClear",
-            "com.pulse.rt.Intrinsics.mapContainsKey",
-            "com.pulse.rt.Intrinsics.mapPut",
-            "com.pulse.rt.Intrinsics.mapPutInt",
-            "com.pulse.rt.Intrinsics.mapGet",
-            "com.pulse.rt.Intrinsics.mapGetInt",
-            "com.pulse.memory.Memory.retain",
-            "com.pulse.memory.Memory.release",
-            "com.pulse.memory.Memory.cycleYoungPass",
-            "com.pulse.memory.Memory.cycleFullPass",
-            "com.pulse.memory.Memory.cycleTick",
-            "com.pulse.memory.Memory.weakNew",
-            "com.pulse.memory.Memory.weakGet",
-            "com.pulse.memory.Memory.weakClear",
-            "com.pulse.lang.IO.println",
-            "com.pulse.lang.IO.print",
-            "com.pulse.lang.System.currentTimeMillis",
-            "com.pulse.lang.System.nanoTime",
-            "com.pulse.lang.System.exit",
-            "com.pulse.io.Console.writeLine",
-            "com.pulse.io.File.readAllText",
-            "com.pulse.math.Math.abs",
-            "com.pulse.math.Math.max",
+            "pulse.rt.Intrinsics.consoleReadLine",
+            "pulse.rt.Intrinsics.consoleWriteLine",
+            "pulse.rt.Intrinsics.consoleWrite",
+            "pulse.rt.Intrinsics.consoleErrorWriteLine",
+            "pulse.rt.Intrinsics.consoleErrorWrite",
+            "pulse.rt.Intrinsics.panic",
+            "pulse.rt.Intrinsics.stringConcat",
+            "pulse.rt.Intrinsics.stringLength",
+            "pulse.rt.Intrinsics.objectClassName",
+            "pulse.rt.Intrinsics.objectHashCode",
+            "pulse.lang.String.runtimeConcat",
+            "pulse.lang.String.runtimeLength",
+            "pulse.lang.String.runtimeCharAt",
+            "pulse.lang.String.runtimeFromChar",
+            "pulse.rt.Intrinsics.pushExceptionHandler",
+            "pulse.rt.Intrinsics.popExceptionHandler",
+            "pulse.rt.Intrinsics.takePendingException",
+            "pulse.rt.Intrinsics.throwPending",
+            "pulse.rt.Intrinsics.arrayNew",
+            "pulse.rt.Intrinsics.arrayNewMulti",
+            "pulse.rt.Intrinsics.arrayLength",
+            "pulse.rt.Intrinsics.arrayGetInt",
+            "pulse.rt.Intrinsics.arraySetInt",
+            "pulse.rt.Intrinsics.arrayGetLong",
+            "pulse.rt.Intrinsics.arraySetLong",
+            "pulse.rt.Intrinsics.arrayGetString",
+            "pulse.rt.Intrinsics.arraySetString",
+            "pulse.rt.Intrinsics.listNew",
+            "pulse.rt.Intrinsics.listSize",
+            "pulse.rt.Intrinsics.listKind",
+            "pulse.rt.Intrinsics.listClear",
+            "pulse.rt.Intrinsics.listAddInt",
+            "pulse.rt.Intrinsics.listAddString",
+            "pulse.rt.Intrinsics.listGetInt",
+            "pulse.rt.Intrinsics.listGetString",
+            "pulse.rt.Intrinsics.mapNew",
+            "pulse.rt.Intrinsics.mapSize",
+            "pulse.rt.Intrinsics.mapClear",
+            "pulse.rt.Intrinsics.mapContainsKey",
+            "pulse.rt.Intrinsics.mapPut",
+            "pulse.rt.Intrinsics.mapPutInt",
+            "pulse.rt.Intrinsics.mapGet",
+            "pulse.rt.Intrinsics.mapGetInt",
+            "pulse.rt.Intrinsics.hostExists",
+            "pulse.rt.Intrinsics.hostIsFile",
+            "pulse.rt.Intrinsics.hostIsDirectory",
+            "pulse.rt.Intrinsics.hostReadAllText",
+            "pulse.rt.Intrinsics.hostListChildren",
+            "pulse.rt.Intrinsics.hostCreateDirectory",
+            "pulse.rt.Intrinsics.hostWriteAllText",
+            "pulse.rt.Intrinsics.hostCopyFile",
+            "pulse.rt.Intrinsics.hostRunShellProcess",
+            "pulse.memory.Memory.retain",
+            "pulse.memory.Memory.release",
+            "pulse.memory.Memory.cycleYoungPass",
+            "pulse.memory.Memory.cycleFullPass",
+            "pulse.memory.Memory.cycleTick",
+            "pulse.memory.Memory.weakNew",
+            "pulse.memory.Memory.weakGet",
+            "pulse.memory.Memory.weakClear",
+            "pulse.lang.System.currentTimeMillis",
+            "pulse.lang.System.nanoTime",
+            "pulse.lang.System.exit",
+            "pulse.io.Console.writeLine",
+            "pulse.io.File.readAllText",
         ],
     }
 }
@@ -93,20 +106,8 @@ pub(crate) fn default_backend_contract() -> BackendContract {
 pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     let mut out = HashMap::new();
     out.insert(
-        ("IO".to_string(), "println".to_string()),
-        "pulsec_std_com_pulse_lang_IO_println".to_string(),
-    );
-    out.insert(
-        ("IO".to_string(), "print".to_string()),
-        "pulsec_std_com_pulse_lang_IO_print".to_string(),
-    );
-    out.insert(
-        ("Math".to_string(), "max".to_string()),
-        "pulsec_std_com_pulse_math_Math_max".to_string(),
-    );
-    out.insert(
-        ("Math".to_string(), "abs".to_string()),
-        "pulsec_std_com_pulse_math_Math_abs".to_string(),
+        ("Intrinsics".to_string(), "consoleReadLine".to_string()),
+        "pulsec_rt_consoleReadLine".to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "consoleWriteLine".to_string()),
@@ -117,7 +118,10 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
         "pulsec_rt_consoleWrite".to_string(),
     );
     out.insert(
-        ("Intrinsics".to_string(), "consoleErrorWriteLine".to_string()),
+        (
+            "Intrinsics".to_string(),
+            "consoleErrorWriteLine".to_string(),
+        ),
         "pulsec_rt_consoleErrorWriteLine".to_string(),
     );
     out.insert(
@@ -129,14 +133,6 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
         "pulsec_rt_panic".to_string(),
     );
     out.insert(
-        ("Intrinsics".to_string(), "__dispatchNullReceiverPanic".to_string()),
-        DISPATCH_NULL_PANIC_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("Intrinsics".to_string(), "__dispatchInvalidTypePanic".to_string()),
-        DISPATCH_TYPE_PANIC_SYMBOL.to_string(),
-    );
-    out.insert(
         ("Intrinsics".to_string(), "stringConcat".to_string()),
         "pulsec_rt_stringConcat".to_string(),
     );
@@ -145,20 +141,18 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
         "pulsec_rt_stringLength".to_string(),
     );
     out.insert(
-        ("Intrinsics".to_string(), "intToString".to_string()),
-        "pulsec_rt_intToString".to_string(),
+        (
+            "Intrinsics".to_string(),
+            "__dispatchNullReceiverPanic".to_string(),
+        ),
+        DISPATCH_NULL_PANIC_SYMBOL.to_string(),
     );
     out.insert(
-        ("Intrinsics".to_string(), "booleanToString".to_string()),
-        "pulsec_rt_booleanToString".to_string(),
-    );
-    out.insert(
-        ("Intrinsics".to_string(), "parseInt".to_string()),
-        "pulsec_rt_parseInt".to_string(),
-    );
-    out.insert(
-        ("Intrinsics".to_string(), "parseBoolean".to_string()),
-        "pulsec_rt_parseBoolean".to_string(),
+        (
+            "Intrinsics".to_string(),
+            "__dispatchInvalidTypePanic".to_string(),
+        ),
+        DISPATCH_TYPE_PANIC_SYMBOL.to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "objectClassName".to_string()),
@@ -169,56 +163,20 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
         OBJECT_HASH_CODE_SYMBOL.to_string(),
     );
     out.insert(
-        ("Class".to_string(), "runtimeSimpleName".to_string()),
-        CLASS_SIMPLE_NAME_SYMBOL.to_string(),
+        ("String".to_string(), "runtimeConcat".to_string()),
+        "pulsec_rt_stringConcat".to_string(),
     );
     out.insert(
-        ("Class".to_string(), "runtimePackageName".to_string()),
-        CLASS_PACKAGE_NAME_SYMBOL.to_string(),
+        ("String".to_string(), "runtimeLength".to_string()),
+        "pulsec_rt_stringLength".to_string(),
     );
     out.insert(
         ("String".to_string(), "runtimeCharAt".to_string()),
         STRING_CHAR_AT_SYMBOL.to_string(),
     );
     out.insert(
-        ("String".to_string(), "runtimeSubstring".to_string()),
-        STRING_SUBSTRING_SYMBOL.to_string(),
-    );
-    out.insert(
         ("String".to_string(), "runtimeFromChar".to_string()),
         CHAR_TO_STRING_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("Char".to_string(), "runtimeCharAt".to_string()),
-        CHAR_RUNTIME_CHAR_AT_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("Double".to_string(), "runtimeCharAt".to_string()),
-        STRING_CHAR_AT_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("Long".to_string(), "runtimeParse".to_string()),
-        PARSE_LONG_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("Long".to_string(), "runtimeToString".to_string()),
-        LONG_TO_STRING_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("UInteger".to_string(), "runtimeParse".to_string()),
-        PARSE_UINT_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("UInteger".to_string(), "runtimeToString".to_string()),
-        UINT_TO_STRING_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("ULong".to_string(), "runtimeParse".to_string()),
-        PARSE_ULONG_SYMBOL.to_string(),
-    );
-    out.insert(
-        ("ULong".to_string(), "runtimeToString".to_string()),
-        ULONG_TO_STRING_SYMBOL.to_string(),
     );
     out.insert(
         ("System".to_string(), "currentTimeMillis".to_string()),
@@ -277,6 +235,10 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
         "pulsec_rt_listSize".to_string(),
     );
     out.insert(
+        ("Intrinsics".to_string(), "listKind".to_string()),
+        "pulsec_rt_listKind".to_string(),
+    );
+    out.insert(
         ("Intrinsics".to_string(), "listClear".to_string()),
         "pulsec_rt_listClear".to_string(),
     );
@@ -327,6 +289,42 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("Intrinsics".to_string(), "mapGetInt".to_string()),
         "pulsec_rt_mapGetInt".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostExists".to_string()),
+        "pulsec_rt_hostExists".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostIsFile".to_string()),
+        "pulsec_rt_hostIsFile".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostIsDirectory".to_string()),
+        "pulsec_rt_hostIsDirectory".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostReadAllText".to_string()),
+        "pulsec_rt_hostReadAllText".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostListChildren".to_string()),
+        "pulsec_rt_hostListChildren".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCreateDirectory".to_string()),
+        "pulsec_rt_hostCreateDirectory".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostWriteAllText".to_string()),
+        "pulsec_rt_hostWriteAllText".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCopyFile".to_string()),
+        "pulsec_rt_hostCopyFile".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostRunShellProcess".to_string()),
+        "pulsec_rt_hostRunShellProcess".to_string(),
     );
     out.insert(
         ("Memory".to_string(), "retain".to_string()),
@@ -382,6 +380,7 @@ pub(crate) fn shared_runtime_exported_procedures() -> Vec<String> {
         EXC_POP_HANDLER_SYMBOL.to_string(),
         EXC_TAKE_PENDING_SYMBOL.to_string(),
         EXC_THROW_SYMBOL.to_string(),
+        "pulsec_pulse_lang_IO_println__String".to_string(),
     ];
     symbols.extend(default_stdlib_symbols().into_values());
     symbols.sort();
@@ -399,30 +398,23 @@ pub(crate) fn render_string_array(values: &[String]) -> String {
 
 pub(crate) fn console_intrinsic_newline(owner: &str, member: &str) -> Option<bool> {
     match (owner, member) {
-        ("IO", "println")
-        | ("Intrinsics", "consoleWriteLine")
-        | ("System.out", "println") => Some(true),
-        ("IO", "print")
-        | ("Intrinsics", "consoleWrite")
-        | ("System.out", "print") => Some(false),
+        ("Intrinsics", "consoleWriteLine") => Some(true),
+        ("Intrinsics", "consoleWrite") => Some(false),
         _ => None,
     }
 }
 
 pub(crate) fn normalize_stdlib_owner(owner: &str) -> &str {
     match owner {
-        "com.pulse.lang.IO" => "IO",
-        "com.pulse.lang.Class" => "Class",
-        "com.pulse.lang.String" => "String",
-        "com.pulse.lang.Char" => "Char",
-        "com.pulse.lang.Long" => "Long",
-        "com.pulse.lang.UInteger" => "UInteger",
-        "com.pulse.lang.ULong" => "ULong",
-        "com.pulse.rt.Intrinsics" => "Intrinsics",
+        "pulse.lang.IO" => "IO",
+        "pulse.lang.Class" => "Class",
+        "pulse.lang.String" => "String",
+        "pulse.lang.Char" => "Char",
+        "pulse.lang.Long" => "Long",
+        "pulse.lang.UInteger" => "UInteger",
+        "pulse.lang.ULong" => "ULong",
+        "pulse.rt.Intrinsics" => "Intrinsics",
         "System.out" => "IO",
         other => other,
     }
 }
-
-
-

@@ -11,7 +11,7 @@ The current shipped compiler-backed exception model is now split into two honest
 - method and constructor `throws` clauses are supported
 - checked versus unchecked exception typing is enforced during semantic analysis
 - `try (<resource>; ...) { ... }` is not supported in the current F1 baseline
-- the thrown expression must typecheck as `com.pulse.lang.Throwable` or a subtype
+- the thrown expression must typecheck as `pulse.lang.Throwable` or a subtype
 - obvious null throw operands are rejected in semantic analysis for the current F1 baseline
 
 This means Pulse now has a real compile-time exception contract plus a real runtime transfer model for Pulse-thrown throwable values, even though throwable/detail hardening is still not fully complete.
@@ -48,8 +48,8 @@ This means throwable detail chaining is now owned by stdlib classes instead of b
 
 Current checked-exception rule:
 
-- a throwable is treated as checked if it is a subtype of `com.pulse.lang.Exception`
-- subtypes of `com.pulse.lang.RuntimeException` are unchecked
+- a throwable is treated as checked if it is a subtype of `pulse.lang.Exception`
+- subtypes of `pulse.lang.RuntimeException` are unchecked
 
 Current semantic enforcement:
 
@@ -131,17 +131,19 @@ This means the shipped F1 exception model now has real compile-time declaration/
 
 ## `try-with-resources`
 
-Current `F1-17` policy:
+Current `F1-17` shipped baseline:
 
-- `try (<resource>; ...) { ... }` is explicitly out of scope for the shipped F1 syntax baseline
-- the parser emits a deterministic diagnostic instead of pretending the statement is partially supported
-- resource cleanup must currently be expressed with explicit object methods and ordinary `try` / `finally`
+- declaration-form resource statements are supported: `try (T resource = expr; U other = expr2) { ... }`
+- each declared resource must typecheck as assignable to `pulse.lang.AutoCloseable`
+- resources close in reverse declaration order
+- if a later resource initializer throws, already-open earlier resources still close before the exception continues through the enclosing `catch` / `finally` flow
+- resource variables currently follow the declared-resource statement form; later Java-shape work can still return for effectively-final external resource operands if that surface is selected
 
-Reason for the deferral:
+Current intentional boundary:
 
-- `com.pulse.lang.AutoCloseable` is only a bootstrap stdlib seam today
-- the resource-lifecycle contract and close/flush ownership rules still belong to later work
-- full resource-statement lowering should wait for `F1-47` and `F1-57` instead of hardcoding a misleading partial model now
+- the shipped form is the declaration-style resource list, not the later Java form that can reuse effectively-final external locals
+- the current runtime model does not claim full Java suppressed-exception parity
+- the lifecycle/ownership contract beneath the syntax is the explicit F1 model locked through `AutoCloseable`, stream close state, and `ResourceScope`
 
 ## Related
 

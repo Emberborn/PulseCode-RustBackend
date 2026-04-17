@@ -2,9 +2,62 @@
 
 ## Goal
 Ship PulseCode as a standalone language ecosystem that can:
-1. Compile PulseCode programs to native Windows executables
-2. Package deliverables into MSI installers
-3. Become self-hosted (compiler/runtime implemented in PulseCode)
+1. act as a Rust-hosted bootstrap compiler for the Pulse language
+2. finish the language/stdlib/runtime surface needed for self-sustained-hosting readiness
+3. define and support the current Windows x64 backend/runtime lane while preserving later PulseOS, Linux, and macOS target integration
+4. reach self-sustained hosting by using self-hosting as the transition mechanism, with Windows x64 current and additional targets added through preserved adapter seams
+
+## Strategic Pivot (2026-03-21)
+
+This roadmap originally assumed a Windows-first standalone product. That is no longer the strategic direction.
+
+Effective immediately:
+
+- the Windows MASM/COFF/`link.exe` pipeline is the current Windows x64 target adapter and host/bootstrap lane, not the destination product model for the whole architecture
+- compiler-owned packaging/install/productization work is removed from `pulsec`; downstream tools own installers/packages if needed
+- frontend, semantics, IR, stdlib, docs, validation, and self-sustained-hosting readiness work remain live
+- backend/runtime work from the IR boundary downward should pivot toward:
+  - a Rust-owned host bootstrap path
+  - explicit target adapters instead of one Windows-shaped native path
+  - the current Windows x64 target contract plus preserved later PulseOS/Linux/macOS target contracts
+  - target seams that fit the same adapter architecture when later lanes activate
+
+Interpret older Windows-specific milestones below as historical/bootstrap context unless a later section explicitly reactivates them.
+
+## Active Planning Lanes
+
+- Lane 1: keep F1/F2/F-A moving toward a self-sustained-hosting-ready language and library surface
+- Lane 2: preserve and reframe the current Windows x64 backend as both an immediate target lane and the current host/bootstrap path
+- Lane 3: define the first PulseOS target adapter, runtime ABI boundary, and loader/startup contract
+- Lane 4: keep the architecture honest for later Linux and macOS expansion instead of hard-coding Windows-only assumptions back in
+- Lane 5: move self-hosting into a broader self-sustained-hosting roadmap rather than a Windows-product roadmap
+
+## Active Execution Board (2026-04-09)
+
+- [F1 Task Board](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md) is the active execution board
+- [Rebase Scope and Return-to-F1 Policy](/D:/Programming/codex/PulseCode/docs/REBASE_SCOPE_AND_RETURN_POLICY.md) is the scope/policy source of truth for why the rebase exists and when `F1` may resume
+- [Target Taxonomy and Naming Policy](/D:/Programming/codex/PulseCode/docs/TARGET_TAXONOMY_AND_NAMING.md) is the source of truth for canonical target IDs during the target-model rebase
+- [Backend Layer Architecture](/D:/Programming/codex/PulseCode/docs/BACKEND_LAYER_ARCHITECTURE.md) is the source of truth for the `RB-07` code-ownership split
+- [Backend Adapter Registry](/D:/Programming/codex/PulseCode/docs/BACKEND_ADAPTER_REGISTRY.md) is the source of truth for the `RB-08` adapter selection seam
+- [Windows x64 Adapter Scope](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_ADAPTER_SCOPE.md) is the source of truth for the `RB-09` retained Windows lane boundary
+- [Target-Neutral Planning Boundary](/D:/Programming/codex/PulseCode/docs/TARGET_NEUTRAL_PLANNING_BOUNDARY.md) is the source of truth for the `RB-10` planning-structure boundary
+- [Runtime Intrinsics Partition](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_PARTITION.md) is the source of truth for the `RB-11` portable-vs-adapter runtime split
+- [Host Bootstrap Runtime Contract](/D:/Programming/codex/PulseCode/docs/HOST_BOOTSTRAP_RUNTIME_CONTRACT.md) is the source of truth for the `RB-12` minimum retained Rust-host bootstrap runtime seam
+- [PulseOS Runtime Service ABI Slice](/D:/Programming/codex/PulseCode/docs/PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md) is the source of truth for the `RB-13` requested-target PulseOS service boundary
+- [Runtime Ownership Rebase](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_REBASE.md) is the source of truth for the `RB-14` three-way ownership split
+- [Target Artifact Contract Split](/D:/Programming/codex/PulseCode/docs/TARGET_ARTIFACT_CONTRACT_SPLIT.md) is the source of truth for the `RB-15` artifact split between Windows x64 and PulseOS
+- [PulseOS Startup, Loader, and Publication Contract](/D:/Programming/codex/PulseCode/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md) is the source of truth for the `RB-16` startup/publication split between the retained Windows x64 lane and the requested-target PulseOS lane
+- [PulseOS Executable-Loading Proof Target](/D:/Programming/codex/PulseCode/docs/PULSEOS_EXECUTABLE_LOADING_PROOF_TARGET.md) is the source of truth for the `RB-17` contract-level PulseOS loading target
+- [PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md) records the current PulseOS target-direction policy
+- [Target Taxonomy and Naming Policy](/D:/Programming/codex/PulseCode/docs/TARGET_TAXONOMY_AND_NAMING.md) now also preserves `macos-arm64` as a later canonical target lane without changing the current adapter implementation truth
+- [Compiler Packaging Removal](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md) is the source of truth for `RB-17.1` and the removed packaging surface
+- [Rebase Validation Layering](/D:/Programming/codex/PulseCode/docs/REBASE_VALIDATION_LAYERING.md) is the source of truth for `RB-18` and the split between target-neutral, Windows x64 adapter, and requested-target contract validation homes
+- [Windows x64 Scope / Freeze Policy](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md) is the source of truth for `RB-19` and the retained-vs-frozen Windows x64 boundary
+- [Rebase Planning Spine Alignment](/D:/Programming/codex/PulseCode/docs/REBASE_PLANNING_SPINE_ALIGNMENT.md) is the source of truth for `RB-20` and the live planning-spine alignment
+- [Rebase Closure Checklist](/D:/Programming/codex/PulseCode/docs/REBASE_CLOSURE_CHECKLIST.md) and [Rebase Evidence Index](/D:/Programming/codex/PulseCode/docs/REBASE_EVIDENCE_INDEX.md) are the published `RB-21` closure package
+- [F1 Task Board](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md) is now reactivated as the active post-rebase execution board
+- the rebase board is now closed through `RB-21`
+- the active `F1` resume point is `F1-51`
 
 ## Current Phase Snapshot
 Completed (bootstrapped front-end foundation):
@@ -55,7 +108,7 @@ Completed (bootstrapped front-end foundation):
     - unknown `com.pulse.*` imports rejected
 
 Not started (remaining standalone milestones):
-- Packaging toolchain
+- Packaging toolchain (remaining as a Windows x64 target-lane capability, not as the cross-project strategic destination)
 - Self-hosting compiler rewrite
 
 Completed (Phase B spike freeze baseline):
@@ -70,7 +123,7 @@ Completed (Phase B spike freeze baseline):
     - `switch` lowered to branch-chain dispatch baseline
   - typed temporary/value graph added (`IrValueId`, `IrValue`, `IrValueKind`) for expression lowering
   - debug source mapping baseline added on IR instructions/terminators/values (`IrSourceLoc`)
-  - backend adapter boundary added in CLI (`BackendAdapter`, `NoopNativeBackend`) to decouple IR lowering from emit stage
+  - backend adapter boundary added in CLI (`BackendAdapter`, `RustHostBootstrapBackend`) to decouple IR lowering from emit stage
   - `pulsec build` now runs semantic check + IR lowering and reports IR summary
   - `pulsec build` now emits deterministic IR artifact at `build/pulsec.ir.txt` (backend no-op emitter baseline)
   - native backend contract baseline documented (`docs/NATIVE_BACKEND_CONTRACT.md`)
@@ -640,9 +693,14 @@ Deliverable gate for Phase C:
 - C2 exits only when memory management is production-ready (ARC + cycle detector + container growth + OOM/leak/perf gates all green)
 ---
 
-## Phase D: Toolchain UX and Packaging
+## Phase D: Toolchain UX and Historical Packaging Archive
 
 - Expanded execution board: `docs/D_TASK_BOARD.md`
+- Historical scope note:
+  - the Phase D CLI/manifest/build/test work remains part of project history
+  - compiler-owned packaging/install/signing work from the old Phase D plan is no longer live project scope
+  - the current source of truth for that removal is [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+  - any MSI/WiX/SignTool/package-flow material in the archived Phase D docs is retained as superseded history only, not active contract truth
 
 ### D1. CLI UX
 - `pulsec new`
@@ -657,17 +715,17 @@ Deliverable gate for Phase C:
 - package/version fields
 - Current progress: D2-01..D2-07 are `Done (Locked)` (see `docs/PULSEC_MANIFEST_V1.md`, `docs/PULSEC_MANIFEST_EXAMPLES.md`, and `docs/PROJECT_LAYOUT_CONVENTIONS.md`).
 
-### D3. Installer Output
-- MSI generation pipeline
-- App metadata + installer templates
-- signed builds pipeline (release mode)
-- Current progress: D3-01..D3-05 are `Done (Locked)` (see `docs/PACKAGING_PIPELINE_CONTRACT.md`).
-- Current progress: D4-01..D4-06 are `Done (Locked)`.
-- Current progress: D5-01..D5-05 are `Done (Locked)`.
+### D3. Historical Packaging / Installer Output
+- archived MSI generation pipeline notes
+- archived app metadata + installer template notes
+- archived signed-build pipeline notes
+- these are no longer live compiler scope after `RB-17.1`
+- any retained references in `docs/PACKAGING_PIPELINE_CONTRACT.md` or `docs/D_TASK_BOARD.md` are historical only and are superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- Current progress: D3-01..D3-05, D4-01..D4-06, and D5-01..D5-05 remain archived closure history only.
 - Build-system replacement planning is captured in `docs/BUILD_SYSTEM_EVOLUTION.md` for future TOML -> script DSL migration.
 
 Deliverable gate for Phase D:
-- `pulsec build --msi` produces installable Windows artifact
+- `pulsec build` publishes deterministic native artifacts and plan metadata; installer generation is downstream-tool territory
 
 ---
 
@@ -692,8 +750,8 @@ Deliverable gate for Phase D:
 - Expanded execution board: `docs/E3_TASK_BOARD.md`
 - lock behavioral parity between fat and shared output modes
 - cover debug/release publication rules for both modes
-- validate packaging/staging/MSI behavior when applications depend on shared libraries
-- Current progress: E3 is `Done (Locked)` (see `docs/E3_TASK_BOARD.md`, `docs/E3_PARITY_GUIDE.md`, `docs/E3_PARITY_SUPPORT_MATRIX.md`, `docs/E3_PARITY_EVIDENCE_STRATEGY.md`, `docs/E3_EVIDENCE_INDEX.md`, `docs/E3_CLOSURE_CHECKLIST.md`, `docs/WINDOWS_TOOLCHAIN_MATRIX.md`, `crates/pulsec-cli/tests/e3_parity.rs`, `crates/pulsec-cli/tests/fixture_projects.rs`, `crates/pulsec-cli/tests/packaging_regressions.rs`, `crates/pulsec-cli/tests/stage_locks.rs`, and `crates/pulsec-cli/tests/stage_locks_d.rs`).
+- validate build/publication parity behavior when applications depend on shared libraries
+- Current progress: E3 is `Done (Locked)` (see `docs/E3_TASK_BOARD.md`, `docs/E3_PARITY_GUIDE.md`, `docs/E3_PARITY_SUPPORT_MATRIX.md`, `docs/E3_PARITY_EVIDENCE_STRATEGY.md`, `docs/E3_EVIDENCE_INDEX.md`, `docs/E3_CLOSURE_CHECKLIST.md`, `docs/WINDOWS_TOOLCHAIN_MATRIX.md`, `crates/pulsec-cli/tests/e3_parity.rs`, `crates/pulsec-cli/tests/fixture_projects.rs`, `crates/pulsec-cli/tests/stage_locks.rs`, and `crates/pulsec-cli/tests/stage_locks_d.rs`).
 
 Deliverable gate for Phase E:
 - `pulsec build` supports both fat executable output and real shared-library/native split output
@@ -714,13 +772,14 @@ Deliverable gate for Phase E:
 - exception runtime model is explicitly chosen and documented rather than implied
 - threading/memory-model baseline including `Thread`, `Runnable`, monitor semantics, `volatile`, `final` publication policy, atomics, and selected concurrent collections
 - selected concurrency/network baselines as explicitly documented F1 policy, including explicit executor/semaphore and networking-scope decisions
-- `Class` reflection-lite only in F1; full reflection/invocation deferred until after self-hosting
+- `Class` reflection-lite only in F1; full reflection/invocation deferred until after the self-sustained-hosting transition
 - game-oriented modules (timing, vectors, ECS helpers)
 - integrated conformance, backend/package validation, CI, and performance guardrails for the shipped F1 surface
-- F1 stdlib/language growth is for app/runtime completion and self-hosting readiness; external library/binding ecosystem work remains in Phase F-A
-- desktop UI families (`awt` / `swing`) are explicitly deferred until after self-hosting
+- F1 stdlib/language growth is for app/runtime completion and self-sustained-hosting readiness; external library/binding ecosystem work remains in Phase F-A
+- desktop UI families (`awt` / `swing`) are explicitly deferred until after the self-sustained-hosting transition
 - if a bootstrap implementation can live in Pulse stdlib instead of Rust, F1 should prefer the Pulse-owned version and leave Rust with only the compiler/runtime/backend pieces that genuinely cannot move yet
 - compiler-owned built-ins such as the current annotation semantics should be treated as temporary bootstrap ownership when a later Pulse-owned implementation path exists
+- `stdlib` is the public user-facing library surface, while compiler/runtime/toolchain-only elevated Pulse ownership should move into `authorlib` instead of being left in Rust by default or exposed as ordinary end-user API
 
 ### F2. Docs and Developer Experience
 - Expanded execution board: `docs/F2_TASK_BOARD.md`
@@ -738,7 +797,7 @@ Deliverable gate for Phase E:
   - `F2` for docs-example validation, docs quality automation, and external-facing validation reference docs
 
 Deliverable gate for Phase F:
-- External developers can build production-grade programs
+- External developers can build production-grade programs on the shipped F1/F2/F-A language and ecosystem surface
 
 ---
 
@@ -783,17 +842,33 @@ Deliverable gate for Phase F-A:
 
 ---
 
-## Phase G: Self-Hosting Transition
+## Phase F-B: Self-Sustained Elevation Inventory
+
+- Expanded execution board: `docs/FB_TASK_BOARD.md`
+- carry-forward input tracker: `docs/FB_CARRY_FORWARD_TRACKER.md`
+- inventory the whole compiler/runtime/tooling program and classify what is already Pulse-owned, what must remain below the host/bootstrap or adapter boundary, and what still needs to be elevated into Pulse for a truthful self-sustained transition
+- lock the `stdlib` vs `authorlib` split:
+  - `stdlib` remains the public user-facing library
+  - `authorlib` becomes the privileged Pulse-owned extension library for compiler/runtime/toolchain authoring work
+- define the compiler/runtime access rule that `authorlib` must always be available to compiler/runtime builds even when it is not enabled as a normal user project dependency
+- publish the readiness checklist for what must move out of Rust before Phase G can honestly claim a self-sustained-hosting transition
+
+Deliverable gate for Phase F-B:
+- PulseCode has a truthful `F-B` inventory/elevation plan for the remaining Rust-to-Pulse ownership transition, including the locked `stdlib`/`authorlib` split and the Phase G readiness checklist
+
+---
+
+## Phase G: Self-Sustained-Hosting Transition
 
 ### G1. Compiler Chain Reimplementation in PulseCode
 - Rebuild the compiler chain in PulseCode, not just the frontend
-- Include parser, semantic analysis, lowering, backend/codegen, and the compiler-owned tooling/runtime pieces that belong in the self-hosted chain
+- Include parser, semantic analysis, lowering, backend/codegen, and the compiler-owned tooling/runtime pieces that belong in the self-sustained chain
 - Keep the Rust compiler/toolchain as the bootstrap/reference compiler until the PulseCode compiler chain is proven
 
 ### G2. Dual-Compiler Validation
 - compile same test corpus with both compilers
 - AST/IR/backend-artifact equivalence checks where feasible
-- verify that the PulseCode-hosted backend/codegen path is part of the self-hosted chain rather than still being a hidden Rust-owned dependency
+- verify that the PulseCode-hosted backend/codegen path is part of the self-sustained chain rather than still being a hidden Rust-owned dependency
 
 ### G3. Bootstrap Chain
 - Compiler0 (Rust) compiles Compiler1 (PulseCode)
@@ -802,35 +877,36 @@ Deliverable gate for Phase F-A:
 
 ### G4. Runtime/Ownership Transition
 - move runtime and bootstrap ownership into PulseCode wherever that ownership does not genuinely need to remain in a thin host/bootstrap shell
-- leave non-Pulse host code only where it is still truly required by the launch/build/package boundary
+- move Pulse-ownable compiler/runtime/tooling helpers into `stdlib` or `authorlib` rather than leaving them in Rust by inertia
+- leave non-Pulse host code only where it is still truly required by the launch/build boundary
 
 Deliverable gate for Phase G:
-- PulseCode has a self-hosted compiler chain in PulseCode, including frontend, lowering, backend/codegen, and the owned runtime/tooling pieces required to build and run real programs reliably
+- PulseCode has a self-sustained compiler chain in PulseCode, including frontend, lowering, backend/codegen, `stdlib`, `authorlib`, and the owned runtime/tooling pieces required to build and run real programs reliably while Rust is reduced to the defended host/bootstrap and target-adapter boundary
 
 ---
 
-## Phase H: Post-Self-Host Conformance and Regression Architecture
+## Phase H: Post-Self-Sustained Conformance and Regression Architecture
 
 ### H1. Replace Milestone Locks with Long-Lived Behavioral Conformance
 - keep milestone/roadmap locks only as transition scaffolding where they still add value
 - establish durable language conformance suites that are not tied to phase/task IDs
 - establish durable stdlib conformance suites that lock the public API and behavior of shipped classes
 - establish durable runtime conformance suites for allocation, ARC, weak handles, exceptions, traces, containers, IO, and platform boundaries
-- ensure the post-self-host test surface answers "does Pulse still behave correctly?" rather than only "did roadmap item X stay closed?"
+- ensure the post-self-sustained transition test surface answers "does Pulse still behave correctly?" rather than only "did roadmap item X stay closed?"
 
-### H2. Self-Hosted Compiler and Runtime Regression Harness
-- add self-hosted compiler regression suites that exercise parsing, checking, lowering, codegen, and artifact publication from inside the Pulse-owned compiler chain
-- add bootstrap equivalence tests between the bootstrap compiler and the self-hosted compiler where those comparisons remain useful
+### H2. Self-Sustained Compiler and Runtime Regression Harness
+- add self-sustained compiler regression suites that exercise parsing, checking, lowering, codegen, and artifact publication from inside the Pulse-owned compiler chain
+- add bootstrap equivalence tests between the bootstrap compiler and the self-sustained compiler where those comparisons remain useful
 - lock compiler/runtime behavior independently from roadmap-specific closure docs
 - keep black-box CLI, fixture-project, packaging, and install/uninstall tests as long-lived behavior contracts
 
 ### H3. Stress, Performance, and Non-Functional Guardrails
 - promote stress/soak, memory-trend, packaging, and artifact validation suites into the permanent post-roadmap test architecture
 - add performance/budget thresholds that are owned by the product rather than by milestone evidence
-- define flaky-test policy and regression triage policy for the self-hosted era
+- define flaky-test policy and regression triage policy for the self-sustained era
 
 Deliverable gate for Phase H:
-- PulseCode has a permanent self-hosted conformance/regression architecture that locks compiler, runtime, stdlib, CLI, packaging, and non-functional behavior independently of milestone-roadmap closures
+- PulseCode has a permanent self-sustained conformance/regression architecture that locks compiler, runtime, `stdlib`, `authorlib`, CLI, packaging, and non-functional behavior independently of milestone-roadmap closures
 
 ---
 

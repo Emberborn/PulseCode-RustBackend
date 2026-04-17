@@ -1,4 +1,8 @@
-use super::{normalize_output_mode, CliCommand, CliFlags, NewFlags, NewTemplate};
+use super::{
+    normalize_output_mode,
+    target_model::{cli_target_error_text, normalize_cli_target_selection},
+    CliCommand, CliFlags, NewFlags, NewTemplate,
+};
 
 pub(crate) fn parse_command(raw: &str) -> Option<CliCommand> {
     match raw {
@@ -6,7 +10,7 @@ pub(crate) fn parse_command(raw: &str) -> Option<CliCommand> {
         "check" => Some(CliCommand::Check),
         "build" => Some(CliCommand::Build),
         "test" => Some(CliCommand::Test),
-        "package" => Some(CliCommand::Package),
+        "__prewarm-author-build-bridge" => Some(CliCommand::PrewarmAuthorBuildBridge),
         "help" | "--help" | "-h" => Some(CliCommand::Help),
         "version" | "--version" | "-V" => Some(CliCommand::Version),
         _ => None,
@@ -20,17 +24,12 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
     let mut source_root: Option<String> = None;
     let mut profile: Option<String> = None;
     let mut target: Option<String> = None;
-    let mut packaging_mode: Option<String> = None;
     let mut output_mode: Option<String> = None;
     let mut runtime_debug_allocator: Option<String> = None;
     let mut runtime_cycle_collector: Option<String> = None;
     let mut out_dir: Option<String> = None;
-    let mut msi = false;
-    let mut staging_dir: Option<String> = None;
     let mut assembler: Option<String> = None;
     let mut linker: Option<String> = None;
-    let mut wix: Option<String> = None;
-    let mut signtool: Option<String> = None;
     let mut i = 0usize;
 
     while i < flags.len() {
@@ -50,11 +49,9 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                 if command != CliCommand::Check
                     && command != CliCommand::Build
                     && command != CliCommand::Test
-                    && command != CliCommand::Package
                 {
                     return Err(
-                        "--project-root is only valid for 'check', 'build', 'test', or 'package'"
-                            .to_string(),
+                        "--project-root is only valid for 'check', 'build', or 'test'".to_string(),
                     );
                 }
                 let Some(value) = flags.get(i + 1) else {
@@ -77,8 +74,8 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                 i += 2;
             }
             "--profile" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--profile is only valid for 'build' or 'package'".to_string());
+                if command != CliCommand::Build {
+                    return Err("--profile is only valid for 'build'".to_string());
                 }
                 let Some(value) = flags.get(i + 1) else {
                     return Err("--profile requires one of: debug, release".to_string());
@@ -90,34 +87,27 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                 i += 2;
             }
             "--target" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--target is only valid for 'build' or 'package'".to_string());
+                if command != CliCommand::Build {
+                    return Err("--target is only valid for 'build'".to_string());
                 }
                 let Some(value) = flags.get(i + 1) else {
-                    return Err("--target requires one of: native-x64".to_string());
+                    return Err(format!(
+                        "--target requires one of: {}",
+                        cli_target_error_text()
+                    ));
                 };
-                if value != "native-x64" {
-                    return Err("--target requires one of: native-x64".to_string());
-                }
-                target = Some(value.clone());
-                i += 2;
-            }
-            "--packaging-mode" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--packaging-mode is only valid for 'build' or 'package'".to_string());
-                }
-                let Some(value) = flags.get(i + 1) else {
-                    return Err("--packaging-mode requires one of: staged, msi".to_string());
+                let Some(normalized) = normalize_cli_target_selection(value) else {
+                    return Err(format!(
+                        "--target requires one of: {}",
+                        cli_target_error_text()
+                    ));
                 };
-                if value != "staged" && value != "msi" {
-                    return Err("--packaging-mode requires one of: staged, msi".to_string());
-                }
-                packaging_mode = Some(value.clone());
+                target = Some(normalized.to_string());
                 i += 2;
             }
             "--output-mode" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--output-mode is only valid for 'build' or 'package'".to_string());
+                if command != CliCommand::Build {
+                    return Err("--output-mode is only valid for 'build'".to_string());
                 }
                 let Some(value) = flags.get(i + 1) else {
                     return Err("--output-mode requires one of: fat, shared".to_string());
@@ -129,11 +119,8 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                 i += 2;
             }
             "--runtime-debug-allocator" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err(
-                        "--runtime-debug-allocator is only valid for 'build' or 'package'"
-                            .to_string(),
-                    );
+                if command != CliCommand::Build {
+                    return Err("--runtime-debug-allocator is only valid for 'build'".to_string());
                 }
                 let Some(value) = flags.get(i + 1) else {
                     return Err("--runtime-debug-allocator requires one of: on, off".to_string());
@@ -145,11 +132,8 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                 i += 2;
             }
             "--runtime-cycle-collector" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err(
-                        "--runtime-cycle-collector is only valid for 'build' or 'package'"
-                            .to_string(),
-                    );
+                if command != CliCommand::Build {
+                    return Err("--runtime-cycle-collector is only valid for 'build'".to_string());
                 }
                 let Some(value) = flags.get(i + 1) else {
                     return Err("--runtime-cycle-collector requires one of: on, off".to_string());
@@ -161,8 +145,8 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                 i += 2;
             }
             "--out-dir" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--out-dir is only valid for 'build' or 'package'".to_string());
+                if command != CliCommand::Build {
+                    return Err("--out-dir is only valid for 'build'".to_string());
                 }
                 let Some(value) = flags.get(i + 1) else {
                     return Err("--out-dir requires a directory value".to_string());
@@ -173,29 +157,9 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                 out_dir = Some(value.clone());
                 i += 2;
             }
-            "--msi" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--msi is only valid for 'build' or 'package'".to_string());
-                }
-                msi = true;
-                i += 1;
-            }
-            "--staging-dir" => {
-                if command != CliCommand::Package {
-                    return Err("--staging-dir is only valid for 'package'".to_string());
-                }
-                let Some(value) = flags.get(i + 1) else {
-                    return Err("--staging-dir requires a directory value".to_string());
-                };
-                if value.starts_with("--") {
-                    return Err("--staging-dir requires a directory value".to_string());
-                }
-                staging_dir = Some(value.clone());
-                i += 2;
-            }
             "--linker" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--linker is only valid for 'build' or 'package'".to_string());
+                if command != CliCommand::Build {
+                    return Err("--linker is only valid for 'build'".to_string());
                 }
                 let Some(value) = flags.get(i + 1) else {
                     return Err("--linker requires a file path value".to_string());
@@ -207,8 +171,8 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                 i += 2;
             }
             "--assembler" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--assembler is only valid for 'build' or 'package'".to_string());
+                if command != CliCommand::Build {
+                    return Err("--assembler is only valid for 'build'".to_string());
                 }
                 let Some(value) = flags.get(i + 1) else {
                     return Err("--assembler requires a file path value".to_string());
@@ -217,32 +181,6 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                     return Err("--assembler requires a file path value".to_string());
                 }
                 assembler = Some(value.clone());
-                i += 2;
-            }
-            "--wix" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--wix is only valid for 'build' or 'package'".to_string());
-                }
-                let Some(value) = flags.get(i + 1) else {
-                    return Err("--wix requires a file path value".to_string());
-                };
-                if value.starts_with("--") {
-                    return Err("--wix requires a file path value".to_string());
-                }
-                wix = Some(value.clone());
-                i += 2;
-            }
-            "--signtool" => {
-                if command != CliCommand::Build && command != CliCommand::Package {
-                    return Err("--signtool is only valid for 'build' or 'package'".to_string());
-                }
-                let Some(value) = flags.get(i + 1) else {
-                    return Err("--signtool requires a file path value".to_string());
-                };
-                if value.starts_with("--") {
-                    return Err("--signtool requires a file path value".to_string());
-                }
-                signtool = Some(value.clone());
                 i += 2;
             }
             unknown => return Err(format!("Unknown flag '{}'", unknown)),
@@ -256,17 +194,12 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
         source_root,
         profile,
         target,
-        packaging_mode,
         output_mode,
         runtime_debug_allocator,
         runtime_cycle_collector,
         out_dir,
-        msi,
-        staging_dir,
         assembler,
         linker,
-        wix,
-        signtool,
     })
 }
 

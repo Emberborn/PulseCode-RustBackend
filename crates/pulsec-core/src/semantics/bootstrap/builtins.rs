@@ -136,7 +136,7 @@ fn load_stdlib_class_info() -> Result<Vec<(String, ClassInfo)>, SemanticError> {
                                 is_static: field.modifiers.contains(&Modifier::Static),
                                 is_final: field.modifiers.contains(&Modifier::Final),
                                 is_not_null: has_annotation(&field.annotations, "NotNull"),
-                                is_runtime_managed: fqcn == "com.pulse.lang.System"
+                                is_runtime_managed: fqcn == "pulse.lang.System"
                                     && field.name == "out",
                                 visibility: visibility_from_modifiers(&field.modifiers),
                             },
@@ -163,7 +163,11 @@ fn load_stdlib_class_info() -> Result<Vec<(String, ClassInfo)>, SemanticError> {
                             constructors.push(ConstructorSignature {
                                 param_types,
                                 declared_throws: Vec::new(),
-                                is_varargs: method.params.last().map(|p| p.is_varargs).unwrap_or(false),
+                                is_varargs: method
+                                    .params
+                                    .last()
+                                    .map(|p| p.is_varargs)
+                                    .unwrap_or(false),
                             });
                             continue;
                         }
@@ -212,7 +216,8 @@ fn load_stdlib_class_info() -> Result<Vec<(String, ClassInfo)>, SemanticError> {
                     interfaces,
                     is_interface: class.is_interface,
                     is_enum: class.is_enum,
-                    is_abstract: class.modifiers.contains(&Modifier::Abstract) || class.is_interface,
+                    is_abstract: class.modifiers.contains(&Modifier::Abstract)
+                        || class.is_interface,
                     is_final: class.modifiers.contains(&Modifier::Final),
                     enum_constants: class.enum_constants.clone(),
                     generic_arity: class.type_params.len(),
@@ -256,7 +261,6 @@ fn stdlib_source_root() -> PathBuf {
         .join("..")
         .join("stdlib")
         .join("src")
-        .join("com")
         .join("pulse")
 }
 
@@ -290,7 +294,10 @@ fn augment_console_methods(
     for name in ["println", "print"] {
         let entry = methods.entry(name.to_string()).or_default();
         for ty in ["long", "float", "double", "char"] {
-            if entry.iter().any(|method| method.param_types == [ty.to_string()]) {
+            if entry
+                .iter()
+                .any(|method| method.param_types == [ty.to_string()])
+            {
                 continue;
             }
             entry.push(console_method_signature(ty, is_static, is_abstract));

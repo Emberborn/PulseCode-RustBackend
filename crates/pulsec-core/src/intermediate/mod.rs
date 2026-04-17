@@ -1,9 +1,9 @@
 use crate::{ClassContext, Program};
 
-#[path = "support.rs"]
-mod support;
 #[path = "lowering/mod.rs"]
 mod lowering;
+#[path = "support.rs"]
+mod support;
 #[cfg(test)]
 #[path = "tests.rs"]
 mod tests;
@@ -42,6 +42,21 @@ pub struct IrField {
 pub enum IrFieldInit {
     Int(i64),
     Bool(bool),
+    Float(u32),
+    Double(u64),
+    NewObject {
+        class_name: String,
+        args: Vec<IrFieldInitArg>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IrFieldInitArg {
+    Int(i64),
+    Long(i64),
+    Bool(bool),
+    Char(char),
+    String(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -223,6 +238,7 @@ pub enum IrBinaryOp {
     Sub,
     Mul,
     Div,
+    Mod,
     Eq,
     NotEq,
     Less,

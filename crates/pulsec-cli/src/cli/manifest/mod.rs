@@ -1,3 +1,4 @@
+use super::target_model::{resolve_target_descriptor, supported_target_error_text};
 use super::*;
 
 pub(super) fn find_and_load_manifest_for_check(
@@ -30,7 +31,8 @@ pub(super) fn resolve_workspace_context(
     if entry_arg.is_some() || flags.source_root.is_some() {
         return Ok(None);
     }
-    let Some((manifest_path, manifest_config)) = find_and_load_manifest_for_check(entry_arg, flags)?
+    let Some((manifest_path, manifest_config)) =
+        find_and_load_manifest_for_check(entry_arg, flags)?
     else {
         return Ok(None);
     };
@@ -99,15 +101,24 @@ pub(super) fn resolve_workspace_member_roots(
     Ok(out)
 }
 
-pub(super) fn resolve_layout_path(project_root: &Path, configured: Option<&str>, default_rel: &str) -> PathBuf {
+pub(super) fn resolve_layout_path(
+    project_root: &Path,
+    configured: Option<&str>,
+    default_rel: &str,
+) -> PathBuf {
     let rel = configured.unwrap_or(default_rel);
     project_root.join(rel)
 }
 
 pub(super) fn find_manifest_path(start_dir: &Path) -> Result<Option<PathBuf>, String> {
     let mut dir = if start_dir.exists() {
-        canonical_existing_path(start_dir)
-            .map_err(|e| format!("Failed to resolve project directory '{}': {}", start_dir.display(), e))?
+        canonical_existing_path(start_dir).map_err(|e| {
+            format!(
+                "Failed to resolve project directory '{}': {}",
+                start_dir.display(),
+                e
+            )
+        })?
     } else {
         absolutize(start_dir).ok_or_else(|| {
             format!(
@@ -132,8 +143,13 @@ pub(super) fn find_manifest_path(start_dir: &Path) -> Result<Option<PathBuf>, St
 }
 
 pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfig, String> {
-    let content = fs::read_to_string(manifest_path)
-        .map_err(|e| format!("Failed to read manifest '{}': {}", manifest_path.display(), e))?;
+    let content = fs::read_to_string(manifest_path).map_err(|e| {
+        format!(
+            "Failed to read manifest '{}': {}",
+            manifest_path.display(),
+            e
+        )
+    })?;
     let mut section: Option<String> = None;
     let mut package_name: Option<String> = None;
     let mut package_version: Option<String> = None;
@@ -149,7 +165,6 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
     let mut entry: Option<String> = None;
     let mut profile: Option<String> = None;
     let mut target: Option<String> = None;
-    let mut packaging_mode: Option<String> = None;
     let mut output_mode: Option<String> = None;
     let mut output_entry: Option<String> = None;
     let mut runtime_debug_allocator: Option<String> = None;
@@ -163,10 +178,8 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
     let mut distro_dir: Option<String> = None;
     let mut linker: Option<String> = None;
     let mut assembler: Option<String> = None;
-    let mut wix: Option<String> = None;
-    let mut signtool: Option<String> = None;
     let mut workspace_members: Option<String> = None;
-    let mut metadata: BTreeMap<String, String> = BTreeMap::new();
+    let mut authorlib_enabled: Option<bool> = None;
     let mut seen: HashSet<String> = HashSet::new();
 
     for (line_no, raw_line) in content.lines().enumerate() {
@@ -177,7 +190,7 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
         if line.starts_with('[') && line.ends_with(']') {
             let section_name = line[1..line.len() - 1].trim();
             match section_name {
-                "package" | "sources" | "build" | "toolchain" | "workspace" | "package.metadata" => {
+                "package" | "sources" | "build" | "toolchain" | "workspace" | "authorlib" => {
                     section = Some(section_name.to_string());
                 }
                 _ => {
@@ -213,14 +226,6 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 line_no + 1
             ));
         }
-        let value = parse_manifest_string(v.trim()).ok_or_else(|| {
-            format!(
-                "Manifest parse error in '{}': expected quoted string for key '{}' at line {}",
-                manifest_path.display(),
-                key,
-                line_no + 1
-            )
-        })?;
         let unique_key = format!("{}.{}", active_section, key);
         if !seen.insert(unique_key.clone()) {
             return Err(format!(
@@ -233,8 +238,28 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
 
         match active_section {
             "package" => match key {
-                "name" => package_name = Some(value),
-                "version" => package_version = Some(value),
+                "name" => {
+                    let value = parse_manifest_string(v.trim()).ok_or_else(|| {
+                        format!(
+                            "Manifest parse error in '{}': expected quoted string for key '{}' at line {}",
+                            manifest_path.display(),
+                            key,
+                            line_no + 1
+                        )
+                    })?;
+                    package_name = Some(value)
+                }
+                "version" => {
+                    let value = parse_manifest_string(v.trim()).ok_or_else(|| {
+                        format!(
+                            "Manifest parse error in '{}': expected quoted string for key '{}' at line {}",
+                            manifest_path.display(),
+                            key,
+                            line_no + 1
+                        )
+                    })?;
+                    package_version = Some(value)
+                }
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [package] at line {}",
@@ -245,16 +270,16 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 }
             },
             "sources" => match key {
-                "root" => root = Some(value),
-                "main_pulse" => main_pulse = Some(value),
-                "main_resources" => main_resources = Some(value),
-                "test_pulse" => test_pulse = Some(value),
-                "test_resources" => test_resources = Some(value),
-                "api_pulse" => api_pulse = Some(value),
-                "api_resources" => api_resources = Some(value),
-                "docs" => docs_dir = Some(value),
-                "libraries" => libraries_dir = Some(value),
-                "entry" => entry = Some(value),
+                "root" => root = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "main_pulse" => main_pulse = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "main_resources" => main_resources = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "test_pulse" => test_pulse = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "test_resources" => test_resources = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "api_pulse" => api_pulse = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "api_resources" => api_resources = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "docs" => docs_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "libraries" => libraries_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "entry" => entry = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [sources] at line {}",
@@ -265,20 +290,19 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 }
             },
             "build" => match key {
-                "profile" => profile = Some(value),
-                "target" => target = Some(value),
-                "packaging_mode" => packaging_mode = Some(value),
-                "output_mode" => output_mode = Some(value),
-                "output_entry" => output_entry = Some(value),
-                "runtime_debug_allocator" => runtime_debug_allocator = Some(value),
-                "runtime_cycle_collector" => runtime_cycle_collector = Some(value),
-                "out_dir" => out_dir = Some(value),
-                "asm_dir" => asm_dir = Some(value),
-                "generated_dir" => generated_dir = Some(value),
-                "assets_dir" => assets_dir = Some(value),
-                "sanity_dir" => sanity_dir = Some(value),
-                "tmp_dir" => tmp_dir = Some(value),
-                "distro_dir" => distro_dir = Some(value),
+                "profile" => profile = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "target" => target = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "output_mode" => output_mode = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "output_entry" => output_entry = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "runtime_debug_allocator" => runtime_debug_allocator = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "runtime_cycle_collector" => runtime_cycle_collector = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "out_dir" => out_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "asm_dir" => asm_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "generated_dir" => generated_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "assets_dir" => assets_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "sanity_dir" => sanity_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "tmp_dir" => tmp_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "distro_dir" => distro_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [build] at line {}",
@@ -289,10 +313,8 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 }
             },
             "toolchain" => match key {
-                "linker" => linker = Some(value),
-                "assembler" => assembler = Some(value),
-                "wix" => wix = Some(value),
-                "signtool" => signtool = Some(value),
+                "linker" => linker = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "assembler" => assembler = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [toolchain] at line {}",
@@ -303,7 +325,7 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 }
             },
             "workspace" => match key {
-                "members" => workspace_members = Some(value),
+                "members" => workspace_members = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [workspace] at line {}",
@@ -313,9 +335,20 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                     ))
                 }
             },
-            "package.metadata" => {
-                metadata.insert(key.to_string(), value);
-            }
+            "authorlib" => match key {
+                "enabled" => {
+                    authorlib_enabled =
+                        Some(require_manifest_bool(manifest_path, key, v.trim(), line_no + 1)?)
+                }
+                _ => {
+                    return Err(format!(
+                        "Manifest parse error in '{}': unknown key '{}' in [authorlib] at line {}",
+                        manifest_path.display(),
+                        key,
+                        line_no + 1
+                    ))
+                }
+            },
             _ => unreachable!("section set is validated above"),
         }
     }
@@ -349,11 +382,7 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                     version
                 ));
             }
-            Some(ManifestPackage {
-                name,
-                version,
-                metadata,
-            })
+            Some(ManifestPackage { name, version })
         }
         (None, None) if workspace.is_some() => None,
         (None, None) => {
@@ -402,7 +431,6 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
         ("[sources].libraries", libraries_dir.as_deref()),
         ("[build].out_dir", out_dir.as_deref()),
         ("[build].target", target.as_deref()),
-        ("[build].packaging_mode", packaging_mode.as_deref()),
         ("[build].output_mode", output_mode.as_deref()),
         ("[build].output_entry", output_entry.as_deref()),
         (
@@ -421,8 +449,6 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
         ("[build].distro_dir", distro_dir.as_deref()),
         ("[toolchain].linker", linker.as_deref()),
         ("[toolchain].assembler", assembler.as_deref()),
-        ("[toolchain].wix", wix.as_deref()),
-        ("[toolchain].signtool", signtool.as_deref()),
     ] {
         if let Some(value) = value {
             if value.trim().is_empty() {
@@ -443,29 +469,11 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
         }
     }
     if let Some(target_value) = &target {
-        if target_value != "native-x64" {
+        if resolve_target_descriptor(target_value).is_none() {
             return Err(format!(
-                "Manifest validation error in '{}': [build].target must be 'native-x64'",
-                manifest_path.display()
-            ));
-        }
-    }
-    if let Some(mode_value) = &packaging_mode {
-        if mode_value != "staged" && mode_value != "msi" {
-            return Err(format!(
-                "Manifest validation error in '{}': [build].packaging_mode must be 'staged' or 'msi'",
-                manifest_path.display()
-            ));
-        }
-    }
-    if let Some(signing_mode) = package
-        .as_ref()
-        .and_then(|pkg| pkg.metadata.get("signing_mode"))
-    {
-        if signing_mode != "unsigned" && signing_mode != "signtool" {
-            return Err(format!(
-                "Manifest validation error in '{}': [package.metadata].signing_mode must be 'unsigned' or 'signtool'",
-                manifest_path.display()
+                "Manifest validation error in '{}': [build].target must be one of: {}",
+                manifest_path.display(),
+                supported_target_error_text()
             ));
         }
     }
@@ -504,6 +512,7 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
     Ok(ManifestConfig {
         package,
         workspace,
+        authorlib: authorlib_enabled.map(|enabled| ManifestAuthorlib { enabled }),
         sources: ManifestSources {
             root: sources_root,
             main_pulse,
@@ -519,7 +528,6 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
         build: ManifestBuild {
             profile,
             target,
-            packaging_mode,
             output_mode,
             output_entry,
             runtime_debug_allocator,
@@ -532,13 +540,42 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
             tmp_dir,
             distro_dir,
         },
-        toolchain: ManifestToolchain {
-            linker,
-            assembler,
-            wix,
-            signtool,
-        },
+        toolchain: ManifestToolchain { linker, assembler },
     })
+}
+
+fn require_manifest_string(
+    manifest_path: &Path,
+    key: &str,
+    raw_value: &str,
+    line_no: usize,
+) -> Result<String, String> {
+    parse_manifest_string(raw_value).ok_or_else(|| {
+        format!(
+            "Manifest parse error in '{}': expected quoted string for key '{}' at line {}",
+            manifest_path.display(),
+            key,
+            line_no
+        )
+    })
+}
+
+fn require_manifest_bool(
+    manifest_path: &Path,
+    key: &str,
+    raw_value: &str,
+    line_no: usize,
+) -> Result<bool, String> {
+    match raw_value {
+        "true" => Ok(true),
+        "false" => Ok(false),
+        _ => Err(format!(
+            "Manifest parse error in '{}': expected boolean true/false for key '{}' at line {}",
+            manifest_path.display(),
+            key,
+            line_no
+        )),
+    }
 }
 
 pub(super) fn parse_manifest_string(raw: &str) -> Option<String> {
@@ -580,7 +617,7 @@ pub(super) fn is_valid_manifest_version(value: &str) -> bool {
     if parts.len() != 3 {
         return false;
     }
-    parts.iter().all(|part| !part.is_empty() && part.chars().all(|c| c.is_ascii_digit()))
+    parts
+        .iter()
+        .all(|part| !part.is_empty() && part.chars().all(|c| c.is_ascii_digit()))
 }
-
-

@@ -62,15 +62,7 @@ pub(super) fn is_unsigned_primitive(ty: &str) -> bool {
 pub(super) fn is_integral_primitive(ty: &str) -> bool {
     matches!(
         class_simple_name(ty),
-        "byte"
-            | "short"
-            | "int"
-            | "long"
-            | "char"
-            | "ubyte"
-            | "ushort"
-            | "uint"
-            | "ulong"
+        "byte" | "short" | "int" | "long" | "char" | "ubyte" | "ushort" | "uint" | "ulong"
     )
 }
 
@@ -150,20 +142,25 @@ pub(super) fn implicit_numeric_widening_allowed(expected: &str, actual: &str) ->
         (Some(expected_rank), Some(actual_rank)) => return actual_rank <= expected_rank,
         _ => {}
     }
-    match (unsigned_numeric_rank(expected), unsigned_numeric_rank(actual)) {
+    match (
+        unsigned_numeric_rank(expected),
+        unsigned_numeric_rank(actual),
+    ) {
         (Some(expected_rank), Some(actual_rank)) => actual_rank <= expected_rank,
         _ => {
             if let Some(min_expected) = signed_widen_target_for_unsigned(actual) {
-                if let (Some(expected_rank), Some(min_rank)) =
-                    (signed_numeric_rank(expected), signed_numeric_rank(min_expected))
-                {
+                if let (Some(expected_rank), Some(min_rank)) = (
+                    signed_numeric_rank(expected),
+                    signed_numeric_rank(min_expected),
+                ) {
                     return expected_rank >= min_rank;
                 }
             }
             if let Some(min_expected) = unsigned_widen_target_for_signed(actual) {
-                if let (Some(expected_rank), Some(min_rank)) =
-                    (unsigned_numeric_rank(expected), unsigned_numeric_rank(min_expected))
-                {
+                if let (Some(expected_rank), Some(min_rank)) = (
+                    unsigned_numeric_rank(expected),
+                    unsigned_numeric_rank(min_expected),
+                ) {
                     return expected_rank >= min_rank;
                 }
             }
@@ -181,9 +178,10 @@ pub(super) fn numeric_binary_result_type(left_ty: &str, right_ty: &str) -> Optio
     if left_simple == right_simple {
         return Some(left_ty.to_string());
     }
-    if let (Some(left_rank), Some(right_rank)) =
-        (signed_numeric_rank(left_simple), signed_numeric_rank(right_simple))
-    {
+    if let (Some(left_rank), Some(right_rank)) = (
+        signed_numeric_rank(left_simple),
+        signed_numeric_rank(right_simple),
+    ) {
         let result = if left_rank >= right_rank {
             left_simple
         } else {
@@ -194,9 +192,10 @@ pub(super) fn numeric_binary_result_type(left_ty: &str, right_ty: &str) -> Optio
             _ => result.to_string(),
         });
     }
-    if let (Some(left_rank), Some(right_rank)) =
-        (unsigned_numeric_rank(left_simple), unsigned_numeric_rank(right_simple))
-    {
+    if let (Some(left_rank), Some(right_rank)) = (
+        unsigned_numeric_rank(left_simple),
+        unsigned_numeric_rank(right_simple),
+    ) {
         let result_rank = left_rank.max(right_rank);
         return Some(
             match result_rank {
@@ -211,20 +210,17 @@ pub(super) fn numeric_binary_result_type(left_ty: &str, right_ty: &str) -> Optio
     let right_signed = signed_numeric_rank(right_simple);
     let left_unsigned = unsigned_numeric_rank(left_simple);
     let right_unsigned = unsigned_numeric_rank(right_simple);
-    if let Some((signed_rank, unsigned_rank, signed_ty)) = match (
-        left_signed,
-        left_unsigned,
-        right_signed,
-        right_unsigned,
-    ) {
-        (Some(signed_rank), None, None, Some(unsigned_rank)) => {
-            Some((signed_rank, unsigned_rank, left_simple))
+    if let Some((signed_rank, unsigned_rank, signed_ty)) =
+        match (left_signed, left_unsigned, right_signed, right_unsigned) {
+            (Some(signed_rank), None, None, Some(unsigned_rank)) => {
+                Some((signed_rank, unsigned_rank, left_simple))
+            }
+            (None, Some(unsigned_rank), Some(signed_rank), None) => {
+                Some((signed_rank, unsigned_rank, right_simple))
+            }
+            _ => None,
         }
-        (None, Some(unsigned_rank), Some(signed_rank), None) => {
-            Some((signed_rank, unsigned_rank, right_simple))
-        }
-        _ => None,
-    } {
+    {
         if signed_rank >= 5 {
             return Some(signed_ty.to_string());
         }
@@ -248,7 +244,10 @@ pub(super) fn numeric_conversion_kind(expected: &str, actual: &str) -> Option<&'
         return None;
     }
 
-    match (is_unsigned_primitive(expected), is_unsigned_primitive(actual)) {
+    match (
+        is_unsigned_primitive(expected),
+        is_unsigned_primitive(actual),
+    ) {
         (true, false) => Some("signed-to-unsigned"),
         (false, true) => Some("unsigned-to-signed"),
         _ => Some("widening-or-narrowing"),

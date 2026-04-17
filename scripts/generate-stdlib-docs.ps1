@@ -100,9 +100,11 @@ function Normalize-Declaration {
     return $trimmed
 }
 
-$stdlibRoot = Join-Path $RepoRoot "stdlib\src\com\pulse"
+$stdlibRoot = Join-Path $RepoRoot "stdlib\src"
 $docsRoot = Join-Path $RepoRoot "docs\language\stdlib"
-$docsPulseRoot = Join-Path $docsRoot "com\pulse"
+$docsPulseRoot = Join-Path $docsRoot "pulse"
+$docsAuthorRoot = Join-Path $docsRoot "author"
+$docsLegacyComRoot = Join-Path $docsRoot "com"
 
 # This generator is intentionally destructive for the generated stdlib subtree.
 # Each run rewrites the checked-in stdlib reference docs from current PulseDoc
@@ -110,14 +112,21 @@ $docsPulseRoot = Join-Path $docsRoot "com\pulse"
 if (Test-Path $docsPulseRoot) {
     Remove-Item -Recurse -Force $docsPulseRoot
 }
+if (Test-Path $docsAuthorRoot) {
+    Remove-Item -Recurse -Force $docsAuthorRoot
+}
+if (Test-Path $docsLegacyComRoot) {
+    Remove-Item -Recurse -Force $docsLegacyComRoot
+}
 New-Item -ItemType Directory -Force -Path $docsPulseRoot | Out-Null
+New-Item -ItemType Directory -Force -Path $docsAuthorRoot | Out-Null
 
 $pulseFiles = Get-ChildItem -Path $stdlibRoot -Recurse -File -Filter *.pulse | Sort-Object FullName
 
 foreach ($file in $pulseFiles) {
     $relative = $file.FullName.Substring($stdlibRoot.Length).TrimStart('\')
     $relativeDoc = [System.IO.Path]::ChangeExtension($relative, ".md")
-    $outPath = Join-Path $docsPulseRoot $relativeDoc
+    $outPath = Join-Path $docsRoot $relativeDoc
     $outDir = Split-Path -Parent $outPath
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
@@ -161,7 +170,7 @@ foreach ($file in $pulseFiles) {
     }
 
     $qualifiedName = "${packageName}.${typeName}"
-    $sourceRelative = "stdlib/src/com/pulse/$($relative.Replace('\', '/'))"
+    $sourceRelative = "stdlib/src/$($relative.Replace('\', '/'))"
 
     $content = New-Object System.Collections.Generic.List[string]
     $content.Add("# $qualifiedName") | Out-Null

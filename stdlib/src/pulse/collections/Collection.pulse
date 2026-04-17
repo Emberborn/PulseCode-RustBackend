@@ -1,0 +1,68 @@
+package pulse.collections;
+
+import pulse.lang.Iterable;
+
+/**
+ * Minimal collection contract for sized mutable containers.
+ */
+interface Collection<T> extends Iterable {
+    /**
+     * Returns the number of values currently stored in the collection.
+     * Use this before indexed access or to test for emptiness.
+     */
+    int size();
+
+    /**
+     * Reports whether the collection currently stores any values.
+     * Use this as the baseline emptiness check across mutable containers.
+     */
+    boolean isEmpty();
+
+    /**
+     * Removes all values from the collection.
+     * Use this to reset a mutable container to its empty state.
+     */
+    void clear();
+
+    /**
+     * Adds a value to the collection.
+     * Use this as the raw-object baseline before generics are available.
+     */
+    boolean add(T value);
+
+    /**
+     * Reports whether the supplied value is present in the collection.
+     * Use this as the raw-object membership baseline before generics are available.
+     */
+    boolean contains(T value);
+
+    /**
+     * Removes the supplied value when it is present in the collection.
+     * Use this as the shared raw-object removal baseline.
+     */
+    boolean remove(T value);
+
+    /**
+     * Reports whether every value in the supplied collection is present in this collection.
+     * Use this as the shared bulk collection-query baseline.
+     */
+    boolean containsAll(Collection<T> values);
+
+    /**
+     * Adds all values exposed by the supplied collection into this collection.
+     * Use this as the current bulk collection-mutation baseline before richer generic helpers exist.
+     */
+    boolean addAll(Collection<T> values);
+
+    /**
+     * Removes every value in the supplied collection from this collection.
+     * Use this as the shared bulk collection-removal baseline.
+     */
+    boolean removeAll(Collection<T> values);
+
+    /**
+     * Retains only the values from the supplied collection in this collection.
+     * Use this as the shared bulk collection-filtering baseline.
+     */
+    boolean retainAll(Collection<T> values);
+}

@@ -3,32 +3,40 @@ use std::sync::{Mutex, OnceLock};
 
 use pulsec_core::{IrProgram, IrVisibility};
 
+fn normalize_backend_owner_name(name: &str) -> String {
+    let raw = name.split('<').next().unwrap_or(name);
+    raw.rsplit('.').next().unwrap_or(raw).to_string()
+}
+
 static CLASS_SUPER_RESOLUTION: OnceLock<Mutex<HashMap<String, String>>> = OnceLock::new();
 static CLASS_ID_RESOLUTION: OnceLock<Mutex<HashMap<String, u32>>> = OnceLock::new();
+static CLASS_PACKAGE_RESOLUTION: OnceLock<Mutex<HashMap<String, (String, String)>>> =
+    OnceLock::new();
+static FIELD_TYPE_RESOLUTION: OnceLock<Mutex<HashMap<(String, String, String), String>>> =
+    OnceLock::new();
 static INTERFACE_TYPES_RESOLUTION: OnceLock<Mutex<HashSet<String>>> = OnceLock::new();
 static CLASS_INTERFACES_RESOLUTION: OnceLock<Mutex<HashMap<String, Vec<String>>>> = OnceLock::new();
 static CLASS_FINALITY_RESOLUTION: OnceLock<Mutex<HashMap<String, bool>>> = OnceLock::new();
-static METHOD_FINALITY_RESOLUTION: OnceLock<
-    Mutex<HashMap<(String, String, Vec<String>), bool>>,
-> = OnceLock::new();
+static METHOD_FINALITY_RESOLUTION: OnceLock<Mutex<HashMap<(String, String, Vec<String>), bool>>> =
+    OnceLock::new();
 static METHOD_VISIBILITY_RESOLUTION: OnceLock<
     Mutex<HashMap<(String, String, Vec<String>), IrVisibility>>,
 > = OnceLock::new();
 static METHOD_RETURN_TYPE_RESOLUTION: OnceLock<
     Mutex<HashMap<(String, String, Vec<String>), String>>,
 > = OnceLock::new();
-static METHOD_VARARGS_RESOLUTION: OnceLock<
-    Mutex<HashMap<(String, String, Vec<String>), bool>>,
-> = OnceLock::new();
+static METHOD_VARARGS_RESOLUTION: OnceLock<Mutex<HashMap<(String, String, Vec<String>), bool>>> =
+    OnceLock::new();
 
 pub(crate) fn normalize_class_owner_name(
     candidate: &str,
     class_names: &[String],
 ) -> Option<String> {
-    if class_names.iter().any(|c| c == candidate) {
-        return Some(candidate.to_string());
+    let normalized = normalize_backend_owner_name(candidate);
+    if class_names.iter().any(|c| c == &normalized) {
+        return Some(normalized);
     }
-    let simple = candidate.rsplit('.').next().unwrap_or(candidate);
+    let simple = normalized.rsplit('.').next().unwrap_or(&normalized);
     if class_names.iter().any(|c| c == simple) {
         return Some(simple.to_string());
     }
@@ -41,6 +49,7 @@ pub(crate) fn build_class_super_map(
 ) -> HashMap<String, String> {
     let mut out = HashMap::new();
     for class in &ir.classes {
+        let class_name = normalize_backend_owner_name(&class.name);
         let Some(parent) = class
             .super_class
             .as_ref()
@@ -48,7 +57,7 @@ pub(crate) fn build_class_super_map(
         else {
             continue;
         };
-        out.insert(class.name.clone(), parent);
+        out.insert(class_name, parent);
     }
     out
 }
@@ -57,7 +66,10 @@ pub(crate) fn build_class_id_map(ir: &IrProgram) -> HashMap<String, u32> {
     let mut classes = ir
         .classes
         .iter()
-        .map(|c| (format!("{}.{}", c.package_name, c.name), c.name.clone()))
+        .map(|c| {
+            let class_name = normalize_backend_owner_name(&c.name);
+            (format!("{}.{}", c.package_name, class_name), class_name)
+        })
         .collect::<Vec<_>>();
     classes.sort_by(|a, b| a.0.cmp(&b.0));
     let mut out = HashMap::new();
@@ -67,11 +79,50 @@ pub(crate) fn build_class_id_map(ir: &IrProgram) -> HashMap<String, u32> {
     out
 }
 
+pub(crate) fn build_class_package_map(ir: &IrProgram) -> HashMap<String, (String, String)> {
+    let mut grouped: HashMap<String, Vec<(String, String)>> = HashMap::new();
+    for class in &ir.classes {
+        let class_name = normalize_backend_owner_name(&class.name);
+        grouped
+            .entry(class_name.clone())
+            .or_default()
+            .push((class.package_name.clone(), class_name));
+    }
+
+    let mut out = HashMap::new();
+    for (simple_name, mut owners) in grouped {
+        owners.sort();
+        owners.dedup();
+        if owners.len() == 1 {
+            out.insert(simple_name, owners.remove(0));
+        }
+    }
+    out
+}
+
+pub(crate) fn build_field_type_map(ir: &IrProgram) -> HashMap<(String, String, String), String> {
+    let mut out = HashMap::new();
+    for class in &ir.classes {
+        let class_name = normalize_backend_owner_name(&class.name);
+        for field in &class.fields {
+            out.insert(
+                (
+                    class.package_name.clone(),
+                    class_name.clone(),
+                    field.name.clone(),
+                ),
+                field.ty.clone(),
+            );
+        }
+    }
+    out
+}
+
 pub(crate) fn build_interface_type_set(ir: &IrProgram) -> HashSet<String> {
     ir.classes
         .iter()
         .filter(|c| c.is_interface)
-        .map(|c| c.name.clone())
+        .map(|c| normalize_backend_owner_name(&c.name))
         .collect()
 }
 
@@ -82,6 +133,7 @@ pub(crate) fn build_class_interfaces_map(
 ) -> HashMap<String, Vec<String>> {
     let mut direct: HashMap<String, Vec<String>> = HashMap::new();
     for class in &ir.classes {
+        let class_name = normalize_backend_owner_name(&class.name);
         let mut ifaces = class
             .interfaces
             .iter()
@@ -89,7 +141,7 @@ pub(crate) fn build_class_interfaces_map(
             .collect::<Vec<_>>();
         ifaces.sort();
         ifaces.dedup();
-        direct.insert(class.name.clone(), ifaces);
+        direct.insert(class_name, ifaces);
     }
 
     fn collect_interface_closure(
@@ -114,11 +166,12 @@ pub(crate) fn build_class_interfaces_map(
 
     let mut out: HashMap<String, Vec<String>> = HashMap::new();
     for class in &ir.classes {
+        let class_name = normalize_backend_owner_name(&class.name);
         let mut seen: HashSet<String> = HashSet::new();
         let mut merged = Vec::new();
-        collect_interface_closure(&class.name, &direct, class_super, &mut merged, &mut seen);
+        collect_interface_closure(&class_name, &direct, class_super, &mut merged, &mut seen);
         merged.sort();
-        out.insert(class.name.clone(), merged);
+        out.insert(class_name, merged);
     }
     out
 }
@@ -145,6 +198,50 @@ pub(crate) fn install_class_id_resolution(map: &HashMap<String, u32>) {
         guard.clear();
         guard.extend(map.clone());
     }
+}
+
+pub(crate) fn install_class_package_resolution(map: &HashMap<String, (String, String)>) {
+    let mutex = CLASS_PACKAGE_RESOLUTION.get_or_init(|| Mutex::new(HashMap::new()));
+    if let Ok(mut guard) = mutex.lock() {
+        guard.clear();
+        guard.extend(map.clone());
+    }
+}
+
+pub(crate) fn install_field_type_resolution(
+    map: &HashMap<(String, String, String), String>,
+) {
+    let mutex = FIELD_TYPE_RESOLUTION.get_or_init(|| Mutex::new(HashMap::new()));
+    if let Ok(mut guard) = mutex.lock() {
+        guard.clear();
+        guard.extend(map.clone());
+    }
+}
+
+pub(crate) fn class_package_owner_of(owner: &str) -> Option<(String, String)> {
+    let mutex = CLASS_PACKAGE_RESOLUTION.get_or_init(|| Mutex::new(HashMap::new()));
+    let Ok(guard) = mutex.lock() else {
+        return None;
+    };
+    guard.get(&normalize_backend_owner_name(owner)).cloned()
+}
+
+pub(crate) fn field_type_of(
+    package_name: &str,
+    class_name: &str,
+    field_name: &str,
+) -> Option<String> {
+    let mutex = FIELD_TYPE_RESOLUTION.get_or_init(|| Mutex::new(HashMap::new()));
+    let Ok(guard) = mutex.lock() else {
+        return None;
+    };
+    guard
+        .get(&(
+            package_name.to_string(),
+            normalize_backend_owner_name(class_name),
+            field_name.to_string(),
+        ))
+        .cloned()
 }
 
 pub(crate) fn class_id_of(owner: &str) -> Option<u32> {
@@ -192,10 +289,7 @@ pub(crate) fn install_class_interfaces_resolution(map: &HashMap<String, Vec<Stri
     }
 }
 
-pub(crate) fn class_implements_interface_runtime(
-    class_name: &str,
-    interface_name: &str,
-) -> bool {
+pub(crate) fn class_implements_interface_runtime(class_name: &str, interface_name: &str) -> bool {
     let mutex = CLASS_INTERFACES_RESOLUTION.get_or_init(|| Mutex::new(HashMap::new()));
     let Ok(guard) = mutex.lock() else {
         return false;
@@ -276,11 +370,7 @@ pub(crate) fn install_method_return_type_resolution(
     }
 }
 
-pub(crate) fn method_return_type_of(
-    owner: &str,
-    member: &str,
-    sig: &[String],
-) -> Option<String> {
+pub(crate) fn method_return_type_of(owner: &str, member: &str, sig: &[String]) -> Option<String> {
     let mutex = METHOD_RETURN_TYPE_RESOLUTION.get_or_init(|| Mutex::new(HashMap::new()));
     let Ok(guard) = mutex.lock() else {
         return None;
@@ -300,11 +390,7 @@ pub(crate) fn install_method_varargs_resolution(
     }
 }
 
-pub(crate) fn method_is_varargs(
-    owner: &str,
-    member: &str,
-    sig: &[String],
-) -> bool {
+pub(crate) fn method_is_varargs(owner: &str, member: &str, sig: &[String]) -> bool {
     let mutex = METHOD_VARARGS_RESOLUTION.get_or_init(|| Mutex::new(HashMap::new()));
     let Ok(guard) = mutex.lock() else {
         return false;

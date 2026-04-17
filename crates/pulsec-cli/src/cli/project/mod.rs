@@ -1,8 +1,11 @@
+use super::target_model::default_target_id;
 use super::*;
+use pulsec_core::{ArrayInitExpr, ClassMember, Expr, Stmt};
 
 pub(super) struct LoadedUnit {
     pub(super) path: PathBuf,
     pub(super) program: Program,
+    pub(super) source_root: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -13,10 +16,20 @@ pub(super) struct CheckResult {
     pub(super) files_loaded: usize,
 }
 
+#[allow(dead_code)]
 pub(super) fn check_project(
     entry_path: &str,
     source_root: Option<&str>,
     strict_package: bool,
+) -> Result<CheckResult, String> {
+    check_project_with_authorlib(entry_path, source_root, strict_package, false)
+}
+
+pub(super) fn check_project_with_authorlib(
+    entry_path: &str,
+    source_root: Option<&str>,
+    strict_package: bool,
+    authorlib_enabled: bool,
 ) -> Result<CheckResult, String> {
     let mut units: HashMap<PathBuf, LoadedUnit> = HashMap::new();
     let mut stack: Vec<PathBuf> = Vec::new();
@@ -28,6 +41,7 @@ pub(super) fn check_project(
         &entry_abs,
         source_root,
         strict_package,
+        authorlib_enabled,
         &mut units,
         &mut stack,
     )?;
@@ -41,55 +55,75 @@ pub(super) fn check_project(
         validate_unit_imports(unit, &units)?;
     }
 
-    let mut merged_classes = Vec::new();
-    let mut class_contexts: Vec<ClassContext> = Vec::new();
-    let mut unit_paths = units.keys().cloned().collect::<Vec<_>>();
-    unit_paths.sort();
-    for path in unit_paths {
-        let unit = units
-            .get(&path)
-            .expect("sorted unit path should still exist in map");
-        for class_decl in &unit.program.classes {
-            merged_classes.push(class_decl.clone());
-            class_contexts.push(ClassContext {
-                package_name: unit.program.package.name.clone(),
-                imports: unit.program.imports.clone(),
-            });
+    loop {
+        let mut merged_classes = Vec::new();
+        let mut class_contexts: Vec<ClassContext> = Vec::new();
+        let mut unit_paths = units.keys().cloned().collect::<Vec<_>>();
+        unit_paths.sort();
+        for path in &unit_paths {
+            let unit = units
+                .get(path)
+                .expect("sorted unit path should still exist in map");
+            for class_decl in &unit.program.classes {
+                merged_classes.push(class_decl.clone());
+                class_contexts.push(ClassContext {
+                    package_name: unit.program.package.name.clone(),
+                    imports: unit.program.imports.clone(),
+                });
+            }
+        }
+        let merged = Program {
+            package: root.package.clone(),
+            imports: root.imports.clone(),
+            classes: merged_classes,
+        };
+        match analyze_with_class_contexts(&merged, &class_contexts) {
+            Ok(()) => {
+                let stdlib_root = canonical_existing_path(&stdlib_source_root()).ok();
+                let user_files_loaded = units
+                    .keys()
+                    .filter(|path| {
+                        if let Some(root) = &stdlib_root {
+                            !path.starts_with(root)
+                        } else {
+                            true
+                        }
+                    })
+                    .count();
+
+                return Ok(CheckResult {
+                    root,
+                    merged,
+                    class_contexts,
+                    files_loaded: user_files_loaded,
+                });
+            }
+            Err(err) => {
+                let message = err.to_string();
+                let unresolved = unresolved_same_package_candidate_name(&message);
+                if let Some(simple_name) = unresolved {
+                    let loaded = try_load_same_package_candidate(
+                        &simple_name,
+                        strict_package,
+                        authorlib_enabled,
+                        &mut units,
+                        &mut stack,
+                    )?;
+                    if loaded {
+                        continue;
+                    }
+                }
+                return Err(message);
+            }
         }
     }
-
-    let merged = Program {
-        package: root.package.clone(),
-        imports: root.imports.clone(),
-        classes: merged_classes,
-    };
-
-    analyze_with_class_contexts(&merged, &class_contexts).map_err(|e| e.to_string())?;
-
-    let stdlib_root = canonical_existing_path(&stdlib_source_root()).ok();
-    let user_files_loaded = units
-        .keys()
-        .filter(|path| {
-            if let Some(root) = &stdlib_root {
-                !path.starts_with(root)
-            } else {
-                true
-            }
-        })
-        .count();
-
-    Ok(CheckResult {
-        root,
-        merged,
-        class_contexts,
-        files_loaded: user_files_loaded,
-    })
 }
 
 pub(super) fn load_unit(
     file_path: &Path,
     source_root: Option<&str>,
     strict_package: bool,
+    authorlib_enabled: bool,
     units: &mut HashMap<PathBuf, LoadedUnit>,
     stack: &mut Vec<PathBuf>,
 ) -> Result<(), String> {
@@ -115,8 +149,8 @@ pub(super) fn load_unit(
         .file_name()
         .and_then(|name| name.to_str())
         .unwrap_or("<memory>");
-    let program = pulsec_core::parse_with_source_name(&source, source_name)
-        .map_err(|e| e.to_string())?;
+    let program =
+        pulsec_core::parse_with_source_name(&source, source_name).map_err(|e| e.to_string())?;
 
     if let Some(msg) = package_layout_message(
         &canonical.display().to_string(),
@@ -131,10 +165,32 @@ pub(super) fn load_unit(
     }
 
     stack.push(canonical.clone());
+    for candidate in collect_same_package_candidate_names(&program) {
+        let sibling = canonical
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .join(format!("{candidate}.pulse"));
+        if same_path(&sibling, &canonical) || !sibling.exists() || units.contains_key(&sibling) {
+            continue;
+        }
+        if path_in_stack(&sibling, stack) {
+            continue;
+        }
+        load_unit(
+            &sibling,
+            source_root,
+            strict_package,
+            authorlib_enabled,
+            units,
+            stack,
+        )?;
+    }
     for import in &program.imports {
-        validate_pulse_import(import)?;
+        validate_pulse_import(import, authorlib_enabled)?;
         if is_builtin_import(&import.path) {
-            if let Some(stdlib_targets) = resolve_builtin_import_targets(import)? {
+            if let Some(stdlib_targets) =
+                resolve_builtin_import_targets(import, authorlib_enabled)?
+            {
                 let stdlib_root = stdlib_source_root();
                 let stdlib_root_text = stdlib_root.to_string_lossy().to_string();
                 for imported_path in stdlib_targets {
@@ -142,6 +198,7 @@ pub(super) fn load_unit(
                         &imported_path,
                         Some(&stdlib_root_text),
                         strict_package,
+                        true,
                         units,
                         stack,
                     )?;
@@ -159,19 +216,17 @@ pub(super) fn load_unit(
                     imported_path.display()
                 ));
             }
-            load_unit(&imported_path, source_root, strict_package, units, stack)?;
+            load_unit(
+                &imported_path,
+                source_root,
+                strict_package,
+                authorlib_enabled,
+                units,
+                stack,
+            )?;
         }
     }
 
-    for package_file in resolve_package_files(&canonical, &program.package.name, source_root)? {
-        if same_path(&package_file, &canonical) {
-            continue;
-        }
-        if path_in_stack(&package_file, stack) {
-            continue;
-        }
-        load_unit(&package_file, source_root, strict_package, units, stack)?;
-    }
     stack.pop();
 
     units.insert(
@@ -179,12 +234,385 @@ pub(super) fn load_unit(
         LoadedUnit {
             path: canonical,
             program,
+            source_root: source_root.map(|value| value.to_string()),
         },
     );
     Ok(())
 }
 
-pub(super) fn resolve_builtin_import_targets(import: &ImportDecl) -> Result<Option<Vec<PathBuf>>, String> {
+fn unresolved_same_package_candidate_name(message: &str) -> Option<String> {
+    if let Some(name) = extract_quoted_name(message, "Unknown type '") {
+        return Some(name);
+    }
+    let symbol = extract_quoted_name(message, "Unknown symbol '")?;
+    let first = symbol.chars().next()?;
+    if first.is_ascii_uppercase() {
+        return Some(symbol);
+    }
+    None
+}
+
+fn collect_same_package_candidate_names(program: &Program) -> HashSet<String> {
+    let mut out = HashSet::new();
+    for class in &program.classes {
+        if let Some(name) = same_package_type_candidate(class.extends.as_deref().unwrap_or("")) {
+            out.insert(name);
+        }
+        for name in &class.implements {
+            if let Some(candidate) = same_package_type_candidate(name) {
+                out.insert(candidate);
+            }
+        }
+        for member in &class.members {
+            match member {
+                ClassMember::Field(field) => {
+                    if let Some(candidate) = same_package_type_candidate(&field.ty) {
+                        out.insert(candidate);
+                    }
+                    if let Some(init) = &field.init {
+                        collect_expr_candidate_names(init, &mut out);
+                    }
+                }
+                ClassMember::Method(method) => {
+                    if let Some(return_type) = &method.return_type {
+                        if let Some(candidate) = same_package_type_candidate(return_type) {
+                            out.insert(candidate);
+                        }
+                    }
+                    for param in &method.params {
+                        if let Some(candidate) = same_package_type_candidate(&param.ty) {
+                            out.insert(candidate);
+                        }
+                    }
+                    for thrown in &method.throws {
+                        if let Some(candidate) = same_package_type_candidate(thrown) {
+                            out.insert(candidate);
+                        }
+                    }
+                    for stmt in &method.body {
+                        collect_stmt_candidate_names(stmt, &mut out);
+                    }
+                }
+            }
+        }
+    }
+    out
+}
+
+fn collect_stmt_candidate_names(stmt: &Stmt, out: &mut HashSet<String>) {
+    match stmt {
+        Stmt::VarDecl { ty, init, .. } => {
+            if let Some(candidate) = same_package_type_candidate(ty) {
+                out.insert(candidate);
+            }
+            if let Some(expr) = init {
+                collect_expr_candidate_names(expr, out);
+            }
+        }
+        Stmt::Assign { target, value, .. } | Stmt::CompoundAssign { target, value, .. } => {
+            collect_expr_candidate_names(target, out);
+            collect_expr_candidate_names(value, out);
+        }
+        Stmt::If {
+            condition,
+            then_branch,
+            else_branch,
+            ..
+        } => {
+            collect_expr_candidate_names(condition, out);
+            for stmt in then_branch {
+                collect_stmt_candidate_names(stmt, out);
+            }
+            if let Some(branch) = else_branch {
+                for stmt in branch {
+                    collect_stmt_candidate_names(stmt, out);
+                }
+            }
+        }
+        Stmt::While { condition, body, .. } | Stmt::DoWhile { body, condition, .. } => {
+            collect_expr_candidate_names(condition, out);
+            for stmt in body {
+                collect_stmt_candidate_names(stmt, out);
+            }
+        }
+        Stmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            if let Some(init) = init {
+                collect_stmt_candidate_names(init, out);
+            }
+            if let Some(condition) = condition {
+                collect_expr_candidate_names(condition, out);
+            }
+            if let Some(update) = update {
+                collect_stmt_candidate_names(update, out);
+            }
+            for stmt in body {
+                collect_stmt_candidate_names(stmt, out);
+            }
+        }
+        Stmt::ForEach {
+            ty, iterable, body, ..
+        } => {
+            if let Some(candidate) = same_package_type_candidate(ty) {
+                out.insert(candidate);
+            }
+            collect_expr_candidate_names(iterable, out);
+            for stmt in body {
+                collect_stmt_candidate_names(stmt, out);
+            }
+        }
+        Stmt::Switch {
+            expr,
+            cases,
+            default,
+            ..
+        } => {
+            collect_expr_candidate_names(expr, out);
+            for case in cases {
+                collect_expr_candidate_names(&case.label, out);
+                for stmt in &case.body {
+                    collect_stmt_candidate_names(stmt, out);
+                }
+            }
+            if let Some(default) = default {
+                for stmt in default {
+                    collect_stmt_candidate_names(stmt, out);
+                }
+            }
+        }
+        Stmt::Try {
+            resources,
+            body,
+            catches,
+            finally_block,
+            ..
+        } => {
+            for resource in resources {
+                if let Some(candidate) = same_package_type_candidate(&resource.ty) {
+                    out.insert(candidate);
+                }
+                collect_expr_candidate_names(&resource.init, out);
+            }
+            for stmt in body {
+                collect_stmt_candidate_names(stmt, out);
+            }
+            for catch in catches {
+                if let Some(candidate) = same_package_type_candidate(&catch.ty) {
+                    out.insert(candidate);
+                }
+                for stmt in &catch.body {
+                    collect_stmt_candidate_names(stmt, out);
+                }
+            }
+            if let Some(finally_block) = finally_block {
+                for stmt in finally_block {
+                    collect_stmt_candidate_names(stmt, out);
+                }
+            }
+        }
+        Stmt::Assert {
+            condition, message, ..
+        } => {
+            collect_expr_candidate_names(condition, out);
+            if let Some(message) = message {
+                collect_expr_candidate_names(message, out);
+            }
+        }
+        Stmt::Throw(expr, _)
+        | Stmt::ExprStmt(expr, _) => collect_expr_candidate_names(expr, out),
+        Stmt::Return(expr, _) => {
+            if let Some(expr) = expr {
+                collect_expr_candidate_names(expr, out);
+            }
+        }
+        Stmt::Break { .. } | Stmt::Continue { .. } => {}
+    }
+}
+
+fn collect_expr_candidate_names(expr: &Expr, out: &mut HashSet<String>) {
+    match expr {
+        Expr::Var(name) => {
+            if is_simple_class_like_name(name) {
+                out.insert(name.clone());
+            }
+        }
+        Expr::MemberAccess { object, .. } => collect_expr_candidate_names(object, out),
+        Expr::ArrayAccess { array, index } => {
+            collect_expr_candidate_names(array, out);
+            collect_expr_candidate_names(index, out);
+        }
+        Expr::Call { callee, args } => {
+            collect_expr_candidate_names(callee, out);
+            for arg in args {
+                collect_expr_candidate_names(arg, out);
+            }
+        }
+        Expr::IncDec { target, .. } | Expr::Unary { expr: target, .. } => {
+            collect_expr_candidate_names(target, out);
+        }
+        Expr::Cast { ty, expr } => {
+            if let Some(candidate) = same_package_type_candidate(ty) {
+                out.insert(candidate);
+            }
+            collect_expr_candidate_names(expr, out);
+        }
+        Expr::InstanceOf { expr, ty } => {
+            if let Some(candidate) = same_package_type_candidate(ty) {
+                out.insert(candidate);
+            }
+            collect_expr_candidate_names(expr, out);
+        }
+        Expr::Binary { left, right, .. } => {
+            collect_expr_candidate_names(left, out);
+            collect_expr_candidate_names(right, out);
+        }
+        Expr::Conditional {
+            condition,
+            then_expr,
+            else_expr,
+        } => {
+            collect_expr_candidate_names(condition, out);
+            collect_expr_candidate_names(then_expr, out);
+            collect_expr_candidate_names(else_expr, out);
+        }
+        Expr::SwitchExpr { expr, cases, default } => {
+            collect_expr_candidate_names(expr, out);
+            for case in cases {
+                collect_expr_candidate_names(&case.label, out);
+                collect_expr_candidate_names(&case.value, out);
+            }
+            collect_expr_candidate_names(default, out);
+        }
+        Expr::NewObject { class_name, args } => {
+            if let Some(candidate) = same_package_type_candidate(class_name) {
+                out.insert(candidate);
+            }
+            for arg in args {
+                collect_expr_candidate_names(arg, out);
+            }
+        }
+        Expr::NewArray {
+            element_ty,
+            lengths,
+        } => {
+            if let Some(candidate) = same_package_type_candidate(element_ty) {
+                out.insert(candidate);
+            }
+            for length in lengths {
+                collect_expr_candidate_names(length, out);
+            }
+        }
+        Expr::NewArrayInitialized {
+            element_ty, values, ..
+        } => {
+            if let Some(candidate) = same_package_type_candidate(element_ty) {
+                out.insert(candidate);
+            }
+            for value in values {
+                collect_array_init_candidate_names(value, out);
+            }
+        }
+        Expr::IntLiteral(_)
+        | Expr::LongLiteral(_)
+        | Expr::FloatLiteral(_)
+        | Expr::DoubleLiteral(_)
+        | Expr::CharLiteral(_)
+        | Expr::StringLiteral(_)
+        | Expr::BoolLiteral(_)
+        | Expr::NullLiteral
+        | Expr::This
+        | Expr::Super => {}
+    }
+}
+
+fn collect_array_init_candidate_names(value: &ArrayInitExpr, out: &mut HashSet<String>) {
+    match value {
+        ArrayInitExpr::Expr(expr) => collect_expr_candidate_names(expr, out),
+        ArrayInitExpr::Nested(values) => {
+            for value in values {
+                collect_array_init_candidate_names(value, out);
+            }
+        }
+    }
+}
+
+fn same_package_type_candidate(ty: &str) -> Option<String> {
+    let mut base = ty.trim();
+    while base.ends_with("[]") {
+        base = &base[..base.len() - 2];
+    }
+    if let Some((raw, _)) = base.split_once('<') {
+        base = raw.trim();
+    }
+    if !is_simple_class_like_name(base) {
+        return None;
+    }
+    Some(base.to_string())
+}
+
+fn is_simple_class_like_name(name: &str) -> bool {
+    if name.is_empty() || name.contains('.') {
+        return false;
+    }
+    name.chars()
+        .next()
+        .map(|ch| ch.is_ascii_uppercase())
+        .unwrap_or(false)
+}
+
+fn extract_quoted_name(message: &str, prefix: &str) -> Option<String> {
+    let start = message.find(prefix)? + prefix.len();
+    let rest = &message[start..];
+    let end = rest.find('\'')?;
+    Some(rest[..end].to_string())
+}
+
+fn try_load_same_package_candidate(
+    simple_name: &str,
+    strict_package: bool,
+    authorlib_enabled: bool,
+    units: &mut HashMap<PathBuf, LoadedUnit>,
+    stack: &mut Vec<PathBuf>,
+) -> Result<bool, String> {
+    let snapshot: Vec<(PathBuf, Option<String>)> = units
+        .values()
+        .map(|unit| (unit.path.clone(), unit.source_root.clone()))
+        .collect();
+    let file_name = format!("{simple_name}.pulse");
+    let mut loaded_any = false;
+    for (unit_path, source_root) in snapshot {
+        let Some(parent) = unit_path.parent() else {
+            continue;
+        };
+        let candidate = parent.join(&file_name);
+        if !candidate.exists() || same_path(&candidate, &unit_path) || units.contains_key(&candidate) {
+            continue;
+        }
+        if path_in_stack(&candidate, stack) {
+            continue;
+        }
+        load_unit(
+            &candidate,
+            source_root.as_deref(),
+            strict_package,
+            authorlib_enabled,
+            units,
+            stack,
+        )?;
+        loaded_any = true;
+    }
+    Ok(loaded_any)
+}
+
+pub(super) fn resolve_builtin_import_targets(
+    import: &ImportDecl,
+    authorlib_enabled: bool,
+) -> Result<Option<Vec<PathBuf>>, String> {
     let stdlib_root = stdlib_source_root();
     if !stdlib_root.exists() {
         return Ok(None);
@@ -201,6 +629,12 @@ pub(super) fn resolve_builtin_import_targets(import: &ImportDecl) -> Result<Opti
                 )
             })?
         };
+        if class_path.starts_with("author.") && !authorlib_enabled {
+            return Err(
+                "Import 'author.*' requires [authorlib].enabled = true in pulsec.toml"
+                    .to_string(),
+            );
+        }
         let path = resolve_import_path_from_root(&stdlib_root, &class_path);
         if path.exists() {
             return Ok(Some(vec![path]));
@@ -210,6 +644,12 @@ pub(super) fn resolve_builtin_import_targets(import: &ImportDecl) -> Result<Opti
 
     if import.is_wildcard {
         let dir = resolve_package_dir_from_root(&stdlib_root, &import.path);
+        if import.path.starts_with("author.") && !authorlib_enabled {
+            return Err(
+                "Import 'author.*' requires [authorlib].enabled = true in pulsec.toml"
+                    .to_string(),
+            );
+        }
         if !dir.exists() {
             return Ok(None);
         }
@@ -217,8 +657,13 @@ pub(super) fn resolve_builtin_import_targets(import: &ImportDecl) -> Result<Opti
         let entries = fs::read_dir(&dir)
             .map_err(|e| format!("Failed to read stdlib directory '{}': {}", dir.display(), e))?;
         for entry in entries {
-            let entry = entry
-                .map_err(|e| format!("Failed to read directory entry in '{}': {}", dir.display(), e))?;
+            let entry = entry.map_err(|e| {
+                format!(
+                    "Failed to read directory entry in '{}': {}",
+                    dir.display(),
+                    e
+                )
+            })?;
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("pulse") {
                 out.push(path);
@@ -230,6 +675,9 @@ pub(super) fn resolve_builtin_import_targets(import: &ImportDecl) -> Result<Opti
         return Ok(Some(out));
     }
 
+    if import.path.starts_with("author.") && !authorlib_enabled {
+        return Err("Import 'author.*' requires [authorlib].enabled = true in pulsec.toml".to_string());
+    }
     let path = resolve_import_path_from_root(&stdlib_root, &import.path);
     if path.exists() {
         Ok(Some(vec![path]))
@@ -244,7 +692,10 @@ pub(super) fn validate_unit_imports(
 ) -> Result<(), String> {
     let mut seen = HashSet::new();
     for import in &unit.program.imports {
-        let key = format!("{}|{}|{}", import.is_static, import.is_wildcard, import.path);
+        let key = format!(
+            "{}|{}|{}",
+            import.is_static, import.is_wildcard, import.path
+        );
         if !seen.insert(key) {
             return Err(format!(
                 "Duplicate import '{}' in '{}'",
@@ -320,8 +771,9 @@ pub(super) fn import_string(import: &ImportDecl) -> String {
     out
 }
 
-
-pub(super) fn discover_entry_from_source_root(source_root: &Path) -> Result<Option<PathBuf>, String> {
+pub(super) fn discover_entry_from_source_root(
+    source_root: &Path,
+) -> Result<Option<PathBuf>, String> {
     if !source_root.exists() {
         return Ok(None);
     }
@@ -343,8 +795,13 @@ pub(super) fn collect_pulse_files(dir: &Path, out: &mut Vec<PathBuf>) -> Result<
     let entries = fs::read_dir(dir)
         .map_err(|e| format!("Failed to read source directory '{}': {}", dir.display(), e))?;
     for entry in entries {
-        let entry = entry
-            .map_err(|e| format!("Failed to read directory entry in '{}': {}", dir.display(), e))?;
+        let entry = entry.map_err(|e| {
+            format!(
+                "Failed to read directory entry in '{}': {}",
+                dir.display(),
+                e
+            )
+        })?;
         let path = entry.path();
         if path.is_dir() {
             collect_pulse_files(&path, out)?;
@@ -362,7 +819,10 @@ pub(super) struct ScaffoldResult {
     pub(super) entry_file: PathBuf,
 }
 
-pub(super) fn scaffold_project(project_name: &str, flags: &NewFlags) -> Result<ScaffoldResult, String> {
+pub(super) fn scaffold_project(
+    project_name: &str,
+    flags: &NewFlags,
+) -> Result<ScaffoldResult, String> {
     let trimmed = project_name.trim();
     if trimmed.is_empty() {
         return Err("project name cannot be empty".to_string());
@@ -382,8 +842,13 @@ pub(super) fn scaffold_project(project_name: &str, flags: &NewFlags) -> Result<S
             project_root.display()
         ));
     }
-    fs::create_dir_all(&project_root)
-        .map_err(|e| format!("Failed to create project directory '{}': {}", project_root.display(), e))?;
+    fs::create_dir_all(&project_root).map_err(|e| {
+        format!(
+            "Failed to create project directory '{}': {}",
+            project_root.display(),
+            e
+        )
+    })?;
     let source_root = project_root.join("src").join("main").join("pulse");
     for path in [
         project_root.join("src").join("main").join("pulse"),
@@ -399,10 +864,8 @@ pub(super) fn scaffold_project(project_name: &str, flags: &NewFlags) -> Result<S
         project_root.join("build").join("assets"),
         project_root.join("build").join("sanity"),
         project_root.join("build").join("tmp"),
-        project_root.join("build").join("staging"),
         project_root.join("build").join("distro"),
         project_root.join("build").join("distro").join("libraries"),
-        project_root.join("build").join("distro").join("package"),
     ] {
         fs::create_dir_all(&path)
             .map_err(|e| format!("Failed to create directory '{}': {}", path.display(), e))?;
@@ -413,14 +876,14 @@ pub(super) fn scaffold_project(project_name: &str, flags: &NewFlags) -> Result<S
         NewTemplate::App => (
             PathBuf::from("app/main/Main.pulse"),
             format!(
-                "package app.main;\nimport com.pulse.lang.IO;\n\nclass Main {{\n    public static void main() {{\n        IO.println(\"{} online\");\n    }}\n}}\n",
+                "package app.main;\nimport pulse.lang.IO;\n\nclass Main {{\n    public static void main() {{\n        IO.println(\"{} online\");\n    }}\n}}\n",
                 escape_pulse_string(trimmed)
             ),
             Vec::new(),
         ),
         NewTemplate::Lib => (
             PathBuf::from("lib/core/Main.pulse"),
-            "package lib.core;\nimport com.pulse.lang.IO;\n\nclass Main {\n    public static void main() {\n        IO.println(Library.versionCode());\n    }\n}\n".to_string(),
+            "package lib.core;\nimport pulse.lang.IO;\n\nclass Main {\n    public static void main() {\n        IO.println(Library.versionCode());\n    }\n}\n".to_string(),
             vec![(
                 PathBuf::from("lib/core/Library.pulse"),
                 "package lib.core;\n\nclass Library {\n    public static int versionCode() {\n        return 1;\n    }\n}\n".to_string(),
@@ -432,37 +895,47 @@ pub(super) fn scaffold_project(project_name: &str, flags: &NewFlags) -> Result<S
         fs::create_dir_all(parent)
             .map_err(|e| format!("Failed to create source tree '{}': {}", parent.display(), e))?;
     }
-    fs::write(&entry_file, entry_content)
-        .map_err(|e| format!("Failed to write entry source '{}': {}", entry_file.display(), e))?;
+    fs::write(&entry_file, entry_content).map_err(|e| {
+        format!(
+            "Failed to write entry source '{}': {}",
+            entry_file.display(),
+            e
+        )
+    })?;
     for (rel_path, content) in extra_files {
         let file_path = source_root.join(rel_path);
         if let Some(parent) = file_path.parent() {
-            fs::create_dir_all(parent)
-                .map_err(|e| format!("Failed to create source tree '{}': {}", parent.display(), e))?;
+            fs::create_dir_all(parent).map_err(|e| {
+                format!("Failed to create source tree '{}': {}", parent.display(), e)
+            })?;
         }
         fs::write(&file_path, content)
             .map_err(|e| format!("Failed to write source '{}': {}", file_path.display(), e))?;
     }
 
     let manifest = format!(
-        "[package]\nname = \"{}\"\nversion = \"0.1.0\"\n\n[sources]\nmain_pulse = \"src/main/pulse\"\nmain_resources = \"src/main/resources\"\ntest_pulse = \"src/test/pulse\"\ntest_resources = \"src/test/resources\"\napi_pulse = \"src/api/pulse\"\napi_resources = \"src/api/resources\"\ndocs = \"docs\"\nlibraries = \"libraries\"\nentry = \"{}\"\n\n[build]\nprofile = \"release\"\ntarget = \"native-x64\"\npackaging_mode = \"staged\"\noutput_mode = \"fat\"\noutput_entry = \"main\"\nruntime_debug_allocator = \"off\"\nruntime_cycle_collector = \"on\"\nasm_dir = \"build/asm\"\ngenerated_dir = \"build/generated\"\nassets_dir = \"build/assets\"\nsanity_dir = \"build/sanity\"\ntmp_dir = \"build/tmp\"\ndistro_dir = \"build/distro\"\n\n[toolchain]\n\n[package.metadata]\npublisher = \"PulseCode\"\nidentifier = \"com.pulse.{}\"\ninstall_scope = \"per-user\"\nentrypoints = \"{}\"\nicons = \"src/main/resources/icon.ico\"\nassets = \"src/main/resources\"\nlicense = \"LICENSE\"\nreadme = \"README.md\"\nconfig = \"src/main/resources/config\"\ndata = \"src/main/resources/data\"\nlibraries = \"build/distro/libraries\"\nsigning_mode = \"unsigned\"\n",
+        "[package]\nname = \"{}\"\nversion = \"0.1.0\"\n\n[sources]\nmain_pulse = \"src/main/pulse\"\nmain_resources = \"src/main/resources\"\ntest_pulse = \"src/test/pulse\"\ntest_resources = \"src/test/resources\"\napi_pulse = \"src/api/pulse\"\napi_resources = \"src/api/resources\"\ndocs = \"docs\"\nlibraries = \"libraries\"\nentry = \"{}\"\n\n[build]\nprofile = \"release\"\ntarget = \"{}\"\noutput_mode = \"fat\"\noutput_entry = \"main\"\nruntime_debug_allocator = \"off\"\nruntime_cycle_collector = \"on\"\nasm_dir = \"build/asm\"\ngenerated_dir = \"build/generated\"\nassets_dir = \"build/assets\"\nsanity_dir = \"build/sanity\"\ntmp_dir = \"build/tmp\"\ndistro_dir = \"build/distro\"\n\n[toolchain]\n",
         trimmed,
         entry_rel.to_string_lossy().replace('\\', "/"),
-        trimmed,
-        entry_rel
-            .to_string_lossy()
-            .replace('/', ".")
-            .replace('\\', ".")
-            .trim_end_matches(".pulse")
+        default_target_id()
     );
     let manifest_path = project_root.join("pulsec.toml");
-    fs::write(&manifest_path, manifest)
-        .map_err(|e| format!("Failed to write manifest '{}': {}", manifest_path.display(), e))?;
+    fs::write(&manifest_path, manifest).map_err(|e| {
+        format!(
+            "Failed to write manifest '{}': {}",
+            manifest_path.display(),
+            e
+        )
+    })?;
 
     fs::create_dir_all(project_root.join("src").join("test").join("pulse")).map_err(|e| {
         format!(
             "Failed to create tests directory '{}': {}",
-            project_root.join("src").join("test").join("pulse").display(),
+            project_root
+                .join("src")
+                .join("test")
+                .join("pulse")
+                .display(),
             e
         )
     })?;
@@ -500,115 +973,63 @@ pub(super) fn escape_pulse_string(value: &str) -> String {
 }
 
 pub(super) fn is_builtin_import(path: &str) -> bool {
-    path == "com" || path == "com.pulse" || path.starts_with("com.pulse.")
+    path == "pulse"
+        || path.starts_with("pulse.")
+        || path == "author"
+        || path.starts_with("author.")
 }
 
-pub(super) fn validate_pulse_import(import: &ImportDecl) -> Result<(), String> {
-    if !(import.path == "com" || import.path == "com.pulse" || import.path.starts_with("com.pulse.")) {
+pub(super) fn validate_pulse_import(
+    import: &ImportDecl,
+    authorlib_enabled: bool,
+) -> Result<(), String> {
+    let is_pulse_import = import.path == "pulse" || import.path.starts_with("pulse.");
+    let is_author_import = import.path == "author" || import.path.starts_with("author.");
+    if !is_pulse_import && !is_author_import {
         return Ok(());
     }
 
-    const BUILTIN_PACKAGES: &[&str] = &[
-        "com.pulse.io",
-        "com.pulse.math",
-        "com.pulse.memory",
-        "com.pulse.collections",
-        "com.pulse.lang",
-        "com.pulse.rt",
-        "com.pulse.time",
-    ];
-
-    const BUILTIN_CLASSES: &[&str] = &[
-        "com.pulse.lang.System",
-        "com.pulse.lang.IO",
-        "com.pulse.io.Console",
-        "com.pulse.io.File",
-        "com.pulse.io.Path",
-        "com.pulse.io.Files",
-        "com.pulse.io.InputStream",
-        "com.pulse.io.OutputStream",
-        "com.pulse.math.Math",
-        "com.pulse.math.Random",
-        "com.pulse.time.Instant",
-        "com.pulse.time.Duration",
-        "com.pulse.collections.Array",
-        "com.pulse.collections.Collection",
-        "com.pulse.collections.List",
-        "com.pulse.collections.Set",
-        "com.pulse.collections.Queue",
-        "com.pulse.collections.Deque",
-        "com.pulse.collections.Map",
-        "com.pulse.collections.ArrayList",
-        "com.pulse.collections.LinkedList",
-        "com.pulse.collections.HashSet",
-        "com.pulse.collections.HashMap",
-        "com.pulse.lang.ConsoleWriter",
-        "com.pulse.lang.PrintStream",
-        "com.pulse.lang.Object",
-        "com.pulse.lang.Class",
-        "com.pulse.lang.Comparable",
-        "com.pulse.lang.Runnable",
-        "com.pulse.lang.Appendable",
-        "com.pulse.lang.CharSequence",
-        "com.pulse.lang.Iterable",
-        "com.pulse.lang.Iterator",
-        "com.pulse.lang.AutoCloseable",
-        "com.pulse.lang.StringBuilder",
-        "com.pulse.lang.Enum",
-        "com.pulse.lang.Throwable",
-        "com.pulse.lang.Exception",
-        "com.pulse.lang.RuntimeException",
-        "com.pulse.lang.AssertionError",
-        "com.pulse.lang.IllegalArgumentException",
-        "com.pulse.lang.IllegalStateException",
-        "com.pulse.lang.NullPointerException",
-        "com.pulse.lang.IndexOutOfBoundsException",
-        "com.pulse.lang.UnsupportedOperationException",
-        "com.pulse.lang.NumberFormatException",
-        "com.pulse.lang.String",
-        "com.pulse.lang.Strings",
-        "com.pulse.lang.Byte",
-        "com.pulse.lang.Short",
-        "com.pulse.lang.Integer",
-        "com.pulse.lang.Long",
-        "com.pulse.memory.Memory",
-        "com.pulse.lang.Float",
-        "com.pulse.lang.Double",
-        "com.pulse.lang.Char",
-        "com.pulse.lang.Boolean",
-        "com.pulse.lang.UByte",
-        "com.pulse.lang.UShort",
-        "com.pulse.lang.UInteger",
-        "com.pulse.lang.ULong",
-        "com.pulse.lang.Void",
-        "com.pulse.rt.Intrinsics",
-    ];
-
-    if import.path == "com" || import.path == "com.pulse" {
+    if import.path == "pulse" {
         return Err(format!(
-            "Import '{}' is too broad. Import a package under 'com.pulse.*' or a specific class",
+            "Import '{}' is too broad. Import a package under 'pulse.*' or a specific class",
             import.path
+        ));
+    }
+    if import.path == "author" {
+        return Err("Import 'author' is too broad. Import a package under 'author.*' or a specific class".to_string());
+    }
+    if is_author_import && !authorlib_enabled {
+        return Err("Import 'author.*' requires [authorlib].enabled = true in pulsec.toml".to_string());
+    }
+
+    let stdlib_root = stdlib_source_root();
+    if !stdlib_root.exists() {
+        return Err(format!(
+            "Stdlib root '{}' does not exist",
+            stdlib_root.display()
         ));
     }
 
     if import.is_static {
         if import.is_wildcard {
-            if !BUILTIN_CLASSES.contains(&import.path.as_str()) {
+            let owner_path = resolve_import_path_from_root(&stdlib_root, &import.path);
+            if !owner_path.exists() {
                 return Err(format!(
-                    "Unknown com.pulse static wildcard import '{}'. Supported owners: {}",
+                    "Unknown {} static wildcard import '{}'",
+                    if is_author_import { "author" } else { "pulse" },
                     import.path,
-                    BUILTIN_CLASSES.join(", ")
                 ));
             }
             return Ok(());
         }
 
         if let Some((owner, _member)) = import.path.rsplit_once('.') {
-            if !BUILTIN_CLASSES.contains(&owner) {
+            let owner_path = resolve_import_path_from_root(&stdlib_root, owner);
+            if !owner_path.exists() {
                 return Err(format!(
-                    "Unknown com.pulse static import '{}'. Supported owners: {}",
+                    "Unknown {} static import '{}'",
+                    if is_author_import { "author" } else { "pulse" },
                     import.path,
-                    BUILTIN_CLASSES.join(", ")
                 ));
             }
             return Ok(());
@@ -621,21 +1042,23 @@ pub(super) fn validate_pulse_import(import: &ImportDecl) -> Result<(), String> {
     }
 
     if import.is_wildcard {
-        if !BUILTIN_PACKAGES.contains(&import.path.as_str()) {
+        let package_dir = resolve_package_dir_from_root(&stdlib_root, &import.path);
+        if !package_dir.exists() || !package_dir.is_dir() {
             return Err(format!(
-                "Unknown com.pulse wildcard import '{}'. Supported packages: {}",
+                "Unknown {} wildcard import '{}'",
+                if is_author_import { "author" } else { "pulse" },
                 import.path,
-                BUILTIN_PACKAGES.join(", ")
             ));
         }
         return Ok(());
     }
 
-    if !BUILTIN_CLASSES.contains(&import.path.as_str()) {
+    let import_path = resolve_import_path_from_root(&stdlib_root, &import.path);
+    if !import_path.exists() {
         return Err(format!(
-            "Unknown com.pulse import '{}'. Supported classes: {}",
+            "Unknown {} import '{}'",
+            if is_author_import { "author" } else { "pulse" },
             import.path,
-            BUILTIN_CLASSES.join(", ")
         ));
     }
 
@@ -658,7 +1081,11 @@ pub(super) fn resolve_import_targets(
                 )
             })?
         };
-        return Ok(vec![resolve_import_path(current_file, &class_path, source_root)]);
+        return Ok(vec![resolve_import_path(
+            current_file,
+            &class_path,
+            source_root,
+        )]);
     }
 
     if import.is_wildcard {
@@ -676,8 +1103,13 @@ pub(super) fn resolve_import_targets(
         let entries = fs::read_dir(&dir)
             .map_err(|e| format!("Failed to read import directory '{}': {}", dir.display(), e))?;
         for entry in entries {
-            let entry = entry
-                .map_err(|e| format!("Failed to read directory entry in '{}': {}", dir.display(), e))?;
+            let entry = entry.map_err(|e| {
+                format!(
+                    "Failed to read directory entry in '{}': {}",
+                    dir.display(),
+                    e
+                )
+            })?;
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("pulse") {
                 out.push(path);
@@ -720,7 +1152,11 @@ pub(super) fn resolve_package_dir_from_root(root: &Path, package_path: &str) -> 
     root.join(rel)
 }
 
-pub(super) fn resolve_import_path(current_file: &Path, import_path: &str, source_root: Option<&str>) -> PathBuf {
+pub(super) fn resolve_import_path(
+    current_file: &Path,
+    import_path: &str,
+    source_root: Option<&str>,
+) -> PathBuf {
     let mut rel = PathBuf::new();
     for part in import_path.split('.') {
         rel.push(part);
@@ -743,7 +1179,11 @@ pub(super) fn resolve_import_path(current_file: &Path, import_path: &str, source
         .join(rel)
 }
 
-pub(super) fn resolve_package_dir(current_file: &Path, package_path: &str, source_root: Option<&str>) -> PathBuf {
+pub(super) fn resolve_package_dir(
+    current_file: &Path,
+    package_path: &str,
+    source_root: Option<&str>,
+) -> PathBuf {
     let mut rel = PathBuf::new();
     for part in package_path.split('.') {
         rel.push(part);
@@ -765,35 +1205,17 @@ pub(super) fn resolve_package_dir(current_file: &Path, package_path: &str, sourc
         .join(rel)
 }
 
-pub(super) fn resolve_package_files(
-    current_file: &Path,
-    package_path: &str,
-    source_root: Option<&str>,
-) -> Result<Vec<PathBuf>, String> {
-    let dir = resolve_package_dir(current_file, package_path, source_root);
-    if !dir.exists() {
-        return Ok(Vec::new());
-    }
-
-    let mut out = Vec::new();
-    let entries = fs::read_dir(&dir)
-        .map_err(|e| format!("Failed to read package directory '{}': {}", dir.display(), e))?;
-    for entry in entries {
-        let entry = entry
-            .map_err(|e| format!("Failed to read directory entry in '{}': {}", dir.display(), e))?;
-        let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) == Some("pulse") {
-            out.push(path);
-        }
-    }
-    Ok(out)
-}
-
 pub(super) fn static_owner_path(import_path: &str) -> Option<String> {
-    import_path.rsplit_once('.').map(|(owner, _)| owner.to_string())
+    import_path
+        .rsplit_once('.')
+        .map(|(owner, _)| owner.to_string())
 }
 
-pub(super) fn package_layout_message(file_path: &str, package: &str, source_root: Option<&str>) -> Option<String> {
+pub(super) fn package_layout_message(
+    file_path: &str,
+    package: &str,
+    source_root: Option<&str>,
+) -> Option<String> {
     let package_parts: Vec<&str> = package.split('.').filter(|p| !p.is_empty()).collect();
     if package_parts.is_empty() {
         return None;
@@ -898,8 +1320,12 @@ pub(super) fn canonical_existing_path(path: &Path) -> Result<PathBuf, std::io::E
 }
 
 pub(super) fn same_path(a: &Path, b: &Path) -> bool {
-    let a_norm = canonical_existing_path(a).ok().unwrap_or_else(|| a.to_path_buf());
-    let b_norm = canonical_existing_path(b).ok().unwrap_or_else(|| b.to_path_buf());
+    let a_norm = canonical_existing_path(a)
+        .ok()
+        .unwrap_or_else(|| a.to_path_buf());
+    let b_norm = canonical_existing_path(b)
+        .ok()
+        .unwrap_or_else(|| b.to_path_buf());
     a_norm == b_norm
 }
 

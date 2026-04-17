@@ -1,15 +1,27 @@
-# Phase D Task Board: Toolchain UX + Packaging
+# Phase D Task Board: Historical Toolchain UX + Packaging Archive
 
 Status legend: `Todo`, `In Progress`, `Blocked`, `Done (Locked)`.
 
+## Historical Archive Notice
+
+This board is retained as a historical record of the original pre-rebase Phase D closure, not as live scope.
+
+Current truth:
+
+- `pulsec package` is removed
+- compiler-owned MSI/WiX/SignTool/install/signing workflows are removed
+- old packaging rows below are superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- the active board is [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md), and `F1_TASK_BOARD` remains paused until rebase closure
+- this document should not be used as the live source of truth for current CLI, manifest, validation, or Windows-scope policy
+
 ## Scope
-Phase D turns PulseCode from a compiler/runtime project into a usable product toolchain. It covers day-to-day CLI ergonomics, project/manifest conventions, repeatable build/test/package flows, Windows MSI generation, and release-grade packaging contracts.
+Phase D records the original pre-rebase plan that turned PulseCode toward a usable product toolchain. The CLI/manifest/build/test pieces remain historically relevant, but the packaging/MSI/signing scope below is superseded and no longer part of current compiler scope.
 
 ## D Strict Done Policy
 - Phase D is productization work, not just feature spikes.
 - `Done (Locked)` means command UX, manifest/project behavior, emitted artifacts, diagnostics, and docs are all stabilized with tests.
-- Any task that changes CLI output, manifest schema, or packaging artifacts must include deterministic fixture coverage.
-- Any task that emits installable artifacts must include validation of both artifact shape and installer execution/result semantics where feasible.
+- Any task that changes CLI output or manifest schema required deterministic fixture coverage in the historical Phase D plan.
+- Packaging/install artifact expectations below are archived only and no longer define current compiler requirements.
 
 ## Workstream A: CLI Command Surface
 

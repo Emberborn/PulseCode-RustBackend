@@ -10,8 +10,20 @@ pub(super) fn validate_target_mutability(
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
     in_static_context: bool,
+    allow_constructor_final_init: bool,
 ) -> Result<(), SemanticError> {
-    let fail_for_field = |owner_fqcn: &str, field_name: &str, field: &FieldInfo| {
+    let current_fqcn = format!("{}.{}", class_info.package_name, class.name);
+    let can_initialize_final = |owner_fqcn: &str, field_name: &str, target_expr: &Expr| {
+        if !allow_constructor_final_init || owner_fqcn != current_fqcn {
+            return false;
+        }
+        match target_expr {
+            Expr::Var(name) => name == field_name,
+            Expr::MemberAccess { object, member } => matches!(object.as_ref(), Expr::This) && member == field_name,
+            _ => false,
+        }
+    };
+    let fail_for_field = |owner_fqcn: &str, field_name: &str, field: &FieldInfo, target_expr: &Expr| {
         let owner_display = class_index
             .get(owner_fqcn)
             .map(|i| i.simple_name.clone())
@@ -23,6 +35,9 @@ pub(super) fn validate_target_mutability(
             )));
         }
         if field.is_final {
+            if can_initialize_final(owner_fqcn, field_name, target_expr) {
+                return Ok(());
+            }
             return Err(semantic_error(format!(
                 "Cannot assign to final field '{}.{}'",
                 owner_display, field_name
@@ -36,11 +51,10 @@ pub(super) fn validate_target_mutability(
             if locals.contains_key(name) {
                 return Ok(());
             }
-            let current_fqcn = format!("{}.{}", class_info.package_name, class.name);
             if let Some((owner, field)) =
                 lookup_field_in_hierarchy(&current_fqcn, name, class_index)
             {
-                fail_for_field(&owner, name, &field)?;
+                fail_for_field(&owner, name, &field, target)?;
             }
         }
         Expr::MemberAccess { object, member } => {
@@ -74,7 +88,7 @@ pub(super) fn validate_target_mutability(
             if let Some((field_owner, field)) =
                 lookup_field_in_hierarchy(&owner, member, class_index)
             {
-                fail_for_field(&field_owner, member, &field)?;
+                fail_for_field(&field_owner, member, &field, target)?;
             }
         }
         Expr::ArrayAccess { .. } => {}

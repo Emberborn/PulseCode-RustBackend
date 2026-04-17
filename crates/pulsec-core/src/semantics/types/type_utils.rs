@@ -32,6 +32,14 @@ fn generic_conversion_score(expected: &str, actual: &str) -> Option<Option<u16>>
     }
 }
 
+fn is_erased_type_param_slot(ty: &str, class_index: &HashMap<String, ClassInfo>) -> bool {
+    let erased = erase_generic_type_name(ty);
+    !erased.ends_with("[]")
+        && !erased.contains('.')
+        && !is_builtin_type(&erased)
+        && !class_index.contains_key(&erased)
+}
+
 pub(super) fn signature_params_match(
     expected: &[String],
     actual: &[String],
@@ -55,9 +63,12 @@ pub(super) fn select_best_constructor_overload<'a>(
     let mut best_indices: Vec<usize> = Vec::new();
 
     for (idx, constructor) in constructors.iter().enumerate() {
-        if let Some(score) =
-            signature_match_score(&constructor.param_types, constructor.is_varargs, arg_types, class_index)
-        {
+        if let Some(score) = signature_match_score(
+            &constructor.param_types,
+            constructor.is_varargs,
+            arg_types,
+            class_index,
+        ) {
             match best_score {
                 None => {
                     best_score = Some(score);
@@ -81,7 +92,15 @@ pub(super) fn select_best_constructor_overload<'a>(
     if best_indices.len() > 1 {
         let options = best_indices
             .iter()
-            .map(|idx| format!("({})", format_params_for_display(&constructors[*idx].param_types, constructors[*idx].is_varargs)))
+            .map(|idx| {
+                format!(
+                    "({})",
+                    format_params_for_display(
+                        &constructors[*idx].param_types,
+                        constructors[*idx].is_varargs
+                    )
+                )
+            })
             .collect::<Vec<_>>()
             .join("; ");
         return Err(semantic_error(format!(
@@ -91,7 +110,10 @@ pub(super) fn select_best_constructor_overload<'a>(
         )));
     }
 
-    Ok(best_indices.into_iter().next().map(|idx| &constructors[idx]))
+    Ok(best_indices
+        .into_iter()
+        .next()
+        .map(|idx| &constructors[idx]))
 }
 
 pub(super) fn select_best_method_overload<'a>(
@@ -130,7 +152,13 @@ pub(super) fn select_best_method_overload<'a>(
     if best_indices.len() > 1 {
         let options = best_indices
             .iter()
-            .map(|idx| format!("{}({})", method_name, candidates[*idx].param_types.join(",")))
+            .map(|idx| {
+                format!(
+                    "{}({})",
+                    method_name,
+                    candidates[*idx].param_types.join(",")
+                )
+            })
             .collect::<Vec<_>>()
             .join("; ");
         return Err(semantic_error(format!(
@@ -159,18 +187,30 @@ pub(super) fn signature_match_score(
     }
 
     let mut total = 0u16;
-    let fixed_count = if is_varargs { expected.len().saturating_sub(1) } else { expected.len() };
-    for (expected_ty, actual_ty) in expected.iter().take(fixed_count).zip(actual.iter().take(fixed_count)) {
+    let fixed_count = if is_varargs {
+        expected.len().saturating_sub(1)
+    } else {
+        expected.len()
+    };
+    for (expected_ty, actual_ty) in expected
+        .iter()
+        .take(fixed_count)
+        .zip(actual.iter().take(fixed_count))
+    {
         let score = conversion_score(expected_ty, actual_ty, class_index)?;
         total = total.saturating_add(score);
     }
     if is_varargs {
         let vararg_array_ty = expected.last()?;
-        let vararg_element_ty = vararg_array_ty.strip_suffix("[]").unwrap_or(vararg_array_ty);
+        let vararg_element_ty = vararg_array_ty
+            .strip_suffix("[]")
+            .unwrap_or(vararg_array_ty);
         let remaining = &actual[fixed_count..];
         if remaining.is_empty() {
             total = total.saturating_add(4);
-        } else if remaining.len() == 1 && conversion_score(vararg_array_ty, &remaining[0], class_index).is_some() {
+        } else if remaining.len() == 1
+            && conversion_score(vararg_array_ty, &remaining[0], class_index).is_some()
+        {
             total = total.saturating_add(3);
         } else {
             total = total.saturating_add(5);
@@ -211,10 +251,16 @@ pub(super) fn conversion_score(
     if class_simple_name(&expected_erased) == "Object"
         && (actual.ends_with("[]")
             || is_string_type(actual)
+            || (!is_primitive_non_void(&actual_erased) && class_simple_name(&actual_erased) != "void")
             || class_index.contains_key(&actual_erased)
             || class_index
                 .keys()
                 .any(|fqcn| class_simple_name(fqcn) == class_simple_name(&actual_erased)))
+    {
+        return Some(2);
+    }
+    if class_simple_name(&actual_erased) == "Object"
+        && is_erased_type_param_slot(expected, class_index)
     {
         return Some(2);
     }
@@ -238,11 +284,14 @@ pub(super) fn conversion_score(
     if expected_base_erased == actual_base_erased {
         return Some(1);
     }
-    if implicit_numeric_widening_allowed(expected_base, actual_base) {
+    if is_boxing_pair(expected_base, actual_base) {
         return Some(1);
     }
-    if is_boxing_pair(expected_base, actual_base) || is_boxing_pair(actual_base, expected_base) {
-        return Some(1);
+    if is_boxing_pair(actual_base, expected_base) {
+        return Some(3);
+    }
+    if implicit_numeric_widening_allowed(expected_base, actual_base) {
+        return Some(2);
     }
     if is_assignable_class(actual_base, expected_base, class_index) {
         return Some(2);
@@ -254,6 +303,9 @@ pub(super) fn conversion_score(
 pub(super) fn nullable_reference_type(ty: &str, class_index: &HashMap<String, ClassInfo>) -> bool {
     let erased = erase_generic_type_name(ty);
     if is_string_type(ty) || ty.ends_with("[]") {
+        return true;
+    }
+    if !is_primitive_non_void(&erased) && class_simple_name(&erased) != "void" {
         return true;
     }
     class_index.contains_key(&erased)
@@ -291,10 +343,10 @@ pub(super) fn is_assignable_class(
         };
 
         if let Some(parent) = info.super_class.as_deref() {
-            stack.push(parent.to_string());
+            stack.push(erase_generic_type_name(parent));
         }
         for interface in &info.interfaces {
-            stack.push(interface.clone());
+            stack.push(erase_generic_type_name(interface));
         }
     }
 
@@ -317,7 +369,13 @@ pub(super) fn types_compatible(
     if class_simple_name(&expected_erased) == "Object"
         && (actual.ends_with("[]")
             || is_string_type(actual)
+            || (!is_primitive_non_void(&actual_erased) && class_simple_name(&actual_erased) != "void")
             || class_index.contains_key(&actual_erased))
+    {
+        return true;
+    }
+    if class_simple_name(&actual_erased) == "Object"
+        && is_erased_type_param_slot(expected, class_index)
     {
         return true;
     }
@@ -407,10 +465,13 @@ fn contextual_numeric_literal_assignment_allowed(
             op: UnaryOp::Neg,
             expr,
         } => match expr.as_ref() {
-            Expr::IntLiteral(_) => matches!(class_simple_name(expected), "long")
-                && class_simple_name(actual) == "int",
-            Expr::DoubleLiteral(_) => matches!(class_simple_name(expected), "float")
-                && class_simple_name(actual) == "double",
+            Expr::IntLiteral(_) => {
+                matches!(class_simple_name(expected), "long") && class_simple_name(actual) == "int"
+            }
+            Expr::DoubleLiteral(_) => {
+                matches!(class_simple_name(expected), "float")
+                    && class_simple_name(actual) == "double"
+            }
             _ => false,
         },
         _ => false,
@@ -426,7 +487,7 @@ pub(super) fn infer_binary_result_type(
     match op {
         BinaryOp::Add => {
             if is_string_type(left_ty) || is_string_type(right_ty) {
-                Ok("com.pulse.lang.String".to_string())
+                Ok("pulse.lang.String".to_string())
             } else if let Some(result) = numeric_binary_result_type(left_ty, right_ty) {
                 Ok(result)
             } else {
@@ -436,13 +497,14 @@ pub(super) fn infer_binary_result_type(
                 )))
             }
         }
-        BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div => numeric_binary_result_type(left_ty, right_ty)
-            .ok_or_else(|| {
+        BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div | BinaryOp::Mod => {
+            numeric_binary_result_type(left_ty, right_ty).ok_or_else(|| {
                 semantic_error(format!(
                     "Arithmetic operators require matching numeric operands, got '{}' and '{}'",
                     left_ty, right_ty
                 ))
-            }),
+            })
+        }
         BinaryOp::Eq | BinaryOp::NotEq => {
             if (left_ty == "null" && is_nullable_type(right_ty, class_names))
                 || (right_ty == "null" && is_nullable_type(left_ty, class_names))
@@ -508,19 +570,19 @@ mod tests {
     #[test]
     fn primitive_wrapper_map_covers_supported_primitives() {
         let expected = [
-            ("byte", "com.pulse.lang.Byte"),
-            ("short", "com.pulse.lang.Short"),
-            ("int", "com.pulse.lang.Integer"),
-            ("long", "com.pulse.lang.Long"),
-            ("float", "com.pulse.lang.Float"),
-            ("double", "com.pulse.lang.Double"),
-            ("char", "com.pulse.lang.Char"),
-            ("boolean", "com.pulse.lang.Boolean"),
-            ("ubyte", "com.pulse.lang.UByte"),
-            ("ushort", "com.pulse.lang.UShort"),
-            ("uint", "com.pulse.lang.UInteger"),
-            ("ulong", "com.pulse.lang.ULong"),
-            ("void", "com.pulse.lang.Void"),
+            ("byte", "pulse.lang.Byte"),
+            ("short", "pulse.lang.Short"),
+            ("int", "pulse.lang.Integer"),
+            ("long", "pulse.lang.Long"),
+            ("float", "pulse.lang.Float"),
+            ("double", "pulse.lang.Double"),
+            ("char", "pulse.lang.Char"),
+            ("boolean", "pulse.lang.Boolean"),
+            ("ubyte", "pulse.lang.UByte"),
+            ("ushort", "pulse.lang.UShort"),
+            ("uint", "pulse.lang.UInteger"),
+            ("ulong", "pulse.lang.ULong"),
+            ("void", "pulse.lang.Void"),
         ];
         for (primitive, wrapper) in expected {
             assert_eq!(primitive_wrapper_type(primitive), Some(wrapper));
@@ -528,27 +590,3 @@ mod tests {
         assert_eq!(primitive_wrapper_type("String"), None);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

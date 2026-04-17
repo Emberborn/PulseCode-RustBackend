@@ -1,7 +1,10 @@
 use super::*;
 
 pub(super) fn is_assignable_target(expr: &Expr) -> bool {
-    matches!(expr, Expr::Var(_) | Expr::MemberAccess { .. } | Expr::ArrayAccess { .. })
+    matches!(
+        expr,
+        Expr::Var(_) | Expr::MemberAccess { .. } | Expr::ArrayAccess { .. }
+    )
 }
 
 pub(super) fn is_switch_case_literal(expr: &Expr) -> bool {

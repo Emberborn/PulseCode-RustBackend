@@ -3,6 +3,12 @@
 Status: Done (Locked)  
 Date locked: 2026-03-12
 
+Historical scope note:
+
+- the executable/build/publication parity parts of E3 remain historically relevant
+- older packaging/install parity language in this document is superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- current PulseCode parity scope is build/output/runtime parity, not compiler-owned installer generation
+
 ## Purpose
 
 This guide summarizes the locked parity contract between PulseCode fat and shared native output modes.
@@ -14,8 +20,7 @@ For supported programs, fat and shared modes must remain equivalent for:
 - runtime-heavy application behavior
 - deterministic failure behavior
 - debug/release publication intent
-- staging/package expectations
-- MSI install/repair/upgrade/uninstall flows
+- historical staging/package expectations only where they explain older E3 closure evidence
 
 Locked parity fixture corpus:
 - `runtime_mix`
@@ -44,7 +49,7 @@ The following differences are intentional and locked:
   - `build/distro/<profile>/lib`
   - debug-only `build/distro/debug/metadata`
 - shared outputs publish runtime lookup metadata through `launch.txt`
-- shared staged/package/install payloads include runtime DLL payloads
+- older historical packaging/install outputs included runtime DLL payloads for shared mode
 - shared missing-runtime diagnostics are explicit and are not expected to match fat payload errors byte-for-byte
 
 These are presentation/runtime-boundary differences, not behavior-parity failures.
@@ -64,20 +69,11 @@ Locked rule:
 - release output must remain runnable/publishable
 - debug/release differences must be explicit and tested in both modes
 
-## Packaging / Installer Rules
+## Historical Packaging / Installer Rules
 
-Both modes are supported publishable product targets.
+The old E3 closure included packaging/install parity work.
 
-Locked parity rules:
-- both modes support staged package output
-- both modes support MSI generation
-- both modes remain runnable after install
-- both modes have validated repair/upgrade/uninstall flows
-
-Shared-only packaging additions:
-- staged/package/install runtime DLL payloads
-- import library in build/package staging outputs
-- shared launch metadata describing runtime lookup resolution
+That material is now historical only. Current compiler scope stops at build/publication/runtime parity, and any installer generation belongs to downstream tooling per [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md).
 
 ## Regression Gate Strategy
 
@@ -85,8 +81,7 @@ Parity is locked by:
 - side-by-side executable fixture runs
 - runtime-heavy parity fixtures
 - paired failure-path fixtures
-- artifact and staging snapshot locks
-- MSI/install lifecycle validation
+- artifact snapshot locks
 - Windows matrix documentation + doc locks
 
 ## Related Specs
@@ -95,5 +90,5 @@ Parity is locked by:
 - [E3_PARITY_EVIDENCE_STRATEGY.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_EVIDENCE_STRATEGY.md)
 - [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
 - [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/PulseCode/docs/PROJECT_LAYOUT_CONVENTIONS.md)
-- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
 - [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md)

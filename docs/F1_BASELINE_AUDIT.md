@@ -25,10 +25,9 @@ These areas are already materially real across parser, semantics, lowering/backe
 
 - package declarations
 - imports, wildcard imports, and static imports
-- project-mode `check`, `build`, `test`, and `package`
+- project-mode `check`, `build`, and `test`
 - native executable output
 - fat and shared output modes
-- MSI generation and installer validation
 
 Evidence:
 
@@ -36,7 +35,6 @@ Evidence:
 - `crates/pulsec-cli/src/backend.rs`
 - `crates/pulsec-cli/tests/fixture_projects.rs`
 - `crates/pulsec-cli/tests/phase_d_cli.rs`
-- `crates/pulsec-cli/tests/packaging_regressions.rs`
 - `crates/pulsec-cli/tests/e3_parity.rs`
 
 ### Core Declaration And OOP Surface
@@ -211,9 +209,9 @@ Current truth:
 - `try`
 - `catch`
 - `finally`
-- try-with-resources
+- declaration-form try-with-resources
 
-are not yet real language features
+are now real language features in the shipped F1 baseline
 
 ### Enums
 
@@ -235,9 +233,11 @@ Current truth:
 
 Current truth:
 
-- collections are non-generic
-- there is no honest generics baseline yet
-- F1 must choose and document the generics strategy before implementation claims are made
+- compile-time instantiated generics with erased runtime are real for classes, interfaces, and methods
+- generic arity is validated and primitive generic arguments are rejected
+- instantiated member typing and the current simple generic method inference slice are real at compile time
+- runtime lowering still erases generic owners/storage to the selected raw/native shape
+- collection-wide generic closure is now also locked through the later collection tasks rather than remaining only planned
 
 ### Lambdas, Method References, Ternary, Bitwise/Shift
 
@@ -253,8 +253,7 @@ These are explicitly not part of the current truthful baseline and should not be
 - full Java reflection/invocation
 - desktop UI families (`awt`, `swing`)
 - Java-close concurrency/threading runtime
-- `com.pulse.util.Scanner`
-- `Objects` / `Optional` utility baseline
+- `Optional` utility baseline
 - Java-close networking baseline
 - external native binding surface
 

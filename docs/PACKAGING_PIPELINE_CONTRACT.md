@@ -1,4 +1,16 @@
-# PulseCode Packaging Pipeline Contract (D3-01)
+# PulseCode Packaging Pipeline Contract (Historical, Superseded by RB-17.1)
+
+This document is retained as a historical archive of the old pre-rebase packaging plan.
+
+It is not the live contract for current PulseCode behavior.
+
+Current truth:
+
+- compiler-owned packaging/install/signing scope was removed in `RB-17.1`
+- `pulsec` now publishes build artifacts and plan metadata only
+- downstream tools own MSI or other package generation if desired
+- the live source of truth is [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- any `pulsec package`, `--msi`, `--wix`, `--signtool`, staging-tree, or `packaging_regressions` references below are archived historical material only
 
 This document locks the packaging pipeline boundary between build output and future MSI generation.
 

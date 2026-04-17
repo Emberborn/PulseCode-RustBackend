@@ -1,3 +1,6 @@
+mod common;
+// Windows x64 host/bootstrap fat-vs-shared parity suite.
+
 use std::env;
 use std::fs;
 use std::path::PathBuf;
@@ -68,7 +71,7 @@ fn build_and_run_fixture_in_mode(
     let src_root = root.join("src");
     let entry = src_root.join(entry_rel);
 
-    let mut command = Command::new(env!("CARGO_BIN_EXE_pulsec"));
+    let mut command = common::pulsec_command();
     command
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
@@ -138,19 +141,30 @@ fn run_exe_with_timeout(exe: &std::path::Path, fixture_name: &str, mode: &str) -
 fn e3_12_parity_ci_suite_runs_matched_fat_shared_fixture_corpus() {
     for (fixture_name, entry_rel, expected) in [
         ("runtime_mix", "app/runtime/Main.pulse", "runtime_mix_ok\n"),
-        ("object_interface_mix", "app/mixed/Main.pulse", "object_interface_mix_ok\n"),
-        ("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n40415\n"),
+        (
+            "object_interface_mix",
+            "app/mixed/Main.pulse",
+            "object_interface_mix_ok\n",
+        ),
+        (
+            "strict_stress_soak",
+            "strict_stress_soak/Main.pulse",
+            "soak_ok\n40415\n",
+        ),
     ] {
         let Some(fat_out) = build_and_run_fixture_in_mode(fixture_name, entry_rel, "fat") else {
             return;
         };
-        let Some(shared_out) =
-            build_and_run_fixture_in_mode(fixture_name, entry_rel, "shared")
+        let Some(shared_out) = build_and_run_fixture_in_mode(fixture_name, entry_rel, "shared")
         else {
             return;
         };
         assert_eq!(fat_out, expected, "{fixture_name} fat output drifted");
         assert_eq!(shared_out, expected, "{fixture_name} shared output drifted");
-        assert_eq!(fat_out, shared_out, "{fixture_name} fat/shared outputs diverged");
+        assert_eq!(
+            fat_out, shared_out,
+            "{fixture_name} fat/shared outputs diverged"
+        );
     }
 }
+

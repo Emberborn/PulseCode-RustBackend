@@ -2,6 +2,11 @@
 
 PulseCode is a new general-purpose, object-oriented language with strong typing, automatic memory handling, packages/imports, and game-focused standard capabilities.
 
+> **A note on language projects**
+>
+> Language projects are difficult, and most don't make it to self-hosting or self-sustaining.
+> I wanted to acknowledge those efforts, because every attempt helped move things forward.
+
 ## Long-term Goal
 PulseCode becomes fully standalone and self-hosted:
 1. PulseCode compiler/runtime initially bootstrapped in Rust.
@@ -29,15 +34,28 @@ This repository now includes:
 
 ## Quick Start
 1. Install Rust (stable).
-2. Run:
+2. Create a source root like `examples/src/app/core/Main.pulse` with:
+
+```pulse
+package app.core;
+
+import pulse.lang.IO;
+
+class Main {
+    public static void main(String[] args) {
+        IO.println("PulseCode online");
+    }
+}
+```
+
+3. Run:
 
 ```bash
-cargo run -p pulsec -- check src/app/core/Main.pulse --strict-package --source-root src
+cargo run -p pulsec -- check examples/src/app/core/Main.pulse --strict-package --source-root examples/src
 ```
 
 ## Project Layout
 - `crates/pulsec-core`: language front-end core.
 - `crates/pulsec-cli`: command-line compiler driver.
 - `docs/`: language and roadmap docs.
-- `src/`: Java-style source root for `.pulse` programs.
 

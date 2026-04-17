@@ -4,7 +4,8 @@ Status: Done (Locked)
 Date locked: 2026-03-11
 
 ## Scope
-- Phase D covers CLI command contracts, project/manifest model, deterministic build/test/package lifecycle, Windows-native build layout, MSI packaging, installer lifecycle validation, toolchain/environment coverage, and release-signing hooks.
+- Phase D records the original pre-rebase CLI/manifest/toolchain closure package.
+- Compiler-owned packaging/install/signing scope from that historical Phase D plan is superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md) and should not be treated as current live compiler scope.
 
 ## Required Gates
 - [x] D-G1 CLI contract stability
@@ -22,14 +23,14 @@ Date locked: 2026-03-11
 - [x] [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
 - [x] [PULSEC_MANIFEST_V1.md](/D:/Programming/codex/PulseCode/docs/PULSEC_MANIFEST_V1.md)
 - [x] [PULSEC_MANIFEST_EXAMPLES.md](/D:/Programming/codex/PulseCode/docs/PULSEC_MANIFEST_EXAMPLES.md)
-- [x] [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [x] [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md) (historical, superseded)
+- [x] [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
 - [x] [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
 - [x] [D_CLI_UX_GUIDE.md](/D:/Programming/codex/PulseCode/docs/D_CLI_UX_GUIDE.md)
 
 ## Validation Commands
 - `cargo test -q -p pulsec --test stage_locks_d`
 - `cargo test -q -p pulsec --test phase_d_cli`
-- `cargo test -q -p pulsec --test packaging_regressions`
 - `cargo test -q -p pulsec`
 
 ## Exit Decision

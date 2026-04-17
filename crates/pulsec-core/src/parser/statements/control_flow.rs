@@ -63,17 +63,17 @@ impl Parser {
 
     pub(crate) fn parse_required_block(&mut self, context: &str) -> Result<Vec<Stmt>, ParseError> {
         if !self.matches_symbol("{") {
-            return Err(self.error_here(&format!(
-                "Expected '{{' to start {} block",
-                context
-            )));
+            return Err(self.error_here(&format!("Expected '{{' to start {} block", context)));
         }
         self.parse_block_statements()
     }
 
     pub(crate) fn parse_switch_body(&mut self) -> Result<Vec<Stmt>, ParseError> {
         let mut body = Vec::new();
-        while !self.check_symbol("}") && !self.check_keyword("case") && !self.check_keyword("default") {
+        while !self.check_symbol("}")
+            && !self.check_keyword("case")
+            && !self.check_keyword("default")
+        {
             body.push(self.parse_statement()?);
         }
         Ok(body)
@@ -225,10 +225,19 @@ impl Parser {
         }
 
         if self.matches_keyword("try") {
+            let mut resources = Vec::new();
             if self.matches_symbol("(") {
-                return Err(self.error_here(
-                    "Try-with-resources is not supported in the current F1 baseline",
-                ));
+                loop {
+                    let ty = self.expect_type_name("Expected resource type")?;
+                    let name = self.expect_identifier("Expected resource name")?;
+                    self.expect_symbol("=")?;
+                    let init = self.parse_expression()?;
+                    resources.push(TryResource { ty, name, init });
+                    if self.matches_symbol(")") {
+                        break;
+                    }
+                    self.expect_symbol(";")?;
+                }
             }
             let body = self.parse_required_block("try")?;
             let mut catches = Vec::new();
@@ -238,19 +247,23 @@ impl Parser {
                 let name = self.expect_identifier("Expected catch parameter name")?;
                 self.expect_symbol(")")?;
                 let catch_body = self.parse_required_block("catch")?;
-                catches.push(CatchClause { ty, name, body: catch_body });
+                catches.push(CatchClause {
+                    ty,
+                    name,
+                    body: catch_body,
+                });
             }
             let finally_block = if self.matches_keyword("finally") {
                 Some(self.parse_required_block("finally")?)
             } else {
                 None
             };
-            if catches.is_empty() && finally_block.is_none() {
-                return Err(self.error_here(
-                    "Try statement must declare at least one catch or finally block",
-                ));
+            if resources.is_empty() && catches.is_empty() && finally_block.is_none() {
+                return Err(self
+                    .error_here("Try statement must declare at least one catch or finally block"));
             }
             return Ok(Stmt::Try {
+                resources,
                 body,
                 catches,
                 finally_block,

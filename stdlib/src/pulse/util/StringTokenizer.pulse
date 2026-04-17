@@ -1,0 +1,103 @@
+package pulse.util;
+
+import pulse.lang.Integer;
+import pulse.lang.String;
+
+/**
+ * Lightweight delimiter-based tokenizer for practical pre-Scanner text parsing.
+ */
+public final class StringTokenizer {
+    private String source;
+    private String delimiter;
+    private int index;
+
+    /**
+     * Creates a tokenizer over the supplied text using the supplied delimiter text.
+     * Use this when code needs deterministic token stepping without pulling in `Scanner` yet.
+     */
+    public StringTokenizer(String source, String delimiter) {
+        if (delimiter == null || delimiter.isEmpty()) {
+            pulse.rt.Intrinsics.panic("StringTokenizer requires non-empty delimiter");
+        }
+        this.source = source;
+        this.delimiter = delimiter;
+        this.index = 0;
+    }
+
+    /**
+     * Reports whether another token is available.
+     * Use this before `nextToken()` when code wants explicit cursor checks.
+     */
+    public boolean hasMoreTokens() {
+        return this.index <= this.source.length();
+    }
+
+    /**
+     * Returns the next token using the current delimiter.
+     * Use this for deterministic left-to-right token stepping.
+     */
+    public String nextToken() {
+        if (!this.hasMoreTokens()) {
+            pulse.rt.Intrinsics.panic("StringTokenizer has no more tokens");
+        }
+
+        String remaining = this.source.substring(this.index);
+        int found = remaining.indexOf(this.delimiter);
+        if (found < 0) {
+            String token = this.source.substring(this.index);
+            this.index = this.source.length() + 1;
+            return token;
+        }
+
+        String token = remaining.substring(0, found);
+        this.index = this.index + found + this.delimiter.length();
+        return token;
+    }
+
+    /**
+     * Returns the next token using a replacement delimiter for this and subsequent calls.
+     * Use this when token stepping needs to switch separators mid-stream.
+     */
+    public String nextToken(String delimiter) {
+        if (delimiter == null || delimiter.isEmpty()) {
+            pulse.rt.Intrinsics.panic("StringTokenizer requires non-empty delimiter");
+        }
+        this.delimiter = delimiter;
+        return this.nextToken();
+    }
+
+    /**
+     * Returns the remaining unconsumed text after the current cursor.
+     * Use this when higher-level parsing wants to inspect the tail without consuming token-by-token.
+     */
+    public String remainingText() {
+        if (!this.hasMoreTokens()) {
+            return "";
+        }
+        return this.source.substring(this.index);
+    }
+
+    /**
+     * Counts the remaining tokens from the current cursor without mutating tokenizer state.
+     * Use this when code needs predictable token cardinality before consuming.
+     */
+    public int countTokens() {
+        if (!this.hasMoreTokens()) {
+            return 0;
+        }
+
+        int count = 1;
+        int cursor = this.index;
+        while (true) {
+            String remaining = this.source.substring(cursor);
+            int found = remaining.indexOf(this.delimiter);
+            if (found < 0) {
+                return count;
+            }
+            count = count + 1;
+            cursor = cursor + found + this.delimiter.length();
+        }
+
+        return count;
+    }
+}

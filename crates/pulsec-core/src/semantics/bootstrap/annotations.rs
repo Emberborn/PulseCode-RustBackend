@@ -90,8 +90,12 @@ pub(super) fn validate_not_null_type_target(ty: &str, context: &str) -> Result<(
     Ok(())
 }
 
-pub(super) fn validate_test_annotation(method: &MethodDecl, class: &ClassDecl) -> Result<(), SemanticError> {
-    if !method.modifiers.contains(&Modifier::Public) || !method.modifiers.contains(&Modifier::Static)
+pub(super) fn validate_test_annotation(
+    method: &MethodDecl,
+    class: &ClassDecl,
+) -> Result<(), SemanticError> {
+    if !method.modifiers.contains(&Modifier::Public)
+        || !method.modifiers.contains(&Modifier::Static)
     {
         return Err(semantic_error(format!(
             "Annotation '@Test' requires method '{}.{}' to be public static",
@@ -211,4 +215,3 @@ pub(super) fn target_requires_not_null(
         _ => Ok(false),
     }
 }
-

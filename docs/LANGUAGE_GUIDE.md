@@ -4,7 +4,7 @@
 
 ### Check a file
 ```bash
-cargo run -p pulsec -- check src/app/core/Main.pulse --strict-package --source-root src
+cargo run -p pulsec -- check examples/src/app/core/Main.pulse --strict-package --source-root examples/src
 ```
 
 ### Check with strict package layout
@@ -14,7 +14,7 @@ cargo run -p pulsec -- check path/to/Main.pulse --strict-package
 
 ### Check with explicit source root
 ```bash
-cargo run -p pulsec -- check src/app/core/Main.pulse --strict-package --source-root src
+cargo run -p pulsec -- check examples/src/app/core/Main.pulse --strict-package --source-root examples/src
 ```
 
 ### Run tests
@@ -27,7 +27,7 @@ cargo test
 ```pulse
 package game.core;
 
-import com.pulse.lang.IO;
+import pulse.lang.IO;
 
 class Main {
     public static void main(String[] args) {
@@ -41,19 +41,19 @@ class Main {
 ### Packages and imports
 ```pulse
 package game.core;
-import com.pulse.lang.IO;
+import pulse.lang.IO;
 import game.util.MathUtil;
 import game.util.*;
 import static game.util.MathUtil.PI;
 import static game.util.MathUtil.*;
 ```
 
-Current `com.pulse` import convention:
-- Preferred console API: `import com.pulse.lang.System;` and call `System.out.println(...)`.
-- Convenience alias: `import com.pulse.lang.IO;` and call `IO.println(...)`.
-- `String` resolves implicitly from `com.pulse.lang.String` (import optional, Java-style).
-- `com.pulse` wildcard imports/static imports are validated against known baseline packages/classes.
-- Unknown `com.pulse.*` imports are rejected by `check`.
+Current stdlib import convention:
+- Preferred console API: `import pulse.lang.System;` and call `System.out.println(...)`.
+- Convenience alias: `import pulse.lang.IO;` and call `IO.println(...)`.
+- `String` resolves implicitly from `pulse.lang.String` (import optional, Java-style).
+- `pulse` wildcard imports/static imports are validated against known baseline packages/classes.
+- Unknown `pulse.*` imports are rejected by `check`.
 
 Static imports allow unqualified static member usage in the current file:
 ```pulse
@@ -66,7 +66,7 @@ Package-to-folder layout rule:
 - `check` allows mismatches by default (warning only) for quick iteration.
 - `check --strict-package` and `build` enforce the folder rule as an error.
 - `--source-root <dir>` switches to Java-style mapping relative to that root.
-  Example: with `--source-root src`, `src/app/core/Main.pulse` must be `package app.core;`.
+  Example: with `--source-root examples/src`, `examples/src/app/core/Main.pulse` must be `package app.core;`.
 
 ### Class, fields, constructor, methods
 ```pulse
@@ -107,7 +107,7 @@ Exactly one valid `main` is required.
 ### Built-ins
 - `byte`, `short`, `int`, `long`, `float`, `double`, `char`, `boolean`, `void`
 - Unsigned: `ubyte`, `ushort`, `uint`, `ulong`
-- `String` is class-based (`com.pulse.lang.String`) and implicitly available without import
+- `String` is class-based (`pulse.lang.String`) and implicitly available without import
 
 ### User types
 - Any class declared in the same compilation unit can be used as a type.

@@ -1,3 +1,6 @@
+mod common;
+// Windows x64 host/bootstrap object-model and dispatch lock suite.
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -35,7 +38,7 @@ fn build_supports_backend_execution(output: &Output) -> bool {
     }
 
     let stderr = String::from_utf8_lossy(&output.stderr);
-        if stderr.contains("error[PULSEC:E_BUILD_FAILED]: Compile error: backend emit failed:") {
+    if stderr.contains("error[PULSEC:E_BUILD_FAILED]: Compile error: backend emit failed:") {
         return false;
     }
 
@@ -76,7 +79,7 @@ fn lock_c3_01_object_layout_contract_is_documented_and_emitted() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Base {
             int b;
@@ -97,7 +100,7 @@ fn lock_c3_01_object_layout_contract_is_documented_and_emitted() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -147,7 +150,7 @@ fn lock_c3_02_static_field_storage_contract_and_runtime_flow_are_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Counter {
             public static int value = 1;
@@ -167,7 +170,7 @@ fn lock_c3_02_static_field_storage_contract_and_runtime_flow_are_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -230,7 +233,7 @@ fn lock_c3_03_constructor_invocation_contract_is_documented_and_emitted() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Pair {
             int left;
@@ -254,7 +257,7 @@ fn lock_c3_03_constructor_invocation_contract_is_documented_and_emitted() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -302,7 +305,7 @@ fn lock_c3_04_class_allocation_contract_emits_variable_class_sizes() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Tiny {
             int x;
@@ -321,7 +324,7 @@ fn lock_c3_04_class_allocation_contract_emits_variable_class_sizes() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -362,7 +365,7 @@ fn lock_c3_05_object_model_plan_sections_are_complete() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -413,7 +416,7 @@ fn lock_c3_06_dispatch_schema_is_documented_and_emitted() {
             public static void main() {}
         }"#,
     );
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -441,7 +444,7 @@ fn lock_c3_07_virtual_dispatch_runtime_override_resolution_is_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Base {
             public int value() {
@@ -463,7 +466,7 @@ fn lock_c3_07_virtual_dispatch_runtime_override_resolution_is_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -497,7 +500,7 @@ fn lock_c3_08_interface_dispatch_bridge_runtime_resolution_is_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         interface Task {
             int run();
@@ -525,7 +528,7 @@ fn lock_c3_08_interface_dispatch_bridge_runtime_resolution_is_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -547,7 +550,10 @@ fn lock_c3_08_interface_dispatch_bridge_runtime_resolution_is_locked() {
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "3\n7\n", "unexpected interface dispatch runtime output");
+    assert_eq!(
+        out, "3\n7\n",
+        "unexpected interface dispatch runtime output"
+    );
 }
 
 #[test]
@@ -559,7 +565,7 @@ fn lock_c3_09_super_dispatch_runtime_behavior_is_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Base {
             public int value() {
@@ -593,7 +599,7 @@ fn lock_c3_09_super_dispatch_runtime_behavior_is_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -641,7 +647,7 @@ fn lock_c3_09_final_override_is_rejected_semantically() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -684,7 +690,7 @@ fn lock_c3_09_abstract_instantiation_contract_failure_is_rejected_semantically()
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -724,7 +730,7 @@ fn lock_c3_09_override_annotation_contract_failure_is_rejected_semantically() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -755,7 +761,7 @@ fn lock_c3_09_override_annotation_interface_contract_is_accepted() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         public interface Task {
             int run();
@@ -774,7 +780,7 @@ fn lock_c3_09_override_annotation_interface_contract_is_accepted() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -808,7 +814,7 @@ fn lock_c3_10_safe_devirtualization_fast_paths_preserve_behavioral_parity() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Base {
             public int virt() {
@@ -858,7 +864,7 @@ fn lock_c3_10_safe_devirtualization_fast_paths_preserve_behavioral_parity() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -877,7 +883,9 @@ fn lock_c3_10_safe_devirtualization_fast_paths_preserve_behavioral_parity() {
     assert!(plan.contains("\"final-method-direct\""));
     assert!(plan.contains("\"private-method-direct\""));
     assert!(plan.contains("\"final-class-direct\""));
-    assert!(plan.contains("\"parity_requirement\": \"behavioral-equivalence-with-runtime-dispatch\""));
+    assert!(
+        plan.contains("\"parity_requirement\": \"behavioral-equivalence-with-runtime-dispatch\"")
+    );
 
     let run = Command::new(root.join("build").join("main.exe"))
         .output()
@@ -889,7 +897,10 @@ fn lock_c3_10_safe_devirtualization_fast_paths_preserve_behavioral_parity() {
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "5\n2\n3\n4\n6\n", "unexpected devirtualization parity runtime output");
+    assert_eq!(
+        out, "5\n2\n3\n4\n6\n",
+        "unexpected devirtualization parity runtime output"
+    );
 }
 
 #[test]
@@ -901,7 +912,7 @@ fn lock_c3_11_instanceof_runtime_type_check_boundary_is_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         interface Tag {}
         class Base {}
@@ -922,7 +933,7 @@ fn lock_c3_11_instanceof_runtime_type_check_boundary_is_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -944,7 +955,10 @@ fn lock_c3_11_instanceof_runtime_type_check_boundary_is_locked() {
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "true\ntrue\nfalse\ntrue\nfalse\n", "unexpected instanceof runtime output");
+    assert_eq!(
+        out, "true\ntrue\nfalse\ntrue\nfalse\n",
+        "unexpected instanceof runtime output"
+    );
 }
 
 #[test]
@@ -956,7 +970,7 @@ fn lock_c3_11_checked_reference_cast_success_is_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Base {
             public int v() {
@@ -979,7 +993,7 @@ fn lock_c3_11_checked_reference_cast_success_is_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1025,7 +1039,7 @@ fn lock_c3_11_checked_reference_cast_failure_is_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1090,7 +1104,7 @@ fn lock_c3_12_type_id_schema_is_documented_and_emitted() {
             public static void main() {}
         }"#,
     );
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1119,7 +1133,7 @@ fn lock_c3_12_runtime_type_checks_use_runtime_class_id_proc_boundary() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         interface Tag {}
         class Base {}
@@ -1134,7 +1148,7 @@ fn lock_c3_12_runtime_type_checks_use_runtime_class_id_proc_boundary() {
             }
         }"#,
     );
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1177,8 +1191,8 @@ fn lock_c3_13_null_virtual_dispatch_receiver_panics_deterministically() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
 
         class Base {
             public int value() {
@@ -1203,7 +1217,7 @@ fn lock_c3_13_null_virtual_dispatch_receiver_panics_deterministically() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1251,8 +1265,8 @@ fn lock_c3_13_null_interface_dispatch_receiver_panics_deterministically() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
 
         interface Task {
             int run();
@@ -1281,7 +1295,7 @@ fn lock_c3_13_null_interface_dispatch_receiver_panics_deterministically() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1350,7 +1364,7 @@ fn lock_c3_14_object_model_abi_contract_is_documented_and_emitted() {
             public static void main() {}
         }"#,
     );
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1383,7 +1397,7 @@ fn lock_c3_14_object_model_abi_mismatch_fails_deterministically() {
             public static void main() {}
         }"#,
     );
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .env("PULSEC_FORCE_OBJECT_MODEL_ABI_VERSION", "2")
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
@@ -1399,8 +1413,8 @@ fn lock_c3_14_object_model_abi_mismatch_fails_deterministically() {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    let plan = fs::read_to_string(root.join("build").join("native.plan.json"))
-        .expect("read native plan");
+    let plan =
+        fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
     assert!(
         plan.contains("\"abi_compatibility\"")
             && plan.contains("\"schema\": \"pulsec.object_model.abi.v1\"")
@@ -1436,7 +1450,7 @@ fn lock_c3_15_semantic_constructor_and_layout_edge_matrix_is_locked() {
         &ok_entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Base {
             int x;
@@ -1463,7 +1477,7 @@ fn lock_c3_15_semantic_constructor_and_layout_edge_matrix_is_locked() {
             }
         }"#,
     );
-    let ok = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let ok = common::pulsec_command()
         .arg("build")
         .arg(ok_entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1496,7 +1510,7 @@ fn lock_c3_15_semantic_constructor_and_layout_edge_matrix_is_locked() {
             }
         }"#,
     );
-    let bad_ctor = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let bad_ctor = common::pulsec_command()
         .arg("build")
         .arg(bad_ctor_entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1541,7 +1555,7 @@ fn lock_c3_15_semantic_constructor_and_layout_edge_matrix_is_locked() {
             }
         }"#,
     );
-    let bad_layout = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let bad_layout = common::pulsec_command()
         .arg("build")
         .arg(bad_layout_entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1557,7 +1571,8 @@ fn lock_c3_15_semantic_constructor_and_layout_edge_matrix_is_locked() {
     );
     let bad_layout_err = String::from_utf8_lossy(&bad_layout.stderr);
     assert!(
-        bad_layout_err.contains("Cannot access private field 'VaultBase.secret' from class 'VaultDerived'"),
+        bad_layout_err
+            .contains("Cannot access private field 'VaultBase.secret' from class 'VaultDerived'"),
         "expected private-field layout diagnostic\n{}",
         bad_layout_err
     );
@@ -1572,7 +1587,7 @@ fn lock_e2_06_runtime_no_longer_imports_user_field_storage_and_field_growth_stay
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Box {
             int value;
@@ -1604,7 +1619,7 @@ fn lock_e2_06_runtime_no_longer_imports_user_field_storage_and_field_growth_stay
             }
         }"#,
     );
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1655,7 +1670,10 @@ fn lock_e2_06_runtime_no_longer_imports_user_field_storage_and_field_growth_stay
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "79\n", "expected last field value after >63 object allocations");
+    assert_eq!(
+        out, "79\n",
+        "expected last field value after >63 object allocations"
+    );
 }
 
 #[test]
@@ -1667,7 +1685,7 @@ fn lock_c3_16_polymorphism_and_interface_dispatch_fixture_suite_executes() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         interface Ranker {
             int rank();
@@ -1707,7 +1725,7 @@ fn lock_c3_16_polymorphism_and_interface_dispatch_fixture_suite_executes() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1741,7 +1759,7 @@ fn lock_c3_17_object_model_stress_alloc_churn_polymorphic_calls_are_stable() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         interface Eval {
             int eval();
@@ -1784,7 +1802,7 @@ fn lock_c3_17_object_model_stress_alloc_churn_polymorphic_calls_are_stable() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1797,7 +1815,9 @@ fn lock_c3_17_object_model_stress_alloc_churn_polymorphic_calls_are_stable() {
     }
 
     let exe = root.join("build").join("main.exe");
-    let run1 = Command::new(&exe).output().expect("run built executable first pass");
+    let run1 = Command::new(&exe)
+        .output()
+        .expect("run built executable first pass");
     assert!(
         run1.status.success(),
         "expected first stress executable success\nstdout:\n{}\nstderr:\n{}",
@@ -1807,7 +1827,9 @@ fn lock_c3_17_object_model_stress_alloc_churn_polymorphic_calls_are_stable() {
     let out1 = String::from_utf8_lossy(&run1.stdout).replace('\r', "");
     assert_eq!(out1, "125000\n", "unexpected first stress output");
 
-    let run2 = Command::new(&exe).output().expect("run built executable second pass");
+    let run2 = Command::new(&exe)
+        .output()
+        .expect("run built executable second pass");
     assert!(
         run2.status.success(),
         "expected second stress executable success\nstdout:\n{}\nstderr:\n{}",
@@ -1827,7 +1849,7 @@ fn lock_c3_18_dispatch_heavy_frame_and_win64_abi_guards_are_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         interface Sum6 {
             int sum6(int a, int b, int c, int d, int e, int f);
@@ -1848,7 +1870,7 @@ fn lock_c3_18_dispatch_heavy_frame_and_win64_abi_guards_are_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1912,3 +1934,4 @@ fn lock_c3_18_dispatch_heavy_frame_and_win64_abi_guards_are_locked() {
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
     assert_eq!(out, "21\n", "unexpected dispatch-heavy runtime output");
 }
+

@@ -196,6 +196,8 @@ impl Parser {
                 Some(BinaryOp::Mul)
             } else if self.matches_symbol("/") {
                 Some(BinaryOp::Div)
+            } else if self.matches_symbol("%") {
+                Some(BinaryOp::Mod)
             } else {
                 None
             };
@@ -213,30 +215,50 @@ impl Parser {
     pub(crate) fn parse_unary(&mut self) -> Result<Expr, ParseError> {
         if self.matches_symbol_pair("+", "+") {
             let target = self.parse_assignment_target()?;
-            return Ok(Expr::IncDec { target: Box::new(target), op: IncDecOp::Inc, prefix: true });
+            return Ok(Expr::IncDec {
+                target: Box::new(target),
+                op: IncDecOp::Inc,
+                prefix: true,
+            });
         }
         if self.matches_symbol_pair("-", "-") {
             let target = self.parse_assignment_target()?;
-            return Ok(Expr::IncDec { target: Box::new(target), op: IncDecOp::Dec, prefix: true });
+            return Ok(Expr::IncDec {
+                target: Box::new(target),
+                op: IncDecOp::Dec,
+                prefix: true,
+            });
         }
         if self.matches_symbol("!") {
             let expr = self.parse_unary()?;
-            return Ok(Expr::Unary { op: UnaryOp::Not, expr: Box::new(expr) });
+            return Ok(Expr::Unary {
+                op: UnaryOp::Not,
+                expr: Box::new(expr),
+            });
         }
         if self.matches_symbol("~") {
             let expr = self.parse_unary()?;
-            return Ok(Expr::Unary { op: UnaryOp::BitNot, expr: Box::new(expr) });
+            return Ok(Expr::Unary {
+                op: UnaryOp::BitNot,
+                expr: Box::new(expr),
+            });
         }
         if self.matches_symbol("-") {
             let expr = self.parse_unary()?;
-            return Ok(Expr::Unary { op: UnaryOp::Neg, expr: Box::new(expr) });
+            return Ok(Expr::Unary {
+                op: UnaryOp::Neg,
+                expr: Box::new(expr),
+            });
         }
         if self.looks_like_cast_expression() {
             self.expect_symbol("(")?;
             let ty = self.parse_cast_type_name()?;
             self.expect_symbol(")")?;
             let expr = self.parse_unary()?;
-            return Ok(Expr::Cast { ty, expr: Box::new(expr) });
+            return Ok(Expr::Cast {
+                ty,
+                expr: Box::new(expr),
+            });
         }
         self.parse_postfix()
     }

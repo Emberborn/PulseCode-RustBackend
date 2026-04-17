@@ -3,6 +3,12 @@
 Status: Done (Locked)  
 Date locked: 2026-03-12
 
+Historical scope note:
+
+- packaging/install parity language below is retained as historical E3 closure context only
+- current live compiler scope is build/output/runtime parity, not compiler-owned package/install behavior
+- packaging removal policy is now defined by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+
 ## Purpose
 
 This document defines the supported parity surface between `fat` and `shared` native output modes.
@@ -15,7 +21,7 @@ Parity in E3 means:
 Parity in E3 does not mean:
 - identical artifact directory shape
 - identical launch metadata artifacts
-- identical installer payload count
+- identical historical installer payload count
 
 ## Mode Summary
 
@@ -41,9 +47,8 @@ The following behavior is in scope for parity claims:
   - stdlib/runtime-backed collections
   - IO/string/runtime intrinsics already locked in C/E1/E2
 - deterministic debug vs release publication rules
-- deterministic staging/package behavior
-- deterministic MSI/install behavior
-- deterministic failure policy for supported launch/build/package flows
+- deterministic historical staging/package behavior where relevant to archived E3 evidence
+- deterministic failure policy for supported launch/build flows
 
 Representative parity corpus:
 - `runtime_mix`
@@ -63,8 +68,8 @@ The following differences are intentional and do not count as parity failures:
 - runtime payload count
   - `fat` publishes an executable as the runnable product
   - `shared` publishes an executable plus required runtime library payload
-- install payload count
-  - `shared` installers include runtime library payloads in addition to the executable
+- historical install payload count
+  - shared historical installers included runtime library payloads in addition to the executable
 
 ## Debug / Release Rules
 
@@ -84,9 +89,11 @@ Locked debug/release expectations:
 
 Debug/release publication differences are allowed only when they are profile-driven and documented.
 
-## Packaging / Install Expectations
+## Historical Packaging / Install Expectations
 
-Parity expectation for packaging/install:
+The older E3 closure recorded packaging/install expectations that were valid before `RB-17.1`.
+
+They are retained only as historical explanation for old closure evidence, not as current compiler commitments.
 
 - both modes must remain runnable after `package` staging
 - both modes must remain runnable after MSI install on supported hosts

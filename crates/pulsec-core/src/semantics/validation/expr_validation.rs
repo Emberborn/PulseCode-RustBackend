@@ -8,6 +8,29 @@ enum NativeArrayLane {
     Reference,
 }
 
+fn collect_logical_operands<'a>(expr: &'a Expr, op: &BinaryOp) -> Vec<&'a Expr> {
+    let mut current = expr;
+    let mut tail = Vec::new();
+    loop {
+        match current {
+            Expr::Binary {
+                left,
+                op: current_op,
+                right,
+            } if current_op == op => {
+                tail.push(right.as_ref());
+                current = left.as_ref();
+            }
+            _ => break,
+        }
+    }
+    let mut out = vec![current];
+    while let Some(next) = tail.pop() {
+        out.push(next);
+    }
+    out
+}
+
 fn current_class_self_type(class: &ClassDecl, class_info: &ClassInfo) -> String {
     let fqcn = format!("{}.{}", class_info.package_name, class.name);
     if class_info.type_params.is_empty() {
@@ -99,7 +122,11 @@ pub(super) fn infer_expr_type(
             if receiver.kind == ExprKind::ClassRef {
                 let owner = owner_class(&receiver, class_names)?;
                 if let Some(info) = class_index.get(&owner) {
-                    if info.is_enum && info.enum_constants.iter().any(|constant| constant == member)
+                    if info.is_enum
+                        && info
+                            .enum_constants
+                            .iter()
+                            .any(|constant| constant == member)
                     {
                         return Ok(value_type(&owner));
                     }
@@ -162,9 +189,9 @@ pub(super) fn infer_expr_type(
             class_info,
             class_names,
             class_index,
-                fqcn_to_class,
-                imports,
-                locals,
+            fqcn_to_class,
+            imports,
+            locals,
             in_static_context,
             None,
         ),
@@ -298,7 +325,10 @@ pub(super) fn infer_expr_type(
             if inner_ty.ty == "null" {
                 return Ok(value_type("boolean"));
             }
-            if is_numeric_primitive(&inner_ty.ty) || inner_ty.ty == "boolean" || inner_ty.ty == "void" {
+            if is_numeric_primitive(&inner_ty.ty)
+                || inner_ty.ty == "boolean"
+                || inner_ty.ty == "void"
+            {
                 return Err(semantic_error(format!(
                     "Left operand of 'instanceof' must be a reference type, got '{}'",
                     inner_ty.ty
@@ -306,7 +336,11 @@ pub(super) fn infer_expr_type(
             }
             Ok(value_type("boolean"))
         }
-        Expr::IncDec { target, op, prefix: _ } => {
+        Expr::IncDec {
+            target,
+            op,
+            prefix: _,
+        } => {
             if !is_assignable_target(target) {
                 return Err(semantic_error(format!(
                     "Operator '{}' requires an assignable target",
@@ -323,6 +357,7 @@ pub(super) fn infer_expr_type(
                 imports,
                 locals,
                 in_static_context,
+                false,
             )?;
 
             let target_ty = infer_expr_type(
@@ -348,33 +383,54 @@ pub(super) fn infer_expr_type(
             Ok(value_type(&target_ty.ty))
         }
         Expr::Binary { left, op, right } => {
-            let left_ty = infer_expr_type(
-                left,
-                class,
-                class_info,
-                class_names,
-                class_index,
-                fqcn_to_class,
-                imports,
-                locals,
-                in_static_context,
-            )?;
-            let right_ty = infer_expr_type(
-                right,
-                class,
-                class_info,
-                class_names,
-                class_index,
-                fqcn_to_class,
-                imports,
-                locals,
-                in_static_context,
-            )?;
-
             match op {
+                BinaryOp::LogicalAnd | BinaryOp::LogicalOr => {
+                    for operand in collect_logical_operands(expr, op) {
+                        let operand_ty = infer_expr_type(
+                            operand,
+                            class,
+                            class_info,
+                            class_names,
+                            class_index,
+                            fqcn_to_class,
+                            imports,
+                            locals,
+                            in_static_context,
+                        )?;
+                        if operand_ty.ty != "boolean" {
+                            return Err(semantic_error(format!(
+                                "Logical operators require boolean operands, got '{}'",
+                                operand_ty.ty
+                            )));
+                        }
+                    }
+                    Ok(value_type("boolean"))
+                }
                 BinaryOp::Add => {
+                    let left_ty = infer_expr_type(
+                        left,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
+                    let right_ty = infer_expr_type(
+                        right,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
                     if is_string_type(&left_ty.ty) || is_string_type(&right_ty.ty) {
-                        Ok(value_type("com.pulse.lang.String"))
+                        Ok(value_type("pulse.lang.String"))
                     } else if let Some(result) =
                         numeric_binary_result_type(&left_ty.ty, &right_ty.ty)
                     {
@@ -386,7 +442,29 @@ pub(super) fn infer_expr_type(
                         )))
                     }
                 }
-                BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div => {
+                BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div | BinaryOp::Mod => {
+                    let left_ty = infer_expr_type(
+                        left,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
+                    let right_ty = infer_expr_type(
+                        right,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
                     if let Some(result) = numeric_binary_result_type(&left_ty.ty, &right_ty.ty) {
                         Ok(value_type(&result))
                     } else {
@@ -397,6 +475,28 @@ pub(super) fn infer_expr_type(
                     }
                 }
                 BinaryOp::Eq | BinaryOp::NotEq => {
+                    let left_ty = infer_expr_type(
+                        left,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
+                    let right_ty = infer_expr_type(
+                        right,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
                     if types_compatible(&left_ty.ty, &right_ty.ty, class_index)
                         || (left_ty.ty == "null" && is_nullable_type(&right_ty.ty, class_names))
                         || (right_ty.ty == "null" && is_nullable_type(&left_ty.ty, class_names))
@@ -410,6 +510,28 @@ pub(super) fn infer_expr_type(
                     }
                 }
                 BinaryOp::Less | BinaryOp::LessEq | BinaryOp::Greater | BinaryOp::GreaterEq => {
+                    let left_ty = infer_expr_type(
+                        left,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
+                    let right_ty = infer_expr_type(
+                        right,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
                     if numeric_binary_result_type(&left_ty.ty, &right_ty.ty).is_some() {
                         Ok(value_type("boolean"))
                     } else {
@@ -419,17 +541,29 @@ pub(super) fn infer_expr_type(
                         )))
                     }
                 }
-                BinaryOp::LogicalAnd | BinaryOp::LogicalOr => {
-                    if left_ty.ty == "boolean" && right_ty.ty == "boolean" {
-                        Ok(value_type("boolean"))
-                    } else {
-                        Err(semantic_error(format!(
-                            "Logical operators require boolean operands, got '{}' and '{}'",
-                            left_ty.ty, right_ty.ty
-                        )))
-                    }
-                }
                 BinaryOp::BitAnd | BinaryOp::BitOr | BinaryOp::BitXor => {
+                    let left_ty = infer_expr_type(
+                        left,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
+                    let right_ty = infer_expr_type(
+                        right,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
                     if left_ty.ty == "boolean" && right_ty.ty == "boolean" {
                         Ok(value_type("boolean"))
                     } else if let Some(result) =
@@ -444,6 +578,28 @@ pub(super) fn infer_expr_type(
                     }
                 }
                 BinaryOp::ShiftLeft | BinaryOp::ShiftRight | BinaryOp::UnsignedShiftRight => {
+                    let left_ty = infer_expr_type(
+                        left,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
+                    let right_ty = infer_expr_type(
+                        right,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?;
                     if !is_integral_primitive(&left_ty.ty) || !is_integral_primitive(&right_ty.ty) {
                         Err(semantic_error(format!(
                             "Shift operators require integral operands, got '{}' and '{}'",
@@ -534,7 +690,11 @@ pub(super) fn infer_expr_type(
                 then_ty.ty, else_ty.ty
             )))
         }
-        Expr::SwitchExpr { expr, cases, default } => {
+        Expr::SwitchExpr {
+            expr,
+            cases,
+            default,
+        } => {
             let switch_ty = infer_expr_type(
                 expr,
                 class,
@@ -632,7 +792,10 @@ pub(super) fn infer_expr_type(
 
             Ok(result_ty)
         }
-        Expr::NewArray { element_ty, lengths } => {
+        Expr::NewArray {
+            element_ty,
+            lengths,
+        } => {
             validate_native_array_element_type(element_ty, class_names, class_index)?;
             for length in lengths {
                 let length_ty = infer_expr_type(
@@ -654,7 +817,11 @@ pub(super) fn infer_expr_type(
                 }
             }
 
-            Ok(value_type(&format!("{}{}", element_ty, "[]".repeat(lengths.len()))))
+            Ok(value_type(&format!(
+                "{}{}",
+                element_ty,
+                "[]".repeat(lengths.len())
+            )))
         }
         Expr::NewArrayInitialized {
             element_ty,
@@ -675,7 +842,11 @@ pub(super) fn infer_expr_type(
                 locals,
                 in_static_context,
             )?;
-            Ok(value_type(&format!("{}{}", element_ty, "[]".repeat(*dimensions))))
+            Ok(value_type(&format!(
+                "{}{}",
+                element_ty,
+                "[]".repeat(*dimensions)
+            )))
         }
     }
 }
@@ -826,4 +997,3 @@ fn validate_native_array_initializer(
     }
     Ok(())
 }
-

@@ -1,3 +1,4 @@
+mod common;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -36,7 +37,7 @@ fn write_file(path: &Path, contents: &str) {
 }
 
 fn run_pulsec(args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    common::pulsec_command()
         .args(args)
         .output()
         .expect("run pulsec")
@@ -132,8 +133,8 @@ fn lock_m2_01_wrapper_map_semantics() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Integer;
-        import com.pulse.lang.Boolean;
+        import pulse.lang.Integer;
+        import pulse.lang.Boolean;
         class Main {
             public static void main() {
                 Integer x = 1;
@@ -155,14 +156,14 @@ fn lock_m2_02_signed_wrapper_skeletons_importable() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Byte;
-        import com.pulse.lang.Short;
-        import com.pulse.lang.Integer;
-        import com.pulse.lang.Long;
-        import com.pulse.lang.Float;
-        import com.pulse.lang.Double;
-        import com.pulse.lang.Char;
-        import com.pulse.lang.Boolean;
+        import pulse.lang.Byte;
+        import pulse.lang.Short;
+        import pulse.lang.Integer;
+        import pulse.lang.Long;
+        import pulse.lang.Float;
+        import pulse.lang.Double;
+        import pulse.lang.Char;
+        import pulse.lang.Boolean;
         class Main {
             public static void main() {
                 Byte b = null;
@@ -188,10 +189,10 @@ fn lock_m2_03_unsigned_wrapper_skeletons_importable() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.UByte;
-        import com.pulse.lang.UShort;
-        import com.pulse.lang.UInteger;
-        import com.pulse.lang.ULong;
+        import pulse.lang.UByte;
+        import pulse.lang.UShort;
+        import pulse.lang.UInteger;
+        import pulse.lang.ULong;
         class Main {
             public static void main() {
                 UByte b = null;
@@ -213,7 +214,7 @@ fn lock_m2_04_void_wrapper_contract() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Void;
+        import pulse.lang.Void;
         class Main {
             public static Void id(Void v) { return v; }
             public static void main() {
@@ -234,7 +235,7 @@ fn lock_m2_05_boxing_assignment() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
         class Main {
             public static void main() {
                 Integer boxed = 42;
@@ -253,7 +254,7 @@ fn lock_m2_06_unboxing_assignment() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
         class Main {
             public static void main() {
                 Integer boxed = Integer.valueOf(9);
@@ -273,7 +274,7 @@ fn lock_m2_07_boxing_in_call_and_return() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
         class Main {
             public static int id(int x) { return x; }
             public static Integer wid(Integer x) { return x; }
@@ -295,7 +296,7 @@ fn lock_m2_08_overload_precedence() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
         class Main {
             public static void pick(int x) {}
             public static void pick(Integer x) {}
@@ -335,8 +336,8 @@ fn lock_m2_10_wrapper_api_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Integer;
-        import com.pulse.lang.Boolean;
+        import pulse.lang.Integer;
+        import pulse.lang.Boolean;
         class Main {
             public static void main() {
                 Integer i = Integer.valueOf(5);
@@ -362,10 +363,10 @@ fn lock_m2_11_core_bootstrap_classes() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Object;
-        import com.pulse.lang.StringBuilder;
-        import com.pulse.lang.Iterable;
-        import com.pulse.lang.Iterator;
+        import pulse.lang.Object;
+        import pulse.lang.StringBuilder;
+        import pulse.lang.Iterable;
+        import pulse.lang.Iterator;
         class Main {
             public static void main() {
                 Object o = new Object();
@@ -388,7 +389,7 @@ fn lock_m2_12_wrapper_nullability_enforced() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
         class Main {
             public static void main() {
                 Integer x = null;
@@ -401,14 +402,22 @@ fn lock_m2_12_wrapper_nullability_enforced() {
 
 #[test]
 fn lock_m2_13_wrapper_runtime_failure_fixture() {
-    assert_fixture_build_and_run("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n40415\n");
+    assert_fixture_build_and_run(
+        "strict_stress_soak",
+        "strict_stress_soak/Main.pulse",
+        "soak_ok\n40415\n",
+    );
 }
 
 #[test]
 fn lock_m2_14_freeze_docs_present() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("docs");
     let freeze = fs::read_to_string(root.join("M1_SEMANTICS_FREEZE.md")).expect("read freeze doc");
-    let matrix = fs::read_to_string(root.join("NUMERIC_CONVERSION_MATRIX.md")).expect("read conversion matrix");
+    let matrix = fs::read_to_string(root.join("NUMERIC_CONVERSION_MATRIX.md"))
+        .expect("read conversion matrix");
     assert!(freeze.contains("boxing") || freeze.contains("Boxing"));
     assert!(matrix.contains("signed") && matrix.contains("unsigned"));
 }
@@ -422,9 +431,9 @@ fn lock_m3_01_exception_hierarchy_available() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Throwable;
-        import com.pulse.lang.Exception;
-        import com.pulse.lang.RuntimeException;
+        import pulse.lang.Throwable;
+        import pulse.lang.Exception;
+        import pulse.lang.RuntimeException;
         class Main {
             public static void main() {
                 Throwable t = new Exception();
@@ -444,12 +453,12 @@ fn lock_m3_02_runtime_exception_set_available() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IllegalArgumentException;
-        import com.pulse.lang.IllegalStateException;
-        import com.pulse.lang.NullPointerException;
-        import com.pulse.lang.IndexOutOfBoundsException;
-        import com.pulse.lang.UnsupportedOperationException;
-        import com.pulse.lang.NumberFormatException;
+        import pulse.lang.IllegalArgumentException;
+        import pulse.lang.IllegalStateException;
+        import pulse.lang.NullPointerException;
+        import pulse.lang.IndexOutOfBoundsException;
+        import pulse.lang.UnsupportedOperationException;
+        import pulse.lang.NumberFormatException;
         class Main {
             public static void main() {
                 IllegalArgumentException a = new IllegalArgumentException();
@@ -473,13 +482,47 @@ fn lock_m3_03_collection_list_contracts() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.collections.Collection;
-        import com.pulse.collections.List;
-        import com.pulse.collections.ArrayList;
+        import pulse.collections.Collection;
+        import pulse.collections.List;
+        import pulse.collections.ArrayList;
         class Main {
             public static void main() {
                 Collection c = new ArrayList();
                 List l = new ArrayList();
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_m3_03b_collection_interface_hierarchy_surface() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import pulse.collections.Collection;
+        import pulse.collections.List;
+        import pulse.collections.Set;
+        import pulse.collections.Queue;
+        import pulse.collections.Deque;
+        import pulse.collections.ArrayList;
+        import pulse.collections.HashSet;
+        import pulse.collections.LinkedList;
+        class Main {
+            public static void main() {
+                List l = new ArrayList();
+                Collection c1 = l;
+                Set s = new HashSet();
+                Collection c2 = s;
+                Queue q = new LinkedList();
+                Collection c3 = q;
+                Deque d = new LinkedList();
+                Queue q2 = d;
+                Collection c4 = d;
             }
         }"#,
     );
@@ -495,12 +538,22 @@ fn lock_m3_04_arraylist_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.collections.ArrayList;
+        import pulse.lang.Object;
+        import pulse.collections.List;
+        import pulse.collections.ArrayList;
         class Main {
             public static void main() {
-                ArrayList l = new ArrayList();
+                List l = new ArrayList();
                 l.add(1);
+                l.add(0, 2);
+                Object o = l.get(0);
                 int x = l.getInt(0);
+                Object oldObj = l.set(0, o);
+                boolean has = l.contains(1);
+                boolean hasObj = l.contains(o);
+                int objIdx = l.indexOf(o);
+                int idx = l.indexOf(1);
+                int old = l.set(0, 2);
             }
         }"#,
     );
@@ -516,12 +569,22 @@ fn lock_m3_05_linkedlist_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.collections.LinkedList;
+        import pulse.lang.Object;
+        import pulse.collections.List;
+        import pulse.collections.LinkedList;
         class Main {
             public static void main() {
-                LinkedList l = new LinkedList();
+                List l = new LinkedList();
                 l.add(1);
+                l.add(0, 2);
+                Object o = l.get(0);
                 int x = l.getInt(0);
+                Object oldObj = l.set(0, o);
+                boolean has = l.contains(1);
+                boolean hasObj = l.contains(o);
+                int objIdx = l.indexOf(o);
+                int idx = l.indexOf(1);
+                int old = l.set(0, 2);
             }
         }"#,
     );
@@ -537,11 +600,15 @@ fn lock_m3_06_set_hashset_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.collections.HashSet;
+        import pulse.lang.Object;
+        import pulse.collections.HashSet;
         class Main {
             public static void main() {
                 HashSet s = new HashSet();
+                Object o = new Main();
+                boolean ao = s.add(o);
                 s.add("x");
+                boolean co = s.contains(o);
                 boolean c = s.contains("x");
             }
         }"#,
@@ -558,10 +625,17 @@ fn lock_m3_07_map_hashmap_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.collections.HashMap;
+        import pulse.lang.Object;
+        import pulse.collections.Map;
+        import pulse.collections.HashMap;
         class Main {
             public static void main() {
-                HashMap m = new HashMap();
+                Map m = new HashMap();
+                Object key = new Main();
+                Object value = new Main();
+                Object old = m.put(key, value);
+                Object got = m.get(key);
+                boolean raw = m.containsKey(key);
                 m.putInt("hp", 10);
                 int hp = m.getInt("hp");
             }
@@ -579,14 +653,38 @@ fn lock_m3_08_queue_deque_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.collections.LinkedList;
+        import pulse.lang.Object;
+        import pulse.collections.Queue;
+        import pulse.collections.Deque;
+        import pulse.collections.LinkedList;
         class Main {
             public static void main() {
-                LinkedList q = new LinkedList();
+                Queue q = new LinkedList();
                 q.offer(1);
-                int x = q.poll();
-                q.addFirst(2);
-                int y = q.removeFirst();
+                Object qp = q.peek();
+                Object qx = q.poll();
+                q.offer(1);
+                int p = (Integer) q.peek();
+                int x = (Integer) q.poll();
+                int qs = q.size();
+                q.clear();
+
+                Deque d = new LinkedList();
+                d.addFirst(new Main());
+                d.addFirst(2);
+                d.addLast(new Main());
+                d.addLast(3);
+                Object of = d.peekFirst();
+                Object ol = d.peekLast();
+                Object rf = d.removeFirst();
+                Object rl = d.removeLast();
+                d.addFirst(2);
+                d.addLast(3);
+                int a = (Integer) d.peekFirst();
+                int b = (Integer) d.peekLast();
+                int y = (Integer) d.removeFirst();
+                int z = (Integer) d.removeLast();
+                int ds = d.size();
             }
         }"#,
     );
@@ -602,7 +700,7 @@ fn lock_m3_09_math_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.math.Math;
+        import pulse.math.Math;
         class Main {
             public static void main() {
                 int x = Math.max(1, 2);
@@ -622,7 +720,7 @@ fn lock_m3_10_random_seeded_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.math.Random;
+        import pulse.math.Random;
         class Main {
             public static void main() {
                 Random r = new Random(0);
@@ -642,8 +740,8 @@ fn lock_m3_11_file_path_files_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.io.Files;
-        import com.pulse.io.Path;
+        import pulse.io.Files;
+        import pulse.io.Path;
         class Main {
             public static void main() {
                 String p = Path.combine("a", "b");
@@ -664,8 +762,8 @@ fn lock_m3_12_stream_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.io.InputStream;
-        import com.pulse.io.OutputStream;
+        import pulse.io.InputStream;
+        import pulse.io.OutputStream;
         class Main {
             public static void main() {
                 OutputStream out = new OutputStream("x");
@@ -687,8 +785,8 @@ fn lock_m3_13_time_surface() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.time.Instant;
-        import com.pulse.time.Duration;
+        import pulse.time.Instant;
+        import pulse.time.Duration;
         class Main {
             public static void main() {
                 Instant now = Instant.now();
@@ -702,7 +800,9 @@ fn lock_m3_13_time_surface() {
 
 #[test]
 fn lock_m3_14_abi_doc_and_lock_tests_exist() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let abi_doc = fs::read_to_string(root.join("docs").join("RUNTIME_INTRINSICS_ABI.md"))
         .expect("read ABI doc");
     assert!(abi_doc.contains("Intrinsics.arrayNew"));
@@ -732,7 +832,10 @@ fn lock_m3_16_stress_soak_fixture_check() {
 
 #[test]
 fn lock_m3_17_windows_matrix_doc_exists() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("docs");
     let matrix = fs::read_to_string(root.join("WINDOWS_TOOLCHAIN_MATRIX.md"))
         .expect("read windows toolchain matrix");
     assert!(matrix.contains("Default linker discovery"));
@@ -741,40 +844,43 @@ fn lock_m3_17_windows_matrix_doc_exists() {
 }
 
 #[test]
-fn lock_e3_14_windows_matrix_covers_fat_shared_package_install_parity() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+fn lock_e3_14_windows_matrix_covers_fat_shared_build_parity() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("docs");
     let matrix = fs::read_to_string(root.join("WINDOWS_TOOLCHAIN_MATRIX.md"))
         .expect("read windows toolchain matrix");
     assert!(matrix.contains("E3 Fat/Shared Parity Validation Matrix"));
     assert!(matrix.contains("Release native build + launch"));
     assert!(matrix.contains("Debug native build + launch"));
-    assert!(matrix.contains("Staged package output"));
-    assert!(matrix.contains("MSI generation"));
-    assert!(matrix.contains("MSI install + launch"));
-    assert!(matrix.contains("MSI repair/upgrade/uninstall"));
+    assert!(matrix.contains("Release distro publication"));
+    assert!(matrix.contains("Debug distro publication"));
     assert!(matrix.contains("Shared-only expected additions"));
     assert!(matrix.contains("supported programs in the locked fixture corpus"));
 }
 
 #[test]
 fn lock_f1_board_explicitly_tracks_scanner_util_concurrency_network_and_defers_desktop_ui() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
-    let board = fs::read_to_string(root.join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
-    let roadmap = fs::read_to_string(root.join("STANDALONE_ROADMAP.md"))
-        .expect("read standalone roadmap");
-    assert!(board.contains("com.pulse.util"));
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("docs");
+    let board = fs::read_to_string(root.join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let roadmap =
+        fs::read_to_string(root.join("STANDALONE_ROADMAP.md")).expect("read standalone roadmap");
+    assert!(board.contains("pulse.util"));
     assert!(board.contains("Scanner"));
     assert!(board.contains("Objects"));
-    assert!(!board.contains("Optional"));
+    assert!(board.contains("Optional"));
     assert!(board.contains("Lock F1 generics scope"));
-    assert!(board.contains("Compile-time instantiated generics with erased runtime are real today"));
-    assert!(board.contains("collection-wide generic story"));
+    assert!(board.contains("The selected F1 generics baseline is now explicit, executable, and documented"));
+    assert!(board.contains("collection-wide generic closure"));
     assert!(board.contains("F1-29"));
     assert!(board.contains("F1-35"));
     assert!(board.contains("F1-101"));
     assert!(board.contains("runtime cross-method Pulse-throw unwind now works"));
-    assert!(board.contains("pre-self-host concurrency baseline"));
+    assert!(board.contains("pre-self-sustained concurrency baseline"));
     assert!(board.contains("networking baseline policy"));
     assert!(board.contains("sockets-only baseline"));
     assert!(board.contains("URL/HTTP"));
@@ -792,8 +898,8 @@ fn lock_f1_board_explicitly_tracks_scanner_util_concurrency_network_and_defers_d
     assert!(board.contains("external library/binding ecosystem"));
     assert!(board.contains("awt"));
     assert!(board.contains("swing"));
-    assert!(board.contains("deferred until after self-hosting"));
-    assert!(roadmap.contains("com.pulse.util"));
+    assert!(board.contains("deferred until after the self-sustained-hosting transition"));
+    assert!(roadmap.contains("pulse.util"));
     assert!(roadmap.contains("Scanner"));
     assert!(roadmap.contains("generics baseline is explicitly chosen"));
     assert!(roadmap.contains("exception runtime model is explicitly chosen"));
@@ -804,17 +910,19 @@ fn lock_f1_board_explicitly_tracks_scanner_util_concurrency_network_and_defers_d
     assert!(roadmap.contains("concurrent collections"));
     assert!(roadmap.contains("executor/semaphore"));
     assert!(roadmap.contains("reflection-lite"));
-    assert!(roadmap.contains("full reflection/invocation deferred until after self-hosting"));
+    assert!(roadmap.contains("full reflection/invocation deferred until after the self-sustained-hosting transition"));
     assert!(roadmap.contains("external library/binding ecosystem work remains in Phase F-A"));
     assert!(roadmap.contains("desktop UI families"));
-    assert!(roadmap.contains("after self-hosting"));
+    assert!(roadmap.contains("after the self-sustained-hosting transition"));
 }
 
 #[test]
 fn lock_f2_language_docs_tree_is_explicit_and_present() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let f2 = fs::read_to_string(root.join("docs").join("F2_TASK_BOARD.md"))
-        .expect("read F2 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let f2 =
+        fs::read_to_string(root.join("docs").join("F2_TASK_BOARD.md")).expect("read F2 task board");
     let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
         .expect("read standalone roadmap");
     let compiler_backed = fs::read_to_string(
@@ -908,7 +1016,38 @@ fn lock_f2_language_docs_tree_is_explicit_and_present() {
     assert!(entry.contains("Exactly one valid entry point is required"));
     assert!(gc.contains("ARC-backed runtime ownership"));
     assert!(null_and_type.contains("Full Java-style reflection is intentionally deferred"));
-    assert!(exceptions.contains("checked exceptions from calls/constructors are enforced by semantic analysis"));
+    assert!(exceptions
+        .contains("checked exceptions from calls/constructors are enforced by semantic analysis"));
+}
+
+#[test]
+fn lock_self_sustained_hosting_direction_and_authorlib_inventory_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read handoff");
+    let fb = fs::read_to_string(root.join("docs").join("FB_TASK_BOARD.md"))
+        .expect("read FB task board");
+    let authorlib = fs::read_to_string(root.join("docs").join("AUTHORLIB_STRATEGY.md"))
+        .expect("read authorlib strategy");
+
+    assert!(roadmap.contains("self-sustained-hosting readiness"));
+    assert!(roadmap.contains("## Phase F-B: Self-Sustained Elevation Inventory"));
+    assert!(roadmap.contains("## Phase G: Self-Sustained-Hosting Transition"));
+    assert!(roadmap.contains("`stdlib` remains the public user-facing library"));
+    assert!(roadmap.contains("`authorlib` becomes the privileged Pulse-owned extension library"));
+    assert!(handoff.contains("self-sustained hosting is the transition mechanism, not the end-state goal"));
+    assert!(handoff.contains("`authorlib` is the privileged Pulse-owned extension library"));
+    assert!(handoff.contains("a dedicated pre-Phase-G `F-B` inventory pass now exists"));
+    assert!(fb.contains("Self-Sustained Elevation Inventory"));
+    assert!(fb.contains("compiler/runtime-facing `authorlib`"));
+    assert!(fb.contains("compiler/runtime builds can always access it"));
+    assert!(authorlib.contains("`stdlib`"));
+    assert!(authorlib.contains("`authorlib`"));
+    assert!(authorlib.contains("compiler must still be able to resolve `author.*` at all times"));
 }
 
 #[test]
@@ -979,7 +1118,6 @@ fn lock_current_shipped_stdlib_pulse_files_have_multiline_pulsedoc_blocks() {
         .join("..")
         .join("stdlib")
         .join("src")
-        .join("com")
         .join("pulse");
     let mut files = Vec::new();
     collect_pulse_files(&root, &mut files);
@@ -1027,7 +1165,9 @@ fn lock_generated_stdlib_reference_docs_cover_shipped_stdlib_surface() {
         }
     }
 
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let script = fs::read_to_string(root.join("scripts").join("generate-stdlib-docs.ps1"))
         .expect("read stdlib docs generator");
     let stdlib_readme = fs::read_to_string(
@@ -1037,12 +1177,11 @@ fn lock_generated_stdlib_reference_docs_cover_shipped_stdlib_surface() {
             .join("README.md"),
     )
     .expect("read stdlib docs readme");
-    let stdlib_root = root.join("stdlib").join("src").join("com").join("pulse");
+    let stdlib_root = root.join("stdlib").join("src").join("pulse");
     let docs_root = root
         .join("docs")
         .join("language")
         .join("stdlib")
-        .join("com")
         .join("pulse");
     let sample = fs::read_to_string(docs_root.join("lang").join("String.md"))
         .expect("read generated String stdlib doc");
@@ -1055,25 +1194,29 @@ fn lock_generated_stdlib_reference_docs_cover_shipped_stdlib_surface() {
     assert!(script.contains("docs\\language\\stdlib"));
     assert!(script.contains("Remove-Item -Recurse -Force $docsPulseRoot"));
     assert!(script.contains("## Members"));
-    assert!(stdlib_readme.contains("overwrites the generated `docs/language/stdlib/com/pulse/**` tree"));
+    assert!(
+        stdlib_readme.contains("overwrites the generated `docs/language/stdlib/pulse/**` tree")
+    );
     assert_eq!(
         pulse_files.len(),
         doc_files.len(),
         "expected generated stdlib docs to cover each shipped stdlib pulse file"
     );
-    assert!(sample.contains("# com.pulse.lang.String"));
-    assert!(sample.contains("Source: ``stdlib/src/com/pulse/lang/String.pulse``"));
+    assert!(sample.contains("# pulse.lang.String"));
+    assert!(sample.contains("Source: ``stdlib/src/pulse/lang/String.pulse``"));
     assert!(sample.contains("## Members"));
     assert!(sample.contains("public int length()"));
 }
 
 #[test]
 fn lock_f1_00_baseline_audit_distinguishes_real_partial_and_reserved_features() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let audit = fs::read_to_string(root.join("docs").join("F1_BASELINE_AUDIT.md"))
         .expect("read F1 baseline audit");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
 
     assert!(audit.contains("End-To-End Supported Baseline"));
     assert!(audit.contains("Reserved / Parsed / Tokenized But Not Supported As Real Features"));
@@ -1087,7 +1230,7 @@ fn lock_f1_00_baseline_audit_distinguishes_real_partial_and_reserved_features() 
     assert!(audit.contains("finally"));
     assert!(audit.contains("enum runtime semantics are not implemented"));
     assert!(audit.contains("current practical annotation support is `@Override`"));
-    assert!(audit.contains("collections are non-generic"));
+    assert!(audit.contains("compile-time instantiated generics with erased runtime are real"));
     assert!(audit.contains("docs/LANGUAGE_GUIDE.md"));
     assert!(audit.contains("docs/LANGUAGE_OVERVIEW.md"));
     assert!(board.contains("| F1-00 |"));
@@ -1096,15 +1239,17 @@ fn lock_f1_00_baseline_audit_distinguishes_real_partial_and_reserved_features() 
 
 #[test]
 fn lock_f1_01_to_f1_03_gap_policy_and_dependency_docs_are_present_and_truthful() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let gap = fs::read_to_string(root.join("docs").join("F1_GAP_MATRIX.md"))
-        .expect("read F1 gap matrix");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let gap =
+        fs::read_to_string(root.join("docs").join("F1_GAP_MATRIX.md")).expect("read F1 gap matrix");
     let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
         .expect("read F1 support policy");
     let graph = fs::read_to_string(root.join("docs").join("F1_DEPENDENCY_GRAPH.md"))
         .expect("read F1 dependency graph");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
 
     assert!(gap.contains("Reserved/Fenced"));
     assert!(gap.contains("synchronized"));
@@ -1133,9 +1278,11 @@ fn lock_f1_01_to_f1_03_gap_policy_and_dependency_docs_are_present_and_truthful()
 
 #[test]
 fn lock_f1_04_to_f1_08_lexer_and_literal_surface_is_documented_and_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let lexer_doc = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1190,14 +1337,15 @@ fn lock_f1_04_to_f1_08_cli_check_accepts_numeric_breadth_and_stages_char_literal
         }"#,
     );
     assert_check_ok(&entry, &src_root);
-
 }
 
 #[test]
 fn lock_f1_09_f1_13_and_f1_14_type_modifier_and_declaration_edges_are_explicit() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let decls = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1234,9 +1382,11 @@ fn lock_f1_09_f1_13_and_f1_14_type_modifier_and_declaration_edges_are_explicit()
 
 #[test]
 fn lock_f1_10_enum_baseline_is_documented_and_backend_backed() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let decls = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1265,7 +1415,7 @@ fn lock_f1_10_enum_baseline_is_documented_and_backend_backed() {
     assert!(enums.contains("full enum object model"));
     assert!(board.contains("| F1-10 |"));
     assert!(board.contains("In Progress"));
-    assert!(board.contains("com.pulse.lang.Enum"));
+    assert!(board.contains("pulse.lang.Enum"));
 }
 
 #[test]
@@ -1277,7 +1427,7 @@ fn lock_f1_10_cli_build_executes_enum_baseline_honestly() {
         &entry,
         r#"
         package app.types;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         enum Mode {
             OFF,
@@ -1317,10 +1467,13 @@ fn lock_f1_10_cli_build_executes_enum_baseline_honestly() {
 }
 
 #[test]
-fn lock_f1_11_and_f1_31_generics_contract_is_documented_as_compile_time_instantiated_runtime_erased() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+fn lock_f1_11_and_f1_31_generics_contract_is_documented_as_compile_time_instantiated_runtime_erased(
+) {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
         .expect("read F1 support policy");
     let generics = fs::read_to_string(
@@ -1339,7 +1492,8 @@ fn lock_f1_11_and_f1_31_generics_contract_is_documented_as_compile_time_instanti
     assert!(generics.contains("Box<String>.set(Object)"));
     assert!(generics.contains("runtime lowering still erases instantiated generic owners"));
     assert!(board.contains("| F1-11 |"));
-    assert!(board.contains("Compile-time instantiated generics with erased runtime are real today"));
+    assert!(board.contains("| F1-11 | Lock F1 generics scope and implement the selected baseline for classes/interfaces/methods | F1-02, F1-07 | Codex | 2026-04-10 | Done (Locked) |"));
+    assert!(board.contains("The selected F1 generics baseline is now explicit, executable, and documented"));
     assert!(board.contains("| F1-31 |"));
     assert!(board.contains("Done (Locked)"));
     let _ = policy;
@@ -1354,8 +1508,8 @@ fn lock_f1_31_cli_build_executes_instantiated_generic_members_with_runtime_erasu
         &entry,
         r#"
         package app.generics;
-        import com.pulse.lang.IO;
-        import com.pulse.lang.Object;
+        import pulse.lang.IO;
+        import pulse.lang.Object;
 
         class Box<T> {
             private T value;
@@ -1409,9 +1563,11 @@ fn lock_f1_31_cli_build_executes_instantiated_generic_members_with_runtime_erasu
 
 #[test]
 fn lock_f1_32_flow_analysis_slice_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let types = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1430,9 +1586,11 @@ fn lock_f1_32_flow_analysis_slice_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_33_visibility_inheritance_and_nested_type_policy_are_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let decls = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1452,7 +1610,9 @@ fn lock_f1_33_visibility_inheritance_and_nested_type_policy_are_documented_and_b
 
 #[test]
 fn lock_f1_96_interface_inheritance_and_member_policy_are_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -1468,7 +1628,8 @@ fn lock_f1_96_interface_inheritance_and_member_policy_are_documented_and_board_l
     assert!(compiler_doc.contains("`default` interface methods"));
     assert!(compiler_doc.contains("`static` interface methods"));
     assert!(compiler_doc.contains("`private` interface methods"));
-    assert!(compiler_doc.contains("only abstract interface instance methods remain implementation obligations"));
+    assert!(compiler_doc
+        .contains("only abstract interface instance methods remain implementation obligations"));
     assert!(board.contains("| F1-96 |"));
     assert!(board.contains("Done (Locked)"));
     assert!(board.contains("interface extends"));
@@ -1478,7 +1639,9 @@ fn lock_f1_96_interface_inheritance_and_member_policy_are_documented_and_board_l
 
 #[test]
 fn lock_f1_98_nested_local_and_anonymous_type_policy_are_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -1490,17 +1653,1369 @@ fn lock_f1_98_nested_local_and_anonymous_type_policy_are_documented_and_board_lo
     .expect("read declarations and modifiers doc");
 
     assert!(compiler_doc.contains("Current nested-type policy"));
-    assert!(compiler_doc.contains("local classes are not part of the shipped pre-self-host surface"));
-    assert!(compiler_doc.contains("anonymous classes are not part of the shipped pre-self-host surface"));
+    assert!(
+        compiler_doc.contains("local classes are not part of the shipped pre-self-host surface")
+    );
+    assert!(compiler_doc
+        .contains("anonymous classes are not part of the shipped pre-self-host surface"));
     assert!(compiler_doc.contains("deferred until after self-host"));
     assert!(board.contains("| F1-98 |"));
     assert!(board.contains("Done (Locked)"));
-    assert!(board.contains("explicitly deferred until after self-host"));
+    assert!(board.contains("explicitly deferred until after the self-sustained-hosting transition"));
+}
+
+#[test]
+fn lock_rb_03_target_taxonomy_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let taxonomy = fs::read_to_string(root.join("docs").join("TARGET_TAXONOMY_AND_NAMING.md"))
+        .expect("read target taxonomy doc");
+    assert!(taxonomy.contains("`windows-x64`"));
+    assert!(taxonomy.contains("`pulseos-x64`"));
+    assert!(taxonomy.contains("`linux-x64`"));
+    assert!(taxonomy.contains("`macos-arm64`"));
+    assert!(taxonomy.contains("`native-x64`"));
+    assert!(taxonomy.contains("old single-target public name"));
+    assert!(taxonomy.contains("`windows-x64-host-bootstrap`"));
+    assert!(taxonomy.contains("`pulseos-x64-first-slice`"));
+    assert!(taxonomy.contains("`linux-x64-planned`"));
+    assert!(taxonomy.contains("`macos-arm64-planned`"));
+    assert!(taxonomy.contains("<os>-<arch>"));
+
+    assert!(board.contains("| RB-03 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("Target Taxonomy and Naming Policy"));
+    assert!(handoff.contains("Target Taxonomy and Naming Policy"));
+    assert!(contract.contains("Canonical Target IDs (`RB-03`)"));
+    assert!(contract.contains("`windows-x64`"));
+    assert!(contract.contains("`pulseos-x64`"));
+    assert!(contract.contains("`linux-x64`"));
+    assert!(contract.contains("`macos-arm64`"));
+}
+
+#[test]
+fn lock_rb_04_cli_target_surface_is_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let cli_contract = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli command contract");
+    let cli_guide =
+        fs::read_to_string(root.join("docs").join("D_CLI_UX_GUIDE.md")).expect("read cli ux guide");
+
+    assert!(board.contains("| RB-04 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(cli_contract.contains("Rebase note (`RB-05`)"));
+    assert!(cli_contract.contains("windows-x64"));
+    assert!(cli_contract.contains("pulseos-x64"));
+    assert!(cli_contract.contains("linux-x64"));
+    assert!(cli_contract.contains("macos-arm64"));
+    assert!(cli_contract.contains("removed from the public CLI surface"));
+    assert!(cli_contract.contains("`--target <windows-x64|pulseos-x64|linux-x64|macos-arm64>`"));
+    assert!(cli_guide.contains("Rebase note (`RB-05`)"));
+    assert!(cli_guide.contains("windows-x64"));
+    assert!(cli_guide.contains("pulseos-x64"));
+    assert!(cli_guide.contains("linux-x64"));
+    assert!(cli_guide.contains("macos-arm64"));
+    assert!(cli_guide.contains("removed from the public CLI/manifest surface"));
+    assert!(cli_guide.contains("`pulsec build [<entry.pulse>] [--project-root <dir>] [--source-root <dir>] [--profile <debug|release>] [--target <windows-x64|pulseos-x64|linux-x64|macos-arm64>]"));
+}
+
+#[test]
+fn lock_rb_05_manifest_target_surface_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let taxonomy = fs::read_to_string(root.join("docs").join("TARGET_TAXONOMY_AND_NAMING.md"))
+        .expect("read target taxonomy doc");
+    let manifest_schema = fs::read_to_string(root.join("docs").join("PULSEC_MANIFEST_V1.md"))
+        .expect("read manifest schema");
+    let manifest_examples =
+        fs::read_to_string(root.join("docs").join("PULSEC_MANIFEST_EXAMPLES.md"))
+            .expect("read manifest examples");
+
+    assert!(board.contains("| RB-05 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(handoff.contains("`RB-08`"));
+    assert!(contract.contains(
+        "CLI, manifest, and scaffold surfaces now use the canonical public target IDs directly"
+    ));
+    assert!(contract.contains("`native-x64` is retired from the public target surface"));
+    assert!(taxonomy.contains("`native-x64` was the old single-target public name"));
+    assert!(taxonomy.contains(
+        "`native-x64` is not accepted on current CLI, manifest, or scaffold public surfaces"
+    ));
+    assert!(taxonomy.contains(
+        "`RB-05` has rebased manifest validation, scaffold defaults, and manifest-facing examples"
+    ));
+    assert!(manifest_schema.contains("Rebase note (`RB-05`)"));
+    assert!(manifest_schema
+        .contains("manifest v1 now accepts `windows-x64`, `pulseos-x64`, `linux-x64`, and `macos-arm64`"));
+    assert!(
+        manifest_schema.contains("`native-x64` has been removed from the public manifest surface")
+    );
+    assert!(manifest_schema.contains(
+        "`target` (string, optional: `\"windows-x64\"`, `\"pulseos-x64\"`, `\"linux-x64\"`, or `\"macos-arm64\"`)"
+    ));
+    assert!(manifest_examples.contains("Rebase note (`RB-05`)"));
+    assert!(manifest_examples
+        .contains("the examples below are now rebased onto the canonical target taxonomy"));
+    assert!(manifest_examples.contains("target = \"windows-x64\""));
+    assert!(manifest_examples.contains("target = \"pulseos-x64\""));
+    assert!(manifest_examples.contains("target = \"macos-arm64\""));
+}
+
+#[test]
+fn lock_rb_06_plan_adapter_metadata_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let taxonomy = fs::read_to_string(root.join("docs").join("TARGET_TAXONOMY_AND_NAMING.md"))
+        .expect("read target taxonomy doc");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+
+    assert!(board.contains("| RB-06 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("`build.config.plan.json` and `native.plan.json` now emit explicit `target_adapter` metadata"));
+    assert!(board.contains("| RB-G2 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-06`"));
+    assert!(contract.contains("Both `build.config.plan.json` and `native.plan.json` now also emit a `target_adapter` block"));
+    assert!(contract.contains("requested public target ID and lane metadata"));
+    assert!(contract.contains("active emission adapter"));
+    assert!(contract.contains("`selected-target-not-yet-implemented-using-windows-host-bootstrap`"));
+    assert!(taxonomy.contains(
+        "`RB-06` now emits adapter, artifact-family, and runtime-ABI metadata separately"
+    ));
+    assert!(taxonomy.contains("requested target lane and active emission adapter can differ"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+}
+
+#[test]
+fn lock_rb_07_backend_layer_split_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let architecture = fs::read_to_string(root.join("docs").join("BACKEND_LAYER_ARCHITECTURE.md"))
+        .expect("read backend layer architecture");
+    let backend_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("mod.rs"),
+    )
+    .expect("read backend mod");
+    let target_neutral_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("target_neutral")
+            .join("mod.rs"),
+    )
+    .expect("read target_neutral mod");
+    let host_bootstrap_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("host_bootstrap")
+            .join("mod.rs"),
+    )
+    .expect("read host_bootstrap mod");
+    let adapters_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("mod.rs"),
+    )
+    .expect("read adapters mod");
+    let windows_adapter_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("windows_x64")
+            .join("mod.rs"),
+    )
+    .expect("read windows adapter mod");
+
+    assert!(board.contains("| RB-07 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board
+        .contains("`backend/target_neutral`, `backend/host_bootstrap`, and `backend/adapters`"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-07`"));
+    assert!(contract.contains("Layer Ownership (`RB-07`)"));
+    assert!(contract.contains("`RustHostBootstrapBackend`"));
+    assert!(contract.contains("`crates/pulsec-cli/src/backend/adapters/windows_x64/mod.rs`"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("`RustHostBootstrapBackend`"));
+    assert!(architecture.contains("target-neutral compiler output"));
+    assert!(architecture.contains("Rust-host bootstrap layer"));
+    assert!(architecture.contains("target-specific adapters"));
+    assert!(architecture.contains("`crates/pulsec-cli/src/backend/target_neutral/mod.rs`"));
+    assert!(architecture.contains("`crates/pulsec-cli/src/backend/host_bootstrap/mod.rs`"));
+    assert!(architecture.contains("`crates/pulsec-cli/src/backend/adapters/windows_x64/mod.rs`"));
+    assert!(backend_mod.contains("mod adapters;"));
+    assert!(backend_mod.contains("mod host_bootstrap;"));
+    assert!(backend_mod.contains("mod target_neutral;"));
+    assert!(backend_mod.contains("pub use self::host_bootstrap::RustHostBootstrapBackend;"));
+    assert!(target_neutral_mod
+        .contains("RB-07 layer ownership: target-neutral backend planning/output belongs here."));
+    assert!(host_bootstrap_mod
+        .contains("RB-07 layer ownership: Rust-host bootstrap orchestration belongs here."));
+    assert!(adapters_mod.contains(
+        "RB-07 layer ownership: target-specific backend adapters live under this module."
+    ));
+    assert!(windows_adapter_mod.contains(
+        "RB-07 layer ownership: the current Windows x64 adapter owns MASM/COFF emission"
+    ));
+}
+
+#[test]
+fn lock_rb_08_adapter_registry_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let registry = fs::read_to_string(root.join("docs").join("BACKEND_ADAPTER_REGISTRY.md"))
+        .expect("read backend adapter registry");
+    let adapters_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("mod.rs"),
+    )
+    .expect("read adapters mod");
+    let analysis_support = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("analysis_support.rs"),
+    )
+    .expect("read analysis_support");
+    let plan_rendering = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("plan_rendering.rs"),
+    )
+    .expect("read plan_rendering");
+
+    assert!(board.contains("| RB-08 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("BACKEND_ADAPTER_REGISTRY.md"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-08` adapter registry seam"));
+    assert!(contract.contains("Adapter Registry (`RB-08`)"));
+    assert!(contract.contains("`resolve_host_bootstrap_target_adapter(...)`"));
+    assert!(contract.contains("`resolve_active_backend_contract(...)`"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Backend Adapter Registry]"));
+    assert!(registry.contains("The current explicit seam is:"));
+    assert!(registry.contains("`TargetAdapter`"));
+    assert!(registry.contains("`resolve_plan_target_adapter_metadata(...)`"));
+    assert!(registry.contains("After `RB-08`, new code must not bypass the registry"));
+    assert!(registry.contains("`crates/pulsec-cli/src/backend/host_bootstrap/mod.rs`"));
+    assert!(adapters_mod.contains("pub(crate) trait TargetAdapter"));
+    assert!(adapters_mod.contains("resolve_host_bootstrap_target_adapter("));
+    assert!(adapters_mod.contains("resolve_active_backend_contract("));
+    assert!(analysis_support
+        .contains("use crate::backend::adapters::resolve_host_bootstrap_target_adapter;"));
+    assert!(!analysis_support.contains("crate::backend::adapters::windows_x64::{"));
+    assert!(plan_rendering.contains("use crate::backend::adapters::{"));
+    assert!(plan_rendering.contains("resolve_planned_link_plan"));
+    assert!(plan_rendering.contains("resolve_active_backend_contract(target_id)"));
+}
+
+#[test]
+fn lock_rb_09_windows_x64_adapter_scope_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let scope = fs::read_to_string(root.join("docs").join("WINDOWS_X64_ADAPTER_SCOPE.md"))
+        .expect("read windows x64 adapter scope");
+    let matrix = fs::read_to_string(root.join("docs").join("WINDOWS_TOOLCHAIN_MATRIX.md"))
+        .expect("read windows toolchain matrix");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli contract");
+    let guide =
+        fs::read_to_string(root.join("docs").join("D_CLI_UX_GUIDE.md")).expect("read cli guide");
+    let windows_adapter_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("windows_x64")
+            .join("mod.rs"),
+    )
+    .expect("read windows adapter mod");
+    let toolchain_linking = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("support")
+            .join("toolchain_linking.rs"),
+    )
+    .expect("read toolchain linking");
+
+    assert!(board.contains("| RB-09 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("| RB-G3 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-09` Windows x64 adapter scope"));
+    assert!(contract.contains("Windows x64 Adapter Scope (`RB-09`)"));
+    assert!(contract.contains("`--linker`"));
+    assert!(contract.contains("`--assembler`"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Windows x64 Adapter Scope]"));
+    assert!(scope.contains("What The Windows x64 Adapter Owns"));
+    assert!(scope.contains("What The Windows x64 Adapter Does Not Own"));
+    assert!(scope.contains("`WIN-CLI-02`"));
+    assert!(
+        scope.contains("Compiler-owned packaging/install generation is removed under `RB-17.1`.")
+    );
+    assert!(!scope.contains("`--wix`"));
+    assert!(matrix.contains("Rebase note (`RB-09`)"));
+    assert!(matrix.contains("Retained Windows Adapter Support Baseline"));
+    assert!(matrix.contains("adapter support evidence"));
+    assert!(cli.contains("Windows adapter note (`RB-09`)"));
+    assert!(cli.contains(
+        "`--linker` and `--assembler` are retained Windows x64 host/bootstrap adapter overrides"
+    ));
+    assert!(guide.contains("Windows adapter note (`RB-09`)"));
+    assert!(
+        guide.contains("current Windows x64 host/bootstrap adapter needs explicit tool overrides")
+    );
+    assert!(windows_adapter_mod.contains(
+        "RB-09 scope: this adapter preserves the current Windows x64 host/bootstrap lane"
+    ));
+    assert!(toolchain_linking
+        .contains("RB-09 scope: these helpers are retained Windows x64 adapter support"));
+}
+
+#[test]
+fn lock_rb_17_1_compiler_packaging_removal_is_documented_and_handoffed() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli contract");
+    let guide =
+        fs::read_to_string(root.join("docs").join("D_CLI_UX_GUIDE.md")).expect("read cli ux guide");
+    let manifest = fs::read_to_string(root.join("docs").join("PULSEC_MANIFEST_V1.md"))
+        .expect("read manifest v1 doc");
+    let examples = fs::read_to_string(root.join("docs").join("PULSEC_MANIFEST_EXAMPLES.md"))
+        .expect("read manifest examples doc");
+    let removal = fs::read_to_string(root.join("docs").join("COMPILER_PACKAGING_REMOVAL.md"))
+        .expect("read packaging removal doc");
+    let scope = fs::read_to_string(root.join("docs").join("WINDOWS_X64_ADAPTER_SCOPE.md"))
+        .expect("read windows x64 adapter scope");
+    let matrix = fs::read_to_string(root.join("docs").join("WINDOWS_TOOLCHAIN_MATRIX.md"))
+        .expect("read windows toolchain matrix");
+
+    assert!(board.contains("| RB-17.1 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("COMPILER_PACKAGING_REMOVAL.md"));
+    assert!(handoff.contains("`RB-17.1`"));
+    assert!(handoff.contains("[Compiler Packaging Removal]"));
+    assert!(cli.contains("Packaging removal note (`RB-17.1`)"));
+    assert!(cli.contains("`pulsec package` is not part of the public CLI anymore"));
+    assert!(guide.contains("Packaging removal note (`RB-17.1`)"));
+    assert!(guide.contains("compiler-owned packaging/install generation has been removed"));
+    assert!(manifest.contains("not part of manifest v1"));
+    assert!(!manifest.contains("- `packaging_mode` (optional"));
+    assert!(!manifest.contains("- `wix` (string, optional)"));
+    assert!(!manifest.contains("- `signtool` (string, optional)"));
+    assert!(!manifest.contains("- `[package.metadata]`"));
+    assert!(examples.contains("Packaging removal note (`RB-17.1`)"));
+    assert!(!examples.contains("| Packaging-ready app |"));
+    assert!(removal.contains("`pulsec package`"));
+    assert!(removal.contains("[build].packaging_mode"));
+    assert!(removal.contains("downstream tools own installers/packages"));
+    assert!(
+        scope.contains("Compiler-owned packaging/install generation is removed under `RB-17.1`.")
+    );
+    assert!(matrix.contains("Rebase note (`RB-17.1`)"));
+    assert!(matrix.contains("compiler-owned packaging/install generation is removed"));
+}
+
+#[test]
+fn lock_rb_10_target_neutral_planning_boundary_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let boundary = fs::read_to_string(
+        root.join("docs")
+            .join("TARGET_NEUTRAL_PLANNING_BOUNDARY.md"),
+    )
+    .expect("read target-neutral planning boundary");
+    let adapters_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("mod.rs"),
+    )
+    .expect("read adapters mod");
+    let plan_rendering = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("plan_rendering.rs"),
+    )
+    .expect("read plan_rendering");
+    let policy_support = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("support")
+            .join("policy_support.rs"),
+    )
+    .expect("read policy_support");
+    let windows_adapter_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("windows_x64")
+            .join("mod.rs"),
+    )
+    .expect("read windows adapter mod");
+
+    assert!(board.contains("| RB-10 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("TARGET_NEUTRAL_PLANNING_BOUNDARY.md"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-10` target-neutral planning boundary"));
+    assert!(contract.contains("Target-Neutral Planning Boundary (`RB-10`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Target-Neutral Planning Boundary]"));
+    assert!(boundary.contains("`WIN-PLAN-01`"));
+    assert!(boundary.contains("`WIN-PLAN-04`"));
+    assert!(boundary.contains(
+        "target-neutral planning code must not introduce new hard-coded target-specific link/system input assumptions"
+    ));
+    assert!(boundary.contains("`kernel32.lib`"));
+    assert!(adapters_mod.contains("fn planned_link_plan(&self, ir: &IrProgram) -> NativeLinkPlan;"));
+    assert!(adapters_mod.contains("resolve_planned_link_plan("));
+    assert!(plan_rendering.contains("resolve_planned_link_plan(target_id, ir)"));
+    assert!(!plan_rendering.contains("kernel32.lib"));
+    assert!(policy_support.contains("fn windows_x64_backend_contract() -> BackendContract"));
+    assert!(!policy_support.contains("fn default_backend_contract() -> BackendContract"));
+    assert!(windows_adapter_mod
+        .contains("fn planned_link_plan(&self, ir: &IrProgram) -> NativeLinkPlan"));
+    assert!(windows_adapter_mod.contains("system_inputs: vec![PathBuf::from(\"kernel32.lib\")]"));
+}
+
+#[test]
+fn lock_rb_11_runtime_partition_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let partition = fs::read_to_string(root.join("docs").join("RUNTIME_INTRINSICS_PARTITION.md"))
+        .expect("read runtime intrinsics partition doc");
+    let abi = fs::read_to_string(root.join("docs").join("RUNTIME_INTRINSICS_ABI.md"))
+        .expect("read runtime intrinsics abi doc");
+    let e2 = fs::read_to_string(root.join("docs").join("E2_RUNTIME_BOUNDARY_GUIDE.md"))
+        .expect("read e2 runtime boundary guide");
+    let windows_adapter_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("windows_x64")
+            .join("mod.rs"),
+    )
+    .expect("read windows adapter mod");
+
+    assert!(board.contains("| RB-11 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("RUNTIME_INTRINSICS_PARTITION.md"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-11` runtime/intrinsics partition"));
+    assert!(contract.contains("Runtime Intrinsics Partition (`RB-11`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Runtime Intrinsics Partition]"));
+    assert!(partition.contains("`WIN-RT-01`"));
+    assert!(partition.contains("`WIN-RT-02`"));
+    assert!(partition.contains("`WIN-RT-03`"));
+    assert!(partition.contains("`WIN-RT-05`"));
+    assert!(partition.contains("portable language/runtime contract"));
+    assert!(partition.contains("adapter-specific service glue"));
+    assert!(partition.contains("windows_x64_runtime_service_imports()"));
+    assert!(abi.contains("## RB-11 Runtime Partition Note"));
+    assert!(abi.contains("## Portable Contract vs Adapter-Specific Service Glue"));
+    assert!(abi.contains("## Current Windows x64 Host/Bootstrap Adapter Notes"));
+    assert!(e2.contains("Rebase Note (`RB-11`)"));
+    assert!(e2.contains("current Windows x64 shared-mode evidence"));
+    assert!(windows_adapter_mod.contains("WINDOWS_X64_RUNTIME_SERVICE_IMPORTS"));
+    assert!(windows_adapter_mod.contains("fn windows_x64_runtime_service_imports()"));
+}
+
+#[test]
+fn lock_rb_12_host_bootstrap_runtime_contract_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli command contract");
+    let architecture = fs::read_to_string(root.join("docs").join("BACKEND_LAYER_ARCHITECTURE.md"))
+        .expect("read backend layer architecture");
+    let bootstrap =
+        fs::read_to_string(root.join("docs").join("HOST_BOOTSTRAP_RUNTIME_CONTRACT.md"))
+            .expect("read host bootstrap runtime contract");
+    let host_bootstrap_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("host_bootstrap")
+            .join("mod.rs"),
+    )
+    .expect("read host_bootstrap mod");
+    let runtime_contract = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("host_bootstrap")
+            .join("runtime_contract.rs"),
+    )
+    .expect("read runtime_contract");
+    let plan_rendering = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("plan_rendering.rs"),
+    )
+    .expect("read plan_rendering");
+
+    assert!(board.contains("| RB-12 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("HOST_BOOTSTRAP_RUNTIME_CONTRACT.md"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-12` host bootstrap runtime contract"));
+    assert!(contract.contains("Host Bootstrap Runtime Contract (`RB-12`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Host Bootstrap Runtime Contract]"));
+    assert!(cli.contains("host_bootstrap_runtime"));
+    assert!(cli.contains("schema `pulsec.host_bootstrap.runtime.v1`"));
+    assert!(architecture.contains("minimum retained bootstrap runtime contract"));
+    assert!(bootstrap.contains("Schema id:"));
+    assert!(bootstrap.contains("`pulsec.host_bootstrap.runtime.v1`"));
+    assert!(bootstrap.contains("## Minimum Retained Bootstrap Surface"));
+    assert!(bootstrap.contains("## Explicit Exclusions"));
+    assert!(bootstrap.contains("## Ownership Rule"));
+    assert!(host_bootstrap_mod.contains("mod runtime_contract;"));
+    assert!(host_bootstrap_mod.contains("resolve_host_bootstrap_runtime_contract"));
+    assert!(runtime_contract.contains("HostBootstrapRuntimeContract"));
+    assert!(runtime_contract.contains("minimum-retained-bootstrap-surface"));
+    assert!(runtime_contract.contains("pulsec.host_bootstrap.runtime.v1"));
+    assert!(runtime_contract.contains("portable_stdlib_bridge_symbols"));
+    assert!(plan_rendering.contains("render_host_bootstrap_runtime_contract(target_id)"));
+    assert!(plan_rendering.contains("  \\\"host_bootstrap_runtime\\\": {},\\n"));
+    assert!(plan_rendering.contains("\\\"runtime_service_imports\\\": [{}],\\n"));
+}
+
+#[test]
+fn lock_rb_13_pulseos_runtime_service_contract_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli command contract");
+    let partition = fs::read_to_string(root.join("docs").join("RUNTIME_INTRINSICS_PARTITION.md"))
+        .expect("read runtime partition");
+    let pulseos = fs::read_to_string(
+        root.join("docs")
+            .join("PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md"),
+    )
+    .expect("read pulseos runtime service abi slice");
+    let adapters_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("mod.rs"),
+    )
+    .expect("read adapters mod");
+    let pulseos_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("pulseos_x64")
+            .join("mod.rs"),
+    )
+    .expect("read pulseos adapter contract mod");
+    let plan_rendering = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("plan_rendering.rs"),
+    )
+    .expect("read plan_rendering");
+
+    assert!(board.contains("| RB-13 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md"));
+    assert!(board.contains("| RB-G4 | Runtime/Intrinsics ownership and PulseOS first-slice service contract are explicit | Done (Locked) |"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-13` PulseOS runtime-service slice"));
+    assert!(contract.contains("PulseOS Runtime Service ABI Slice (`RB-13`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[PulseOS Runtime Service ABI Slice]"));
+    assert!(cli.contains("requested_target_runtime_service_abi"));
+    assert!(cli.contains("pulsec.pulseos.runtime_service.v1"));
+    assert!(partition.contains("PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md"));
+    assert!(pulseos.contains("Schema id:"));
+    assert!(pulseos.contains("`pulsec.pulseos.runtime_service.v1`"));
+    assert!(pulseos.contains("## Meeting Milestone Surface"));
+    assert!(pulseos.contains("## ABI Ground Rules"));
+    assert!(pulseos.contains("## Plan Surface"));
+    assert!(adapters_mod.contains("pub(crate) mod pulseos_x64;"));
+    assert!(adapters_mod.contains("resolve_requested_target_runtime_service_contract("));
+    assert!(pulseos_mod.contains("PulseOsRuntimeServiceContract"));
+    assert!(pulseos_mod.contains("pulsec.pulseos.runtime_service.v1"));
+    assert!(pulseos_mod.contains("contract-defined-not-yet-implemented"));
+    assert!(plan_rendering.contains("render_requested_target_runtime_service_contract(target_id)"));
+    assert!(plan_rendering.contains("  \\\"requested_target_runtime_service_abi\\\": {},\\n"));
+    assert!(plan_rendering
+        .contains("\\\"payload_shape\\\": \\\"service-specific-binary-layout-deferred\\\"\\n"));
+}
+
+#[test]
+fn lock_rb_14_runtime_ownership_rebase_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli command contract");
+    let architecture = fs::read_to_string(root.join("docs").join("BACKEND_LAYER_ARCHITECTURE.md"))
+        .expect("read backend layer architecture");
+    let bootstrap =
+        fs::read_to_string(root.join("docs").join("HOST_BOOTSTRAP_RUNTIME_CONTRACT.md"))
+            .expect("read host bootstrap runtime contract");
+    let pulseos = fs::read_to_string(
+        root.join("docs")
+            .join("PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md"),
+    )
+    .expect("read pulseos runtime service slice");
+    let ownership = fs::read_to_string(root.join("docs").join("RUNTIME_OWNERSHIP_REBASE.md"))
+        .expect("read runtime ownership rebase");
+    let host_bootstrap_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("host_bootstrap")
+            .join("mod.rs"),
+    )
+    .expect("read host_bootstrap mod");
+    let ownership_model = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("host_bootstrap")
+            .join("ownership_model.rs"),
+    )
+    .expect("read ownership model");
+    let plan_rendering = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("plan_rendering.rs"),
+    )
+    .expect("read plan_rendering");
+
+    assert!(board.contains("| RB-14 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("RUNTIME_OWNERSHIP_REBASE.md"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-14` runtime ownership rebase"));
+    assert!(contract.contains("Runtime Ownership Rebase (`RB-14`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Runtime Ownership Rebase]"));
+    assert!(cli.contains("runtime_ownership_model"));
+    assert!(cli.contains("pulsec.runtime.ownership.rebase.v1"));
+    assert!(architecture.contains("RUNTIME_OWNERSHIP_REBASE.md"));
+    assert!(bootstrap.contains("RUNTIME_OWNERSHIP_REBASE.md"));
+    assert!(pulseos.contains("RUNTIME_OWNERSHIP_REBASE.md"));
+    assert!(ownership.contains("Schema id:"));
+    assert!(ownership.contains("`pulsec.runtime.ownership.rebase.v1`"));
+    assert!(ownership.contains("## Three-Way Ownership Split"));
+    assert!(ownership.contains("## Locked Anti-Collapse Rules"));
+    assert!(ownership.contains("## Plan Surface"));
+    assert!(ownership.contains("`pulse.lang.*`"));
+    assert!(ownership.contains("`startup-entry-and-exit-boundary`"));
+    assert!(host_bootstrap_mod.contains("mod ownership_model;"));
+    assert!(host_bootstrap_mod.contains("resolve_runtime_ownership_model"));
+    assert!(ownership_model.contains("RuntimeOwnershipModel"));
+    assert!(ownership_model.contains("pulsec.runtime.ownership.rebase.v1"));
+    assert!(ownership_model.contains("rb-14-explicit-three-way-split"));
+    assert!(ownership_model
+        .contains("windows-service-imports-must-not-become-portable-runtime-or-pulseos-defaults"));
+    assert!(plan_rendering.contains("render_runtime_ownership_model(target_id)"));
+    assert!(plan_rendering.contains("  \\\"runtime_ownership_model\\\": {},\\n"));
+    assert!(
+        plan_rendering.contains("\\\"requested_target_service_contract_status\\\": \\\"{}\\\",\\n")
+    );
+}
+
+#[test]
+fn lock_rb_15_target_artifact_contract_split_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli command contract");
+    let windows_scope = fs::read_to_string(root.join("docs").join("WINDOWS_X64_ADAPTER_SCOPE.md"))
+        .expect("read windows scope");
+    let ownership = fs::read_to_string(root.join("docs").join("RUNTIME_OWNERSHIP_REBASE.md"))
+        .expect("read runtime ownership rebase");
+    let artifact = fs::read_to_string(root.join("docs").join("TARGET_ARTIFACT_CONTRACT_SPLIT.md"))
+        .expect("read target artifact contract split");
+    let adapters_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("mod.rs"),
+    )
+    .expect("read adapters mod");
+    let windows_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("windows_x64")
+            .join("mod.rs"),
+    )
+    .expect("read windows artifact mod");
+    let pulseos_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("pulseos_x64")
+            .join("mod.rs"),
+    )
+    .expect("read pulseos artifact mod");
+    let plan_rendering = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("plan_rendering.rs"),
+    )
+    .expect("read plan_rendering");
+
+    assert!(board.contains("| RB-15 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("TARGET_ARTIFACT_CONTRACT_SPLIT.md"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-15` target artifact contract split"));
+    assert!(contract.contains("Target Artifact Contract Split (`RB-15`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Target Artifact Contract Split]"));
+    assert!(cli.contains("artifact_contracts"));
+    assert!(cli.contains("pulsec.windows_x64.artifact_contract.v1"));
+    assert!(cli.contains("pulsec.pulseos.artifact_contract.v1"));
+    assert!(windows_scope.contains("TARGET_ARTIFACT_CONTRACT_SPLIT.md"));
+    assert!(ownership.contains("TARGET_ARTIFACT_CONTRACT_SPLIT.md"));
+    assert!(artifact.contains("Schema id:"));
+    assert!(artifact.contains("`pulsec.windows_x64.artifact_contract.v1`"));
+    assert!(artifact.contains("`pulsec.pulseos.artifact_contract.v1`"));
+    assert!(artifact.contains("## Windows x64 Adapter Artifact Contract"));
+    assert!(artifact.contains("## PulseOS Requested-Target Artifact Contract"));
+    assert!(artifact.contains("## What `artifact_contracts` Means In The Plan"));
+    assert!(artifact.contains("PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md"));
+    assert!(artifact.contains("`bin/<entry> + bin/launch.json`"));
+    assert!(adapters_mod.contains("TargetArtifactContract"));
+    assert!(adapters_mod.contains("resolve_active_adapter_artifact_contract("));
+    assert!(adapters_mod.contains("resolve_requested_target_artifact_contract("));
+    assert!(windows_mod.contains("windows_x64_artifact_contract("));
+    assert!(windows_mod.contains("pulsec.windows_x64.artifact_contract.v1"));
+    assert!(pulseos_mod.contains("pulseos_x64_artifact_contract("));
+    assert!(pulseos_mod.contains("pulsec.pulseos.artifact_contract.v1"));
+    assert!(pulseos_mod.contains("first-slice-loader-layout-published"));
+    assert!(pulseos_mod.contains("shared-request-collapses-to-first-slice-single-image-layout"));
+    assert!(plan_rendering.contains("render_artifact_contracts(target_id, output_mode)"));
+    assert!(plan_rendering.contains("  \\\"artifact_contracts\\\": {},\\n"));
+    assert!(plan_rendering.contains("\\\"active_adapter\\\": {},\\n"));
+    assert!(plan_rendering.contains("\\\"requested_target\\\": {}\\n"));
+}
+
+#[test]
+fn lock_rb_16_pulseos_startup_loader_publication_contract_and_handoff_resume_point_are_documented()
+{
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli command contract");
+    let runtime_service = fs::read_to_string(
+        root.join("docs")
+            .join("PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md"),
+    )
+    .expect("read pulseos runtime service abi slice");
+    let artifact = fs::read_to_string(root.join("docs").join("TARGET_ARTIFACT_CONTRACT_SPLIT.md"))
+        .expect("read target artifact contract split");
+    let startup = fs::read_to_string(
+        root.join("docs")
+            .join("PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md"),
+    )
+    .expect("read pulseos startup loader publication contract");
+    let adapters_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("mod.rs"),
+    )
+    .expect("read adapters mod");
+    let windows_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("windows_x64")
+            .join("mod.rs"),
+    )
+    .expect("read windows adapter mod");
+    let pulseos_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("pulseos_x64")
+            .join("mod.rs"),
+    )
+    .expect("read pulseos adapter mod");
+    let plan_rendering = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("plan_rendering.rs"),
+    )
+    .expect("read plan_rendering");
+
+    assert!(board.contains("| RB-16 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md"));
+    assert!(board.contains("| RB-G5 |"));
+    assert!(board.contains("Artifact/startup/loader contracts are explicit for the Windows x64 lane and the PulseOS lane"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-16` PulseOS startup/loader/publication contract"));
+    assert!(contract.contains("PulseOS Startup, Loader, and Publication Contract (`RB-16`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[PulseOS Startup, Loader, and Publication Contract]"));
+    assert!(cli.contains("startup_loader_contracts"));
+    assert!(cli.contains("pulsec.windows_x64.startup_loader_contract.v1"));
+    assert!(cli.contains("pulsec.pulseos.startup_loader_contract.v1"));
+    assert!(runtime_service.contains("PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md"));
+    assert!(artifact.contains("PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md"));
+    assert!(startup.contains("Schema ids:"));
+    assert!(startup.contains("`pulsec.windows_x64.startup_loader_contract.v1`"));
+    assert!(startup.contains("`pulsec.pulseos.startup_loader_contract.v1`"));
+    assert!(startup.contains("## Windows x64 Active Adapter Startup/Loader Contract"));
+    assert!(startup.contains("## PulseOS Requested-Target Startup/Loader Contract"));
+    assert!(startup.contains("## First-Slice Publication Layout"));
+    assert!(startup.contains("## What `startup_loader_contracts` Means In The Plan"));
+    assert!(startup.contains("`pulseos_start`"));
+    assert!(startup.contains("`bin/<entry> + bin/launch.json`"));
+    assert!(adapters_mod.contains("TargetStartupLoaderContract"));
+    assert!(adapters_mod.contains("resolve_active_adapter_startup_loader_contract("));
+    assert!(adapters_mod.contains("resolve_requested_target_startup_loader_contract("));
+    assert!(windows_mod.contains("windows_x64_startup_loader_contract("));
+    assert!(windows_mod.contains("pulsec.windows_x64.startup_loader_contract.v1"));
+    assert!(pulseos_mod.contains("pulseos_x64_startup_loader_contract("));
+    assert!(pulseos_mod.contains("pulsec.pulseos.startup_loader_contract.v1"));
+    assert!(pulseos_mod.contains("pulseos_start"));
+    assert!(pulseos_mod.contains("bin/launch.json"));
+    assert!(plan_rendering.contains("render_startup_loader_contracts(target_id, output_mode)"));
+    assert!(plan_rendering.contains("  \\\"startup_loader_contracts\\\": {},\\n"));
+    assert!(plan_rendering.contains("\\\"loader_manifest_schema\\\": {},\\n"));
+    assert!(plan_rendering.contains("\\\"loader_manifest_path\\\": {},\\n"));
+}
+
+#[test]
+fn lock_rb_17_pulseos_loading_proof_target_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli command contract");
+    let startup = fs::read_to_string(
+        root.join("docs")
+            .join("PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md"),
+    )
+    .expect("read pulseos startup contract");
+    let proof = fs::read_to_string(
+        root.join("docs")
+            .join("PULSEOS_EXECUTABLE_LOADING_PROOF_TARGET.md"),
+    )
+    .expect("read pulseos loading proof target");
+    let adapters_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("mod.rs"),
+    )
+    .expect("read adapters mod");
+    let pulseos_mod = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("adapters")
+            .join("pulseos_x64")
+            .join("mod.rs"),
+    )
+    .expect("read pulseos adapter mod");
+    let plan_rendering = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("analysis")
+            .join("plan_rendering.rs"),
+    )
+    .expect("read plan_rendering");
+
+    assert!(board.contains("| RB-17 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("PULSEOS_EXECUTABLE_LOADING_PROOF_TARGET.md"));
+    assert!(handoff.contains("`RB-18`"));
+    assert!(handoff.contains("`RB-17` PulseOS executable-loading proof target"));
+    assert!(contract.contains("PulseOS Executable-Loading Proof Target (`RB-17`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[PulseOS Executable-Loading Proof Target]"));
+    assert!(cli.contains("requested_target_executable_loading_proof_target"));
+    assert!(cli.contains("pulsec.pulseos.loading_proof_target.v1"));
+    assert!(startup.contains("PULSEOS_EXECUTABLE_LOADING_PROOF_TARGET.md"));
+    assert!(proof.contains("Schema id:"));
+    assert!(proof.contains("`pulsec.pulseos.loading_proof_target.v1`"));
+    assert!(proof.contains("## Required Published Artifacts"));
+    assert!(proof.contains("## Required Loader Capabilities"));
+    assert!(proof.contains("## Required Runtime Bootstrap Sequence"));
+    assert!(proof.contains("## Success Conditions"));
+    assert!(proof.contains("## Explicit Excluded Claims"));
+    assert!(proof
+        .contains("## What `requested_target_executable_loading_proof_target` Means In The Plan"));
+    assert!(proof.contains("`bin/<entry>`"));
+    assert!(proof.contains("`bin/launch.json`"));
+    assert!(proof.contains("`pulseos_start`"));
+    assert!(adapters_mod.contains("TargetExecutableLoadingProofTarget"));
+    assert!(adapters_mod.contains("resolve_requested_target_executable_loading_proof_target("));
+    assert!(pulseos_mod.contains("pulseos_x64_executable_loading_proof_target("));
+    assert!(pulseos_mod.contains("pulsec.pulseos.loading_proof_target.v1"));
+    assert!(pulseos_mod.contains("proof-contract-defined-execution-deferred"));
+    assert!(plan_rendering.contains("render_requested_target_executable_loading_proof_target("));
+    assert!(plan_rendering
+        .contains("  \\\"requested_target_executable_loading_proof_target\\\": {},\\n"));
+    assert!(plan_rendering.contains("\\\"required_loader_manifest_path\\\": \\\"{}\\\",\\n"));
+}
+
+#[test]
+fn lock_rb_18_validation_layering_is_documented_and_test_homes_are_labeled() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let parity = fs::read_to_string(root.join("docs").join("E3_PARITY_EVIDENCE_STRATEGY.md"))
+        .expect("read parity evidence strategy");
+    let layering = fs::read_to_string(root.join("docs").join("REBASE_VALIDATION_LAYERING.md"))
+        .expect("read validation layering doc");
+    let stage_locks_d = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("tests")
+            .join("stage_locks_d.rs"),
+    )
+    .expect("read stage_locks_d");
+    let phase_d_cli = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("tests")
+            .join("phase_d_cli.rs"),
+    )
+    .expect("read phase_d_cli");
+    let fixture_projects = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("tests")
+            .join("fixture_projects.rs"),
+    )
+    .expect("read fixture_projects");
+    let e3_parity = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("tests")
+            .join("e3_parity.rs"),
+    )
+    .expect("read e3_parity");
+    let stage_locks_c2 = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("tests")
+            .join("stage_locks_c2.rs"),
+    )
+    .expect("read stage_locks_c2");
+    let stage_locks_c3 = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("tests")
+            .join("stage_locks_c3.rs"),
+    )
+    .expect("read stage_locks_c3");
+    let backend_tests = fs::read_to_string(
+        root.join("crates")
+            .join("pulsec-cli")
+            .join("src")
+            .join("backend")
+            .join("tests")
+            .join("mod.rs"),
+    )
+    .expect("read backend tests mod");
+
+    assert!(board.contains("| RB-18 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("REBASE_VALIDATION_LAYERING.md"));
+    assert!(handoff.contains("`RB-21`"));
+    assert!(handoff.contains("`RB-18` rebase validation layering"));
+    assert!(contract.contains("Validation Layering (`RB-18`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Rebase Validation Layering]"));
+    assert!(parity.contains("Windows x64 adapter evidence only"));
+    assert!(parity.contains("It does not prove PulseOS or Linux parity by proxy"));
+    assert!(layering.contains("## Layer Rules"));
+    assert!(layering.contains("### Target-Neutral Compiler and Project Validation"));
+    assert!(layering.contains("### Cross-Cutting Contract Locks"));
+    assert!(layering.contains("### Windows x64 Adapter Validation"));
+    assert!(layering.contains("### PulseOS Requested-Target Contract / Proof Validation"));
+    assert!(layering.contains("### Linux Expansion Slot"));
+    assert!(layering.contains("fixture_projects.rs"));
+    assert!(layering.contains("A passing Windows x64 executable/parity test is never proof of PulseOS or Linux execution."));
+    assert!(layering.contains("A passing PulseOS requested-target plan/contract test is never proof of PulseOS execution."));
+    assert!(stage_locks_d
+        .contains("// Target-neutral CLI, manifest, scaffold, and build-plan surface locks."));
+    assert!(phase_d_cli.contains(
+        "// Target-neutral project lifecycle/publication coverage. This uses the current"
+    ));
+    assert!(fixture_projects.contains(
+        "// Mixed executable corpus: portable language/runtime behavior lives beside the"
+    ));
+    assert!(e3_parity.contains("// Windows x64 host/bootstrap fat-vs-shared parity suite."));
+    assert!(stage_locks_c2.contains("// Windows x64 host/bootstrap runtime and ARC lock suite."));
+    assert!(stage_locks_c3
+        .contains("// Windows x64 host/bootstrap object-model and dispatch lock suite."));
+    assert!(backend_tests
+        .contains("// Backend contract suite: target-neutral and requested-target contract"));
+}
+
+#[test]
+fn lock_rb_19_windows_scope_freeze_policy_and_handoff_resume_point_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let cli = fs::read_to_string(root.join("docs").join("CLI_COMMAND_CONTRACT.md"))
+        .expect("read cli command contract");
+    let guide =
+        fs::read_to_string(root.join("docs").join("D_CLI_UX_GUIDE.md")).expect("read cli guide");
+    let scope = fs::read_to_string(root.join("docs").join("WINDOWS_X64_ADAPTER_SCOPE.md"))
+        .expect("read windows x64 adapter scope");
+    let matrix = fs::read_to_string(root.join("docs").join("WINDOWS_TOOLCHAIN_MATRIX.md"))
+        .expect("read windows toolchain matrix");
+    let removal = fs::read_to_string(root.join("docs").join("COMPILER_PACKAGING_REMOVAL.md"))
+        .expect("read compiler packaging removal");
+    let policy = fs::read_to_string(root.join("docs").join("WINDOWS_X64_SCOPE_FREEZE_POLICY.md"))
+        .expect("read windows scope freeze policy");
+
+    assert!(board.contains("| RB-19 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("WINDOWS_X64_SCOPE_FREEZE_POLICY.md"));
+    assert!(handoff.contains("`RB-21`"));
+    assert!(handoff.contains("`RB-19` Windows x64 scope / freeze policy"));
+    assert!(contract.contains("Windows Scope / Freeze Policy (`RB-19`)"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Windows x64 Scope / Freeze Policy]"));
+    assert!(cli.contains("Windows freeze note (`RB-19`)"));
+    assert!(cli.contains("the only retained Windows-only top-level CLI flags"));
+    assert!(guide.contains("Windows freeze note (`RB-19`)"));
+    assert!(
+        guide.contains("license to add installer/signing/productization flags back into `pulsec`")
+    );
+    assert!(scope.contains("WINDOWS_X64_SCOPE_FREEZE_POLICY.md"));
+    assert!(matrix.contains("Rebase note (`RB-19`)"));
+    assert!(matrix.contains("does not authorize new Windows-only compiler scope"));
+    assert!(matrix.contains(
+        "the only retained Windows-only top-level CLI controls are `--linker` and `--assembler`"
+    ));
+    assert!(removal.contains("WINDOWS_X64_SCOPE_FREEZE_POLICY.md"));
+    assert!(policy.contains("## Retained Live Windows x64 Scope"));
+    assert!(policy.contains("## Frozen / Deferred Windows-Specific Scope"));
+    assert!(policy.contains("## No-Reentry Rules"));
+    assert!(policy.contains("## Growth Rules For The Retained Windows Lane"));
+    assert!(policy.contains("`WIN-CLI-02`"));
+    assert!(policy.contains("`WIN-TC-01`"));
+    assert!(policy.contains("`WIN-PKG-01`"));
+    assert!(policy.contains("`WIN-SCF-02`"));
+    assert!(policy.contains("restoring `pulsec package`"));
+    assert!(policy.contains("new MSI-specific manifest keys"));
+    assert!(policy.contains("better MASM failure diagnostics"));
+}
+
+#[test]
+fn lock_rb_20_planning_spine_alignment_and_closed_rebase_state_are_documented() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let contract = fs::read_to_string(root.join("docs").join("NATIVE_BACKEND_CONTRACT.md"))
+        .expect("read backend contract");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let policy = fs::read_to_string(root.join("docs").join("REBASE_SCOPE_AND_RETURN_POLICY.md"))
+        .expect("read scope and return policy");
+    let alignment =
+        fs::read_to_string(root.join("docs").join("REBASE_PLANNING_SPINE_ALIGNMENT.md"))
+            .expect("read planning spine alignment");
+
+    assert!(board.contains("| RB-20 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("REBASE_PLANNING_SPINE_ALIGNMENT.md"));
+    assert!(handoff.contains("`RB-21`"));
+    assert!(handoff.contains("`RB-20` planning spine alignment"));
+    assert!(contract.contains("RB-20"));
+    assert!(contract.contains("REBASE_PLANNING_SPINE_ALIGNMENT.md"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(roadmap.contains("[Rebase Planning Spine Alignment]"));
+    assert!(policy.contains("Closure note:"));
+    assert!(policy.contains("control now returns to `F1_TASK_BOARD` at `F1-51`"));
+    assert!(alignment.contains("## Live Planning Spine"));
+    assert!(alignment.contains("## Current Active Truth"));
+    assert!(alignment.contains("active execution board: `F1_TASK_BOARD`"));
+    assert!(alignment.contains("active resume point: `F1-51`"));
+    assert!(alignment.contains("the rebase closure package is published, reviewed, and closed"));
+}
+
+#[test]
+fn lock_rb_21_closure_package_is_published_and_f1_handoff_is_activated() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board = fs::read_to_string(root.join("docs").join("REBASE_TAKS_BOARD.md"))
+        .expect("read rebase board");
+    let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
+        .expect("read phase f handoff");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+    let checklist = fs::read_to_string(root.join("docs").join("REBASE_CLOSURE_CHECKLIST.md"))
+        .expect("read rebase closure checklist");
+    let evidence = fs::read_to_string(root.join("docs").join("REBASE_EVIDENCE_INDEX.md"))
+        .expect("read rebase evidence index");
+
+    assert!(board.contains("| RB-21 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("REBASE_CLOSURE_CHECKLIST.md"));
+    assert!(board.contains("REBASE_EVIDENCE_INDEX.md"));
+    assert!(board.contains("control now returns explicitly to `F1_TASK_BOARD` at `F1-51`"));
+    assert!(board.contains("| RB-G6 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(handoff.contains("`RB-21` closure package publication"));
+    assert!(handoff.contains("the requested review has cleared and the rebase is now closed"));
+    assert!(handoff.contains("`F1-51` is now the active return point"));
+    assert!(roadmap.contains("the rebase board is now closed through `RB-21`"));
+    assert!(checklist.contains("Status: Closed"));
+    assert!(checklist.contains("## Review Gate"));
+    assert!(checklist.contains("the explicit handoff back to `F1_TASK_BOARD` is now active"));
+    assert!(checklist.contains("first return point: `F1-51`"));
+    assert!(evidence.contains("Status: Closed"));
+    assert!(evidence.contains("## Review Gate"));
+    assert!(evidence.contains("The next active board is now:"));
+    assert!(evidence.contains("active resume point: `F1-51`"));
 }
 
 #[test]
 fn lock_f1_43_wrapper_surface_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
@@ -1525,7 +3040,9 @@ fn lock_f1_43_wrapper_surface_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_44_unsigned_policy_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
@@ -1565,7 +3082,9 @@ fn lock_f1_44_unsigned_policy_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_45_system_process_surface_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
@@ -1583,7 +3102,6 @@ fn lock_f1_45_system_process_surface_is_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("System.md"),
@@ -1616,7 +3134,9 @@ fn lock_f1_45_system_process_surface_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
@@ -1632,7 +3152,6 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("Runnable.md"),
@@ -1642,7 +3161,6 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("Appendable.md"),
@@ -1652,7 +3170,6 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("CharSequence.md"),
@@ -1662,7 +3179,6 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("String.md"),
@@ -1672,7 +3188,6 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("StringBuilder.md"),
@@ -1682,7 +3197,6 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("io")
             .join("InputStream.md"),
@@ -1692,7 +3206,6 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("io")
             .join("OutputStream.md"),
@@ -1712,22 +3225,25 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
     assert!(builder_doc.contains("public String subSequence(int beginIndex, int endIndex)"));
     assert!(input_doc.contains("implements AutoCloseable"));
     assert!(output_doc.contains("implements AutoCloseable"));
-    assert!(enums_doc.contains("com.pulse.lang.Enum"));
+    assert!(enums_doc.contains("pulse.lang.Enum"));
     assert!(enums_doc.contains("bootstrap base contract"));
     assert!(board.contains("| F1-47 |"));
-    assert!(board.contains("| F1-47 | Add missing foundational `com.pulse.lang` types"));
+    assert!(board.contains("| F1-47 | Add missing foundational `pulse.lang` types"));
     assert!(board.contains("| 2026-03-14 | Done (Locked) |"));
     assert!(board.contains("Runnable"));
     assert!(board.contains("Appendable"));
     assert!(board.contains("CharSequence"));
-    assert!(handoff.contains("`F1-47` foundational `com.pulse.lang` types"));
+    assert!(handoff.contains("`F1-47` foundational `pulse.lang` types"));
     assert!(handoff.contains("`Runnable`, `Appendable`, and `CharSequence`"));
-    assert!(handoff.contains("fat and shared output modes now both pass the foundational interface flow"));
+    assert!(handoff
+        .contains("fat and shared output modes now both pass the foundational interface flow"));
 }
 
 #[test]
 fn lock_f1_48_collection_inventory_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
@@ -1747,7 +3263,9 @@ fn lock_f1_48_collection_inventory_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_49_collection_strategy_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
@@ -1760,7 +3278,9 @@ fn lock_f1_49_collection_strategy_is_documented_and_board_locked() {
     assert!(strategy.contains("## Stage 1: Current Bootstrap Surface"));
     assert!(strategy.contains("## Stage 2: Transitional Generic Public Contracts"));
     assert!(strategy.contains("## Stage 3: Java-Close Collection Shape"));
-    assert!(strategy.contains("`F1-68`"));
+    assert!(strategy.contains("`F1-108`"));
+    assert!(strategy.contains("`F1-109`"));
+    assert!(strategy.contains("`F1-110`"));
     assert!(handoff.contains("`F1-49` staged collection strategy before and after generics"));
     assert!(handoff.contains("generic collection contracts are the intended public direction"));
 }
@@ -1774,7 +3294,7 @@ fn lock_f1_09_f1_13_and_f1_14_cli_baseline_is_char_varargs_and_explicit_nested_t
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Char;
+        import pulse.lang.Char;
 
         class Main {
             public static void main(String... args) {
@@ -1809,9 +3329,11 @@ fn lock_f1_09_f1_13_and_f1_14_cli_baseline_is_char_varargs_and_explicit_nested_t
 
 #[test]
 fn lock_f1_12_and_f1_30_annotation_baseline_is_documented_and_compiler_owned() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let doc = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1848,7 +3370,7 @@ fn lock_f1_12_and_f1_30_cli_check_enforces_override_notnull_and_test_baseline() 
         &ok,
         r#"
         package app.core;
-        import com.pulse.lang.String;
+        import pulse.lang.String;
 
         class Base {
             public String value() {
@@ -1880,7 +3402,7 @@ fn lock_f1_12_and_f1_30_cli_check_enforces_override_notnull_and_test_baseline() 
         &not_null_fail,
         r#"
         package app.core;
-        import com.pulse.lang.String;
+        import pulse.lang.String;
 
         class NotNullFail {
             @NotNull
@@ -1921,9 +3443,11 @@ fn lock_f1_12_and_f1_30_cli_check_enforces_override_notnull_and_test_baseline() 
 
 #[test]
 fn lock_f1_15_throw_baseline_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let compiler_doc = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1940,7 +3464,7 @@ fn lock_f1_15_throw_baseline_is_documented_and_board_locked() {
     .expect("read runtime-backed exceptions doc");
 
     assert!(compiler_doc.contains("## `throw`"));
-    assert!(compiler_doc.contains("must typecheck as `com.pulse.lang.Throwable`"));
+    assert!(compiler_doc.contains("must typecheck as `pulse.lang.Throwable`"));
     assert!(compiler_doc.contains("real exception transfer in IR/backend/runtime"));
     assert!(compiler_doc.contains("`try`"));
     assert!(runtime_doc.contains("Current `throw` Runtime Contract"));
@@ -1952,9 +3476,11 @@ fn lock_f1_15_throw_baseline_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_16_try_catch_finally_baseline_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let compiler_doc = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1982,9 +3508,11 @@ fn lock_f1_16_try_catch_finally_baseline_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_17_try_with_resources_policy_is_documented_and_fenced() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let compiler_doc = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -1996,18 +3524,16 @@ fn lock_f1_17_try_with_resources_policy_is_documented_and_fenced() {
         .expect("read F1 support policy");
 
     assert!(compiler_doc.contains("## `try-with-resources`"));
-    assert!(compiler_doc.contains("explicitly out of scope for the shipped F1 syntax baseline"));
-    assert!(compiler_doc.contains("deterministic diagnostic"));
-    assert!(compiler_doc.contains("com.pulse.lang.AutoCloseable"));
-    assert!(compiler_doc.contains("F1-47"));
-    assert!(compiler_doc.contains("F1-57"));
-    assert!(policy.contains("try-with-resources for the current F1 baseline"));
+    assert!(compiler_doc.contains("declaration-form resource statements are supported"));
+    assert!(compiler_doc.contains("pulse.lang.AutoCloseable"));
+    assert!(compiler_doc.contains("resources close in reverse declaration order"));
+    assert!(!policy.contains("try-with-resources for the current F1 baseline"));
     assert!(board.contains("| F1-17 |"));
     assert!(board.contains("Done (Locked)"));
 }
 
 #[test]
-fn lock_f1_17_cli_check_rejects_try_with_resources_baseline() {
+fn lock_f1_17_cli_check_accepts_try_with_resources_baseline() {
     let root = unique_temp_root();
     let src_root = root.join("src");
     let entry = src_root.join("app/core/Main.pulse");
@@ -2015,7 +3541,7 @@ fn lock_f1_17_cli_check_rejects_try_with_resources_baseline() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.io.InputStream;
+        import pulse.io.InputStream;
 
         class Main {
             public static void main() {
@@ -2024,18 +3550,16 @@ fn lock_f1_17_cli_check_rejects_try_with_resources_baseline() {
             }
         }"#,
     );
-    assert_check_fails(
-        &entry,
-        &src_root,
-        "Try-with-resources is not supported in the current F1 baseline",
-    );
+    assert_check_ok(&entry, &src_root);
 }
 
 #[test]
 fn lock_f1_18_foreach_baseline_is_documented_and_board_staged() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let doc = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -2045,20 +3569,24 @@ fn lock_f1_18_foreach_baseline_is_documented_and_board_staged() {
     .expect("read statements and control flow doc");
 
     assert!(doc.contains("## `foreach`"));
-    assert!(doc.contains("com.pulse.lang.Iterable"));
-    assert!(doc.contains("com.pulse.collections.Array"));
+    assert!(doc.contains("pulse.lang.Iterable"));
+    assert!(doc.contains("pulse.collections.Array"));
     assert!(doc.contains("`for (T value : nativeArrayExpr) { ... }` works for native array types"));
-    assert!(doc.contains("native-array foreach lowers through array `length` plus native array subscript reads"));
-    assert!(doc.contains("F1-53"));
+    assert!(doc.contains(
+        "native-array foreach lowers through array `length` plus native array subscript reads"
+    ));
+    assert!(doc.contains("selected F1 foreach/iteration baseline is now locked"));
     assert!(board.contains("| F1-18 |"));
-    assert!(board.contains("In Progress"));
+    assert!(board.contains("Done (Locked)"));
 }
 
 #[test]
 fn lock_f1_19_assert_baseline_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let doc = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -2068,7 +3596,7 @@ fn lock_f1_19_assert_baseline_is_documented_and_board_locked() {
     .expect("read statements and control flow doc");
 
     assert!(doc.contains("## `assert`"));
-    assert!(doc.contains("com.pulse.lang.AssertionError"));
+    assert!(doc.contains("pulse.lang.AssertionError"));
     assert!(doc.contains("condition must typecheck as `boolean`"));
     assert!(doc.contains("optional message must currently typecheck as `String`"));
     assert!(doc.contains("AssertionError: <message>"));
@@ -2078,9 +3606,11 @@ fn lock_f1_19_assert_baseline_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_20_synchronized_statement_policy_is_documented_and_board_staged() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
-    let board = fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md"))
-        .expect("read F1 task board");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
     let doc = fs::read_to_string(
         root.join("docs")
             .join("language")
@@ -2127,7 +3657,9 @@ fn lock_f1_20_cli_check_rejects_synchronized_statement_baseline() {
 
 #[test]
 fn lock_f1_21_ternary_baseline_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let doc = fs::read_to_string(
@@ -2148,7 +3680,9 @@ fn lock_f1_21_ternary_baseline_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_22_cast_baseline_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2178,7 +3712,9 @@ fn lock_f1_22_cast_baseline_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_36_lowering_codegen_slice_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let types_doc = fs::read_to_string(
@@ -2209,7 +3745,9 @@ fn lock_f1_36_lowering_codegen_slice_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_37_runtime_abi_growth_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let abi_doc = fs::read_to_string(root.join("docs").join("RUNTIME_INTRINSICS_ABI.md"))
@@ -2227,7 +3765,9 @@ fn lock_f1_37_runtime_abi_growth_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_38_fat_shared_compatibility_coverage_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let parity_guide = fs::read_to_string(root.join("docs").join("E3_PARITY_GUIDE.md"))
@@ -2236,10 +3776,14 @@ fn lock_f1_38_fat_shared_compatibility_coverage_is_documented_and_board_locked()
         .expect("read parity evidence index");
 
     assert!(parity_guide.contains("fat and shared native output modes"));
-    assert!(evidence_index.contains("cli_build_executes_same_fixture_corpus_with_side_by_side_fat_shared_parity"));
-    assert!(evidence_index.contains("cli_build_executes_runtime_heavy_app_with_side_by_side_fat_shared_parity"));
-    assert!(evidence_index.contains("cli_build_executes_strict_stress_soak_with_repeated_fat_shared_parity"));
-    assert!(evidence_index.contains("cli_build_executes_failure_paths_with_side_by_side_fat_shared_parity"));
+    assert!(evidence_index
+        .contains("cli_build_executes_same_fixture_corpus_with_side_by_side_fat_shared_parity"));
+    assert!(evidence_index
+        .contains("cli_build_executes_runtime_heavy_app_with_side_by_side_fat_shared_parity"));
+    assert!(evidence_index
+        .contains("cli_build_executes_strict_stress_soak_with_repeated_fat_shared_parity"));
+    assert!(evidence_index
+        .contains("cli_build_executes_failure_paths_with_side_by_side_fat_shared_parity"));
     assert!(board.contains("| F1-38 |"));
     assert!(board.contains("Done (Locked)"));
     assert!(board.contains("strict stress soak parity"));
@@ -2247,14 +3791,15 @@ fn lock_f1_38_fat_shared_compatibility_coverage_is_documented_and_board_locked()
 
 #[test]
 fn lock_f1_39_object_identity_surface_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let object_doc = fs::read_to_string(
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("Object.md"),
@@ -2272,7 +3817,9 @@ fn lock_f1_39_object_identity_surface_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_40_class_reflection_lite_surface_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let runtime_doc = fs::read_to_string(
@@ -2286,7 +3833,6 @@ fn lock_f1_40_class_reflection_lite_surface_is_documented_and_board_locked() {
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("Class.md"),
@@ -2307,14 +3853,15 @@ fn lock_f1_40_class_reflection_lite_surface_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_41_string_surface_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let string_doc = fs::read_to_string(
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("String.md"),
@@ -2334,7 +3881,11 @@ fn lock_f1_41_string_surface_is_documented_and_board_locked() {
         "public String trim()",
         "public static String valueOf(Object value)",
     ] {
-        assert!(string_doc.contains(needle), "String doc missing '{}'", needle);
+        assert!(
+            string_doc.contains(needle),
+            "String doc missing '{}'",
+            needle
+        );
     }
 
     assert!(board.contains("| F1-41 |"));
@@ -2344,14 +3895,15 @@ fn lock_f1_41_string_surface_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_42_stringbuilder_surface_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let builder_doc = fs::read_to_string(
         root.join("docs")
             .join("language")
             .join("stdlib")
-            .join("com")
             .join("pulse")
             .join("lang")
             .join("StringBuilder.md"),
@@ -2379,7 +3931,9 @@ fn lock_f1_42_stringbuilder_surface_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_23_native_array_creation_policy_is_documented_and_board_staged() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2409,14 +3963,21 @@ fn lock_f1_23_native_array_creation_policy_is_documented_and_board_staged() {
     assert!(compiler_doc.contains("`new float[n]`"));
     assert!(compiler_doc.contains("`new double[n]`"));
     assert!(compiler_doc.contains("`new Box[n]`"));
-    assert!(compiler_doc.contains("one-dimensional initializer expressions such as `new int[] { 1, 2 }`"));
-    assert!(compiler_doc.contains("one-dimensional floating-point initializers such as `new float[] { 1.25f, -2.5f }`"));
-    assert!(compiler_doc.contains("nested multidimensional initializer expressions such as `new int[][] { {1, 2}, {3, 4} }`"));
+    assert!(compiler_doc
+        .contains("one-dimensional initializer expressions such as `new int[] { 1, 2 }`"));
+    assert!(compiler_doc.contains(
+        "one-dimensional floating-point initializers such as `new float[] { 1.25f, -2.5f }`"
+    ));
+    assert!(compiler_doc.contains(
+        "nested multidimensional initializer expressions such as `new int[][] { {1, 2}, {3, 4} }`"
+    ));
     assert!(compiler_doc.contains("native subscript reads such as `values[1]`"));
     assert!(compiler_doc.contains("native subscript writes such as `values[0] = 7`"));
     assert!(compiler_doc.contains("multidimensional creation such as `new int[2][3]`"));
     assert!(runtime_doc.contains("Current runtime-backed native array baseline"));
-    assert!(runtime_doc.contains("primitive arrays and reference arrays lower through the runtime array allocator"));
+    assert!(runtime_doc.contains(
+        "primitive arrays and reference arrays lower through the runtime array allocator"
+    ));
     assert!(runtime_doc.contains("one-dimensional initializer expressions lower by allocating the array and filling the int lane, qword scalar lane, or reference lane at runtime"));
     assert!(runtime_doc.contains("multidimensional native array creation lowers by recursively composing nested runtime arrays through the reference lane"));
     assert!(runtime_doc.contains("nested multidimensional initializer expressions lower by recursively constructing nested array values and storing them through the primitive or reference lane as appropriate"));
@@ -2428,7 +3989,9 @@ fn lock_f1_23_native_array_creation_policy_is_documented_and_board_staged() {
 
 #[test]
 fn lock_f1_26_f1_28_numeric_promotion_slice_is_documented_and_board_staged() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2441,10 +4004,13 @@ fn lock_f1_26_f1_28_numeric_promotion_slice_is_documented_and_board_staged() {
 
     assert!(compiler_doc.contains("floating arithmetic and comparison are now executable"));
     assert!(compiler_doc.contains("lowering now materializes known-destination numeric widening"));
-    assert!(compiler_doc.contains("mixed signed/unsigned widening now follows the current executable Pulse slice"));
+    assert!(compiler_doc
+        .contains("mixed signed/unsigned widening now follows the current executable Pulse slice"));
     assert!(compiler_doc.contains("call-site and constructor-side implicit numeric widening now execute through the same runtime-backed coercion path"));
     assert!(compiler_doc.contains("varargs applicability is now real for the current baseline"));
-    assert!(compiler_doc.contains("casts from integral primitives to `float` / `double` now materialize real floating values"));
+    assert!(compiler_doc.contains(
+        "casts from integral primitives to `float` / `double` now materialize real floating values"
+    ));
     assert!(compiler_doc.contains("explicit `double` -> `float` casts now round"));
     assert!(board.contains("| F1-26 |"));
     assert!(board.contains("Done (Locked)"));
@@ -2457,7 +4023,9 @@ fn lock_f1_26_f1_28_numeric_promotion_slice_is_documented_and_board_staged() {
 
 #[test]
 fn lock_f1_27_bitwise_shift_slice_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2469,8 +4037,12 @@ fn lock_f1_27_bitwise_shift_slice_is_documented_and_board_locked() {
     .expect("read types and conversions doc");
 
     assert!(compiler_doc.contains("bitwise and shift operators are now executable"));
-    assert!(compiler_doc.contains("compound assignment forms `&=`, `|=`, `^=`, `<<=`, `>>=`, `>>>=`"));
-    assert!(compiler_doc.contains("boolean `&`, `|`, and `^` now use real non-short-circuit Java-like boolean semantics"));
+    assert!(
+        compiler_doc.contains("compound assignment forms `&=`, `|=`, `^=`, `<<=`, `>>=`, `>>>=`")
+    );
+    assert!(compiler_doc.contains(
+        "boolean `&`, `|`, and `^` now use real non-short-circuit Java-like boolean semantics"
+    ));
     assert!(compiler_doc.contains("`&&` and `||` now lower through lazy conditional execution"));
     assert!(board.contains("| F1-27 |"));
     assert!(board.contains("Done (Locked)"));
@@ -2479,7 +4051,9 @@ fn lock_f1_27_bitwise_shift_slice_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_100_local_var_slice_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2502,7 +4076,9 @@ fn lock_f1_100_local_var_slice_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_99_switch_expression_policy_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2523,7 +4099,9 @@ fn lock_f1_99_switch_expression_policy_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_29_checked_exception_model_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2543,14 +4121,19 @@ fn lock_f1_29_checked_exception_model_is_documented_and_board_locked() {
 
     assert!(compiler_doc.contains("methods and constructors can declare `throws TypeA, TypeB`"));
     assert!(compiler_doc.contains("checked versus unchecked exception typing is enforced"));
-    assert!(compiler_doc.contains("direct `throw` of a checked exception must be caught or declared"));
-    assert!(compiler_doc.contains("overriding methods and interface implementations cannot widen checked throws"));
+    assert!(
+        compiler_doc.contains("direct `throw` of a checked exception must be caught or declared")
+    );
+    assert!(compiler_doc
+        .contains("overriding methods and interface implementations cannot widen checked throws"));
     assert!(compiler_doc.contains("Current Throwable Detail Surface"));
     assert!(compiler_doc.contains("cause chaining"));
     assert!(runtime_doc.contains("`throws` clauses are compile-time contracts today"));
-    assert!(runtime_doc.contains("checked exceptions from calls/constructors are enforced by semantic analysis"));
+    assert!(runtime_doc
+        .contains("checked exceptions from calls/constructors are enforced by semantic analysis"));
     assert!(runtime_doc.contains("cross-method Pulse-throw propagation"));
-    assert!(runtime_doc.contains("uncaught throwable output now includes stdlib-owned cause-chain text"));
+    assert!(runtime_doc
+        .contains("uncaught throwable output now includes stdlib-owned cause-chain text"));
     assert!(board.contains("| F1-29 |"));
     assert!(board.contains("In Progress"));
     assert!(board.contains("runtime cross-method Pulse-throw unwind now works"));
@@ -2559,7 +4142,9 @@ fn lock_f1_29_checked_exception_model_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_46_throwable_hierarchy_is_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2589,7 +4174,9 @@ fn lock_f1_46_throwable_hierarchy_is_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_101_exception_diagnostics_are_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2618,7 +4205,9 @@ fn lock_f1_101_exception_diagnostics_are_documented_and_board_locked() {
 
 #[test]
 fn lock_f1_34_and_f1_35_exception_ir_and_runtime_are_documented_and_board_locked() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let compiler_doc = fs::read_to_string(
@@ -2646,7 +4235,9 @@ fn lock_f1_34_and_f1_35_exception_ir_and_runtime_are_documented_and_board_locked
 
 #[test]
 fn lock_f1_24_lambda_policy_is_documented_and_board_staged() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let doc = fs::read_to_string(
@@ -2690,7 +4281,9 @@ fn lock_f1_24_cli_check_rejects_lambda_baseline() {
 
 #[test]
 fn lock_f1_25_method_reference_policy_is_documented_and_board_staged() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
     let board =
         fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read task board");
     let doc = fs::read_to_string(
@@ -2733,17 +4326,23 @@ fn lock_f1_25_cli_check_rejects_method_reference_baseline() {
 
 #[test]
 fn lock_m3_18_closure_docs_exist() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("docs");
     let idx = fs::read_to_string(root.join("STDLIB_API_INDEX.md")).expect("read stdlib index");
     let closure =
         fs::read_to_string(root.join("C1_5_CLOSURE_CHECKLIST.md")).expect("read closure checklist");
-    assert!(idx.contains("com.pulse.collections"));
+    assert!(idx.contains("pulse.collections"));
     assert!(closure.contains("Closure Commands"));
 }
 
 #[test]
 fn lock_e3_01_parity_support_matrix_scopes_supported_vs_intentional_differences() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("docs");
     let matrix = fs::read_to_string(root.join("E3_PARITY_SUPPORT_MATRIX.md"))
         .expect("read E3 parity support matrix");
     assert!(matrix.contains("runtime_mix"));
@@ -2757,7 +4356,10 @@ fn lock_e3_01_parity_support_matrix_scopes_supported_vs_intentional_differences(
 
 #[test]
 fn lock_e3_02_and_e3_03_cli_parity_semantics_and_evidence_strategy_are_documented() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("..").join("docs");
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..")
+        .join("docs");
     let cli = fs::read_to_string(root.join("CLI_COMMAND_CONTRACT.md"))
         .expect("read CLI command contract");
     let strategy = fs::read_to_string(root.join("E3_PARITY_EVIDENCE_STRATEGY.md"))
@@ -2770,14 +4372,22 @@ fn lock_e3_02_and_e3_03_cli_parity_semantics_and_evidence_strategy_are_documente
     assert!(strategy.contains("runtime_mix"));
     assert!(strategy.contains("object_interface_mix"));
     assert!(strategy.contains("strict_stress_soak"));
-    assert!(strategy.contains("Packaging / Install Comparison Rules"));
+    assert!(strategy.contains("Build / Publication Comparison Rules"));
 }
 
 #[test]
 fn gate_m3_g1_fixture_project_coverage() {
     assert_fixture_build_and_run("runtime_mix", "app/runtime/Main.pulse", "runtime_mix_ok\n");
-    assert_fixture_build_and_run("object_interface_mix", "app/mixed/Main.pulse", "object_interface_mix_ok\n");
-    assert_fixture_build_and_run("strict_stress_soak", "strict_stress_soak/Main.pulse", "soak_ok\n40415\n");
+    assert_fixture_build_and_run(
+        "object_interface_mix",
+        "app/mixed/Main.pulse",
+        "object_interface_mix_ok\n",
+    );
+    assert_fixture_build_and_run(
+        "strict_stress_soak",
+        "strict_stress_soak/Main.pulse",
+        "soak_ok\n40415\n",
+    );
 }
 
 #[test]
@@ -2805,11 +4415,89 @@ fn gate_m3_g3_io_stream_behavior_coverage() {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
-    let plan = fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
-    assert!(plan.contains("com.pulse.io.File.readAllText"));
+    let plan =
+        fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
+    assert!(plan.contains("pulse.io.File.readAllText"));
 }
 
 #[test]
 fn gate_m3_g4_time_math_determinism_coverage() {
     assert_fixture_build_and_run("runtime_mix", "app/runtime/Main.pulse", "runtime_mix_ok\n");
 }
+
+#[test]
+fn lock_f1_58_io_text_and_encoding_policy_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let runtime_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("runtime-backed")
+            .join("io-text-and-encoding.md"),
+    )
+    .expect("read runtime-backed io encoding doc");
+
+    assert!(runtime_doc.contains("PulseCode currently ships a text-first IO model"));
+    assert!(runtime_doc.contains("operate on `String` payloads, not byte buffers"));
+    assert!(runtime_doc.contains("there is no user-selectable charset API"));
+    assert!(runtime_doc.contains("`readLines()` and `InputStream.readLine()` split on `\\n`"));
+    assert!(runtime_doc.contains("`\\r\\n` is treated as one logical line ending"));
+    assert!(runtime_doc.contains("raw binary streams"));
+    assert!(board.contains("| F1-58 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("text-first and line-oriented over `String` payloads"));
+}
+
+#[test]
+fn lock_f1_59_path_and_file_metadata_baseline_is_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let path_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("pulse")
+            .join("io")
+            .join("Path.md"),
+    )
+    .expect("read Path stdlib doc");
+    let file_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("pulse")
+            .join("io")
+            .join("File.md"),
+    )
+    .expect("read File stdlib doc");
+    let files_doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("stdlib")
+            .join("pulse")
+            .join("io")
+            .join("Files.md"),
+    )
+    .expect("read Files stdlib doc");
+
+    assert!(path_doc.contains("public static String combine(String left, String right)"));
+    assert!(path_doc.contains("public static String resolve(String parent, String child)"));
+    assert!(path_doc.contains("public static String fileName(String value)"));
+    assert!(path_doc.contains("public static String commonParent(String left, String right)"));
+    assert!(file_doc.contains("public static boolean exists(String path)"));
+    assert!(file_doc.contains("public static boolean isFile(String path)"));
+    assert!(file_doc.contains("public static boolean isDirectory(String path)"));
+    assert!(file_doc.contains("public static long lastModified(String path)"));
+    assert!(files_doc.contains("public static boolean exists(String path)"));
+    assert!(files_doc.contains("public static boolean isDirectory(String path)"));
+    assert!(board.contains("| F1-59 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("selected path/file metadata and utility baseline is already real and fixture-validated"));
+}
+

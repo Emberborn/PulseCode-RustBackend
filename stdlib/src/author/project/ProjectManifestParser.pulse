@@ -1,0 +1,539 @@
+package author.project;
+
+import author.build.BuildConfig;
+import author.build.BuildLayout;
+import author.toolchain.ToolchainConfig;
+import pulse.collections.ArrayList;
+import pulse.collections.List;
+import pulse.io.Path;
+import pulse.lang.String;
+import pulse.util.Objects;
+import pulse.util.TextCursor;
+
+/**
+ * Parses the current Pulse project-manifest text format into reusable authoring models.
+ */
+public final class ProjectManifestParser {
+    private final String projectRoot;
+
+    /**
+     * Creates one parser bound to the supplied project root.
+     */
+    public ProjectManifestParser(String projectRoot) {
+        this.projectRoot = Path.normalize((String) Objects.requireNonNull(projectRoot, "projectRoot must not be null"));
+    }
+
+    /**
+     * Returns the parser's project root.
+     */
+    public String projectRoot() {
+        return this.projectRoot;
+    }
+
+    /**
+     * Parses one manifest text payload into the current author.project model subset.
+     */
+    public ProjectManifest parse(String text) {
+        TextCursor cursor = new TextCursor((String) Objects.requireNonNull(text, "text must not be null"));
+
+        String section = "";
+        ArrayList<String> seen = new ArrayList<String>();
+
+        String packageName = null;
+        String packageVersion = null;
+
+        String root = null;
+        String mainPulse = null;
+        String mainResources = null;
+        String testPulse = null;
+        String testResources = null;
+        String apiPulse = null;
+        String apiResources = null;
+        String docsRoot = null;
+        String librariesRoot = null;
+        String entry = null;
+
+        String outDir = null;
+        String asmDir = null;
+        String generatedDir = null;
+        String assetsDir = null;
+        String sanityDir = null;
+        String tmpDir = null;
+        String distroDir = null;
+        String profile = null;
+        String target = null;
+        String outputMode = null;
+        String outputEntry = null;
+        String runtimeDebugAllocator = null;
+        String runtimeCycleCollector = null;
+        String linker = null;
+        String assembler = null;
+
+        WorkspaceManifest workspace = null;
+        boolean authorlibEnabled = false;
+
+        while (cursor.hasRemaining()) {
+            String rawLine = cursor.readLine();
+            if (rawLine == null) {
+                break;
+            }
+            String line = rawLine.trim();
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue;
+            }
+
+            TextCursor lineCursor = new TextCursor(line);
+            if (lineCursor.consumeIf('[')) {
+                section = this.readSectionName(lineCursor);
+                continue;
+            }
+
+            if (section.isEmpty()) {
+                pulse.rt.Intrinsics.panic("Manifest parse error: key/value must be under a section");
+            }
+
+            String key = this.readManifestKey(lineCursor);
+            lineCursor.skipWhitespace();
+            lineCursor.consume('=');
+            lineCursor.skipWhitespace();
+
+            String uniqueKey = section.concat(".").concat(key);
+            if (seen.contains(uniqueKey)) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest parse error: duplicate key '".concat(uniqueKey).concat("'")
+                );
+            }
+            seen.add(uniqueKey);
+
+            if (section.equals("package")) {
+                if (key.equals("name")) {
+                    packageName = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("version")) {
+                    packageVersion = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else {
+                    pulse.rt.Intrinsics.panic(
+                        "Manifest parse error: unknown key '".concat(key).concat("' in [package]")
+                    );
+                }
+            } else if (section.equals("sources")) {
+                if (key.equals("root")) {
+                    root = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("main_pulse")) {
+                    mainPulse = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("main_resources")) {
+                    mainResources = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("test_pulse")) {
+                    testPulse = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("test_resources")) {
+                    testResources = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("api_pulse")) {
+                    apiPulse = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("api_resources")) {
+                    apiResources = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("docs")) {
+                    docsRoot = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("libraries")) {
+                    librariesRoot = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("entry")) {
+                    entry = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else {
+                    pulse.rt.Intrinsics.panic(
+                        "Manifest parse error: unknown key '".concat(key).concat("' in [sources]")
+                    );
+                }
+            } else if (section.equals("build")) {
+                if (key.equals("out_dir")) {
+                    outDir = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("asm_dir")) {
+                    asmDir = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("generated_dir")) {
+                    generatedDir = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("assets_dir")) {
+                    assetsDir = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("sanity_dir")) {
+                    sanityDir = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("tmp_dir")) {
+                    tmpDir = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("distro_dir")) {
+                    distroDir = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("profile")) {
+                    profile = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("target")) {
+                    target = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("output_mode")) {
+                    outputMode = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("output_entry")) {
+                    outputEntry = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("runtime_debug_allocator")) {
+                    runtimeDebugAllocator = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("runtime_cycle_collector")) {
+                    runtimeCycleCollector = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else {
+                    pulse.rt.Intrinsics.panic(
+                        "Manifest parse error: unknown key '".concat(key).concat("' in [build]")
+                    );
+                }
+            } else if (section.equals("toolchain")) {
+                if (key.equals("linker")) {
+                    linker = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else if (key.equals("assembler")) {
+                    assembler = this.readNonEmptyQuotedValue(lineCursor, uniqueKey);
+                } else {
+                    pulse.rt.Intrinsics.panic(
+                        "Manifest parse error: unknown key '".concat(key).concat("' in [toolchain]")
+                    );
+                }
+            } else if (section.equals("workspace")) {
+                if (key.equals("members")) {
+                    workspace = ProjectManifestParser.parseWorkspaceMembers(
+                        this.readQuotedValue(lineCursor, uniqueKey)
+                    );
+                } else {
+                    pulse.rt.Intrinsics.panic(
+                        "Manifest parse error: unknown key '".concat(key).concat("' in [workspace]")
+                    );
+                }
+            } else if (section.equals("authorlib")) {
+                if (key.equals("enabled")) {
+                    authorlibEnabled = this.readBooleanValue(lineCursor, uniqueKey);
+                } else {
+                    pulse.rt.Intrinsics.panic(
+                        "Manifest parse error: unknown key '".concat(key).concat("' in [authorlib]")
+                    );
+                }
+            }
+        }
+
+        if (packageName == null && workspace == null) {
+            pulse.rt.Intrinsics.panic("Manifest validation error: [package].name is required");
+        }
+        if (packageName != null && packageVersion == null) {
+            pulse.rt.Intrinsics.panic("Manifest validation error: [package].version is required");
+        }
+        if (packageName == null && packageVersion != null) {
+            pulse.rt.Intrinsics.panic("Manifest validation error: [package].name is required");
+        }
+        if (workspace != null) {
+            WorkspaceManifest resolvedWorkspace = workspace;
+            if (resolvedWorkspace.isEmpty()) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [workspace].members must declare at least one member path"
+                );
+            }
+        }
+        if (packageName != null) {
+            if (!this.isValidManifestPackageName(packageName)) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [package].name '".concat(packageName).concat("' is invalid")
+                );
+            }
+        }
+        if (packageVersion != null) {
+            if (!this.isValidManifestVersion(packageVersion)) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [package].version '".concat(packageVersion)
+                        .concat("' must be semantic 'x.y.z'")
+                );
+            }
+        }
+        if (profile != null) {
+            if (!profile.equals("debug") && !profile.equals("release")) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [build].profile must be 'debug' or 'release'"
+                );
+            }
+        }
+        if (target != null) {
+            if (!target.equals("windows-x64")
+                && !target.equals("pulseos-x64")
+                && !target.equals("linux-x64")
+                && !target.equals("macos-arm64")) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [build].target must be one of: windows-x64, pulseos-x64, linux-x64, macos-arm64"
+                );
+            }
+        }
+        if (outputMode != null) {
+            outputMode = this.normalizeOutputMode(outputMode);
+            if (outputMode == null) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [build].output_mode must be 'fat' or 'shared' (legacy aliases: 'single_exe', 'exe_with_dlls')"
+                );
+            }
+        }
+        if (outputMode != null) {
+            if (outputMode.equals("shared") && outputEntry == null) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [build].output_entry is required when [build].output_mode is 'shared'"
+                );
+            }
+        }
+        if (runtimeDebugAllocator != null) {
+            if (!runtimeDebugAllocator.equals("on")
+                && !runtimeDebugAllocator.equals("off")) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [build].runtime_debug_allocator must be 'on' or 'off'"
+                );
+            }
+        }
+        if (runtimeCycleCollector != null) {
+            if (!runtimeCycleCollector.equals("on")
+                && !runtimeCycleCollector.equals("off")) {
+                pulse.rt.Intrinsics.panic(
+                    "Manifest validation error: [build].runtime_cycle_collector must be 'on' or 'off'"
+                );
+            }
+        }
+
+        String sourcesRoot = this.choose(root, "src/main/pulse");
+        String resolvedMainPulse = this.resolveAgainstProject(this.choose(mainPulse, sourcesRoot));
+        String buildRoot = this.resolveAgainstProject("build");
+        String resolvedDistroRoot = this.resolveAgainstProject(this.choose(distroDir, this.choose(outDir, "build/distro")));
+
+        ProjectSources sources = new ProjectSources(
+            resolvedMainPulse,
+            this.resolveAgainstProject(this.choose(mainResources, "src/main/resources")),
+            this.resolveAgainstProject(this.choose(testPulse, "src/test/pulse")),
+            this.resolveAgainstProject(this.choose(testResources, "src/test/resources")),
+            this.resolveAgainstProject(this.choose(apiPulse, "src/api/pulse")),
+            this.resolveAgainstProject(this.choose(apiResources, "src/api/resources")),
+            this.resolveAgainstProject(this.choose(docsRoot, "docs")),
+            this.resolveAgainstProject(this.choose(librariesRoot, "libraries")),
+            this.choose(entry, "app/main/Main.pulse")
+        );
+
+        BuildLayout buildLayout = new BuildLayout(
+            buildRoot,
+            this.resolveAgainstProject(this.choose(asmDir, "build/asm")),
+            this.resolveAgainstProject(this.choose(generatedDir, "build/generated")),
+            this.resolveAgainstProject(this.choose(assetsDir, "build/assets")),
+            this.resolveAgainstProject(this.choose(sanityDir, "build/sanity")),
+            this.resolveAgainstProject(this.choose(tmpDir, "build/tmp")),
+            resolvedDistroRoot
+        );
+        BuildConfig build = new BuildConfig(
+            buildLayout,
+            this.choose(profile, "release"),
+            this.choose(target, "windows-x64"),
+            this.choose(this.normalizeOutputMode(outputMode), "fat"),
+            this.choose(outputEntry, "main"),
+            this.choose(runtimeDebugAllocator, "off"),
+            this.choose(runtimeCycleCollector, "on"),
+            this.resolveAgainstProject(outDir)
+        );
+        ToolchainConfig toolchain = new ToolchainConfig(linker, assembler);
+
+        if (packageName == null) {
+            return new ProjectManifest(
+                new ManifestPackage("workspace", "0.0.0"),
+                sources,
+                build,
+                workspace,
+                new AuthorlibConfig(authorlibEnabled),
+                toolchain
+            );
+        }
+
+        return new ProjectManifest(
+            new ManifestPackage(packageName, packageVersion),
+            sources,
+            build,
+            workspace,
+            new AuthorlibConfig(authorlibEnabled),
+            toolchain
+        );
+    }
+
+    /**
+     * Parses the current comma-separated workspace-members value.
+     */
+    public static WorkspaceManifest parseWorkspaceMembers(String value) {
+        TextCursor cursor = new TextCursor((String) Objects.requireNonNull(value, "value must not be null"));
+        ArrayList<String> members = new ArrayList<String>();
+        while (cursor.hasRemaining()) {
+            String member = cursor.readUntil(',').trim();
+            if (!member.isEmpty() && !members.contains(member)) {
+                members.add(member);
+            }
+            if (!cursor.consumeIf(',')) {
+                break;
+            }
+        }
+        return new WorkspaceManifest(members);
+    }
+
+    /**
+     * Resolves workspace member roots against the supplied workspace root without touching the filesystem.
+     */
+    public static List<String> resolveWorkspaceMemberRoots(
+        String workspaceRoot,
+        WorkspaceManifest workspace
+    ) {
+        String root = Path.normalize((String) Objects.requireNonNull(workspaceRoot, "workspaceRoot must not be null"));
+        WorkspaceManifest resolvedWorkspace =
+            (WorkspaceManifest) Objects.requireNonNull(workspace, "workspace must not be null");
+        ArrayList<String> out = new ArrayList<String>();
+        int index = 0;
+        while (index < resolvedWorkspace.size()) {
+            String member = resolvedWorkspace.member(index);
+            if (Path.isAbsolute(member)) {
+                out.add(Path.normalize(member));
+            } else {
+                out.add(Path.resolve(root, member));
+            }
+            index = index + 1;
+        }
+        return out;
+    }
+
+    private String readSectionName(TextCursor cursor) {
+        String name = cursor.readUntil(']').trim();
+        cursor.consume(']');
+        cursor.skipWhitespace();
+        if (cursor.hasRemaining()) {
+            cursor.panicHere("expected end of section header");
+        }
+        if (!name.equals("package")
+            && !name.equals("sources")
+            && !name.equals("build")
+            && !name.equals("toolchain")
+            && !name.equals("workspace")
+            && !name.equals("authorlib")) {
+            pulse.rt.Intrinsics.panic(
+                "Manifest parse error: unknown section '".concat(name).concat("'")
+            );
+        }
+        return name;
+    }
+
+    private String readManifestKey(TextCursor cursor) {
+        String key = cursor.readIdentifier();
+        if (key.isEmpty()) {
+            cursor.panicExpected("manifest key");
+        }
+        return key;
+    }
+
+    private String readQuotedValue(TextCursor cursor, String key) {
+        String value = cursor.readQuotedString();
+        if (value == null) {
+            pulse.rt.Intrinsics.panic(
+                "Manifest parse error: expected quoted string for key '".concat(key).concat("'")
+            );
+        }
+        cursor.skipWhitespace();
+        if (cursor.hasRemaining()) {
+            cursor.panicHere("expected end of manifest value");
+        }
+        return value;
+    }
+
+    private String readNonEmptyQuotedValue(TextCursor cursor, String key) {
+        String value = this.readQuotedValue(cursor, key);
+        if (value.trim().isEmpty()) {
+            pulse.rt.Intrinsics.panic(
+                "Manifest validation error: ".concat(key).concat(" cannot be empty")
+            );
+        }
+        return value;
+    }
+
+    private boolean readBooleanValue(TextCursor cursor, String key) {
+        String raw = cursor.readIdentifier();
+        cursor.skipWhitespace();
+        if (cursor.hasRemaining()) {
+            cursor.panicHere("expected end of manifest value");
+        }
+        if (raw.equals("true")) {
+            return true;
+        }
+        if (raw.equals("false")) {
+            return false;
+        }
+        pulse.rt.Intrinsics.panic(
+            "Manifest parse error: expected boolean true/false for key '".concat(key).concat("'")
+        );
+        return false;
+    }
+
+    private boolean isValidManifestPackageName(String value) {
+        if (value.isEmpty()) {
+            return false;
+        }
+        int index = 0;
+        while (index < value.length()) {
+            char current = value.charAt(index);
+            boolean ok = (current >= 'a' && current <= 'z')
+                || (current >= 'A' && current <= 'Z')
+                || (current >= '0' && current <= '9')
+                || current == '-'
+                || current == '_';
+            if (!ok) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    private boolean isValidManifestVersion(String value) {
+        String[] parts = value.split('.');
+        if (parts.length != 3) {
+            return false;
+        }
+        int index = 0;
+        while (index < parts.length) {
+            if (!this.isAsciiDigits(parts[index])) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    private boolean isAsciiDigits(String value) {
+        if (value == null || value.isEmpty()) {
+            return false;
+        }
+        int index = 0;
+        while (index < value.length()) {
+            char current = value.charAt(index);
+            if (current < '0' || current > '9') {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    private String normalizeOutputMode(String value) {
+        if (value.equals("fat") || value.equals("single_exe")) {
+            return "fat";
+        }
+        if (value.equals("shared") || value.equals("exe_with_dlls")) {
+            return "shared";
+        }
+        return null;
+    }
+
+    private String choose(String value, String fallback) {
+        if (value == null || value.trim().isEmpty()) {
+            return fallback;
+        }
+        return value;
+    }
+
+    private String resolveAgainstProject(String path) {
+        if (path == null) {
+            return null;
+        }
+        String value = Path.normalize(path);
+        if (value.isEmpty()) {
+            return null;
+        }
+        if (Path.isAbsolute(value)) {
+            return value;
+        }
+        return Path.resolve(this.projectRoot, value);
+    }
+}

@@ -30,7 +30,7 @@ Date locked: 2026-03-12
 - [x] [RUNTIME_OWNERSHIP_POLICY.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_POLICY.md)
 - [x] [SHARED_RUNTIME_STATE_LAYOUT.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_STATE_LAYOUT.md)
 - [x] [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
-- [x] [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [x] [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
 - [x] [E2_EVIDENCE_INDEX.md](/D:/Programming/codex/PulseCode/docs/E2_EVIDENCE_INDEX.md)
 
 ## Validation Commands
@@ -39,7 +39,6 @@ Date locked: 2026-03-12
 - `cargo test -q -p pulsec --test stage_locks_c3`
 - `cargo test -q -p pulsec --test stage_locks_d`
 - `cargo test -q -p pulsec --test phase_d_cli`
-- `cargo test -q -p pulsec --test packaging_regressions`
 - `cargo test -q -p pulsec`
 
 ## Exit Decision

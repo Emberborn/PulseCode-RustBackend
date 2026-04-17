@@ -1,0 +1,39 @@
+package pulse.collections;
+
+import pulse.lang.Iterator;
+import pulse.lang.Object;
+import pulse.rt.Intrinsics;
+
+/**
+ * Sequential iterator over the current key chain inside a raw-object hash map.
+ */
+final class HashMapKeyIterator implements Iterator {
+    private HashMapEntry current;
+
+    /**
+     * Creates an iterator starting at the supplied map entry.
+     */
+    public HashMapKeyIterator(HashMapEntry first) {
+        this.current = first;
+    }
+
+    /**
+     * Reports whether another key is available from the iterator.
+     */
+    public boolean hasNext() {
+        return this.current != null;
+    }
+
+    /**
+     * Returns the next key from the iterator.
+     */
+    public Object next() {
+        if (this.current == null) {
+            Intrinsics.panic("Iterator is exhausted");
+            return null;
+        }
+        Object key = this.current.getKey();
+        this.current = this.current.getNext();
+        return key;
+    }
+}

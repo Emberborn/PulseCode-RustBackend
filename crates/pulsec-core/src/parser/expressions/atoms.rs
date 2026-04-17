@@ -1,7 +1,7 @@
-use super::*;
 use super::super::shared::tokens::{
     can_start_type_name, normalize_numeric_literal, parse_integer_literal, split_numeric_literal,
 };
+use super::*;
 use crate::ArrayInitExpr;
 
 impl Parser {
@@ -50,7 +50,8 @@ impl Parser {
             }
         }
         while self.peek_n(idx).kind == TokenKind::Symbol && self.peek_n(idx).lexeme == "[" {
-            if self.peek_n(idx + 1).kind != TokenKind::Symbol || self.peek_n(idx + 1).lexeme != "]" {
+            if self.peek_n(idx + 1).kind != TokenKind::Symbol || self.peek_n(idx + 1).lexeme != "]"
+            {
                 return false;
             }
             idx += 2;
@@ -71,19 +72,24 @@ impl Parser {
         let mut expr = self.parse_primary()?;
         loop {
             if self.matches_symbol("::") {
-                return Err(self.error_here(
-                    "Method references are not supported in the current F1 baseline",
-                ));
+                return Err(self
+                    .error_here("Method references are not supported in the current F1 baseline"));
             }
             if self.matches_symbol("(") {
                 let args = self.parse_argument_list()?;
                 self.expect_symbol(")")?;
-                expr = Expr::Call { callee: Box::new(expr), args };
+                expr = Expr::Call {
+                    callee: Box::new(expr),
+                    args,
+                };
                 continue;
             }
             if self.matches_symbol(".") {
                 let member = self.expect_identifier("Expected member name after '.'")?;
-                expr = Expr::MemberAccess { object: Box::new(expr), member };
+                expr = Expr::MemberAccess {
+                    object: Box::new(expr),
+                    member,
+                };
                 continue;
             }
             if self.matches_symbol("[") {
@@ -96,11 +102,19 @@ impl Parser {
                 continue;
             }
             if self.matches_symbol_pair("+", "+") {
-                expr = Expr::IncDec { target: Box::new(expr), op: IncDecOp::Inc, prefix: false };
+                expr = Expr::IncDec {
+                    target: Box::new(expr),
+                    op: IncDecOp::Inc,
+                    prefix: false,
+                };
                 continue;
             }
             if self.matches_symbol_pair("-", "-") {
-                expr = Expr::IncDec { target: Box::new(expr), op: IncDecOp::Dec, prefix: false };
+                expr = Expr::IncDec {
+                    target: Box::new(expr),
+                    op: IncDecOp::Dec,
+                    prefix: false,
+                };
                 continue;
             }
             break;
@@ -151,7 +165,10 @@ impl Parser {
             return Ok(Expr::CharLiteral(value));
         }
         if self.matches_symbol("(") {
-            if self.check_symbol(")") && self.peek_n(1).kind == TokenKind::Symbol && self.peek_n(1).lexeme == "->" {
+            if self.check_symbol(")")
+                && self.peek_n(1).kind == TokenKind::Symbol
+                && self.peek_n(1).lexeme == "->"
+            {
                 return Err(self.error_here(
                     "Lambda expressions are not supported in the current F1 baseline",
                 ));
@@ -170,9 +187,9 @@ impl Parser {
             && self.peek_n(1).kind == TokenKind::Symbol
             && self.peek_n(1).lexeme == "->"
         {
-            return Err(self.error_here(
-                "Lambda expressions are not supported in the current F1 baseline",
-            ));
+            return Err(
+                self.error_here("Lambda expressions are not supported in the current F1 baseline")
+            );
         }
 
         let name = self.expect_identifier("Expected expression")?;
@@ -218,7 +235,9 @@ impl Parser {
 
         self.expect_symbol("}")?;
         let default = default.ok_or_else(|| {
-            self.error_here("Switch expression requires a default arm in the current pre-self-host slice")
+            self.error_here(
+                "Switch expression requires a default arm in the current pre-self-host slice",
+            )
         })?;
         Ok(Expr::SwitchExpr {
             expr: Box::new(expr),
@@ -228,7 +247,8 @@ impl Parser {
     }
 
     fn parse_new_expression(&mut self) -> Result<Expr, ParseError> {
-        let element_ty = self.expect_non_array_type_name("Expected array element type after 'new'")?;
+        let element_ty =
+            self.expect_non_array_type_name("Expected array element type after 'new'")?;
         if self.matches_symbol("(") {
             let args = self.parse_argument_list()?;
             self.expect_symbol(")")?;
@@ -279,9 +299,8 @@ impl Parser {
             });
         }
         if lengths.is_empty() {
-            return Err(self.error_here(
-                "Array creation must provide at least one length or an initializer",
-            ));
+            return Err(self
+                .error_here("Array creation must provide at least one length or an initializer"));
         }
         Ok(Expr::NewArray {
             element_ty,
@@ -318,12 +337,10 @@ impl Parser {
         match suffix {
             Some('f') | Some('F') => Ok(Expr::FloatLiteral(normalized)),
             Some('d') | Some('D') => Ok(Expr::DoubleLiteral(normalized)),
-            Some('l') | Some('L') => parse_integer_literal(
-                &normalized,
-                token.position,
-                token.lexeme.as_str(),
-            )
-            .map(Expr::LongLiteral),
+            Some('l') | Some('L') => {
+                parse_integer_literal(&normalized, token.position, token.lexeme.as_str())
+                    .map(Expr::LongLiteral)
+            }
             Some(other) => Err(ParseError {
                 message: format!("Unsupported numeric literal suffix '{}'", other),
                 position: token.position,

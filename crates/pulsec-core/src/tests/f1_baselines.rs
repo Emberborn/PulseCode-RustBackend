@@ -4,7 +4,7 @@ use super::*;
 fn parse_accepts_throw_statement() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public static void boom() {
@@ -28,7 +28,7 @@ fn parse_accepts_throw_statement() {
 fn parse_accepts_throws_clause_on_methods_and_constructors() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public Main() throws Exception {
@@ -56,7 +56,7 @@ fn parse_accepts_throws_clause_on_methods_and_constructors() {
 fn check_accepts_throw_for_throwable_subtypes() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public static int fail() throws Exception {
@@ -75,7 +75,7 @@ fn check_accepts_throw_for_throwable_subtypes() {
 fn check_rejects_uncaught_checked_exception_without_declared_throws() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public static void fail() {
@@ -97,7 +97,7 @@ fn check_rejects_uncaught_checked_exception_without_declared_throws() {
 fn check_accepts_declared_checked_exception_calls_and_constructor_calls() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Worker {
             public Worker() throws Exception {
@@ -123,7 +123,7 @@ fn check_accepts_declared_checked_exception_calls_and_constructor_calls() {
 fn check_accepts_unchecked_runtime_exception_without_declared_throws() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.RuntimeException;
+        import pulse.lang.RuntimeException;
 
         class Main {
             public static void fail() {
@@ -153,14 +153,14 @@ fn check_rejects_throw_for_non_throwable_values() {
     let err = check(src).expect_err("non-throwable throw operand should fail");
     assert!(err
         .to_string()
-        .contains("Cannot assign type 'String' to 'com.pulse.lang.Throwable'"));
+        .contains("Cannot assign type 'String' to 'pulse.lang.Throwable'"));
 }
 
 #[test]
 fn check_rejects_definitely_null_throw_operand_in_current_f1_baseline() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public static void main() {
@@ -180,7 +180,7 @@ fn check_rejects_definitely_null_throw_operand_in_current_f1_baseline() {
 fn lower_throw_to_fail_fast_panic_call_baseline() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public static void main() throws Exception {
@@ -199,10 +199,10 @@ fn lower_throw_to_fail_fast_panic_call_baseline() {
         .expect("find main");
 
     assert!(
-        method
-            .blocks
-            .iter()
-            .any(|block| matches!(block.terminator, crate::intermediate::IrTerminator::Throw { .. })),
+        method.blocks.iter().any(|block| matches!(
+            block.terminator,
+            crate::intermediate::IrTerminator::Throw { .. }
+        )),
         "expected throw lowering to produce a real IR throw terminator"
     );
 }
@@ -211,7 +211,7 @@ fn lower_throw_to_fail_fast_panic_call_baseline() {
 fn parse_accepts_try_catch_finally_statement() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public static void main() {
@@ -236,8 +236,8 @@ fn parse_accepts_try_catch_finally_statement() {
 fn parse_accepts_foreach_statement() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Object;
-        import com.pulse.lang.Iterable;
+        import pulse.lang.Object;
+        import pulse.lang.Iterable;
 
         class Main {
             public static void main() {
@@ -365,7 +365,10 @@ fn parse_accepts_ternary_expression() {
         crate::ClassMember::Method(method) => method,
         _ => panic!("expected method"),
     };
-    let crate::Stmt::VarDecl { init: Some(init), .. } = &method.body[0] else {
+    let crate::Stmt::VarDecl {
+        init: Some(init), ..
+    } = &method.body[0]
+    else {
         panic!("expected initialized variable declaration");
     };
     assert!(matches!(init, crate::Expr::Conditional { .. }));
@@ -450,7 +453,10 @@ fn parse_accepts_native_array_creation_expression() {
         crate::ClassMember::Method(method) => method,
         _ => panic!("expected method"),
     };
-    let crate::Stmt::VarDecl { init: Some(init), .. } = &method.body[0] else {
+    let crate::Stmt::VarDecl {
+        init: Some(init), ..
+    } = &method.body[0]
+    else {
         panic!("expected initialized variable declaration");
     };
     assert!(matches!(init, crate::Expr::NewArray { .. }));
@@ -474,7 +480,10 @@ fn parse_accepts_native_array_initializer_expression() {
         crate::ClassMember::Method(method) => method,
         _ => panic!("expected method"),
     };
-    let crate::Stmt::VarDecl { init: Some(init), .. } = &method.body[0] else {
+    let crate::Stmt::VarDecl {
+        init: Some(init), ..
+    } = &method.body[0]
+    else {
         panic!("expected initialized variable declaration");
     };
     assert!(matches!(init, crate::Expr::NewArrayInitialized { .. }));
@@ -498,14 +507,15 @@ fn parse_accepts_nested_native_array_initializer_expression() {
         crate::ClassMember::Method(method) => method,
         _ => panic!("expected method"),
     };
-    let crate::Stmt::VarDecl { init: Some(init), .. } = &method.body[0] else {
+    let crate::Stmt::VarDecl {
+        init: Some(init), ..
+    } = &method.body[0]
+    else {
         panic!("expected initialized variable declaration");
     };
     match init {
         crate::Expr::NewArrayInitialized {
-            dimensions,
-            values,
-            ..
+            dimensions, values, ..
         } => {
             assert_eq!(*dimensions, 2);
             assert!(matches!(values[0], crate::ArrayInitExpr::Nested(_)));
@@ -563,7 +573,10 @@ fn parse_accepts_java_like_new_constructor_expression() {
         crate::ClassMember::Method(method) => method,
         _ => panic!("expected method"),
     };
-    let crate::Stmt::VarDecl { init: Some(init), .. } = &method.body[0] else {
+    let crate::Stmt::VarDecl {
+        init: Some(init), ..
+    } = &method.body[0]
+    else {
         panic!("expected initialized variable declaration");
     };
     assert!(matches!(init, crate::Expr::NewObject { .. }));
@@ -922,6 +935,50 @@ fn lower_nested_multidimensional_array_initializers_to_ir_values() {
 }
 
 #[test]
+fn lower_overloaded_call_return_type_by_argument_types() {
+    let src = r#"
+        package app.core;
+
+        class Main {
+            public int set(int index, int value) {
+                return value;
+            }
+
+            public String set(int index, String value) {
+                return value;
+            }
+
+            public static void main() {
+                Main m = new Main();
+                int a = m.set(1, 5);
+                String b = m.set(1, "pulse");
+            }
+        }
+    "#;
+
+    let program = check(src).expect("overloaded set program should typecheck");
+    let ir = lower_to_ir(&program).expect("overloaded set program should lower");
+    let method = ir
+        .classes
+        .iter()
+        .find(|class| class.name == "Main")
+        .and_then(|class| class.methods.iter().find(|method| method.name == "main"))
+        .expect("find main");
+
+    let call_types = method
+        .values
+        .iter()
+        .filter_map(|value| match value.kind {
+            crate::intermediate::IrValueKind::Call { .. } => Some(value.ty.as_str()),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    assert!(call_types.contains(&"int"));
+    assert!(call_types.contains(&"String"));
+}
+
+#[test]
 fn parse_rejects_lambda_expression_baseline() {
     let src = r#"
         package app.core;
@@ -961,9 +1018,9 @@ fn parse_rejects_method_reference_baseline() {
 fn check_accepts_foreach_over_iterable_object_stream_baseline() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Object;
-        import com.pulse.lang.Iterable;
-        import com.pulse.lang.Iterator;
+        import pulse.lang.Object;
+        import pulse.lang.Iterable;
+        import pulse.lang.Iterator;
 
         class CounterIterator implements Iterator {
             private int remaining;
@@ -998,14 +1055,15 @@ fn check_accepts_foreach_over_iterable_object_stream_baseline() {
         }
     "#;
 
-    check(src).expect("foreach over Iterable should typecheck for the current object-stream baseline");
+    check(src)
+        .expect("foreach over Iterable should typecheck for the current object-stream baseline");
 }
 
 #[test]
 fn check_accepts_foreach_over_stdlib_array_int_lane_baseline() {
     let src = r#"
         package app.core;
-        import com.pulse.collections.Array;
+        import pulse.collections.Array;
 
         class Main {
             public static void main() {
@@ -1045,7 +1103,7 @@ fn check_accepts_foreach_over_native_arrays() {
 fn check_accepts_same_method_try_catch_finally_baseline() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public static void main() {
@@ -1091,7 +1149,7 @@ fn check_rejects_return_inside_try_regions_for_current_f1_16_baseline() {
 fn check_rejects_throw_inside_catch_for_current_f1_16_baseline() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Exception;
+        import pulse.lang.Exception;
 
         class Main {
             public static void main() {
@@ -1111,32 +1169,30 @@ fn check_rejects_throw_inside_catch_for_current_f1_16_baseline() {
 }
 
 #[test]
-fn check_accepts_runtime_string_intrinsics_calls() {
+fn check_accepts_runtime_backed_string_baseline_calls() {
     let src = r#"
         package app.core;
-        import com.pulse.rt.Intrinsics;
-
         class Main {
             public static void main() {
                 String text;
                 int len;
-                text = Intrinsics.stringConcat("a", "b");
-                len = Intrinsics.stringLength(text);
-                text = Intrinsics.intToString(len);
-                text = Intrinsics.booleanToString(true);
-                Intrinsics.consoleWriteLine(text);
+                text = "a".concat("b");
+                len = text.length();
+                text = String.valueOf(len);
+                text = String.valueOf(true);
+                pulse.rt.Intrinsics.consoleWriteLine(text);
             }
         }
     "#;
 
-    check(src).expect("runtime String intrinsics calls should pass");
+    check(src).expect("runtime-backed String baseline calls should pass");
 }
 
 #[test]
 fn check_accepts_string_class_instance_and_static_apis() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1160,7 +1216,7 @@ fn check_accepts_string_class_instance_and_static_apis() {
 #[test]
 fn check_allows_source_override_of_builtin_fqcn() {
     let src = r#"
-        package com.pulse.lang;
+        package pulse.lang;
 
         class IO {
             public static void println(String text) {
@@ -1181,7 +1237,7 @@ fn check_allows_source_override_of_builtin_fqcn() {
 fn check_accepts_arc_cycle_intrinsics_calls() {
     let src = r#"
         package app.core;
-        import com.pulse.memory.Memory;
+        import pulse.memory.Memory;
 
         class Main {
             public static void main() {
@@ -1200,8 +1256,8 @@ fn check_accepts_arc_cycle_intrinsics_calls() {
 fn check_accepts_system_out_and_io_alias_calls() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.System;
-        import com.pulse.lang.IO;
+        import pulse.lang.System;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1219,8 +1275,8 @@ fn check_accepts_system_out_and_io_alias_calls() {
 fn check_accepts_system_out_typed_as_console_writer_contract() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.System;
-        import com.pulse.lang.ConsoleWriter;
+        import pulse.lang.System;
+        import pulse.lang.ConsoleWriter;
 
         class Main {
             public static void main() {
@@ -1238,8 +1294,8 @@ fn check_accepts_system_out_typed_as_console_writer_contract() {
 fn check_rejects_assignment_to_system_out_runtime_singleton() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.System;
-        import com.pulse.lang.PrintStream;
+        import pulse.lang.System;
+        import pulse.lang.PrintStream;
 
         class Main {
             public static void main() {
@@ -1249,7 +1305,9 @@ fn check_rejects_assignment_to_system_out_runtime_singleton() {
     "#;
 
     let err = check(src).expect_err("System.out assignment should be rejected");
-    assert!(err.to_string().contains("runtime-managed field 'System.out'"));
+    assert!(err
+        .to_string()
+        .contains("runtime-managed field 'System.out'"));
 }
 
 #[test]
@@ -1280,7 +1338,7 @@ fn check_accepts_extends_and_super_call() {
 fn check_accepts_else_if_chain() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static int pick(int x) {
@@ -1303,7 +1361,7 @@ fn check_accepts_else_if_chain() {
 }
 
 #[test]
-fn check_rejects_super_without_extends() {
+fn check_rejects_missing_super_method_on_implicit_object_super() {
     let src = r#"
         package app.core;
 
@@ -1317,8 +1375,10 @@ fn check_rejects_super_without_extends() {
         }
     "#;
 
-    let err = check(src).expect_err("super without extends should fail");
-    assert!(err.to_string().contains("without an extends clause"));
+    let err = check(src).expect_err("missing method on implicit Object super should fail");
+    assert!(err
+        .to_string()
+        .contains("No method 'Object.value' matches argument types ()"));
 }
 
 #[test]
@@ -1408,9 +1468,9 @@ fn check_rejects_reserved_keyword_as_identifier() {
 fn check_accepts_foundational_lang_interfaces_in_implements_and_usage() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Runnable;
-        import com.pulse.lang.Appendable;
-        import com.pulse.lang.CharSequence;
+        import pulse.lang.Runnable;
+        import pulse.lang.Appendable;
+        import pulse.lang.CharSequence;
 
         class Main implements Runnable {
             public void run() {
@@ -1444,9 +1504,7 @@ fn check_rejects_reserved_but_unsupported_modifier_usage() {
     "#;
 
     let err = check(src).expect_err("unsupported reserved modifier should fail");
-    assert!(err
-        .to_string()
-        .contains("reserved but not supported"));
+    assert!(err.to_string().contains("reserved but not supported"));
 }
 
 #[test]
@@ -1487,9 +1545,7 @@ fn check_rejects_missing_interface_method_implementation() {
     "#;
 
     let err = check(src).expect_err("missing interface method should fail");
-    assert!(err
-        .to_string()
-        .contains("must implement interface method"));
+    assert!(err.to_string().contains("must implement interface method"));
 }
 
 #[test]
@@ -1604,16 +1660,14 @@ fn check_rejects_override_annotation_on_static_method() {
     "#;
 
     let err = check(src).expect_err("@Override on static method should fail");
-    assert!(err
-        .to_string()
-        .contains("not allowed on static method"));
+    assert!(err.to_string().contains("not allowed on static method"));
 }
 
 #[test]
 fn check_accepts_notnull_field_and_return_baseline() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.String;
+        import pulse.lang.String;
 
         class Main {
             @NotNull
@@ -1659,7 +1713,7 @@ fn check_rejects_notnull_on_primitive_return() {
 fn check_rejects_notnull_null_field_initializer_and_return() {
     let field_src = r#"
         package app.core;
-        import com.pulse.lang.String;
+        import pulse.lang.String;
 
         class Main {
             @NotNull
@@ -1676,7 +1730,7 @@ fn check_rejects_notnull_null_field_initializer_and_return() {
 
     let return_src = r#"
         package app.core;
-        import com.pulse.lang.String;
+        import pulse.lang.String;
 
         class Main {
             @NotNull
@@ -1698,7 +1752,7 @@ fn check_rejects_notnull_null_field_initializer_and_return() {
 fn check_rejects_assigning_null_to_notnull_field() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.String;
+        import pulse.lang.String;
 
         class Main {
             @NotNull
@@ -1817,9 +1871,7 @@ fn check_rejects_non_annotation_type_used_as_annotation() {
     "#;
 
     let err = check(src).expect_err("non-annotation type should not be usable as annotation");
-    assert!(err
-        .to_string()
-        .contains("is not an annotation declaration"));
+    assert!(err.to_string().contains("is not an annotation declaration"));
 }
 
 #[test]
@@ -1838,9 +1890,7 @@ fn check_rejects_annotation_members_until_supported() {
     "#;
 
     let err = check(src).expect_err("annotation members should be fenced for now");
-    assert!(err
-        .to_string()
-        .contains("members are not supported yet"));
+    assert!(err.to_string().contains("members are not supported yet"));
 }
 
 #[test]
@@ -1903,7 +1953,9 @@ fn check_rejects_duplicate_enum_constants() {
     "#;
 
     let err = check(src).expect_err("duplicate enum constants should fail");
-    assert!(err.to_string().contains("Duplicate enum constant 'Mode.ON'"));
+    assert!(err
+        .to_string()
+        .contains("Duplicate enum constant 'Mode.ON'"));
 }
 
 #[test]
@@ -2005,4 +2057,3 @@ fn parse_accepts_erased_generic_class_and_method_baseline() {
     };
     assert_eq!(id_method.type_params, vec!["T"]);
 }
-

@@ -175,8 +175,7 @@ Current rules:
 - `var` cannot infer from `null`
 - `var` cannot infer from a `void` expression
 - the inferred runtime type is the initializer expression type after the current F1 erasure/runtime mapping rules
-- `foreach (var item : source)` is currently supported for native arrays and the current `com.pulse.lang.Iterable` object-stream baseline
-- `foreach (var item : arrayLike)` is not yet supported for the current non-generic `com.pulse.collections.Array` surface, because that runtime contract does not yet expose enough element-type information to infer the loop variable honestly
+- `foreach (var item : source)` is currently supported for native arrays, the current `com.pulse.lang.Iterable` object-stream baseline, and the current `com.pulse.collections.Array` object-stream baseline once the array lane is established
 
 ## Type Checking
 

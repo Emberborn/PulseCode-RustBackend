@@ -22,6 +22,7 @@ pub(crate) const OBJECT_MODEL_ABI_SCHEMA: &str = "pulsec.object_model.abi.v1";
 pub(crate) const ABI_VERSION_SCHEMA: &str = "pulsec.runtime.abi.v1";
 pub(crate) const ABI_VERSION_V2: u32 = 2;
 pub(crate) const OBJECT_MODEL_ABI_VERSION_V1: u32 = 1;
+pub(crate) const CLASS_ID_IN_SET_SYMBOL: &str = "pulsec_rt_classIdInSet";
 
 pub(crate) fn debug_allocator_enabled() -> bool {
     match env::var("PULSEC_DEBUG_ALLOC") {
@@ -57,16 +58,17 @@ pub(crate) fn lookup_local_decl_type(method: &IrMethod, local_name: &str) -> Opt
     if let Some(param) = method.params.iter().find(|p| p.name == local_name) {
         return Some(param.ty.clone());
     }
+    let mut last_match: Option<String> = None;
     for block in &method.blocks {
         for instr in &block.instructions {
             if let IrInstr::DeclareLocal { name, ty, .. } = instr {
                 if name == local_name {
-                    return Some(ty.clone());
+                    last_match = Some(ty.clone());
                 }
             }
         }
     }
-    None
+    last_match
 }
 
 pub(crate) fn value_dotted_path(method: &IrMethod, value_id: IrValueId) -> Option<String> {
@@ -87,7 +89,8 @@ pub(crate) fn normalize_type_token(ty: &str) -> String {
     if let Some(stripped) = ty.strip_suffix("[]") {
         return format!("{}Arr", normalize_type_token(stripped));
     }
-    ty.rsplit('.').next().unwrap_or(ty).to_string()
+    let raw = ty.split('<').next().unwrap_or(ty);
+    raw.rsplit('.').next().unwrap_or(raw).to_string()
 }
 
 pub(crate) fn masm_db_payload(text: &str) -> String {
@@ -108,6 +111,38 @@ pub(crate) fn masm_db_payload(text: &str) -> String {
         .join(", ")
 }
 
+pub(crate) fn emit_masm_db(out: &mut String, label: &str, text: &str) {
+    if text.is_empty() {
+        out.push_str(&format!("{label} db 0\n"));
+        return;
+    }
+    let bytes = text.as_bytes();
+    let use_inline_string = bytes.len() <= 64
+        && bytes
+            .iter()
+            .all(|b| (32..=126).contains(b) && *b != b'"');
+    if use_inline_string {
+        out.push_str(&format!("{label} db {}\n", masm_db_payload(text)));
+        return;
+    }
+    const CHUNK_BYTES: usize = 32;
+    let mut offset = 0usize;
+    while offset < bytes.len() {
+        let end = std::cmp::min(offset + CHUNK_BYTES, bytes.len());
+        let chunk = bytes[offset..end]
+            .iter()
+            .map(|b| b.to_string())
+            .collect::<Vec<_>>()
+            .join(", ");
+        if offset == 0 {
+            out.push_str(&format!("{label} db {chunk}\n"));
+        } else {
+            out.push_str(&format!("    db {chunk}\n"));
+        }
+        offset = end;
+    }
+}
+
 pub(crate) fn masm_db_len(text: &str) -> usize {
     text.len()
 }
@@ -115,11 +150,21 @@ pub(crate) fn masm_db_len(text: &str) -> usize {
 pub(crate) fn masm_field_data_directive(field: &IrField) -> String {
     if field.is_static {
         if uses_qword_field_storage(&field.ty) {
-            return "dq 0".to_string();
+            return match field.init.as_ref() {
+                Some(IrFieldInit::Int(v)) => format!("dq {}", v),
+                Some(IrFieldInit::Bool(v)) => format!("dq {}", if *v { 1 } else { 0 }),
+                Some(IrFieldInit::Double(v)) => format!("dq {}", v),
+                Some(IrFieldInit::Float(v)) => format!("dq {}", v),
+                Some(IrFieldInit::NewObject { .. }) => "dq 0".to_string(),
+                None => "dq 0".to_string(),
+            };
         }
         match field.init.as_ref() {
             Some(IrFieldInit::Int(v)) => format!("dd {}", v),
             Some(IrFieldInit::Bool(v)) => format!("dd {}", if *v { 1 } else { 0 }),
+            Some(IrFieldInit::Float(v)) => format!("dd {}", v),
+            Some(IrFieldInit::Double(v)) => format!("dd {}", v),
+            Some(IrFieldInit::NewObject { .. }) => "dd 0".to_string(),
             None => "dd 0".to_string(),
         }
     } else {
@@ -149,8 +194,8 @@ pub(crate) fn emit_runtime_data_tables(out: &mut String) {
     out.push_str("rt_str_count dd 0\n");
     out.push_str("rt_str_lens_ptr dq 0\n");
     out.push_str("rt_str_data_ptr dq 0\n");
-    out.push_str("rt_tmpbuf db 256 dup(0)\n");
-    out.push_str("rt_tmp_concat db 256 dup(0)\n");
+    out.push_str(&format!("rt_tmpbuf db {} dup(0)\n", STRING_SLOT_BYTES));
+    out.push_str(&format!("rt_tmp_concat db {} dup(0)\n", STRING_SLOT_BYTES));
     out.push_str("rt_tmp_concat_len dd 0\n");
     out.push_str("rt_tmp_arr_slot dd 0\n");
     out.push_str("rt_tmp_arr_len dd 0\n");
@@ -179,7 +224,9 @@ pub(crate) fn emit_runtime_data_tables(out: &mut String) {
         object_model_abi
     ));
     out.push_str("rt_object_model_abi_mismatch_err db \"Object model ABI mismatch\"\n");
-    out.push_str("rt_object_model_abi_mismatch_err_len equ $ - rt_object_model_abi_mismatch_err\n\n");
+    out.push_str(
+        "rt_object_model_abi_mismatch_err_len equ $ - rt_object_model_abi_mismatch_err\n\n",
+    );
     out.push_str(&format!("rt_debug_alloc_mode dd {}\n", debug_alloc));
     out.push_str("rt_debug_arc_retain_err db \"Debug allocator: invalid ARC retain\"\n");
     out.push_str("rt_debug_arc_retain_err_len equ $ - rt_debug_arc_retain_err\n");
@@ -324,19 +371,194 @@ pub(crate) fn method_param_type_tokens(method: &IrMethod) -> Vec<String> {
 
 pub(crate) fn value_type_token(method: &IrMethod, value_id: IrValueId) -> Option<String> {
     let value = method.values.get(value_id as usize)?;
-    if value.ty != "unknown" {
-        return Some(normalize_type_token(&value.ty));
-    }
     if let IrValueKind::LocalRef(ref name) = value.kind {
+        if value.ty != "unknown" {
+            return Some(normalize_type_token(&value.ty));
+        }
         if let Some(ty) = lookup_local_decl_type(method, name) {
             return Some(normalize_type_token(&ty));
         }
     }
     match value.kind {
-        IrValueKind::IntLiteral(_) => Some("int".to_string()),
+        IrValueKind::Unary { op, operand } => {
+            let operand_ty = value_type_token(method, operand)
+                .or_else(|| (value.ty != "unknown").then(|| normalize_type_token(&value.ty)))?;
+            match op {
+                IrUnaryOp::Not => Some("boolean".to_string()),
+                IrUnaryOp::Neg => Some(lowered_unary_numeric_ty(&operand_ty)),
+                IrUnaryOp::BitNot => lowered_shift_ty(&operand_ty),
+            }
+        }
+        IrValueKind::Binary { op, left, right } => {
+            let left_ty = value_type_token(method, left)?;
+            let right_ty = value_type_token(method, right)?;
+            lowered_binary_value_ty(op, &left_ty, &right_ty)
+                .or_else(|| (value.ty != "unknown").then(|| normalize_type_token(&value.ty)))
+        }
+        IrValueKind::IntLiteral(_) => {
+            if value.ty != "unknown" {
+                Some(normalize_type_token(&value.ty))
+            } else {
+                Some("int".to_string())
+            }
+        }
         IrValueKind::BoolLiteral(_) => Some("boolean".to_string()),
         IrValueKind::StringLiteral(_) => Some("String".to_string()),
         IrValueKind::NullLiteral => Some("null".to_string()),
+        IrValueKind::ArrayLength { .. } => Some("int".to_string()),
+        IrValueKind::ArrayGet { ref element_ty, .. } => Some(normalize_type_token(element_ty)),
+        IrValueKind::Cast { ref ty, .. } => Some(normalize_type_token(ty)),
+        _ if value.ty != "unknown" => Some(normalize_type_token(&value.ty)),
+        _ => None,
+    }
+}
+
+pub(crate) fn lowered_binary_value_ty(
+    op: IrBinaryOp,
+    left_ty: &str,
+    right_ty: &str,
+) -> Option<String> {
+    match op {
+        IrBinaryOp::Add => {
+            if is_string_type_name(left_ty) || is_string_type_name(right_ty) {
+                Some("String".to_string())
+            } else {
+                Some(lowered_numeric_binary_ty(left_ty, right_ty))
+            }
+        }
+        IrBinaryOp::Sub | IrBinaryOp::Mul | IrBinaryOp::Div | IrBinaryOp::Mod => {
+            Some(lowered_numeric_binary_ty(left_ty, right_ty))
+        }
+        IrBinaryOp::BitAnd | IrBinaryOp::BitOr | IrBinaryOp::BitXor => {
+            if normalize_type_token(left_ty) == "boolean"
+                && normalize_type_token(right_ty) == "boolean"
+            {
+                Some("boolean".to_string())
+            } else {
+                lowered_integral_binary_ty(left_ty, right_ty)
+            }
+        }
+        IrBinaryOp::ShiftLeft | IrBinaryOp::ShiftRight | IrBinaryOp::UnsignedShiftRight => {
+            lowered_shift_ty(left_ty)
+        }
+        IrBinaryOp::Eq
+        | IrBinaryOp::NotEq
+        | IrBinaryOp::Less
+        | IrBinaryOp::LessEq
+        | IrBinaryOp::Greater
+        | IrBinaryOp::GreaterEq => Some("boolean".to_string()),
+    }
+}
+
+pub(crate) fn lowered_unary_numeric_ty(operand_ty: &str) -> String {
+    match normalize_type_token(operand_ty).as_str() {
+        "byte" | "short" | "char" => "int".to_string(),
+        "ubyte" | "ushort" => "uint".to_string(),
+        other => other.to_string(),
+    }
+}
+
+fn signed_rank(ty: &str) -> Option<u8> {
+    match normalize_type_token(ty).as_str() {
+        "byte" => Some(1),
+        "short" => Some(2),
+        "char" => Some(2),
+        "int" => Some(3),
+        "long" => Some(4),
+        "float" => Some(5),
+        "double" => Some(6),
+        _ => None,
+    }
+}
+
+fn unsigned_rank(ty: &str) -> Option<u8> {
+    match normalize_type_token(ty).as_str() {
+        "ubyte" => Some(1),
+        "ushort" => Some(2),
+        "uint" => Some(3),
+        "ulong" => Some(4),
+        _ => None,
+    }
+}
+
+fn lowered_numeric_binary_ty(left_ty: &str, right_ty: &str) -> String {
+    let left = normalize_type_token(left_ty);
+    let right = normalize_type_token(right_ty);
+    match (signed_rank(&left), signed_rank(&right)) {
+        (Some(left_rank), Some(right_rank)) => {
+            let ty = if left_rank >= right_rank { left } else { right };
+            match ty.as_str() {
+                "byte" | "short" | "char" => "int".to_string(),
+                _ => ty,
+            }
+        }
+        _ => match (unsigned_rank(&left), unsigned_rank(&right)) {
+            (Some(left_rank), Some(right_rank)) => {
+                if left_rank.max(right_rank) >= 4 {
+                    "ulong".to_string()
+                } else {
+                    "uint".to_string()
+                }
+            }
+            _ => match (signed_rank(&left), unsigned_rank(&right)) {
+                (Some(signed_rank), Some(unsigned_rank)) => {
+                    if signed_rank >= 5 {
+                        left
+                    } else {
+                        match unsigned_rank {
+                            1 | 2 => match left.as_str() {
+                                "long" => "long".to_string(),
+                                _ => "int".to_string(),
+                            },
+                            3 => "long".to_string(),
+                            _ => "int".to_string(),
+                        }
+                    }
+                }
+                _ => match (unsigned_rank(&left), signed_rank(&right)) {
+                    (Some(unsigned_rank), Some(signed_rank)) => {
+                        if signed_rank >= 5 {
+                            right
+                        } else {
+                            match unsigned_rank {
+                                1 | 2 => match right.as_str() {
+                                    "long" => "long".to_string(),
+                                    _ => "int".to_string(),
+                                },
+                                3 => "long".to_string(),
+                                _ => "int".to_string(),
+                            }
+                        }
+                    }
+                    _ => "int".to_string(),
+                },
+            },
+        },
+    }
+}
+
+fn is_integral_ty(ty: &str) -> bool {
+    matches!(
+        normalize_type_token(ty).as_str(),
+        "byte" | "short" | "int" | "long" | "char" | "ubyte" | "ushort" | "uint" | "ulong"
+    )
+}
+
+fn lowered_integral_binary_ty(left_ty: &str, right_ty: &str) -> Option<String> {
+    if !is_integral_ty(left_ty) || !is_integral_ty(right_ty) {
+        return None;
+    }
+    Some(lowered_numeric_binary_ty(left_ty, right_ty))
+}
+
+pub(crate) fn lowered_shift_ty(left_ty: &str) -> Option<String> {
+    match normalize_type_token(left_ty).as_str() {
+        "byte" | "short" | "char" => Some("int".to_string()),
+        "ubyte" | "ushort" => Some("uint".to_string()),
+        "int" => Some("int".to_string()),
+        "uint" => Some("uint".to_string()),
+        "long" => Some("long".to_string()),
+        "ulong" => Some("ulong".to_string()),
         _ => None,
     }
 }
@@ -439,15 +661,18 @@ pub(crate) fn value_is_arc_managed(
     field_types: &HashMap<String, String>,
     current_class_name: &str,
 ) -> bool {
-    value_declared_type(
+    let Some(value) = method.values.get(value_id as usize) else {
+        return false;
+    };
+    let declared_ty = value_declared_type(
         method,
         value_id,
         local_types,
         field_types,
         current_class_name,
     )
-    .map(|ty| is_arc_managed_type_name(&ty))
-    .unwrap_or(false)
+    .unwrap_or_else(|| value.ty.clone());
+    is_arc_managed_type_name(&declared_ty)
 }
 
 pub(crate) fn value_is_alias_like(method: &IrMethod, value_id: IrValueId) -> bool {
@@ -464,6 +689,18 @@ pub(crate) fn value_is_alias_like(method: &IrMethod, value_id: IrValueId) -> boo
 }
 
 pub(crate) fn value_requires_arc_retain_on_store(method: &IrMethod, value_id: IrValueId) -> bool {
+    let Some(value) = method.values.get(value_id as usize) else {
+        return false;
+    };
+    if matches!(value.kind, IrValueKind::Cast { .. }) && is_arc_managed_type_name(&value.ty) {
+        return true;
+    }
+    if matches!(value.kind, IrValueKind::Call { .. }) {
+        // Call results are already the post-call value in `rax`.
+        // Storing them into an ARC local/field should transfer that result,
+        // not add another strong retain on top of it.
+        return false;
+    }
     value_is_alias_like(method, value_id)
 }
 
@@ -488,6 +725,7 @@ pub(crate) fn masm_outgoing_stack_arg_slots(method: &IrMethod) -> usize {
         .iter()
         .filter_map(|v| match &v.kind {
             IrValueKind::Call { args, .. } => Some(args.len().saturating_sub(3)),
+            IrValueKind::NewObject { args, .. } => Some(args.len().saturating_sub(4)),
             _ => None,
         })
         .max()
@@ -500,6 +738,7 @@ pub(crate) fn masm_max_call_arg_count(method: &IrMethod) -> usize {
         .iter()
         .filter_map(|v| match &v.kind {
             IrValueKind::Call { args, .. } => Some(args.len()),
+            IrValueKind::NewObject { args, .. } => Some(args.len()),
             _ => None,
         })
         .max()
@@ -519,14 +758,22 @@ pub(crate) fn masm_binary_temp_count(method: &IrMethod) -> usize {
     method
         .values
         .iter()
-        .filter(|v| matches!(v.kind, IrValueKind::Binary { .. } | IrValueKind::SwitchExpr { .. }))
+        .filter(|v| {
+            matches!(
+                v.kind,
+                IrValueKind::Binary { .. } | IrValueKind::SwitchExpr { .. }
+            )
+        })
         .count()
 }
 
 pub(crate) fn masm_binary_temp_slot(method: &IrMethod, value_id: IrValueId) -> Option<usize> {
     let mut slot = 0usize;
     for value in &method.values {
-        if matches!(value.kind, IrValueKind::Binary { .. } | IrValueKind::SwitchExpr { .. }) {
+        if matches!(
+            value.kind,
+            IrValueKind::Binary { .. } | IrValueKind::SwitchExpr { .. }
+        ) {
             if value.id == value_id {
                 return Some(slot);
             }
@@ -557,6 +804,114 @@ pub(crate) fn masm_arc_spill_base(method: &IrMethod) -> usize {
     (binary_end + 7) & !7
 }
 
+fn value_nested_call_preserve_depth(
+    method: &IrMethod,
+    value_id: IrValueId,
+    memo: &mut HashMap<IrValueId, usize>,
+) -> usize {
+    if let Some(depth) = memo.get(&value_id) {
+        return *depth;
+    }
+    let Some(value) = method.values.get(value_id as usize) else {
+        return 0;
+    };
+    let depth = match &value.kind {
+        IrValueKind::Call { callee, args } => {
+            let child = std::iter::once(*callee)
+                .chain(args.iter().copied())
+                .map(|id| value_nested_call_preserve_depth(method, id, memo))
+                .max()
+                .unwrap_or(0);
+            1 + child
+        }
+        IrValueKind::NewObject { args, .. } => {
+            1 + args
+                .iter()
+                .copied()
+                .map(|id| value_nested_call_preserve_depth(method, id, memo))
+                .max()
+                .unwrap_or(0)
+        }
+        IrValueKind::Unary { operand, .. }
+        | IrValueKind::Cast { value: operand, .. }
+        | IrValueKind::InstanceOf { value: operand, .. }
+        | IrValueKind::ArrayLength { array: operand }
+        | IrValueKind::MemberAccess { object: operand, .. } => {
+            value_nested_call_preserve_depth(method, *operand, memo)
+        }
+        IrValueKind::Binary { left, right, .. } => std::cmp::max(
+            value_nested_call_preserve_depth(method, *left, memo),
+            value_nested_call_preserve_depth(method, *right, memo),
+        ),
+        IrValueKind::Conditional {
+            condition,
+            then_value,
+            else_value,
+        } => [
+            value_nested_call_preserve_depth(method, *condition, memo),
+            value_nested_call_preserve_depth(method, *then_value, memo),
+            value_nested_call_preserve_depth(method, *else_value, memo),
+        ]
+        .into_iter()
+        .max()
+        .unwrap_or(0),
+        IrValueKind::SwitchExpr {
+            expr,
+            cases,
+            default,
+        } => {
+            let mut max_depth = value_nested_call_preserve_depth(method, *expr, memo);
+            for (case, result) in cases {
+                max_depth = std::cmp::max(
+                    max_depth,
+                    value_nested_call_preserve_depth(method, *case, memo),
+                );
+                max_depth = std::cmp::max(
+                    max_depth,
+                    value_nested_call_preserve_depth(method, *result, memo),
+                );
+            }
+            std::cmp::max(
+                max_depth,
+                value_nested_call_preserve_depth(method, *default, memo),
+            )
+        }
+        IrValueKind::ArrayNew { lengths, .. } | IrValueKind::ArrayNewInitialized { values: lengths, .. } => lengths
+            .iter()
+            .copied()
+            .map(|id| value_nested_call_preserve_depth(method, id, memo))
+            .max()
+            .unwrap_or(0),
+        IrValueKind::ArrayGet { array, index, .. } => std::cmp::max(
+            value_nested_call_preserve_depth(method, *array, memo),
+            value_nested_call_preserve_depth(method, *index, memo),
+        ),
+        IrValueKind::ArraySet {
+            array, index, value, ..
+        } => [
+            value_nested_call_preserve_depth(method, *array, memo),
+            value_nested_call_preserve_depth(method, *index, memo),
+            value_nested_call_preserve_depth(method, *value, memo),
+        ]
+        .into_iter()
+        .max()
+        .unwrap_or(0),
+        _ => 0,
+    };
+    memo.insert(value_id, depth);
+    depth
+}
+
+pub(crate) fn masm_nested_call_preserve_depth_budget(method: &IrMethod) -> usize {
+    let mut memo: HashMap<IrValueId, usize> = HashMap::new();
+    method
+        .values
+        .iter()
+        .map(|value| value_nested_call_preserve_depth(method, value.id, &mut memo))
+        .max()
+        .unwrap_or(0)
+}
+
 pub(crate) fn arc_arg_spill_offset(method: &IrMethod, arg_index: usize) -> usize {
     masm_arc_spill_base(method) + (arg_index * ARC_ARG_SPILL_STRIDE)
 }
@@ -569,15 +924,30 @@ pub(crate) fn masm_call_retval_spill_offset(method: &IrMethod) -> usize {
     arc_arg_spill_offset(method, masm_arc_arg_spill_count(method) + 1)
 }
 
-pub(crate) fn masm_call_arg_preserve_offset(method: &IrMethod, slot: usize) -> usize {
-    masm_call_retval_spill_offset(method) + (slot * 8)
+pub(crate) fn masm_call_receiver_spill_offset(method: &IrMethod) -> usize {
+    masm_call_receiver_spill_offset_at_depth(method, 0)
 }
 
-pub(crate) fn masm_nested_call_arg_preserve_offset(method: &IrMethod, arg_index: usize) -> usize {
+pub(crate) fn masm_call_receiver_spill_offset_at_depth(
+    method: &IrMethod,
+    depth: usize,
+) -> usize {
     arc_arg_spill_offset(
         method,
-        masm_arc_arg_spill_count(method) + ARC_SCRATCH_EXTRA_SLOTS + arg_index,
+        masm_arc_arg_spill_count(method) + 2 + (depth * (masm_arc_arg_spill_count(method) + 1)),
     )
+}
+
+pub(crate) fn masm_call_arg_preserve_offset(method: &IrMethod, slot: usize) -> usize {
+    masm_call_receiver_spill_offset(method) + ((slot + 1) * 8)
+}
+
+pub(crate) fn masm_nested_call_arg_preserve_offset_at_depth(
+    method: &IrMethod,
+    depth: usize,
+    arg_index: usize,
+) -> usize {
+    masm_call_receiver_spill_offset_at_depth(method, depth + 1) + ((arg_index + 1) * 8)
 }
 
 pub(crate) fn masm_outgoing_stack_arg_offset(stack_arg_slot: usize) -> usize {
@@ -614,8 +984,11 @@ pub(crate) fn masm_array_init_temp_slot(method: &IrMethod, value_id: IrValueId) 
 }
 
 pub(crate) fn masm_array_init_tmp_base(method: &IrMethod) -> usize {
+    let nested_preserve_depth = masm_nested_call_preserve_depth_budget(method);
     let spill_end = masm_arc_spill_base(method)
-        + ((masm_arc_arg_spill_count(method) * 2 + ARC_SCRATCH_EXTRA_SLOTS)
+        + ((masm_arc_arg_spill_count(method)
+            + ARC_SCRATCH_EXTRA_SLOTS
+            + (nested_preserve_depth * (masm_arc_arg_spill_count(method) + 1)))
             * ARC_ARG_SPILL_STRIDE);
     (spill_end + 7) & !7
 }
@@ -633,7 +1006,3 @@ pub(crate) fn masm_array_init_tmp_offset_at(
     let base = masm_array_init_temp_slot(method, value_id)?;
     Some(masm_array_init_tmp_base(method) + ((base + slot_index) * 8))
 }
-
-
-
-

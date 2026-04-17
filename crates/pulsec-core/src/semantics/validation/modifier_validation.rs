@@ -1,6 +1,9 @@
 use super::*;
 
-pub(super) fn validate_modifiers(modifiers: &[Modifier], context: &str) -> Result<(), SemanticError> {
+pub(super) fn validate_modifiers(
+    modifiers: &[Modifier],
+    context: &str,
+) -> Result<(), SemanticError> {
     let mut seen = HashSet::new();
     for modifier in modifiers {
         if !seen.insert(*modifier) {
@@ -14,7 +17,12 @@ pub(super) fn validate_modifiers(modifiers: &[Modifier], context: &str) -> Resul
 
     let visibility = modifiers
         .iter()
-        .filter(|m| matches!(m, Modifier::Public | Modifier::Private | Modifier::Protected))
+        .filter(|m| {
+            matches!(
+                m,
+                Modifier::Public | Modifier::Private | Modifier::Protected
+            )
+        })
         .count();
 
     if visibility > 1 {
@@ -44,7 +52,10 @@ pub(super) fn validate_supported_modifiers(
     Ok(())
 }
 
-pub(super) fn validate_main_signature(method: &MethodDecl, class_name: &str) -> Result<(), SemanticError> {
+pub(super) fn validate_main_signature(
+    method: &MethodDecl,
+    class_name: &str,
+) -> Result<(), SemanticError> {
     let has_public = method.modifiers.contains(&Modifier::Public);
     let has_static = method.modifiers.contains(&Modifier::Static);
 

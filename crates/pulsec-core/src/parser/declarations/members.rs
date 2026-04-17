@@ -52,9 +52,9 @@ impl Parser {
             )?))
         } else {
             if !method_type_params.is_empty() {
-                return Err(self.error_here(
-                    "Field declarations cannot use method-type-parameter syntax",
-                ));
+                return Err(
+                    self.error_here("Field declarations cannot use method-type-parameter syntax")
+                );
             }
             if in_interface {
                 return Err(self.error_here("Interfaces cannot declare fields yet"));

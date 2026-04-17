@@ -1,0 +1,102 @@
+package author.project;
+
+import pulse.lang.Object;
+import pulse.lang.String;
+import pulse.util.Objects;
+
+/**
+ * Resolved check invocation view for compiler-facing authoring flows.
+ */
+public final class CheckInvocation {
+    private final String entryPath;
+    private final String sourceRoot;
+    private final boolean usedManifest;
+    private final boolean authorlibEnabled;
+
+    /**
+     * Creates one resolved check invocation.
+     */
+    public CheckInvocation(
+        String entryPath,
+        String sourceRoot,
+        boolean usedManifest,
+        boolean authorlibEnabled
+    ) {
+        this.entryPath = (String) Objects.requireNonNull(entryPath, "entryPath must not be null");
+        this.sourceRoot = sourceRoot;
+        this.usedManifest = usedManifest;
+        this.authorlibEnabled = authorlibEnabled;
+    }
+
+    /**
+     * Returns the resolved entry file path.
+     */
+    public String entryPath() {
+        return this.entryPath;
+    }
+
+    /**
+     * Returns the resolved source root, or null when direct entry mode supplied no source root.
+     */
+    public String sourceRoot() {
+        return this.sourceRoot;
+    }
+
+    /**
+     * Reports whether a manifest supplied the invocation.
+     */
+    public boolean usedManifest() {
+        return this.usedManifest;
+    }
+
+    /**
+     * Reports whether authorlib is enabled for the resolved invocation.
+     */
+    public boolean authorlibEnabled() {
+        return this.authorlibEnabled;
+    }
+
+    /**
+     * Compares check invocations.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof CheckInvocation)) {
+            return false;
+        }
+        CheckInvocation value = (CheckInvocation) other;
+        return Objects.equals(this.entryPath, value.entryPath)
+            && Objects.equals(this.sourceRoot, value.sourceRoot)
+            && this.usedManifest == value.usedManifest
+            && this.authorlibEnabled == value.authorlibEnabled;
+    }
+
+    /**
+     * Returns a stable invocation hash.
+     */
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + Objects.hashCode(this.entryPath);
+        hash = (31 * hash) + Objects.hashCode(this.sourceRoot);
+        hash = (31 * hash) + (this.usedManifest ? 1 : 0);
+        hash = (31 * hash) + (this.authorlibEnabled ? 1 : 0);
+        return hash;
+    }
+
+    /**
+     * Returns a concise debug representation.
+     */
+    public String toString() {
+        return "CheckInvocation[entry="
+            .concat(this.entryPath)
+            .concat(", sourceRoot=")
+            .concat(String.valueOf((Object) this.sourceRoot))
+            .concat(", usedManifest=")
+            .concat(String.valueOf(this.usedManifest))
+            .concat(", authorlibEnabled=")
+            .concat(String.valueOf(this.authorlibEnabled))
+            .concat("]");
+    }
+}

@@ -118,9 +118,9 @@ pub(super) fn validate_stmt(
                     class_info,
                     class_names,
                     class_index,
-                fqcn_to_class,
-                imports,
-                locals,
+                    fqcn_to_class,
+                    imports,
+                    locals,
                     in_static_context,
                 )?;
                 validate_assignable(
@@ -173,6 +173,7 @@ pub(super) fn validate_stmt(
                 imports,
                 locals,
                 in_static_context,
+                method.is_constructor,
             )?;
             let target_ty = infer_expr_type(
                 target,
@@ -267,6 +268,7 @@ pub(super) fn validate_stmt(
                 imports,
                 locals,
                 in_static_context,
+                false,
             )?;
             let target_ty = infer_expr_type(
                 target,
@@ -297,8 +299,7 @@ pub(super) fn validate_stmt(
                 locals,
                 in_static_context,
             )?;
-            let result_ty =
-                infer_binary_result_type(op, &target_ty.ty, &value_ty.ty, class_names)?;
+            let result_ty = infer_binary_result_type(op, &target_ty.ty, &value_ty.ty, class_names)?;
 
             validate_assignable(
                 &target_ty.ty,
@@ -469,11 +470,13 @@ pub(super) fn validate_stmt(
             in_catch_or_finally,
         ),
         Stmt::Try {
+            resources,
             body,
             catches,
             finally_block,
             ..
         } => validate_try_stmt(
+            resources,
             body,
             catches,
             finally_block.as_deref(),

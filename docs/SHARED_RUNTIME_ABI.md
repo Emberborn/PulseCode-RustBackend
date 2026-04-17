@@ -75,7 +75,7 @@ Rule:
 Required exported procedure families:
 - startup/runtime lifecycle: `pulsec_rt_init`, `pulsec_rt_shutdown`
 - object/runtime helpers: `pulsec_rt_objectNew`, `pulsec_rt_objectClassId`
-- stdlib/runtime callables: the locked callable symbols from the stdlib/runtime surface, including `pulsec_std_com_pulse_lang_IO_println`, `pulsec_rt_consoleWriteLine`, `pulsec_rt_stringConcat`, `pulsec_rt_arrayNew`, `pulsec_rt_mapPutInt`
+- stdlib/runtime callables: the locked callable symbols from the stdlib/runtime surface, including `pulsec_com_pulse_lang_IO_println__String`, `pulsec_rt_consoleWriteLine`, `pulsec_rt_stringConcat`, `pulsec_rt_arrayNew`, `pulsec_rt_mapPutInt`
 - diagnostics/trace procedures: `pulsec_rt_dispatchNullReceiverPanic`, `pulsec_rt_dispatchInvalidTypePanic`, `pulsec_rt_tracePush`, `pulsec_rt_tracePop`, `pulsec_rt_traceDump`
 
 Forbidden private export patterns:
@@ -146,7 +146,7 @@ Failure semantics:
 - runtime ABI mismatch fails during runtime initialization with `Runtime ABI mismatch`
 - object-model ABI mismatch fails during runtime initialization with `Object model ABI mismatch`
 - mismatched builds are not supported as degraded or warning-only launches
-- shared build/staging launch descriptors (`pulsec.shared.launch.v1`) also publish the required ABI versions, mismatch policy, missing-runtime policy, missing-import policy, and required runtime procedure inventory so launch/install boundaries are explicit in emitted artifacts
+- shared build launch descriptors (`pulsec.shared.launch.v1`) also publish the required ABI versions, mismatch policy, missing-runtime policy, missing-import policy, and required runtime procedure inventory so launch/runtime boundaries are explicit in emitted artifacts
 
 ## Removed Coupling
 

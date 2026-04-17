@@ -4,8 +4,8 @@ use super::*;
 fn check_accepts_compile_time_instantiated_generic_members_with_runtime_erasure() {
     let src = r#"
         package app.generics;
-        import com.pulse.lang.Object;
-        import com.pulse.lang.String;
+        import pulse.lang.Object;
+        import pulse.lang.String;
 
         class Box<T> {
             private T value;
@@ -55,7 +55,7 @@ fn check_accepts_compile_time_instantiated_generic_members_with_runtime_erasure(
 fn check_rejects_mismatched_instantiated_generic_member_argument() {
     let src = r#"
         package app.generics;
-        import com.pulse.lang.Object;
+        import pulse.lang.Object;
 
         class Box<T> {
             private T value;
@@ -77,7 +77,7 @@ fn check_rejects_mismatched_instantiated_generic_member_argument() {
     let err = check(src).expect_err("mismatched instantiated generic arg should fail");
     assert!(err
         .to_string()
-        .contains("No method 'Box.set' matches argument types (com.pulse.lang.Object)"));
+        .contains("No method 'Box.set' matches argument types (pulse.lang.Object)"));
 }
 
 #[test]
@@ -116,9 +116,7 @@ fn check_rejects_wrong_generic_arity_and_primitive_arguments() {
         }
     "#;
     let err = check(primitive_arg).expect_err("primitive generic argument should fail");
-    assert!(err
-        .to_string()
-        .contains("must be a reference type"));
+    assert!(err.to_string().contains("must be a reference type"));
 }
 
 #[test]
@@ -192,6 +190,97 @@ fn check_accepts_interface_inheritance_and_default_static_private_methods() {
     "#;
 
     check(src).expect("interface extends/default/static/private slice should typecheck");
+}
+
+#[test]
+fn check_accepts_inherited_interface_overloads_alongside_child_overloads() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.Object;
+
+        interface CollectionLike {
+            boolean add(Object value);
+        }
+
+        interface ListLike extends CollectionLike {
+            void add(int index, Object value);
+            void add(String value);
+        }
+
+        class Items implements ListLike {
+            public boolean add(Object value) {
+                return true;
+            }
+
+            public void add(int index, Object value) {
+            }
+
+            public void add(String value) {
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ListLike list = new Items();
+                Object value = new Items();
+                boolean ok = list.add(value);
+                list.add(0, value);
+                list.add("x");
+            }
+        }
+    "#;
+
+    check(src).expect("child interface overloads should not hide inherited parent methods");
+}
+
+#[test]
+fn check_accepts_inherited_superclass_overloads_alongside_child_overloads() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.Object;
+
+        class Base {
+            public Object set(Object value) {
+                return value;
+            }
+        }
+
+        class Derived extends Base {
+            public int set(int value) {
+                return value;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Derived d = new Derived();
+                Object ref = d.set((Object) d);
+                int raw = d.set(7);
+            }
+        }
+    "#;
+
+    check(src).expect("child class overloads should not hide inherited superclass methods");
+}
+
+#[test]
+fn check_accepts_implicit_object_methods_on_user_classes() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.Object;
+
+        class Main {
+            public static void main() {
+                Main m = new Main();
+                String text = m.toString();
+                int hash = m.hashCode();
+                boolean same = m.equals((Object) m);
+                Class kind = m.getClass();
+            }
+        }
+    "#;
+
+    check(src).expect("user classes should inherit Object methods implicitly");
 }
 
 #[test]
@@ -281,9 +370,7 @@ fn check_rejects_instanceof_with_primitive_target() {
     "#;
 
     let err = check(src).expect_err("primitive instanceof target should fail");
-    assert!(err
-        .to_string()
-        .contains("must be a reference type"));
+    assert!(err.to_string().contains("must be a reference type"));
 }
 
 #[test]
@@ -309,7 +396,7 @@ fn check_rejects_instanceof_on_primitive_operand() {
 fn check_rejects_removed_unsigned_types() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private ufloat a;
@@ -328,7 +415,7 @@ fn check_rejects_removed_unsigned_types() {
 fn check_rejects_missing_entrypoint() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public void run() {
@@ -344,7 +431,7 @@ fn check_rejects_missing_entrypoint() {
 fn check_rejects_multiple_entrypoints() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -363,7 +450,7 @@ fn check_rejects_multiple_entrypoints() {
 fn check_rejects_duplicate_fields() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private int score;
@@ -382,7 +469,7 @@ fn check_rejects_duplicate_fields() {
 fn check_rejects_duplicate_method_signatures() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public void tick(int dt) {
@@ -397,14 +484,16 @@ fn check_rejects_duplicate_method_signatures() {
     "#;
 
     let err = check(src).expect_err("duplicate method signatures should fail");
-    assert!(err.to_string().contains("Duplicate method signature 'tick(int)'"));
+    assert!(err
+        .to_string()
+        .contains("Duplicate method signature 'tick(int)'"));
 }
 
 #[test]
 fn check_rejects_assignment_type_mismatch() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private static int score;
@@ -435,7 +524,9 @@ fn check_rejects_implicit_signed_to_unsigned_assignment() {
     "#;
 
     let err = check(src).expect_err("implicit signed->unsigned conversion should fail");
-    assert!(err.to_string().contains("Implicit numeric conversion 'int' -> 'uint'"));
+    assert!(err
+        .to_string()
+        .contains("Implicit numeric conversion 'int' -> 'uint'"));
 }
 
 #[test]
@@ -456,7 +547,9 @@ fn check_rejects_implicit_unsigned_to_signed_assignment() {
     "#;
 
     let err = check(src).expect_err("implicit unsigned->signed conversion should fail");
-    assert!(err.to_string().contains("Implicit numeric conversion 'uint' -> 'int'"));
+    assert!(err
+        .to_string()
+        .contains("Implicit numeric conversion 'uint' -> 'int'"));
 }
 
 #[test]
@@ -536,7 +629,8 @@ fn check_rejects_mixed_signed_with_ulong_without_explicit_cast() {
         }
     "#;
 
-    let err = check(src).expect_err("mixed signed/ulong arithmetic should fail without an explicit cast");
+    let err =
+        check(src).expect_err("mixed signed/ulong arithmetic should fail without an explicit cast");
     let msg = err.to_string();
     assert!(msg.contains("ulong") || msg.contains("numeric"));
 }
@@ -577,7 +671,7 @@ fn check_accepts_varargs_applicability_slice() {
 fn check_accepts_erased_generic_applicability_slice() {
     let src = r#"
         package app.generics;
-        import com.pulse.lang.Object;
+        import pulse.lang.Object;
 
         class Box<T> {
             private T value;
@@ -678,7 +772,7 @@ fn check_accepts_contextual_double_literal_mapping_to_float() {
 fn check_accepts_contextual_int_literal_mapping_to_boxed_long() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Long;
+        import pulse.lang.Long;
 
         class Main {
             public static void main() {
@@ -788,7 +882,9 @@ fn check_rejects_invalid_explicit_cast_expression() {
     "#;
 
     let err = check(src).expect_err("invalid explicit cast should fail");
-    assert!(err.to_string().contains("Invalid cast from 'boolean' to 'int'"));
+    assert!(err
+        .to_string()
+        .contains("Invalid cast from 'boolean' to 'int'"));
 }
 
 #[test]
@@ -831,7 +927,7 @@ fn check_rejects_incompatible_field_initializer_type() {
 fn check_accepts_body_statements() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private static int score;
@@ -851,7 +947,7 @@ fn check_accepts_body_statements() {
 fn check_accepts_if_while_and_comparisons() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -875,7 +971,7 @@ fn check_accepts_if_while_and_comparisons() {
 fn check_rejects_non_boolean_if_condition() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -894,7 +990,7 @@ fn check_rejects_non_boolean_if_condition() {
 fn check_rejects_non_boolean_while_condition() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -913,7 +1009,7 @@ fn check_rejects_non_boolean_while_condition() {
 fn check_accepts_for_loop_with_break_and_continue() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -939,7 +1035,7 @@ fn check_accepts_for_loop_with_break_and_continue() {
 fn check_rejects_break_outside_loop() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -949,14 +1045,16 @@ fn check_rejects_break_outside_loop() {
     "#;
 
     let err = check(src).expect_err("break outside loop should fail");
-    assert!(err.to_string().contains("'break' is only valid inside loops"));
+    assert!(err
+        .to_string()
+        .contains("'break' is only valid inside loops"));
 }
 
 #[test]
 fn check_rejects_continue_outside_loop() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -966,14 +1064,16 @@ fn check_rejects_continue_outside_loop() {
     "#;
 
     let err = check(src).expect_err("continue outside loop should fail");
-    assert!(err.to_string().contains("'continue' is only valid inside loops"));
+    assert!(err
+        .to_string()
+        .contains("'continue' is only valid inside loops"));
 }
 
 #[test]
 fn check_rejects_method_call_signature_mismatch() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public void tick(int dt) {
@@ -996,7 +1096,7 @@ fn check_rejects_method_call_signature_mismatch() {
 fn check_accepts_overloaded_method_calls_by_type() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void hit(int amount) {
@@ -1019,7 +1119,7 @@ fn check_accepts_overloaded_method_calls_by_type() {
 fn check_accepts_boxing_and_unboxing_in_method_call_arguments() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
 
         class Main {
             public static void takesBox(Integer value) {
@@ -1044,7 +1144,7 @@ fn check_accepts_boxing_and_unboxing_in_method_call_arguments() {
 fn check_prefers_exact_primitive_or_wrapper_overload_before_boxing() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
 
         class Main {
             public static int pick(int x) {
@@ -1072,10 +1172,91 @@ fn check_prefers_exact_primitive_or_wrapper_overload_before_boxing() {
 }
 
 #[test]
+fn check_prefers_exact_wrapper_boxing_over_widening_helper_overload() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.Byte;
+
+        class Main {
+            public static boolean pick(int x) {
+                return false;
+            }
+
+            public static boolean pick(Byte x) {
+                return true;
+            }
+
+            public static void main() {
+                boolean boxedResult;
+                boxedResult = pick((byte) 7);
+            }
+        }
+    "#;
+
+    check(src).expect("overload resolution should prefer exact wrapper boxing over widening helper matches");
+}
+
+#[test]
+fn check_prefers_reference_overload_before_wrapper_unboxing() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.Integer;
+
+        class Main {
+            public static boolean pick(Object value) {
+                return true;
+            }
+
+            public static boolean pick(int value) {
+                return false;
+            }
+
+            public static void main() {
+                Integer boxed;
+                boxed = Integer.boxObject(7);
+
+                boolean result;
+                result = pick(boxed);
+            }
+        }
+    "#;
+
+    check(src).expect("reference overloads should outrank wrapper unboxing overloads");
+}
+
+#[test]
+fn check_preserves_exact_char_overloads_alongside_numeric_widening_overloads() {
+    let src = r#"
+        package app.core;
+
+        class Main {
+            public static int pick(short x) {
+                return 1;
+            }
+
+            public static int pick(char x) {
+                return 2;
+            }
+
+            public static int pick(int x) {
+                return 3;
+            }
+
+            public static void main() {
+                int result;
+                result = pick('Z');
+            }
+        }
+    "#;
+
+    check(src).expect("exact char overload should not be collapsed into widening overloads");
+}
+
+#[test]
 fn check_accepts_member_field_and_method_chains() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             public int hp;
@@ -1103,7 +1284,7 @@ fn check_accepts_member_field_and_method_chains() {
 fn check_rejects_instance_field_access_through_class_reference() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             public int hp;
@@ -1126,7 +1307,7 @@ fn check_rejects_instance_field_access_through_class_reference() {
 fn check_rejects_instance_method_call_from_static_context() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public int ping() {
@@ -1149,7 +1330,7 @@ fn check_rejects_instance_method_call_from_static_context() {
 fn check_accepts_this_field_and_this_method_chains() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private int score;
@@ -1176,7 +1357,7 @@ fn check_accepts_this_field_and_this_method_chains() {
 fn check_accepts_static_member_access_through_class_reference() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static int total;
@@ -1187,6 +1368,7 @@ fn check_accepts_static_member_access_through_class_reference() {
 
             public static void main() {
                 Main.total = 7;
+                int local = Main.total;
                 IO.println(Main.readTotal());
             }
         }
@@ -1196,10 +1378,34 @@ fn check_accepts_static_member_access_through_class_reference() {
 }
 
 #[test]
+fn check_accepts_wrapper_and_fully_qualified_static_field_reads() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.Boolean;
+        import pulse.lang.IO;
+
+        class Main {
+            public static final int VALUE = 7;
+
+            public static void main() {
+                boolean a = Boolean.TRUE;
+                boolean b = pulse.lang.Boolean.FALSE;
+                int c = Main.VALUE;
+                IO.println(a);
+                IO.println(b);
+                IO.println(c);
+            }
+        }
+    "#;
+
+    check(src).expect("wrapper and fully qualified static field reads should typecheck");
+}
+
+#[test]
 fn check_rejects_this_in_static_context() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private int score;
@@ -1220,7 +1426,7 @@ fn check_rejects_this_in_static_context() {
 fn check_rejects_member_access_on_primitive() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1237,7 +1443,7 @@ fn check_rejects_member_access_on_primitive() {
 fn check_rejects_unknown_member_access() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             public int hp;
@@ -1259,7 +1465,7 @@ fn check_rejects_unknown_member_access() {
 fn check_rejects_method_reference_without_call_syntax() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             public int getHp() {
@@ -1285,7 +1491,7 @@ fn check_rejects_method_reference_without_call_syntax() {
 fn check_accepts_do_while_loop() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1304,7 +1510,7 @@ fn check_accepts_do_while_loop() {
 fn check_rejects_non_boolean_do_while_condition() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1322,7 +1528,7 @@ fn check_rejects_non_boolean_do_while_condition() {
 fn check_accepts_switch_with_break_and_default() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1349,7 +1555,7 @@ fn check_accepts_switch_with_break_and_default() {
 fn check_rejects_switch_case_type_mismatch() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1370,7 +1576,7 @@ fn check_rejects_switch_case_type_mismatch() {
 fn check_accepts_prefix_and_postfix_inc_dec() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1390,7 +1596,7 @@ fn check_accepts_prefix_and_postfix_inc_dec() {
 fn check_rejects_inc_on_non_int() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1408,7 +1614,7 @@ fn check_rejects_inc_on_non_int() {
 fn check_accepts_compound_assignments() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1417,6 +1623,9 @@ fn check_accepts_compound_assignments() {
                 x -= 1;
                 x *= 3;
                 x /= 2;
+                x %= 5;
+
+                double ratio = 5.5d % 2.0d;
 
                 String s = "Pulse";
                 s += "Code";
@@ -1431,7 +1640,7 @@ fn check_accepts_compound_assignments() {
 fn check_rejects_bad_compound_assignment_type() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1451,7 +1660,7 @@ fn check_rejects_bad_compound_assignment_type() {
 fn check_accepts_arithmetic_for_long_short_byte_and_unsigned_pairs() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static long longOps(long l1, long l2) {
@@ -1496,7 +1705,7 @@ fn check_accepts_arithmetic_for_long_short_byte_and_unsigned_pairs() {
 fn check_accepts_bitwise_shift_and_lazy_logical_operator_family() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static boolean side() {
@@ -1541,7 +1750,7 @@ fn check_accepts_bitwise_shift_and_lazy_logical_operator_family() {
 fn check_accepts_local_var_inference_for_locals_and_foreach() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Box {
             public int value() {
@@ -1582,9 +1791,7 @@ fn check_rejects_local_var_without_initializer_or_null_initializer() {
     "#;
 
     let err = check(missing_init).expect_err("var without initializer should fail");
-    assert!(err
-        .to_string()
-        .contains("requires an initializer"));
+    assert!(err.to_string().contains("requires an initializer"));
 
     let null_init = r#"
         package app.core;
@@ -1597,16 +1804,14 @@ fn check_rejects_local_var_without_initializer_or_null_initializer() {
     "#;
 
     let err = check(null_init).expect_err("var from null should fail");
-    assert!(err
-        .to_string()
-        .contains("cannot infer from 'null'"));
+    assert!(err.to_string().contains("cannot infer from 'null'"));
 }
 
 #[test]
 fn check_accepts_switch_expression_arrow_slice() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1657,7 +1862,7 @@ fn check_rejects_switch_expression_yield_block_slice() {
 fn check_accepts_null_for_reference_types() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
         }
@@ -1681,7 +1886,7 @@ fn check_accepts_null_for_reference_types() {
 fn check_rejects_null_for_primitive_types() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -1700,7 +1905,7 @@ fn check_rejects_null_for_primitive_types() {
 fn check_rejects_unboxing_definite_null_wrapper_assignment() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
 
         class Main {
             public static void main() {
@@ -1722,7 +1927,7 @@ fn check_rejects_unboxing_definite_null_wrapper_assignment() {
 fn check_accepts_unboxing_after_non_null_flow_narrowing() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
 
         class Main {
             public static void main() {
@@ -1743,7 +1948,7 @@ fn check_accepts_unboxing_after_non_null_flow_narrowing() {
 fn check_rejects_unboxing_definite_null_wrapper_in_call_arg_and_return() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
 
         class Main {
             private static Integer boxed;
@@ -1763,17 +1968,16 @@ fn check_rejects_unboxing_definite_null_wrapper_in_call_arg_and_return() {
     "#;
 
     let err = check(src).expect_err("definite-null wrapper unboxing in call/return should fail");
-    assert!(
-        err.to_string()
-            .contains("Cannot unbox null variable 'boxed' to primitive 'int'")
-    );
+    assert!(err
+        .to_string()
+        .contains("Cannot unbox null variable 'boxed' to primitive 'int'"));
 }
 
 #[test]
 fn check_rejects_definite_null_dereference() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             public int hp;
@@ -1797,7 +2001,7 @@ fn check_rejects_definite_null_dereference() {
 fn check_accepts_null_flow_narrowing_in_if() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             public int hp;
@@ -1817,10 +2021,52 @@ fn check_accepts_null_flow_narrowing_in_if() {
 }
 
 #[test]
+fn check_accepts_null_flow_narrowing_on_short_circuit_boolean_rhs() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.Integer;
+        import pulse.lang.IO;
+
+        class Player {
+            public int hp;
+        }
+
+        class Main {
+            public static void takesInt(int value) {
+                IO.println(value);
+            }
+
+            public static void main() {
+                Player p = new Player();
+                Integer boxed = 7;
+
+                if (p != null && p.hp >= 0) {
+                    IO.println(p.hp);
+                }
+
+                if (p == null || p.hp >= 0) {
+                    IO.println(1);
+                }
+
+                if (boxed != null && true) {
+                    takesInt(boxed);
+                }
+
+                if (boxed == null || true) {
+                    IO.println(2);
+                }
+            }
+        }
+    "#;
+
+    check(src).expect("short-circuit rhs should inherit null-flow narrowing from lhs");
+}
+
+#[test]
 fn check_accepts_null_flow_narrowing_in_loop_conditions() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             public int hp;
@@ -1850,7 +2096,7 @@ fn check_accepts_null_flow_narrowing_in_loop_conditions() {
 fn check_accepts_null_flow_after_finally_assignment() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             public int hp;
@@ -1872,10 +2118,59 @@ fn check_accepts_null_flow_after_finally_assignment() {
 }
 
 #[test]
+fn check_accepts_try_with_resources_baseline() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.AutoCloseable;
+        import pulse.lang.Exception;
+
+        class Probe implements AutoCloseable {
+            public void close() {
+            }
+        }
+
+        class Main {
+            public static void main() {
+                try (Probe first = new Probe(); Probe second = new Probe()) {
+                } catch (Exception ex) {
+                }
+            }
+        }
+    "#;
+
+    check(src).expect("try-with-resources baseline should typecheck");
+}
+
+#[test]
+fn check_rejects_try_with_resources_non_autocloseable_type() {
+    let src = r#"
+        package app.core;
+        import pulse.lang.Exception;
+
+        class Probe {
+        }
+
+        class Main {
+            public static void main() {
+                try (Probe probe = new Probe()) {
+                } catch (Exception ex) {
+                }
+            }
+        }
+    "#;
+
+    let err = check(src).expect_err("non-AutoCloseable resource should fail");
+    assert!(err
+        .to_string()
+        .contains("try-with-resources value in 'Main.main'"));
+    assert!(err.to_string().contains("AutoCloseable"));
+}
+
+#[test]
 fn check_rejects_private_field_access_from_other_class() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             private int hp;
@@ -1899,7 +2194,7 @@ fn check_rejects_private_field_access_from_other_class() {
 fn check_rejects_private_method_access_from_other_class() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             private int hp() {
@@ -1925,7 +2220,7 @@ fn check_rejects_private_method_access_from_other_class() {
 fn check_accepts_private_access_within_same_class() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private int score;
@@ -1948,7 +2243,7 @@ fn check_accepts_private_access_within_same_class() {
 fn check_accepts_protected_access_from_other_class_same_package() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             protected int hp() {
@@ -1964,14 +2259,15 @@ fn check_accepts_protected_access_from_other_class_same_package() {
         }
     "#;
 
-    check(src).expect("protected should be accessible in same package (temporary no-inheritance rule)");
+    check(src)
+        .expect("protected should be accessible in same package (temporary no-inheritance rule)");
 }
 
 #[test]
 fn check_accepts_package_private_access_from_other_class_same_package() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Player {
             int hp;
@@ -1990,10 +2286,38 @@ fn check_accepts_package_private_access_from_other_class_same_package() {
 }
 
 #[test]
+fn check_accepts_object_methods_on_interface_typed_receivers() {
+    let src = r#"
+        package app.core;
+
+        interface Named {
+            String name();
+        }
+
+        class Box implements Named {
+            public String name() {
+                return "pulse";
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Named value = new Box();
+                String text = value.toString();
+                boolean same = value.equals(value);
+                int hash = value.hashCode();
+            }
+        }
+    "#;
+
+    check(src).expect("interface-typed receivers should inherit Object methods");
+}
+
+#[test]
 fn check_rejects_non_void_method_without_definite_return() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public int pick(int x) {
@@ -2008,9 +2332,28 @@ fn check_rejects_non_void_method_without_definite_return() {
     "#;
 
     let err = check(src).expect_err("missing return path should fail");
-    assert!(err
-        .to_string()
-        .contains("must return 'int' on all paths"));
+    assert!(err.to_string().contains("must return 'int' on all paths"));
 }
 
+#[test]
+fn allows_constructor_initialization_of_final_instance_fields() {
+    let src = r#"
+        package app.core;
 
+        class Box {
+            public final int value;
+
+            public Box(int value) {
+                this.value = value;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Box box = new Box(1);
+            }
+        }
+    "#;
+
+    check(src).expect("constructor should be allowed to initialize final instance fields");
+}

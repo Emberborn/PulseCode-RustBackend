@@ -17,7 +17,10 @@ pub(super) fn validate_method_body(
         "void".to_string()
     } else {
         let declared_return = method.return_type.clone().ok_or_else(|| {
-            semantic_error(format!("Method '{}.{}' missing return type", class.name, method.name))
+            semantic_error(format!(
+                "Method '{}.{}' missing return type",
+                class.name, method.name
+            ))
         })?;
         canonicalize_type_name_in_scope(
             &declared_return,
@@ -78,9 +81,7 @@ pub(super) fn validate_method_body(
         )?;
     }
 
-    if !method.is_constructor
-        && expected_return != "void"
-        && !block_guarantees_return(&method.body)
+    if !method.is_constructor && expected_return != "void" && !block_guarantees_return(&method.body)
     {
         return Err(semantic_error(format!(
             "Method '{}.{}' must return '{}' on all paths",

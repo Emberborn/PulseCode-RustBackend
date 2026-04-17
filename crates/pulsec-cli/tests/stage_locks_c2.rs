@@ -1,3 +1,6 @@
+mod common;
+// Windows x64 host/bootstrap runtime and ARC lock suite.
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
@@ -193,7 +196,7 @@ fn lock_c2_01_arc_header_contract_is_documented_and_emitted_in_native_plan() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -224,8 +227,8 @@ fn lock_c2_02_arc_fast_path_null_noop_behavior_executes() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
 
         class Main {
             public static void main() {
@@ -237,7 +240,7 @@ fn lock_c2_02_arc_fast_path_null_noop_behavior_executes() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -251,8 +254,8 @@ fn lock_c2_02_arc_fast_path_null_noop_behavior_executes() {
 
     let plan = fs::read_to_string(root.join("build").join("native.plan.json"))
         .expect("read native.plan.json");
-    assert!(plan.contains("com.pulse.memory.Memory.retain"));
-    assert!(plan.contains("com.pulse.memory.Memory.release"));
+    assert!(plan.contains("pulse.memory.Memory.retain"));
+    assert!(plan.contains("pulse.memory.Memory.release"));
 
     let run = Command::new(root.join("build").join("main.exe"))
         .output()
@@ -276,9 +279,9 @@ fn lock_c2_03_arc_release_slow_path_teardown_sequence_executes() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -296,7 +299,7 @@ fn lock_c2_03_arc_release_slow_path_teardown_sequence_executes() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -339,9 +342,9 @@ fn lock_c2_04_arc_insertion_boundaries_emit_retain_release_sequences() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static String keep;
@@ -367,7 +370,7 @@ fn lock_c2_04_arc_insertion_boundaries_emit_retain_release_sequences() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -379,8 +382,14 @@ fn lock_c2_04_arc_insertion_boundaries_emit_retain_release_sequences() {
         return;
     }
 
-    let asm = fs::read_to_string(root.join("build").join("obj").join("app").join("core").join("Main.asm"))
-        .expect("read Main.asm");
+    let asm = fs::read_to_string(
+        root.join("build")
+            .join("obj")
+            .join("app")
+            .join("core")
+            .join("Main.asm"),
+    )
+    .expect("read Main.asm");
     let retain_count = asm.matches("call pulsec_rt_arcRetain").count();
     let release_count = asm.matches("call pulsec_rt_arcRelease").count();
     assert!(
@@ -416,9 +425,9 @@ fn lock_c2_05_cycle_detector_cadence_and_symbols_are_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -430,7 +439,7 @@ fn lock_c2_05_cycle_detector_cadence_and_symbols_are_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -449,9 +458,9 @@ fn lock_c2_05_cycle_detector_cadence_and_symbols_are_locked() {
     assert!(plan.contains("\"strategy\": \"trial-deletion\""));
     assert!(plan.contains("\"young_window\": 64"));
     assert!(plan.contains("\"full_interval_ticks\": 8"));
-    assert!(plan.contains("com.pulse.memory.Memory.cycleYoungPass"));
-    assert!(plan.contains("com.pulse.memory.Memory.cycleFullPass"));
-    assert!(plan.contains("com.pulse.memory.Memory.cycleTick"));
+    assert!(plan.contains("pulse.memory.Memory.cycleYoungPass"));
+    assert!(plan.contains("pulse.memory.Memory.cycleFullPass"));
+    assert!(plan.contains("pulse.memory.Memory.cycleTick"));
 
     let run = Command::new(root.join("build").join("main.exe"))
         .output()
@@ -475,8 +484,8 @@ fn lock_c2_user_object_cycle_reclamation_executes_when_unreachable() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
 
         class Node {
             public Node next;
@@ -504,7 +513,7 @@ fn lock_c2_user_object_cycle_reclamation_executes_when_unreachable() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -542,7 +551,7 @@ fn lock_c2_user_object_storage_tables_are_dynamic_pointer_backed() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Node {
             public Node next;
@@ -558,7 +567,7 @@ fn lock_c2_user_object_storage_tables_are_dynamic_pointer_backed() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -615,7 +624,7 @@ fn lock_c2_user_reference_field_lanes_are_64bit_in_codegen() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Holder {
             public String value;
@@ -630,7 +639,7 @@ fn lock_c2_user_reference_field_lanes_are_64bit_in_codegen() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -673,13 +682,13 @@ fn lock_c2_06_weak_reference_runtime_support_is_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
-                String h = Intrinsics.intToString(42);
+                String h = String.valueOf(42);
                 long w = Memory.weakNew(h);
                 String live = Memory.weakGet(w);
                 IO.println(Intrinsics.stringLength(live));
@@ -707,7 +716,7 @@ fn lock_c2_06_weak_reference_runtime_support_is_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -721,9 +730,9 @@ fn lock_c2_06_weak_reference_runtime_support_is_locked() {
 
     let plan = fs::read_to_string(root.join("build").join("native.plan.json"))
         .expect("read native.plan.json");
-    assert!(plan.contains("com.pulse.memory.Memory.weakNew"));
-    assert!(plan.contains("com.pulse.memory.Memory.weakGet"));
-    assert!(plan.contains("com.pulse.memory.Memory.weakClear"));
+    assert!(plan.contains("pulse.memory.Memory.weakNew"));
+    assert!(plan.contains("pulse.memory.Memory.weakGet"));
+    assert!(plan.contains("pulse.memory.Memory.weakClear"));
 
     let run = Command::new(root.join("build").join("main.exe"))
         .output()
@@ -756,8 +765,8 @@ fn lock_c2_07_arc_failure_semantics_are_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
 
         class Main {
             public static void main() {
@@ -771,7 +780,7 @@ fn lock_c2_07_arc_failure_semantics_are_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -832,9 +841,9 @@ fn lock_c2_allocator_reuses_reclaimed_arc_slots() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -855,7 +864,7 @@ fn lock_c2_allocator_reuses_reclaimed_arc_slots() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -901,12 +910,12 @@ fn lock_c2_weak_allocator_grows_beyond_legacy_limit_without_early_exhaustion() {
         &format!(
             r#"
         package app.core;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {{
             public static void main() {{
-                String seed = Intrinsics.intToString(7);
+                String seed = String.valueOf(7);
                 int i = 0;
                 int ok = 1;
                 while (i < {}) {{
@@ -926,7 +935,7 @@ fn lock_c2_weak_allocator_grows_beyond_legacy_limit_without_early_exhaustion() {
         ),
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -970,13 +979,13 @@ fn lock_c2_weak_clear_recycles_token_capacity() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
-                String seed = Intrinsics.intToString(9);
+                String seed = String.valueOf(9);
                 int ok = 1;
                 int round = 0;
                 while (round < 100) {
@@ -1008,7 +1017,7 @@ fn lock_c2_weak_clear_recycles_token_capacity() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1071,7 +1080,7 @@ fn lock_c2_generation_wraparound_is_fail_fast_and_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1126,9 +1135,9 @@ fn lock_c2_08_array_heap_allocation_contract_is_locked() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -1140,7 +1149,7 @@ fn lock_c2_08_array_heap_allocation_contract_is_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1157,7 +1166,10 @@ fn lock_c2_08_array_heap_allocation_contract_is_locked() {
     assert!(plan.contains("\"schema\": \"pulsec.alloc.policy.v1\""));
     assert!(plan.contains("\"backend\": \"win64-process-heap\""));
     assert!(plan.contains(&format!("\"slot_capacity\": {}", HANDLE_SLOT_CAPACITY)));
-    assert!(plan.contains(&format!("\"slot_capacity_initial\": {}", HANDLE_SLOT_INITIAL_CAPACITY)));
+    assert!(plan.contains(&format!(
+        "\"slot_capacity_initial\": {}",
+        HANDLE_SLOT_INITIAL_CAPACITY
+    )));
     assert!(plan.contains("\"slot_capacity_growth\": \"runtime-doubling\""));
     assert!(plan.contains("\"frame_budget\""));
     assert!(plan.contains(&format!("\"warn_bytes\": {}", FRAME_BUDGET_WARN_BYTES)));
@@ -1192,7 +1204,10 @@ fn lock_c2_08_array_heap_allocation_contract_is_locked() {
         "expected HeapFree import for array teardown"
     );
     assert!(
-        io_asm.contains(&format!("rt_slot_capacity dd {}", HANDLE_SLOT_INITIAL_CAPACITY)),
+        io_asm.contains(&format!(
+            "rt_slot_capacity dd {}",
+            HANDLE_SLOT_INITIAL_CAPACITY
+        )),
         "expected runtime slot capacity state in asm"
     );
     assert!(
@@ -1247,9 +1262,9 @@ fn lock_c2_08_slot_capacity_grows_beyond_legacy_limit() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -1257,13 +1272,13 @@ fn lock_c2_08_slot_capacity_grows_beyond_legacy_limit() {
                 int i = 0;
                 while (i < 5005) {
                     long h = Intrinsics.arrayNew(1);
-                    Intrinsics.arraySetInt(holders, i, (int) h);
+                    Intrinsics.arraySetLong(holders, i, h);
                     i = i + 1;
                 }
                 IO.println("grow_ok");
                 i = 0;
                 while (i < 5005) {
-                    long h2 = (long) Intrinsics.arrayGetInt(holders, i);
+                    long h2 = Intrinsics.arrayGetLong(holders, i);
                     Memory.release(h2);
                     i = i + 1;
                 }
@@ -1272,7 +1287,7 @@ fn lock_c2_08_slot_capacity_grows_beyond_legacy_limit() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1312,9 +1327,9 @@ fn lock_c2_10_container_shrink_hysteresis_executes() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -1326,7 +1341,7 @@ fn lock_c2_10_container_shrink_hysteresis_executes() {
                     int i = 0;
                     while (i < 200) {
                         Intrinsics.listAddInt(list, i);
-                        String key = Intrinsics.intToString(i);
+                        String key = String.valueOf(i);
                         Intrinsics.mapPutInt(map, key, i);
                         i = i + 1;
                     }
@@ -1345,7 +1360,7 @@ fn lock_c2_10_container_shrink_hysteresis_executes() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1389,13 +1404,13 @@ fn lock_c2_11_list_string_ownership_retain_and_clear_release() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
-                String s = Intrinsics.intToString(7);
+                String s = String.valueOf(7);
                 long list = Intrinsics.listNew();
                 Intrinsics.listAddString(list, s);
                 s = null;
@@ -1411,7 +1426,7 @@ fn lock_c2_11_list_string_ownership_retain_and_clear_release() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1425,7 +1440,8 @@ fn lock_c2_11_list_string_ownership_retain_and_clear_release() {
 
     let io_asm = read_runtime_asm(&root);
     assert!(
-        io_asm.contains("pulsec_rt_listAddString proc") && io_asm.contains("call pulsec_rt_arcRetain"),
+        io_asm.contains("pulsec_rt_listAddString proc")
+            && io_asm.contains("call pulsec_rt_arcRetain"),
         "expected list add string ownership retain in runtime asm"
     );
     assert!(
@@ -1455,17 +1471,17 @@ fn lock_c2_11_map_string_ownership_replace_and_clear_release() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
                 long map = Intrinsics.mapNew();
-                String key = Intrinsics.intToString(1);
-                String v1 = Intrinsics.intToString(11);
+                String key = String.valueOf(1);
+                String v1 = String.valueOf(11);
                 Intrinsics.mapPut(map, key, v1);
                 v1 = null;
-                String v2 = Intrinsics.intToString(22);
+                String v2 = String.valueOf(22);
                 Intrinsics.mapPut(map, key, v2);
                 v2 = null;
 
@@ -1480,7 +1496,7 @@ fn lock_c2_11_map_string_ownership_replace_and_clear_release() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1534,8 +1550,8 @@ fn lock_c2_12_array_oom_behavior_panics_deterministically() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -1545,7 +1561,7 @@ fn lock_c2_12_array_oom_behavior_panics_deterministically() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1597,7 +1613,7 @@ fn lock_c2_12_list_growth_scales_without_panic() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.rt.Intrinsics;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -1611,7 +1627,7 @@ fn lock_c2_12_list_growth_scales_without_panic() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1653,26 +1669,29 @@ fn lock_c2_12_map_growth_scales_without_panic() {
     let root = unique_temp_root();
     let src_root = root.join("src");
     let entry = src_root.join("app/core/Main.pulse");
+    let mut puts = String::new();
+    for i in 0..600 {
+        puts.push_str(&format!(
+            "                Intrinsics.mapPutInt(map, \"k{}\", {});\n",
+            i, i
+        ));
+    }
     write_file(
         &entry,
-        r#"
+        &format!(
+            r#"
         package app.core;
-        import com.pulse.rt.Intrinsics;
+        import pulse.rt.Intrinsics;
 
-        class Main {
-            public static void main() {
+        class Main {{
+            public static void main() {{
                 long map = Intrinsics.mapNew();
-                int i = 0;
-                while (i < 600) {
-                    String key = Intrinsics.intToString(i);
-                    Intrinsics.mapPutInt(map, key, i);
-                    i = i + 1;
-                }
-            }
-        }"#,
+{puts}            }}
+        }}"#
+        ),
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1710,7 +1729,7 @@ fn lock_c2_12_map_growth_scales_without_panic() {
 }
 
 #[test]
-fn lock_c2_12_string_growth_panics_deterministically() {
+fn lock_c2_12_string_growth_scales_deterministically() {
     let root = unique_temp_root();
     let src_root = root.join("src");
     let entry = src_root.join("app/core/Main.pulse");
@@ -1718,7 +1737,8 @@ fn lock_c2_12_string_growth_panics_deterministically() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -1728,11 +1748,12 @@ fn lock_c2_12_string_growth_panics_deterministically() {
                     s = Intrinsics.stringConcat(s, "a");
                     i = i + 1;
                 }
+                IO.println(s.length());
             }
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1752,25 +1773,19 @@ fn lock_c2_12_string_growth_panics_deterministically() {
         return;
     }
 
-    let io_asm = read_runtime_asm(&root);
-    assert!(
-        io_asm.contains("rt_string_alloc_err"),
-        "expected deterministic string growth diagnostic symbol in runtime asm"
-    );
-
     let run = Command::new(root.join("build").join("main.exe"))
         .output()
         .expect("run built executable");
     assert!(
-        !run.status.success(),
-        "expected non-zero exit on deterministic string growth failure\nstdout:\n{}\nstderr:\n{}",
+        run.status.success(),
+        "expected successful execution with dynamic string growth\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&run.stdout),
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
     assert!(
-        out.contains("String allocation failed"),
-        "expected deterministic string growth failure message\nstdout:\n{}",
+        out.contains("300"),
+        "expected dynamic string growth to preserve final length\nstdout:\n{}",
         out
     );
 }
@@ -1797,7 +1812,7 @@ fn lock_c2_15_long_literal_codegen_uses_64bit_immediate() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1847,7 +1862,7 @@ fn lock_c2_16_abi_v2_runtime_markers_are_locked() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1900,8 +1915,8 @@ fn lock_c2_16_generation_mismatch_panics_deterministically() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -1914,7 +1929,7 @@ fn lock_c2_16_generation_mismatch_panics_deterministically() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -1960,9 +1975,9 @@ fn lock_c2_16_slot_growth_exceeds_legacy_65535() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -1971,14 +1986,14 @@ fn lock_c2_16_slot_growth_exceeds_legacy_65535() {
                 int i = 0;
                 while (i < target) {
                     long h = Intrinsics.listNew();
-                    Intrinsics.arraySetInt(holders, i, (int) h);
+                    Intrinsics.arraySetLong(holders, i, h);
                     i = i + 1;
                 }
                 IO.println("growth_65k_ok");
                 IO.println(Intrinsics.arrayLength(holders));
                 i = 0;
                 while (i < target) {
-                    long h2 = (long) Intrinsics.arrayGetInt(holders, i);
+                    long h2 = Intrinsics.arrayGetLong(holders, i);
                     Memory.release(h2);
                     i = i + 1;
                 }
@@ -1987,7 +2002,7 @@ fn lock_c2_16_slot_growth_exceeds_legacy_65535() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -2009,7 +2024,10 @@ fn lock_c2_16_slot_growth_exceeds_legacy_65535() {
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "growth_65k_ok\n66000\n", "unexpected growth fixture output");
+    assert_eq!(
+        out, "growth_65k_ok\n66000\n",
+        "unexpected growth fixture output"
+    );
 }
 
 #[test]
@@ -2021,7 +2039,7 @@ fn lock_c2_17_method_frames_do_not_use_fixed_scratch_offsets() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static int addThree(int a, int b, int c) {
@@ -2037,7 +2055,7 @@ fn lock_c2_17_method_frames_do_not_use_fixed_scratch_offsets() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -2102,7 +2120,7 @@ fn lock_c2_18_win64_outgoing_stack_args_work_for_static_and_instance_calls() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Helper {
             public static int sum5(int a, int b, int c, int d, int e) {
@@ -2125,7 +2143,7 @@ fn lock_c2_18_win64_outgoing_stack_args_work_for_static_and_instance_calls() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -2200,7 +2218,7 @@ fn lock_c2_19_frame_budget_lint_fails_build_with_clear_diagnostic() {
     );
     write_file(&entry, &src);
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -2228,14 +2246,37 @@ fn lock_c2_19_frame_budget_lint_fails_build_with_clear_diagnostic() {
 }
 
 #[test]
-fn lock_c2_20_runtime_mix_gameloop_frame_is_bounded_and_executable() {
-    let fixture = fixture_root("runtime_mix");
+fn lock_c2_20_same_package_gameloop_frame_is_bounded_and_executable() {
     let root = unique_temp_root();
-    copy_dir_recursive(&fixture.join("src"), &root.join("src"));
     let src_root = root.join("src");
     let entry = src_root.join("app/runtime/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.runtime;
+        import pulse.lang.IO;
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+        class Main {
+            public static void main() {
+                if (GameLoop.tick() == 1) {
+                    IO.println("same_package_ok");
+                }
+            }
+        }"#,
+    );
+    write_file(
+        &src_root.join("app/runtime/GameLoop.pulse"),
+        r#"
+        package app.runtime;
+
+        class GameLoop {
+            public static int tick() {
+                return 1;
+            }
+        }"#,
+    );
+
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -2280,15 +2321,15 @@ fn lock_c2_20_runtime_mix_gameloop_frame_is_bounded_and_executable() {
     }
 
     let exe = root.join("build").join("main.exe");
-    let run = Command::new(&exe).output().expect("run runtime_mix exe");
+    let run = Command::new(&exe).output().expect("run same-package exe");
     assert!(
         run.status.success(),
-        "expected runtime_mix executable success\nstdout:\n{}\nstderr:\n{}",
+        "expected same-package executable success\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&run.stdout),
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "runtime_mix_ok\n", "unexpected runtime_mix output");
+    assert_eq!(out, "same_package_ok\n", "unexpected same-package output");
 }
 
 #[test]
@@ -2300,9 +2341,9 @@ fn lock_c2_21_debug_allocator_double_release_panics_deterministically() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -2315,7 +2356,7 @@ fn lock_c2_21_debug_allocator_double_release_panics_deterministically() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .env("PULSEC_DEBUG_ALLOC", "1")
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
@@ -2331,8 +2372,8 @@ fn lock_c2_21_debug_allocator_double_release_panics_deterministically() {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    let plan = fs::read_to_string(root.join("build").join("native.plan.json"))
-        .expect("read native plan");
+    let plan =
+        fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
     assert!(
         plan.contains("\"debug_allocator\"") && plan.contains("\"enabled\": true"),
         "expected debug allocator enabled in native plan\n{}",
@@ -2375,9 +2416,9 @@ fn lock_c2_21_debug_allocator_retain_after_release_panics_deterministically() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
-        import com.pulse.memory.Memory;
-        import com.pulse.rt.Intrinsics;
+        import pulse.lang.IO;
+        import pulse.memory.Memory;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -2390,7 +2431,7 @@ fn lock_c2_21_debug_allocator_retain_after_release_panics_deterministically() {
         }"#,
     );
 
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .env("PULSEC_DEBUG_ALLOC", "1")
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
@@ -2463,7 +2504,7 @@ fn lock_c2_22_soak_memory_trend_is_stable() {
     let mut peaks = Vec::with_capacity(iterations);
     for _ in 0..iterations {
         let _ = fs::remove_file(&exe);
-        let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+        let output = common::pulsec_command()
             .arg("build")
             .arg(entry.to_str().expect("entry utf8"))
             .arg("--source-root")
@@ -2494,7 +2535,9 @@ fn lock_c2_22_soak_memory_trend_is_stable() {
         let (run, peak) = run_exe_with_peak_working_set(&exe);
         #[cfg(not(windows))]
         let (run, peak) = (
-            Command::new(&exe).output().expect("run strict_stress_soak exe"),
+            Command::new(&exe)
+                .output()
+                .expect("run strict_stress_soak exe"),
             0u64,
         );
         assert!(
@@ -2504,7 +2547,11 @@ fn lock_c2_22_soak_memory_trend_is_stable() {
             String::from_utf8_lossy(&run.stderr)
         );
         let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-        assert_eq!(out, "soak_ok\n40415\n", "unexpected strict soak output:\n{}", out);
+        assert_eq!(
+            out, "soak_ok\n40415\n",
+            "unexpected strict soak output:\n{}",
+            out
+        );
         peaks.push(peak);
     }
 
@@ -2565,14 +2612,14 @@ fn lock_c2_23_threading_contract_is_documented_and_emitted() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
         class Main {
             public static void main() {
                 IO.println(1);
             }
         }"#,
     );
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
         .arg("--source-root")
@@ -2587,8 +2634,8 @@ fn lock_c2_23_threading_contract_is_documented_and_emitted() {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    let plan = fs::read_to_string(root.join("build").join("native.plan.json"))
-        .expect("read native plan");
+    let plan =
+        fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
     assert!(
         plan.contains("\"threading\"")
             && plan.contains("\"schema\": \"pulsec.runtime.threading.v1\"")
@@ -2643,7 +2690,7 @@ fn lock_c2_24_runtime_abi_mismatch_fails_deterministically() {
             }
         }"#,
     );
-    let output = Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    let output = common::pulsec_command()
         .env("PULSEC_FORCE_RUNTIME_ABI_VERSION", "1")
         .arg("build")
         .arg(entry.to_str().expect("entry utf8"))
@@ -2659,8 +2706,8 @@ fn lock_c2_24_runtime_abi_mismatch_fails_deterministically() {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    let plan = fs::read_to_string(root.join("build").join("native.plan.json"))
-        .expect("read native plan");
+    let plan =
+        fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
     assert!(
         plan.contains("\"abi_compatibility\"")
             && plan.contains("\"schema\": \"pulsec.runtime.abi.v1\"")

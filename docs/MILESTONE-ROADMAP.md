@@ -4,6 +4,13 @@ For the authoritative detailed plan, use:
 - `docs/STANDALONE_ROADMAP.md`
 - This file tracks milestone-level progress only (not Phase A/B/C sub-task detail).
 
+## Strategic Direction Note (2026-03-21)
+
+- PulseCode is now being steered as a Rust-hosted bootstrap compiler for PulseOS
+- self-hosting is now the transition mechanism, while the stronger goal is self-sustained hosting on PulseOS rather than finishing a Windows-first PulseCode product
+- Windows-native backend/product milestones below should be read as bootstrap/reference progress, not as the strategic destination
+- active work should keep advancing F1/F2/F-A language readiness while redefining backend/runtime milestones around a Rust-owned host path and a PulseOS target adapter
+
 ## Milestone 0: Bootstrap Frontend (Done)
 - Lexer/parser/AST foundation.
 - Semantic/type checks for core class/method model.
@@ -27,7 +34,7 @@ For the authoritative detailed plan, use:
 - Real fixture project suite added under `crates/pulsec-cli/tests/fixtures` for multi-file behavior validation. (Done)
 - Milestone 1 semantics frozen in `docs/M1_SEMANTICS_FREEZE.md` for backend stability. (Done)
 
-## Milestone 2: Native Backend (Done - Spike Frozen)
+## Milestone 2: Native Backend (Done - Bootstrap Spike Frozen)
 - IR module foundation and AST-to-IR lowering baseline wired in `pulsec-core`. (Done baseline)
 - Block-based method IR + control-flow lowering (`if/while/do-while/for/switch/break/continue/return`) added. (Done baseline)
 - Typed temp/value IR (`IrValueId` graph) and source mapping metadata baseline (`IrSourceLoc`) added. (Done baseline)
@@ -69,7 +76,8 @@ For the authoritative detailed plan, use:
   - successful linked executable generation verified for current multi-file phase-B fixture project
 
 Milestone 2 freeze note:
-- Phase B is frozen as a backend spike baseline for moving into runtime/memory work.
+- Phase B is frozen as a bootstrap backend spike baseline.
+- The Windows-native path remains useful for regression evidence, but new strategic backend work should now move toward target adapters and the PulseOS runtime boundary.
 
 ## Milestone 3: Runtime + Memory Model (In Progress)
 - Runtime library (`com.pulse.lang.System`, `com.pulse.lang.IO`, strings, arrays, core collections).
@@ -425,6 +433,11 @@ Milestone 2 freeze note:
 - Installer pipeline and metadata.
 - MSI generation support.
 
-## Milestone 5: Self-Hosting
+## Milestone F-B: Self-Sustained Elevation Inventory
+- Inventory the whole compiler/runtime/tooling stack and classify what still needs to move from Rust into Pulse.
+- Define the `stdlib` versus `authorlib` split.
+- Lock the rule that compiler/runtime builds can always access `authorlib` even when it is not enabled for ordinary user projects.
+
+## Milestone 5: Self-Sustained Hosting Transition
 - Compiler implemented in PulseCode.
 - Bootstrap chain and compiler equivalence validation.

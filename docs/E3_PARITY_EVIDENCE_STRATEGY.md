@@ -9,6 +9,8 @@ This document defines how E3 parity claims are proved.
 
 No E3 parity claim is accepted from one mode alone.
 
+Under `RB-18` rebase validation layering, this document is Windows x64 adapter evidence only. It does not prove PulseOS or Linux parity by proxy.
+
 ## Required Evidence Model
 
 Every parity claim must be backed by side-by-side evidence from both `fat` and `shared` modes.
@@ -17,8 +19,7 @@ Required evidence categories:
 - executable behavior comparison
 - failure-path comparison
 - artifact/publication comparison
-- staging/package comparison
-- install/lifecycle comparison
+- build/publication comparison
 
 ## Fixture Corpus Policy
 
@@ -57,7 +58,7 @@ Failure parity checks must compare:
 
 Examples:
 - shared missing-runtime failure may exist where fat has no equivalent payload lookup
-- build/link/package hard-fail policy must still be deterministic in both modes
+- build/link hard-fail policy must still be deterministic in both modes
 
 ## Artifact / Layout Comparison Rules
 
@@ -71,28 +72,28 @@ They must instead prove:
 Snapshot coverage should freeze:
 - fat release/debug output shape
 - shared release/debug output shape
-- staged output shape for both modes
+- documented build/publication shape for both modes
 
-## Packaging / Install Comparison Rules
+## Build / Publication Comparison Rules
 
-Packaging/install parity checks must prove:
-- `package` staging produces a runnable product for both modes
-- MSI install preserves launch success for both modes
-- repair/upgrade/uninstall semantics remain within the documented mode-specific expectations
+Build/publication parity checks must prove:
+
+- `build` publishes a runnable product for both modes
+- release/debug publication rules remain within the documented mode-specific expectations
+- shared-only runtime payloads and lookup metadata remain explicit rather than implicit
 
 ## Test Adoption Rule
 
 E3 parity work should be adopted into:
 - executable fixture suites
-- stage/package regression suites
-- install validation suites
+- build/publication regression suites
 - Windows matrix docs/validation
 
 No new parity contract should live only in prose once executable coverage exists for that area.
 
 ## Related Specs
 
+- [REBASE_VALIDATION_LAYERING.md](/D:/Programming/codex/PulseCode/docs/REBASE_VALIDATION_LAYERING.md)
 - [E3_PARITY_SUPPORT_MATRIX.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_SUPPORT_MATRIX.md)
 - [E3_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/E3_TASK_BOARD.md)
 - [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
-- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)

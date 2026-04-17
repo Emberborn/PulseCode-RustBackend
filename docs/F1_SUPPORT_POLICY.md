@@ -53,6 +53,7 @@ Required feature families:
 - the chosen `try`/`catch`/`finally` baseline
 - `Scanner`
 - `Objects`
+- practical `String` / `StringBuilder` utility hardening in support of the util baseline
 - explicit concurrency/network policy
 
 ## Allowed To Defer In F1
@@ -63,7 +64,6 @@ Current explicit F1 deferrals:
 - desktop UI families (`awt`, `swing`)
 - method references if not chosen as part of the F1 baseline
 - lambdas if not chosen as part of the F1 baseline
-- try-with-resources for the current F1 baseline; it is explicitly fenced until `AutoCloseable` and the resource-lifecycle contract are completed in later F1 work
 - synchronized statements for the current F1 baseline; they stay fenced until the real monitor/threading/memory model lands
 - executor/semaphore depth beyond the explicitly chosen concurrency baseline
 - URL/HTTP helper surface beyond the explicitly chosen networking baseline

@@ -1,0 +1,386 @@
+package author.toolchain;
+
+import pulse.collections.ArrayList;
+import pulse.collections.List;
+import pulse.io.Path;
+import pulse.lang.String;
+import pulse.process.ProcessEnvironment;
+import pulse.process.ProcessEnvironmentVariable;
+import pulse.process.ProcessPlan;
+import pulse.util.StringJoiner;
+import pulse.util.Objects;
+
+/**
+ * Resolves effective toolchain configuration from manifest defaults and CLI-style overrides.
+ */
+public final class ToolchainResolver {
+    /**
+     * Returns the effective toolchain configuration where explicit overrides win over manifest values.
+     */
+    public static ToolchainConfig resolve(
+        ToolchainConfig manifestToolchain,
+        String assemblerOverride,
+        String linkerOverride
+    ) {
+        ToolchainConfig manifest = (ToolchainConfig) Objects.requireNonNull(
+            manifestToolchain,
+            "manifestToolchain must not be null"
+        );
+        return new ToolchainConfig(
+            ToolchainResolver.choose(linkerOverride, manifest.linker()),
+            ToolchainResolver.choose(assemblerOverride, manifest.assembler())
+        );
+    }
+
+    private static String choose(String overrideValue, String manifestValue) {
+        if (overrideValue != null) {
+            return overrideValue;
+        }
+        return manifestValue;
+    }
+
+    /**
+     * Returns ordered linker/assembler candidate lists from host-provided discovery facts.
+     */
+    public static ToolchainCandidatePlan planCandidates(
+        String linkerOverride,
+        String envLinker,
+        String discoveredVisualStudioLinkers
+    ) {
+        List<String> discovered = ToolchainResolver.parseDiscoveryLines(discoveredVisualStudioLinkers);
+        return new ToolchainCandidatePlan(
+            ToolchainResolver.planLinkerCandidates(linkerOverride, envLinker, discovered),
+            ToolchainResolver.planAssemblerCandidates(linkerOverride, envLinker, discovered)
+        );
+    }
+
+    private static List<String> planLinkerCandidates(
+        String linkerOverride,
+        String envLinker,
+        List<String> discovered
+    ) {
+        ArrayList<String> candidates = new ArrayList<String>();
+        if (!ToolchainResolver.isBlank(linkerOverride)) {
+            candidates.add(linkerOverride);
+            return candidates;
+        }
+        if (!ToolchainResolver.isBlank(envLinker)) {
+            candidates.add(envLinker);
+            return candidates;
+        }
+        ToolchainResolver.appendUnique(candidates, "link.exe");
+        ToolchainResolver.appendUnique(candidates, "lld-link.exe");
+        ToolchainResolver.appendAllUnique(candidates, discovered);
+        return candidates;
+    }
+
+    private static List<String> planAssemblerCandidates(
+        String linkerOverride,
+        String envLinker,
+        List<String> discovered
+    ) {
+        ArrayList<String> candidates = new ArrayList<String>();
+        ToolchainResolver.appendSiblingAssemblerCandidate(candidates, linkerOverride);
+        ToolchainResolver.appendSiblingAssemblerCandidate(candidates, envLinker);
+        int index = 0;
+        while (index < discovered.size()) {
+            ToolchainResolver.appendSiblingAssemblerCandidate(candidates, discovered.getString(index));
+            index = index + 1;
+        }
+        ToolchainResolver.appendUnique(candidates, "ml64.exe");
+        return candidates;
+    }
+
+    private static List<String> parseDiscoveryLines(String text) {
+        ArrayList<String> values = new ArrayList<String>();
+        if (ToolchainResolver.isBlank(text)) {
+            return values;
+        }
+        String[] lines = text.split('\n');
+        int index = 0;
+        while (index < lines.length) {
+            String line = lines[index];
+            if (line != null && line.endsWith("\r")) {
+                line = line.substring(0, line.length() - 1);
+            }
+            if (!ToolchainResolver.isBlank(line)) {
+                ToolchainResolver.appendUnique(values, line);
+            }
+            index = index + 1;
+        }
+        return values;
+    }
+
+    private static void appendAllUnique(List<String> target, List<String> values) {
+        int index = 0;
+        while (index < values.size()) {
+            ToolchainResolver.appendUnique(target, values.getString(index));
+            index = index + 1;
+        }
+    }
+
+    private static void appendSiblingAssemblerCandidate(List<String> candidates, String linkerPath) {
+        if (ToolchainResolver.isBlank(linkerPath)) {
+            return;
+        }
+        String parent = Path.parent(linkerPath);
+        if (ToolchainResolver.isBlank(parent)) {
+            return;
+        }
+        ToolchainResolver.appendUnique(candidates, Path.resolve(parent, "ml64.exe"));
+    }
+
+    private static void appendUnique(List<String> target, String value) {
+        if (ToolchainResolver.isBlank(value) || ToolchainResolver.containsIgnoreCase(target, value)) {
+            return;
+        }
+        target.add(value);
+    }
+
+    private static boolean containsIgnoreCase(List<String> values, String value) {
+        String needle = value.toLowerCase();
+        int index = 0;
+        while (index < values.size()) {
+            if (values.getString(index).toLowerCase().equals(needle)) {
+                return true;
+            }
+            index = index + 1;
+        }
+        return false;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isEmpty();
+    }
+
+    /**
+     * Returns the current Windows host-tool discovery graph that Rust should probe as a safety net.
+     */
+    public static ToolchainDiscoveryPlan planWindowsDiscovery() {
+        ArrayList<String> visualStudioRoots = new ArrayList<String>();
+        visualStudioRoots.add("C:/Program Files/Microsoft Visual Studio");
+        visualStudioRoots.add("C:/Program Files (x86)/Microsoft Visual Studio");
+
+        ArrayList<String> windowsSdkLibRoots = new ArrayList<String>();
+        windowsSdkLibRoots.add("C:/Program Files (x86)/Windows Kits/10/Lib");
+
+        return new ToolchainDiscoveryPlan(
+            visualStudioRoots,
+            "VC/Tools/MSVC",
+            "bin/Hostx64/x64/link.exe",
+            windowsSdkLibRoots,
+            "um/x64/kernel32.lib"
+        );
+    }
+
+    /**
+     * Returns one Windows native executable link command shape.
+     */
+    public static ToolchainCommandPlan planWindowsExecutableLinkCommand(
+        String linker,
+        String entry,
+        String outPath,
+        String objectPath,
+        List<String> extraLinkInputs
+    ) {
+        ArrayList<String> args = ToolchainResolver.newWindowsExecutableArgs(entry, outPath);
+        args.add(objectPath);
+        ToolchainResolver.appendAll(args, extraLinkInputs);
+        return new ToolchainCommandPlan(linker, "native_exe_link", args);
+    }
+
+    /**
+     * Returns one Windows shared runtime-library link command shape.
+     */
+    public static ToolchainCommandPlan planWindowsSharedRuntimeLinkCommand(
+        String linker,
+        String runtimeLibraryPath,
+        String runtimeImportLibraryPath,
+        List<String> exportedSymbols,
+        List<String> runtimeOwnedObjects,
+        List<String> supplementalRuntimeObjects,
+        List<String> systemInputs
+    ) {
+        ArrayList<String> args = new ArrayList<String>();
+        ToolchainResolver.appendUnique(args, "/NOLOGO");
+        ToolchainResolver.appendUnique(args, "/MACHINE:X64");
+        ToolchainResolver.appendUnique(args, "/DLL");
+        ToolchainResolver.appendUnique(args, "/NOENTRY");
+        ToolchainResolver.appendUnique(args, "/NODEFAULTLIB");
+        ToolchainResolver.appendUnique(args, "/LARGEADDRESSAWARE:NO");
+        args.add("/OUT:".concat(runtimeLibraryPath));
+        args.add("/IMPLIB:".concat(runtimeImportLibraryPath));
+        int exportIndex = 0;
+        while (exportIndex < exportedSymbols.size()) {
+            args.add("/EXPORT:".concat(exportedSymbols.getString(exportIndex)));
+            exportIndex = exportIndex + 1;
+        }
+        ToolchainResolver.appendAll(args, runtimeOwnedObjects);
+        ToolchainResolver.appendAll(args, supplementalRuntimeObjects);
+        ToolchainResolver.appendAll(args, systemInputs);
+        return new ToolchainCommandPlan(linker, "shared_runtime_link", args);
+    }
+
+    /**
+     * Returns one Windows shared-application executable link command shape.
+     */
+    public static ToolchainCommandPlan planWindowsSharedAppLinkCommand(
+        String linker,
+        String outPath,
+        String runtimeImportLibraryPath,
+        List<String> startupObjects,
+        List<String> appOwnedObjects,
+        List<String> systemInputs
+    ) {
+        ArrayList<String> args = ToolchainResolver.newWindowsExecutableArgs("mainCRTStartup", outPath);
+        ToolchainResolver.appendAll(args, startupObjects);
+        ToolchainResolver.appendAll(args, ToolchainResolver.filterSharedAppObjects(appOwnedObjects));
+        args.add(runtimeImportLibraryPath);
+        ToolchainResolver.appendAll(args, systemInputs);
+        return new ToolchainCommandPlan(linker, "shared_app_link", args);
+    }
+
+    /**
+     * Returns the quoted response-file body for the supplied ordered arguments.
+     */
+    public static String renderResponseFileBody(List<String> arguments) {
+        StringJoiner out = new StringJoiner("\n");
+        int index = 0;
+        while (index < arguments.size()) {
+            out.add("\"".concat(ToolchainResolver.escapeResponseFileArgument(arguments.getString(index))).concat("\""));
+            index = index + 1;
+        }
+        return out.toString().concat("\n");
+    }
+
+    /**
+     * Returns the command-line argument used to pass one response file to a Windows linker.
+     */
+    public static String responseFileArgument(String responseFilePath) {
+        return "@".concat(responseFilePath);
+    }
+
+    /**
+     * Returns one inherited-environment plan merged with ordered overrides.
+     */
+    public static ProcessEnvironment mergeEnvironment(
+        ProcessEnvironment base,
+        List<ProcessEnvironmentVariable> overrides
+    ) {
+        Objects.requireNonNull(base, "base must not be null");
+        Objects.requireNonNull(overrides, "overrides must not be null");
+        ArrayList<ProcessEnvironmentVariable> merged = new ArrayList<ProcessEnvironmentVariable>();
+        ToolchainResolver.appendEnvironmentVariables(merged, base.overrides());
+        ToolchainResolver.applyEnvironmentOverrides(merged, overrides);
+        return new ProcessEnvironment(base.inheritParentEnvironment(), merged);
+    }
+
+    /**
+     * Returns one linker process plan that executes through one response file.
+     */
+    public static ProcessPlan planResponseFileProcess(
+        String executable,
+        String workingDirectory,
+        String responseFilePath,
+        ProcessEnvironment environment
+    ) {
+        ArrayList<String> args = new ArrayList<String>();
+        args.add(ToolchainResolver.responseFileArgument(responseFilePath));
+        return new ProcessPlan(executable, null, args, environment);
+    }
+
+    /**
+     * Returns one `ml64.exe` assemble process plan.
+     */
+    public static ProcessPlan planWindowsMasmAssembleProcess(
+        String executable,
+        String workingDirectory,
+        String asmPath,
+        String objPath,
+        ProcessEnvironment environment
+    ) {
+        ArrayList<String> args = new ArrayList<String>();
+        args.add("/c");
+        args.add("/nologo");
+        args.add("/Fo".concat(objPath));
+        args.add(asmPath);
+        return new ProcessPlan(executable, null, args, environment);
+    }
+
+    private static ArrayList<String> newWindowsExecutableArgs(String entry, String outPath) {
+        ArrayList<String> args = new ArrayList<String>();
+        ToolchainResolver.appendUnique(args, "/NOLOGO");
+        ToolchainResolver.appendUnique(args, "/MACHINE:X64");
+        args.add("/ENTRY:".concat(entry));
+        ToolchainResolver.appendUnique(args, "/SUBSYSTEM:CONSOLE");
+        ToolchainResolver.appendUnique(args, "/NODEFAULTLIB");
+        ToolchainResolver.appendUnique(args, "/LARGEADDRESSAWARE:NO");
+        args.add("/OUT:".concat(outPath));
+        return args;
+    }
+
+    private static ArrayList<String> filterSharedAppObjects(List<String> appOwnedObjects) {
+        ArrayList<String> filtered = new ArrayList<String>();
+        int index = 0;
+        while (index < appOwnedObjects.size()) {
+            String value = appOwnedObjects.getString(index);
+            String normalized = value.toLowerCase();
+            if (!normalized.contains("/obj/pulse/") && !normalized.startsWith("obj/pulse/")) {
+                filtered.add(value);
+            }
+            index = index + 1;
+        }
+        return filtered;
+    }
+
+    private static void appendAll(List<String> target, List<String> values) {
+        int index = 0;
+        while (index < values.size()) {
+            target.add(values.getString(index));
+            index = index + 1;
+        }
+    }
+
+    private static String escapeResponseFileArgument(String value) {
+        return value.replace("\"", "\\\"");
+    }
+
+    private static void appendEnvironmentVariables(
+        List<ProcessEnvironmentVariable> target,
+        List<ProcessEnvironmentVariable> values
+    ) {
+        int index = 0;
+        while (index < values.size()) {
+            target.add(values.get(index));
+            index = index + 1;
+        }
+    }
+
+    private static void applyEnvironmentOverrides(
+        List<ProcessEnvironmentVariable> target,
+        List<ProcessEnvironmentVariable> overrides
+    ) {
+        int index = 0;
+        while (index < overrides.size()) {
+            ProcessEnvironmentVariable overrideValue = overrides.get(index);
+            ToolchainResolver.replaceEnvironmentVariable(target, overrideValue);
+            index = index + 1;
+        }
+    }
+
+    private static void replaceEnvironmentVariable(
+        List<ProcessEnvironmentVariable> values,
+        ProcessEnvironmentVariable overrideValue
+    ) {
+        String needle = overrideValue.name().toLowerCase();
+        int index = 0;
+        while (index < values.size()) {
+            if (values.get(index).name().toLowerCase().equals(needle)) {
+                values.remove(index);
+                break;
+            }
+            index = index + 1;
+        }
+        values.add(overrideValue);
+    }
+}

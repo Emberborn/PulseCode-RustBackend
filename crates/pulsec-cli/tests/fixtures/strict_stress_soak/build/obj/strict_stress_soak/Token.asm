@@ -1,28 +1,44 @@
 option casemap:none
 extrn GetStdHandle:proc
+extrn ReadFile:proc
 extrn WriteFile:proc
 extrn ExitProcess:proc
+extrn GetSystemTimeAsFileTime:proc
+extrn GetTickCount64:proc
 extrn GetProcessHeap:proc
 extrn HeapAlloc:proc
+extrn HeapReAlloc:proc
 extrn HeapFree:proc
-extrn pulsec_rt_stringFromBytes:proc
 extrn pulsec_rt_consoleWrite:proc
-extrn pulsec_rt_consoleWriteLine:proc
-extrn pulsec_rt_intToString:proc
-extrn pulsec_rt_booleanToString:proc
-extrn pulsec_rt_dispatchNullReceiverPanic:proc
-extrn pulsec_rt_dispatchInvalidTypePanic:proc
 extrn pulsec_rt_objectNew:proc
-extrn pulsec_rt_arcRetain:proc
-extrn pulsec_rt_arcRelease:proc
-extrn pulsec_rt_obj_counter:dword
-extrn pulsec_rt_obj_class_ids:qword
 extrn rt_slot_capacity:dword
-extrn rt_arc_refcounts_tbl:dword
-extrn rt_arc_kinds_tbl:dword
-extrn rt_arc_flags_tbl:dword
 extrn pulsec_rt_tracePush:proc
+extrn pulsec_rt_traceUpdateTop:proc
 extrn pulsec_rt_tracePop:proc
+extrn pulsec_fget_pulse_lang_Double_MIN_VALUE:proc
+extrn pulsec_fset_pulse_lang_Double_MIN_VALUE:proc
+extrn pulsec_fget_pulse_lang_Double_MAX_VALUE:proc
+extrn pulsec_fset_pulse_lang_Double_MAX_VALUE:proc
+extrn pulsec_fget_pulse_lang_Float_MIN_VALUE:proc
+extrn pulsec_fset_pulse_lang_Float_MIN_VALUE:proc
+extrn pulsec_fget_pulse_lang_Float_MAX_VALUE:proc
+extrn pulsec_fset_pulse_lang_Float_MAX_VALUE:proc
+extrn pulsec_fget_pulse_lang_Integer_MIN_VALUE:proc
+extrn pulsec_fset_pulse_lang_Integer_MIN_VALUE:proc
+extrn pulsec_fget_pulse_lang_Integer_MAX_VALUE:proc
+extrn pulsec_fset_pulse_lang_Integer_MAX_VALUE:proc
+extrn pulsec_fget_pulse_lang_Long_MIN_VALUE:proc
+extrn pulsec_fset_pulse_lang_Long_MIN_VALUE:proc
+extrn pulsec_fget_pulse_lang_Long_MAX_VALUE:proc
+extrn pulsec_fset_pulse_lang_Long_MAX_VALUE:proc
+extrn pulsec_fget_pulse_lang_UInteger_MIN_VALUE:proc
+extrn pulsec_fset_pulse_lang_UInteger_MIN_VALUE:proc
+extrn pulsec_fget_pulse_lang_UInteger_MAX_VALUE:proc
+extrn pulsec_fset_pulse_lang_UInteger_MAX_VALUE:proc
+extrn pulsec_fget_pulse_lang_ULong_MIN_VALUE:proc
+extrn pulsec_fset_pulse_lang_ULong_MIN_VALUE:proc
+extrn pulsec_fget_pulse_lang_ULong_MAX_VALUE:proc
+extrn pulsec_fset_pulse_lang_ULong_MAX_VALUE:proc
 
 public pulsec_fld_strict_stress_soak_Token_v
 public pulsec_fld_strict_stress_soak_Token_v_heap_owned
@@ -35,9 +51,13 @@ pulsec_fld_strict_stress_soak_Token_v_tbl dd 64 dup(0)
 pulsec_fld_strict_stress_soak_Token_v dq pulsec_fld_strict_stress_soak_Token_v_tbl
 pulsec_fld_strict_stress_soak_Token_v_heap_owned dd 0
 trace_m0 db "strict_stress_soak.Token.Token"
-trace_m0_len equ $ - trace_m0
-trace_m1 db "strict_stress_soak.Token.value"
-trace_m1_len equ $ - trace_m1
+trace_m0_len equ 30
+pulsec_strict_stress_soak_Token_Token__int_trace_s0 db "strict_stress_soak.Token.Token(Token.pulse:7)"
+pulsec_strict_stress_soak_Token_Token__int_trace_s0_len equ 45
+trace_m2 db "strict_stress_soak.Token.value"
+trace_m2_len equ 30
+pulsec_strict_stress_soak_Token_value_trace_s0 db "strict_stress_soak.Token.value(Token.pulse:11)"
+pulsec_strict_stress_soak_Token_value_trace_s0_len equ 46
 
 .code
 pulsec_fcap_strict_stress_soak_Token_ensure proc
@@ -113,63 +133,76 @@ pulsec_fcap_strict_stress_soak_Token_ensure_fail:
 pulsec_fcap_strict_stress_soak_Token_ensure endp
 
 pulsec_strict_stress_soak_Token_Token__int proc
-    sub rsp, 136
-    mov qword ptr [rsp+8], rcx
-    mov qword ptr [rsp+16], rdx
-    mov qword ptr [rsp+24], r8
-    mov qword ptr [rsp+32], r9
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
     lea rcx, trace_m0
     mov edx, trace_m0_len
     call pulsec_rt_tracePush
-    mov rcx, qword ptr [rsp+8]
-    mov rdx, qword ptr [rsp+16]
-    mov r8, qword ptr [rsp+24]
-    mov r9, qword ptr [rsp+32]
-    mov dword ptr [rsp+64], edx
-    mov qword ptr [rsp+72], rcx
-    mov ecx, 48
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov rax, qword ptr [rsp+64]
+    test rax, rax
+    jne pulsec_strict_stress_soak_Token_Token__int_ctor_reuse
+    mov ecx, 43
     call pulsec_rt_objectNew
     mov qword ptr [rsp+112], rax
-    mov ecx, eax
+    mov rcx, rax
     call pulsec_fcap_strict_stress_soak_Token_ensure
     mov rax, qword ptr [rsp+112]
-    mov ecx, eax
-    mov qword ptr [rsp+72], rcx
+    jmp pulsec_strict_stress_soak_Token_Token__int_ctor_ready
+pulsec_strict_stress_soak_Token_Token__int_ctor_reuse:
+    mov rax, qword ptr [rsp+64]
+pulsec_strict_stress_soak_Token_Token__int_ctor_ready:
+    mov rcx, rax
+    mov qword ptr [rsp+64], rcx
 pulsec_strict_stress_soak_Token_Token__int_b0:
-    mov eax, dword ptr [rsp+64]
-    mov edx, dword ptr [rsp+72]
+    lea rcx, pulsec_strict_stress_soak_Token_Token__int_trace_s0
+    mov edx, pulsec_strict_stress_soak_Token_Token__int_trace_s0_len
+    call pulsec_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
     mov edx, 4294967295
 @@:
     mov r10, qword ptr [pulsec_fld_strict_stress_soak_Token_v]
     mov dword ptr [r10+rdx*4], eax
-    mov eax, dword ptr [rsp+72]
+    mov rax, qword ptr [rsp+64]
     jmp pulsec_strict_stress_soak_Token_Token__int_epilogue
 pulsec_strict_stress_soak_Token_Token__int_epilogue:
 pulsec_strict_stress_soak_Token_Token__int_epilogue_post:
-    mov qword ptr [rsp+40], rax
+    mov qword ptr [rsp+120], rax
     call pulsec_rt_tracePop
-    mov rax, qword ptr [rsp+40]
-    add rsp, 136
+    mov rax, qword ptr [rsp+120]
+    add rsp, 200
     ret
 pulsec_strict_stress_soak_Token_Token__int endp
 
 pulsec_strict_stress_soak_Token_value proc
-    sub rsp, 120
-    mov qword ptr [rsp+8], rcx
-    mov qword ptr [rsp+16], rdx
-    mov qword ptr [rsp+24], r8
-    mov qword ptr [rsp+32], r9
-    lea rcx, trace_m1
-    mov edx, trace_m1_len
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m2
+    mov edx, trace_m2_len
     call pulsec_rt_tracePush
-    mov rcx, qword ptr [rsp+8]
-    mov rdx, qword ptr [rsp+16]
-    mov r8, qword ptr [rsp+24]
-    mov r9, qword ptr [rsp+32]
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
     mov qword ptr [rsp+64], rcx
 pulsec_strict_stress_soak_Token_value_b0:
+    lea rcx, pulsec_strict_stress_soak_Token_value_trace_s0
+    mov edx, pulsec_strict_stress_soak_Token_value_trace_s0_len
+    call pulsec_rt_traceUpdateTop
     mov edx, dword ptr [rsp+64]
     cmp edx, 4294967295
     jbe @F
@@ -180,10 +213,10 @@ pulsec_strict_stress_soak_Token_value_b0:
     jmp pulsec_strict_stress_soak_Token_value_epilogue
 pulsec_strict_stress_soak_Token_value_epilogue:
 pulsec_strict_stress_soak_Token_value_epilogue_post:
-    mov qword ptr [rsp+40], rax
+    mov qword ptr [rsp+112], rax
     call pulsec_rt_tracePop
-    mov rax, qword ptr [rsp+40]
-    add rsp, 120
+    mov rax, qword ptr [rsp+112]
+    add rsp, 200
     ret
 pulsec_strict_stress_soak_Token_value endp
 

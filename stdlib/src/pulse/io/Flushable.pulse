@@ -1,0 +1,12 @@
+package pulse.io;
+
+/**
+ * IO-specific flush contract aligned with the Java-close resource model.
+ */
+public interface Flushable {
+    /**
+     * Forces buffered output state to the underlying resource.
+     * Use this for explicit write-visibility points in the current IO lifecycle baseline.
+     */
+    public void flush();
+}

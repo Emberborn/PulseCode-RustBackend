@@ -1,4 +1,6 @@
 use super::*;
+use crate::backend::adapters::resolve_host_bootstrap_target_adapter;
+use crate::backend::target_neutral::render_native_build_plan_with_output_mode_and_link_plan;
 
 pub(crate) struct FrameBudgetReport {
     pub(crate) max_frame_bytes: usize,
@@ -7,25 +9,25 @@ pub(crate) struct FrameBudgetReport {
     pub(crate) fail_violations: Vec<(String, usize)>,
 }
 
-#[derive(Debug, Clone)]
-pub(crate) struct SharedLinkArtifacts {
-    pub(crate) exe_path: Option<PathBuf>,
-    pub(crate) runtime_library_path: PathBuf,
-    pub(crate) runtime_import_library_path: PathBuf,
-}
-
 #[derive(Debug, Default, Clone)]
-pub struct NoopNativeBackend {
+pub struct RustHostBootstrapBackend {
     pub linker_override: Option<PathBuf>,
+    pub target_id: String,
     pub output_mode: String,
     pub output_entry: String,
+    pub emit_statement_trace_metadata: bool,
 }
 
-impl BackendAdapter for NoopNativeBackend {
+impl BackendAdapter for RustHostBootstrapBackend {
     fn emit(&self, ir: &IrProgram, out_dir: &Path) -> Result<BackendArtifact, String> {
         enforce_frame_budget_lints(ir)?;
-        fs::create_dir_all(out_dir)
-            .map_err(|e| format!("Failed to create build output '{}': {}", out_dir.display(), e))?;
+        fs::create_dir_all(out_dir).map_err(|e| {
+            format!(
+                "Failed to create build output '{}': {}",
+                out_dir.display(),
+                e
+            )
+        })?;
         let ir_path = out_dir.join("pulsec.ir.txt");
         fs::write(&ir_path, render_ir_dump(ir))
             .map_err(|e| format!("Failed to write IR artifact '{}': {}", ir_path.display(), e))?;
@@ -40,24 +42,27 @@ impl BackendAdapter for NoopNativeBackend {
         } else {
             self.output_entry.as_str()
         };
+        let adapter = resolve_host_bootstrap_target_adapter(&self.target_id)?;
         let mut object_path = out_dir.join("main.obj");
         let link_report_path = out_dir.join("native.link.txt");
         let mut link_plan = NativeLinkPlan::default();
         let mut split_failure_detail: Option<String> = None;
-        let (entry_codegen, extra_link_inputs) = match emit_masm_split_program_objects(
+        let (entry_codegen, extra_link_inputs) = match adapter.emit_split_program_objects(
             ir,
             out_dir,
             self.linker_override.as_deref(),
+            self.emit_statement_trace_metadata,
         ) {
             Ok(split) => {
                 object_path = split.startup_obj;
                 link_plan = split.link_plan;
                 (split.codegen, split.link_inputs)
             }
-            Err(split_err) => match emit_masm_full_program_object(
+            Err(split_err) => match adapter.emit_full_program_object(
                 ir,
                 &object_path,
                 self.linker_override.as_deref(),
+                self.emit_statement_trace_metadata,
             ) {
                 Ok((codegen, libs)) => {
                     split_failure_detail = Some(split_err.clone());
@@ -65,7 +70,7 @@ impl BackendAdapter for NoopNativeBackend {
                 }
                 Err(full_masm_err) => {
                     if let Some(main_method) = find_entry_method(ir) {
-                        match emit_masm_print_entry_object(
+                        match adapter.emit_print_entry_object(
                             main_method,
                             &object_path,
                             self.linker_override.as_deref(),
@@ -85,7 +90,7 @@ impl BackendAdapter for NoopNativeBackend {
                                     "backend codegen failed: ir={} | masm={} | full-masm={} | split={}",
                                     compile_err, masm_err, full_masm_err, split_err
                                 );
-                                write_native_failure_report(
+                                adapter.write_native_failure_report(
                                     &link_report_path,
                                     "backend-failed",
                                     &detail,
@@ -99,7 +104,7 @@ impl BackendAdapter for NoopNativeBackend {
                             "backend codegen failed: no static main method found in IR | full-masm: {} | split: {}",
                             full_masm_err, split_err
                         );
-                        write_native_failure_report(
+                        adapter.write_native_failure_report(
                             &link_report_path,
                             "backend-failed",
                             &detail,
@@ -122,34 +127,32 @@ impl BackendAdapter for NoopNativeBackend {
             render_native_build_plan_with_output_mode_and_link_plan(
                 ir,
                 &ir_path,
+                &self.target_id,
                 output_mode,
                 output_entry,
                 Some(&link_plan),
             ),
         )
-        .map_err(|e| format!("Failed to write native plan '{}': {}", plan_path.display(), e))?;
-        let (exe_path, runtime_library_path, runtime_import_library_path) =
-            if output_mode == "shared" {
-                if link_plan.startup_objects.is_empty()
-                    || link_plan.app_owned_objects.is_empty()
-                    || link_plan.runtime_owned_objects.is_empty()
-                {
-                    if let Some(split_err) = &split_failure_detail {
-                        let detail = format!(
-                            "shared output mode requires split runtime/app object emission (split failed: {})",
-                            split_err
-                        );
-                        write_native_failure_report(
-                            &link_report_path,
-                            "not-linked",
-                            &detail,
-                            &[],
-                        )?;
-                        return Err(detail);
-                    }
-                    let detail =
-                        "shared output mode requires split runtime/app object emission".to_string();
-                    write_native_failure_report(
+        .map_err(|e| {
+            format!(
+                "Failed to write native plan '{}': {}",
+                plan_path.display(),
+                e
+            )
+        })?;
+        let (exe_path, runtime_library_path, runtime_import_library_path) = if output_mode
+            == "shared"
+        {
+            if link_plan.startup_objects.is_empty()
+                || link_plan.app_owned_objects.is_empty()
+                || link_plan.runtime_owned_objects.is_empty()
+            {
+                if let Some(split_err) = &split_failure_detail {
+                    let detail = format!(
+                        "shared output mode requires split runtime/app object emission (split failed: {})",
+                        split_err
+                    );
+                    adapter.write_native_failure_report(
                         &link_report_path,
                         "not-linked",
                         &detail,
@@ -157,29 +160,39 @@ impl BackendAdapter for NoopNativeBackend {
                     )?;
                     return Err(detail);
                 }
-                let shared = try_link_windows_shared_artifacts(
-                    &link_plan,
-                    out_dir,
+                let detail =
+                    "shared output mode requires split runtime/app object emission".to_string();
+                adapter.write_native_failure_report(
                     &link_report_path,
-                    self.linker_override.as_deref(),
-                    &entry_codegen,
+                    "not-linked",
+                    &detail,
+                    &[],
                 )?;
-                (
-                    shared.exe_path,
-                    Some(shared.runtime_library_path),
-                    Some(shared.runtime_import_library_path),
-                )
-            } else {
-                let exe_path = try_link_windows_executable(
-                    &object_path,
-                    out_dir,
-                    &link_report_path,
-                    self.linker_override.as_deref(),
-                    &entry_codegen,
-                    &extra_link_inputs,
-                )?;
-                (exe_path, None, None)
-            };
+                return Err(detail);
+            }
+            let shared = adapter.link_shared_artifacts(
+                &link_plan,
+                out_dir,
+                &link_report_path,
+                self.linker_override.as_deref(),
+                &entry_codegen,
+            )?;
+            (
+                shared.exe_path,
+                Some(shared.runtime_library_path),
+                Some(shared.runtime_import_library_path),
+            )
+        } else {
+            let exe_path = adapter.link_executable(
+                &object_path,
+                out_dir,
+                &link_report_path,
+                self.linker_override.as_deref(),
+                &entry_codegen,
+                &extra_link_inputs,
+            )?;
+            (exe_path, None, None)
+        };
 
         Ok(BackendArtifact {
             classes: ir.classes.len(),
@@ -214,7 +227,10 @@ pub(crate) fn render_ir_dump(ir: &IrProgram) -> String {
         for method in &class.methods {
             out.push_str(&format!(
                 "  method {} {}({}) blocks={} values={}\n",
-                method.return_type.clone().unwrap_or_else(|| "ctor".to_string()),
+                method
+                    .return_type
+                    .clone()
+                    .unwrap_or_else(|| "ctor".to_string()),
                 method.name,
                 method
                     .params
@@ -238,10 +254,7 @@ pub(crate) fn collect_frame_budget_report(ir: &IrProgram) -> FrameBudgetReport {
     for class in &ir.classes {
         for method in &class.methods {
             let frame = masm_method_stack_size(method);
-            let fq = format!(
-                "{}.{}.{}",
-                class.package_name, class.name, method.name
-            );
+            let fq = format!("{}.{}.{}", class.package_name, class.name, method.name);
             if frame > max_frame_bytes {
                 max_frame_bytes = frame;
                 max_frame_method = fq.clone();
@@ -281,6 +294,3 @@ pub(crate) fn enforce_frame_budget_lints(ir: &IrProgram) -> Result<(), String> {
         FRAME_BUDGET_FAIL_BYTES, FRAME_BUDGET_WARN_BYTES, top
     ))
 }
-
-
-

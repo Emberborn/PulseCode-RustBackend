@@ -1,9 +1,10 @@
 package app.stress;
 
-import com.pulse.collections.ArrayList;
-import com.pulse.collections.HashMap;
-import com.pulse.collections.HashSet;
-import com.pulse.collections.LinkedList;
+import pulse.collections.ArrayList;
+import pulse.collections.HashMap;
+import pulse.collections.HashSet;
+import pulse.collections.LinkedList;
+import pulse.lang.Integer;
 
 class SoakRunner {
     public int run(int rounds) {
@@ -21,18 +22,21 @@ class SoakRunner {
         while (i < rounds) {
             Token token = new Token(i + 1);
             int v = token.value();
+            String boxed = Integer.toString(v);
 
-            values.add(v);
+            values.add(boxed);
             if (values.size() > 48) {
                 values.clear();
             }
 
-            queue.offer(v);
+            queue.offer(boxed);
             if (queue.size() > 32) {
-                drained = drained + queue.poll();
+                String nextText = (String) queue.poll();
+                int next = Integer.parse(nextText);
+                drained = drained + next;
             }
 
-            stats.putInt("last", v);
+            stats.put("last", Integer.toString(v));
 
             if (parity == 0) {
                 tags.add("even");
@@ -52,10 +56,12 @@ class SoakRunner {
         }
 
         while (queue.size() > 0) {
-            drained = drained + queue.poll();
+            String nextText = (String) queue.poll();
+            int next = Integer.parse(nextText);
+            drained = drained + next;
         }
 
-        int last = stats.getInt("last");
+        int last = Integer.parse((String) stats.get("last"));
         int unique = tags.size();
         int count = values.size();
         return sum + drained + last + unique + count + churn.length();

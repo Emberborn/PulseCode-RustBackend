@@ -1,0 +1,155 @@
+package pulse.process;
+
+import pulse.collections.List;
+import pulse.io.HostFiles;
+import pulse.io.Path;
+import pulse.lang.String;
+import pulse.lang.StringBuilder;
+import pulse.rt.Intrinsics;
+import pulse.util.Objects;
+
+/**
+ * Host-backed process execution helpers for the public stdlib process surface.
+ */
+public final class Processes {
+    /**
+     * Executes one host process plan and captures stdout/stderr into text files under the supplied capture root.
+     * Use this as the current public stdlib host-process execution entrypoint.
+     */
+    public static ProcessResult execute(
+        ProcessPlan plan,
+        String captureDirectory,
+        String captureStem
+    ) {
+        Objects.requireNonNull(plan, "plan must not be null");
+        String captureRoot = Path.normalize(captureDirectory);
+        String stem = captureStem == null || captureStem.isEmpty() ? "process" : captureStem;
+        if (!captureRoot.isEmpty() && !captureRoot.equals(".") && !HostFiles.isDirectory(captureRoot)) {
+            HostFiles.createDirectories(captureRoot);
+        }
+        String stdoutPath = Path.resolve(captureRoot, stem.concat(".stdout.txt"));
+        String stderrPath = Path.resolve(captureRoot, stem.concat(".stderr.txt"));
+        if (!HostFiles.writeAllText(stdoutPath, "")) {
+            Intrinsics.panic("Failed to prepare process stdout capture '".concat(stdoutPath).concat("'"));
+        }
+        if (!HostFiles.writeAllText(stderrPath, "")) {
+            Intrinsics.panic("Failed to prepare process stderr capture '".concat(stderrPath).concat("'"));
+        }
+
+        int exitCode;
+        if (!plan.environment().inheritParentEnvironment()) {
+            Intrinsics.panic("Process execution does not yet support inheritParentEnvironment=false");
+            exitCode = -1;
+        } else {
+            String commandLine = Processes.renderWindowsCommand(plan, stdoutPath, stderrPath);
+            exitCode = Intrinsics.hostRunShellProcess(plan.workingDirectory(), commandLine);
+        }
+
+        String stdoutText = HostFiles.readAllText(stdoutPath);
+        String stderrText = HostFiles.readAllText(stderrPath);
+        return new ProcessResult(
+            exitCode,
+            stdoutText == null ? "" : stdoutText,
+            stderrText == null ? "" : stderrText
+        );
+    }
+
+    private static String renderWindowsCommand(
+        ProcessPlan plan,
+        String stdoutPath,
+        String stderrPath
+    ) {
+        StringBuilder script = new StringBuilder();
+        Processes.appendEnvironmentOverrides(script, plan.environment().overrides());
+        Processes.appendWindowsCommand(script, plan.executable(), plan.arguments());
+        script.append(" 1>").append(Processes.renderShellArgument(stdoutPath));
+        script.append(" 2>").append(Processes.renderShellArgument(stderrPath));
+        return "cmd.exe /d /c ".concat(script.toString());
+    }
+
+    private static void appendEnvironmentOverrides(
+        StringBuilder script,
+        List<ProcessEnvironmentVariable> overrides
+    ) {
+        int index = 0;
+        while (index < overrides.size()) {
+            ProcessEnvironmentVariable entry = overrides.get(index);
+            script.append("set ");
+            script.append(Processes.renderSetArgument(entry.name(), entry.value()));
+            script.append(" && ");
+            index = index + 1;
+        }
+    }
+
+    private static void appendWindowsCommand(
+        StringBuilder script,
+        String executable,
+        List<String> arguments
+    ) {
+        script.append(Processes.renderShellArgument(executable));
+        int index = 0;
+        while (index < arguments.size()) {
+            script.append(" ");
+            script.append(Processes.renderToolArgument(arguments.get(index)));
+            index = index + 1;
+        }
+    }
+
+    private static String renderToolArgument(String value) {
+        if (value == null || value.isEmpty()) {
+            return "\"\"";
+        }
+        if (value.startsWith("/Fo") && Processes.needsQuotes(value.substring(3))) {
+            return "/Fo".concat(Processes.renderShellArgument(value.substring(3)));
+        }
+        return Processes.renderShellArgument(value);
+    }
+
+    private static String renderSetArgument(String name, String value) {
+        return "\""
+            .concat(Processes.escapeSetComponent(name))
+            .concat("=")
+            .concat(Processes.escapeSetComponent(value))
+            .concat("\"");
+    }
+
+    private static String renderShellArgument(String value) {
+        if (value == null) {
+            return "\"\"";
+        }
+        if (!Processes.needsQuotes(value)) {
+            return Processes.escapeShellComponent(value);
+        }
+        return "\"".concat(Processes.escapeQuotedComponent(value)).concat("\"");
+    }
+
+    private static boolean needsQuotes(String value) {
+        return value.contains(" ")
+            || value.contains("\t")
+            || value.contains("&")
+            || value.contains("|")
+            || value.contains("<")
+            || value.contains(">")
+            || value.contains("^")
+            || value.contains("\"");
+    }
+
+    private static String escapeShellComponent(String value) {
+        return value
+            .replace("^", "^^")
+            .replace("&", "^&")
+            .replace("|", "^|")
+            .replace("<", "^<")
+            .replace(">", "^>")
+            .replace("%", "%%");
+    }
+
+    private static String escapeQuotedComponent(String value) {
+        return Processes.escapeShellComponent(value).replace("\"", "\\\"");
+    }
+
+    private static String escapeSetComponent(String value) {
+        return value.replace("\"", "\\\"");
+    }
+
+}

@@ -27,7 +27,8 @@ pub(super) fn overrides_super_method(
     };
     let mut current = class_info.super_class.clone();
     while let Some(parent) = current {
-        let Some(parent_info) = class_index.get(parent.as_str()) else {
+        let parent_erased = erase_generic_type_name(&parent);
+        let Some(parent_info) = class_index.get(parent_erased.as_str()) else {
             return false;
         };
         if let Some(parent_methods) = parent_info.methods.get(requirement.method_name.as_str()) {
@@ -84,13 +85,15 @@ pub(super) fn collect_interfaces_for_class(
     })?;
 
     for iface in &info.interfaces {
-        if seen.insert(iface.clone()) {
-            out.push(iface.clone());
+        let iface_erased = erase_generic_type_name(iface);
+        if seen.insert(iface_erased.clone()) {
+            out.push(iface_erased);
         }
     }
 
     if let Some(parent) = info.super_class.as_deref() {
-        collect_interfaces_for_class(parent, class_index, out, seen)?;
+        let parent_erased = erase_generic_type_name(parent);
+        collect_interfaces_for_class(&parent_erased, class_index, out, seen)?;
     }
 
     Ok(())
@@ -100,14 +103,15 @@ pub(super) fn validate_interface_inheritance(
     iface_fqcn: &str,
     class_index: &HashMap<String, ClassInfo>,
 ) -> Result<(), SemanticError> {
+    let iface_fqcn = erase_generic_type_name(iface_fqcn);
     let iface = class_index
-        .get(iface_fqcn)
+        .get(&iface_fqcn)
         .ok_or_else(|| semantic_error(format!("Unknown interface '{}'", iface_fqcn)))?;
     if !iface.is_interface {
         return Ok(());
     }
     let mut active = HashSet::new();
-    validate_interface_inheritance_inner(iface_fqcn, iface_fqcn, class_index, &mut active)
+    validate_interface_inheritance_inner(&iface_fqcn, &iface_fqcn, class_index, &mut active)
 }
 
 fn validate_interface_inheritance_inner(
@@ -120,13 +124,14 @@ fn validate_interface_inheritance_inner(
         .get(current_iface_fqcn)
         .ok_or_else(|| semantic_error(format!("Unknown interface '{}'", current_iface_fqcn)))?;
     for parent in &iface.interfaces {
-        if parent == root_iface_fqcn || !active.insert(parent.clone()) {
+        let parent_erased = erase_generic_type_name(parent);
+        if parent_erased == root_iface_fqcn || !active.insert(parent_erased.clone()) {
             return Err(semantic_error(format!(
                 "Interface inheritance cycle detected involving '{}'",
                 class_simple_name(root_iface_fqcn)
             )));
         }
-        let parent_info = class_index.get(parent).ok_or_else(|| {
+        let parent_info = class_index.get(&parent_erased).ok_or_else(|| {
             semantic_error(format!(
                 "Unknown parent interface '{}' for '{}'",
                 parent,
@@ -140,8 +145,13 @@ fn validate_interface_inheritance_inner(
                 parent_info.simple_name
             )));
         }
-        validate_interface_inheritance_inner(root_iface_fqcn, parent, class_index, active)?;
-        active.remove(parent);
+        validate_interface_inheritance_inner(
+            root_iface_fqcn,
+            &parent_erased,
+            class_index,
+            active,
+        )?;
+        active.remove(&parent_erased);
     }
     Ok(())
 }
@@ -151,25 +161,26 @@ pub(super) fn validate_inheritance_chain(
     class_index: &HashMap<String, ClassInfo>,
 ) -> Result<(), SemanticError> {
     let mut visited = HashSet::new();
-    let mut current = class_fqcn.to_string();
+    let mut current = erase_generic_type_name(class_fqcn);
     while let Some(info) = class_index.get(current.as_str()) {
         let Some(parent) = info.super_class.as_deref() else {
             return Ok(());
         };
-        if !visited.insert(parent.to_string()) {
+        let parent_erased = erase_generic_type_name(parent);
+        if !visited.insert(parent_erased.clone()) {
             return Err(semantic_error(format!(
                 "Inheritance cycle detected involving '{}'",
                 class_simple_name(class_fqcn)
             )));
         }
-        if !class_index.contains_key(parent) {
+        if !class_index.contains_key(&parent_erased) {
             return Err(semantic_error(format!(
                 "Unknown superclass '{}' for '{}'",
                 parent,
                 class_simple_name(class_fqcn)
             )));
         }
-        current = parent.to_string();
+        current = parent_erased;
     }
     Ok(())
 }
@@ -208,11 +219,9 @@ pub(super) fn validate_override_rules(
                         if !is_checked_exception_type(declared, class_index) {
                             continue;
                         }
-                        if parent
-                            .declared_throws
-                            .iter()
-                            .any(|parent_declared| is_assignable_class(declared, parent_declared, class_index))
-                        {
+                        if parent.declared_throws.iter().any(|parent_declared| {
+                            is_assignable_class(declared, parent_declared, class_index)
+                        }) {
                             continue;
                         }
                         return Err(semantic_error(format!(
@@ -235,16 +244,14 @@ pub(super) fn validate_interface_implementations(
 ) -> Result<(), SemanticError> {
     let mut required: Vec<(String, MethodSignature)> = Vec::new();
     for iface in &class_info.interfaces {
-        collect_interface_methods(iface, class_index, &mut required, false)?;
+        let iface_erased = erase_generic_type_name(iface);
+        collect_interface_methods(&iface_erased, class_index, &mut required, false)?;
     }
 
     for (method_name, sig) in required {
-        let Some(impl_sig) = find_instance_method_in_class_hierarchy(
-            class_info,
-            &method_name,
-            &sig,
-            class_index,
-        ) else {
+        let Some(impl_sig) =
+            find_instance_method_in_class_hierarchy(class_info, &method_name, &sig, class_index)
+        else {
             return Err(semantic_error(format!(
                 "Class '{}' must implement interface method '{}({})'",
                 class_info.simple_name,
@@ -298,9 +305,10 @@ pub(super) fn collect_interface_methods(
     out: &mut Vec<(String, MethodSignature)>,
     include_default_methods: bool,
 ) -> Result<(), SemanticError> {
-    let iface = class_index.get(iface_fqcn).ok_or_else(|| {
-        semantic_error(format!("Unknown interface '{}'", iface_fqcn))
-    })?;
+    let iface_fqcn = erase_generic_type_name(iface_fqcn);
+    let iface = class_index
+        .get(&iface_fqcn)
+        .ok_or_else(|| semantic_error(format!("Unknown interface '{}'", iface_fqcn)))?;
     if !iface.is_interface {
         return Err(semantic_error(format!(
             "Type '{}' is not an interface",
@@ -328,7 +336,8 @@ pub(super) fn collect_interface_methods(
     }
 
     for parent in &iface.interfaces {
-        collect_interface_methods(parent, class_index, out, include_default_methods)?;
+        let parent_erased = erase_generic_type_name(parent);
+        collect_interface_methods(&parent_erased, class_index, out, include_default_methods)?;
     }
 
     Ok(())
@@ -351,15 +360,20 @@ pub(super) fn find_instance_method_in_class_hierarchy(
             }
         }
         for iface in &info.interfaces {
-            if let Some(sig) =
-                find_instance_method_in_interface_hierarchy(iface, method_name, target, class_index)
+            let iface_erased = erase_generic_type_name(iface);
+            if let Some(sig) = find_instance_method_in_interface_hierarchy(
+                &iface_erased,
+                method_name,
+                target,
+                class_index,
+            )
             {
                 return Some(sig);
             }
         }
 
         if let Some(parent) = info.super_class.as_deref() {
-            current = parent.to_string();
+            current = erase_generic_type_name(parent);
         } else {
             return None;
         }
@@ -372,7 +386,8 @@ fn find_instance_method_in_interface_hierarchy(
     target: &MethodSignature,
     class_index: &HashMap<String, ClassInfo>,
 ) -> Option<MethodSignature> {
-    let iface = class_index.get(iface_fqcn)?;
+    let iface_fqcn = erase_generic_type_name(iface_fqcn);
+    let iface = class_index.get(&iface_fqcn)?;
     if let Some(methods) = iface.methods.get(method_name) {
         for sig in methods {
             if sig.param_types == target.param_types && !sig.is_static && !sig.is_abstract {
@@ -381,8 +396,13 @@ fn find_instance_method_in_interface_hierarchy(
         }
     }
     for parent in &iface.interfaces {
-        if let Some(sig) =
-            find_instance_method_in_interface_hierarchy(parent, method_name, target, class_index)
+        let parent_erased = erase_generic_type_name(parent);
+        if let Some(sig) = find_instance_method_in_interface_hierarchy(
+            &parent_erased,
+            method_name,
+            target,
+            class_index,
+        )
         {
             return Some(sig);
         }
@@ -413,11 +433,11 @@ pub(super) fn is_member_accessible(
     match visibility {
         MemberVisibility::Public => true,
         MemberVisibility::Private => {
-            owner == current_class
-                || class_simple_name(owner) == class_simple_name(current_class)
+            owner == current_class || class_simple_name(owner) == class_simple_name(current_class)
         }
         MemberVisibility::Protected => {
-            owner_package == current_package || is_assignable_class(current_class, owner, class_index)
+            owner_package == current_package
+                || is_assignable_class(current_class, owner, class_index)
         }
         MemberVisibility::Package => owner_package == current_package,
     }

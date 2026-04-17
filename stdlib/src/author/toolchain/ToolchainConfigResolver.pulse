@@ -1,0 +1,30 @@
+package author.toolchain;
+
+import pulse.util.Objects;
+
+/**
+ * Resolves the effective toolchain config from manifest defaults and CLI-style overrides.
+ */
+public final class ToolchainConfigResolver {
+    public static ToolchainConfig resolve(
+        ToolchainConfig manifestToolchain,
+        String assemblerOverride,
+        String linkerOverride
+    ) {
+        ToolchainConfig manifest = (ToolchainConfig) Objects.requireNonNull(
+            manifestToolchain,
+            "manifestToolchain must not be null"
+        );
+        return new ToolchainConfig(
+            ToolchainConfigResolver.choose(linkerOverride, manifest.linker()),
+            ToolchainConfigResolver.choose(assemblerOverride, manifest.assembler())
+        );
+    }
+
+    private static String choose(String overrideValue, String manifestValue) {
+        if (overrideValue != null) {
+            return overrideValue;
+        }
+        return manifestValue;
+    }
+}

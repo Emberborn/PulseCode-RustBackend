@@ -1,5 +1,6 @@
 option casemap:none
 extrn GetStdHandle:proc
+extrn ReadFile:proc
 extrn WriteFile:proc
 
 extrn ExitProcess:proc
@@ -8,18 +9,32 @@ extrn GetSystemTimeAsFileTime:proc
 extrn GetTickCount64:proc
 
 extrn GetProcessHeap:proc
+extrn GetFileAttributesA:proc
+extrn CreateDirectoryA:proc
+extrn CopyFileA:proc
+extrn CreateFileA:proc
+extrn CreateProcessA:proc
+extrn GetFileSize:proc
+extrn GetExitCodeProcess:proc
+extrn CloseHandle:proc
+extrn FindFirstFileA:proc
+extrn FindNextFileA:proc
+extrn FindClose:proc
 extrn HeapAlloc:proc
+extrn HeapReAlloc:proc
 extrn HeapFree:proc
 
-extrn pulsec_fcap_com_pulse_lang_Class_arc_teardown:proc
-extrn pulsec_fcap_com_pulse_lang_Class_arc_scan_edges:proc
-extrn pulsec_fcap_com_pulse_lang_Class_arc_invalidate_edges:proc
-extrn pulsec_fcap_com_pulse_lang_StringBuilder_arc_teardown:proc
-extrn pulsec_fcap_com_pulse_lang_StringBuilder_arc_scan_edges:proc
-extrn pulsec_fcap_com_pulse_lang_StringBuilder_arc_invalidate_edges:proc
-extrn pulsec_fcap_com_pulse_lang_Throwable_arc_teardown:proc
-extrn pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges:proc
-extrn pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges:proc
+extrn WaitForSingleObject:proc
+
+extrn pulsec_fcap_pulse_lang_Class_arc_teardown:proc
+extrn pulsec_fcap_pulse_lang_Class_arc_scan_edges:proc
+extrn pulsec_fcap_pulse_lang_Class_arc_invalidate_edges:proc
+extrn pulsec_fcap_pulse_lang_StringBuilder_arc_teardown:proc
+extrn pulsec_fcap_pulse_lang_StringBuilder_arc_scan_edges:proc
+extrn pulsec_fcap_pulse_lang_StringBuilder_arc_invalidate_edges:proc
+extrn pulsec_fcap_pulse_lang_Throwable_arc_teardown:proc
+extrn pulsec_fcap_pulse_lang_Throwable_arc_scan_edges:proc
+extrn pulsec_fcap_pulse_lang_Throwable_arc_invalidate_edges:proc
 
 .data
 written dq 0
@@ -41,8 +56,8 @@ rt_runtime_init_epoch dd 0
 rt_str_count dd 0
 rt_str_lens_ptr dq 0
 rt_str_data_ptr dq 0
-rt_tmpbuf db 256 dup(0)
-rt_tmp_concat db 256 dup(0)
+rt_tmpbuf db 4096 dup(0)
+rt_tmp_concat db 4096 dup(0)
 rt_tmp_concat_len dd 0
 rt_tmp_arr_slot dd 0
 rt_tmp_arr_len dd 0
@@ -216,100 +231,46 @@ rt_arc_meta textequ <r15>
 rt_arc_generation textequ <rdi>
 rt_arc_free_next textequ <rsi>
 
-rt_obj_class_name_1 db "app.runtime.GameLoop"
-rt_obj_class_name_1_len equ 20
-rt_obj_class_name_2 db "app.runtime.Main"
-rt_obj_class_name_2_len equ 16
-rt_obj_class_name_3 db "app.runtime.Rank"
-rt_obj_class_name_3_len equ 16
-rt_obj_class_name_4 db "app.runtime.Runner"
-rt_obj_class_name_4_len equ 18
-rt_obj_class_name_5 db "com.pulse.lang.Appendable"
-rt_obj_class_name_5_len equ 25
-rt_obj_class_name_6 db "com.pulse.lang.AssertionError"
-rt_obj_class_name_6_len equ 29
-rt_obj_class_name_7 db "com.pulse.lang.AutoCloseable"
-rt_obj_class_name_7_len equ 28
-rt_obj_class_name_8 db "com.pulse.lang.Boolean"
-rt_obj_class_name_8_len equ 22
-rt_obj_class_name_9 db "com.pulse.lang.Byte"
-rt_obj_class_name_9_len equ 19
-rt_obj_class_name_10 db "com.pulse.lang.Char"
-rt_obj_class_name_10_len equ 19
-rt_obj_class_name_11 db "com.pulse.lang.CharSequence"
-rt_obj_class_name_11_len equ 27
-rt_obj_class_name_12 db "com.pulse.lang.Class"
-rt_obj_class_name_12_len equ 20
-rt_obj_class_name_13 db "com.pulse.lang.Comparable"
-rt_obj_class_name_13_len equ 25
-rt_obj_class_name_14 db "com.pulse.lang.ConsoleWriter"
-rt_obj_class_name_14_len equ 28
-rt_obj_class_name_15 db "com.pulse.lang.Double"
-rt_obj_class_name_15_len equ 21
-rt_obj_class_name_16 db "com.pulse.lang.Enum"
-rt_obj_class_name_16_len equ 19
-rt_obj_class_name_17 db "com.pulse.lang.Exception"
-rt_obj_class_name_17_len equ 24
-rt_obj_class_name_18 db "com.pulse.lang.Float"
-rt_obj_class_name_18_len equ 20
-rt_obj_class_name_19 db "com.pulse.lang.IO"
-rt_obj_class_name_19_len equ 17
-rt_obj_class_name_20 db "com.pulse.lang.IllegalArgumentException"
-rt_obj_class_name_20_len equ 39
-rt_obj_class_name_21 db "com.pulse.lang.IllegalStateException"
-rt_obj_class_name_21_len equ 36
-rt_obj_class_name_22 db "com.pulse.lang.IndexOutOfBoundsException"
-rt_obj_class_name_22_len equ 40
-rt_obj_class_name_23 db "com.pulse.lang.Integer"
-rt_obj_class_name_23_len equ 22
-rt_obj_class_name_24 db "com.pulse.lang.Iterable"
-rt_obj_class_name_24_len equ 23
-rt_obj_class_name_25 db "com.pulse.lang.Iterator"
-rt_obj_class_name_25_len equ 23
-rt_obj_class_name_26 db "com.pulse.lang.Long"
-rt_obj_class_name_26_len equ 19
-rt_obj_class_name_27 db "com.pulse.lang.NotNull"
-rt_obj_class_name_27_len equ 22
-rt_obj_class_name_28 db "com.pulse.lang.NullPointerException"
-rt_obj_class_name_28_len equ 35
-rt_obj_class_name_29 db "com.pulse.lang.NumberFormatException"
-rt_obj_class_name_29_len equ 36
-rt_obj_class_name_30 db "com.pulse.lang.Object"
-rt_obj_class_name_30_len equ 21
-rt_obj_class_name_31 db "com.pulse.lang.Override"
-rt_obj_class_name_31_len equ 23
-rt_obj_class_name_32 db "com.pulse.lang.PrintStream"
-rt_obj_class_name_32_len equ 26
-rt_obj_class_name_33 db "com.pulse.lang.Runnable"
-rt_obj_class_name_33_len equ 23
-rt_obj_class_name_34 db "com.pulse.lang.RuntimeException"
-rt_obj_class_name_34_len equ 31
-rt_obj_class_name_35 db "com.pulse.lang.Short"
-rt_obj_class_name_35_len equ 20
-rt_obj_class_name_36 db "com.pulse.lang.String"
-rt_obj_class_name_36_len equ 21
-rt_obj_class_name_37 db "com.pulse.lang.StringBuilder"
-rt_obj_class_name_37_len equ 28
-rt_obj_class_name_38 db "com.pulse.lang.System"
-rt_obj_class_name_38_len equ 21
-rt_obj_class_name_39 db "com.pulse.lang.Test"
-rt_obj_class_name_39_len equ 19
-rt_obj_class_name_40 db "com.pulse.lang.Throwable"
-rt_obj_class_name_40_len equ 24
-rt_obj_class_name_41 db "com.pulse.lang.UByte"
-rt_obj_class_name_41_len equ 20
-rt_obj_class_name_42 db "com.pulse.lang.UInteger"
-rt_obj_class_name_42_len equ 23
-rt_obj_class_name_43 db "com.pulse.lang.ULong"
-rt_obj_class_name_43_len equ 20
-rt_obj_class_name_44 db "com.pulse.lang.UShort"
-rt_obj_class_name_44_len equ 21
-rt_obj_class_name_45 db "com.pulse.lang.UnsupportedOperationException"
-rt_obj_class_name_45_len equ 44
-rt_obj_class_name_46 db "com.pulse.lang.Void"
-rt_obj_class_name_46_len equ 19
-rt_obj_class_name_47 db "com.pulse.rt.Intrinsics"
-rt_obj_class_name_47_len equ 23
+rt_obj_class_name_1 db "app.runtime.Main"
+rt_obj_class_name_1_len equ 16
+rt_obj_class_name_2 db "pulse.lang.Appendable"
+rt_obj_class_name_2_len equ 21
+rt_obj_class_name_3 db "pulse.lang.CharSequence"
+rt_obj_class_name_3_len equ 23
+rt_obj_class_name_4 db "pulse.lang.Class"
+rt_obj_class_name_4_len equ 16
+rt_obj_class_name_5 db "pulse.lang.Comparable"
+rt_obj_class_name_5_len equ 21
+rt_obj_class_name_6 db "pulse.lang.Double"
+rt_obj_class_name_6_len equ 17
+rt_obj_class_name_7 db "pulse.lang.Exception"
+rt_obj_class_name_7_len equ 20
+rt_obj_class_name_8 db "pulse.lang.Float"
+rt_obj_class_name_8_len equ 16
+rt_obj_class_name_9 db "pulse.lang.IO"
+rt_obj_class_name_9_len equ 13
+rt_obj_class_name_10 db "pulse.lang.Integer"
+rt_obj_class_name_10_len equ 18
+rt_obj_class_name_11 db "pulse.lang.Long"
+rt_obj_class_name_11_len equ 15
+rt_obj_class_name_12 db "pulse.lang.NumberFormatException"
+rt_obj_class_name_12_len equ 32
+rt_obj_class_name_13 db "pulse.lang.Object"
+rt_obj_class_name_13_len equ 17
+rt_obj_class_name_14 db "pulse.lang.RuntimeException"
+rt_obj_class_name_14_len equ 27
+rt_obj_class_name_15 db "pulse.lang.String"
+rt_obj_class_name_15_len equ 17
+rt_obj_class_name_16 db "pulse.lang.StringBuilder"
+rt_obj_class_name_16_len equ 24
+rt_obj_class_name_17 db "pulse.lang.Throwable"
+rt_obj_class_name_17_len equ 20
+rt_obj_class_name_18 db "pulse.lang.UInteger"
+rt_obj_class_name_18_len equ 19
+rt_obj_class_name_19 db "pulse.lang.ULong"
+rt_obj_class_name_19_len equ 16
+rt_obj_class_name_20 db "pulse.rt.Intrinsics"
+rt_obj_class_name_20_len equ 19
 
 .code
 pulsec_rt_init proc
@@ -337,7 +298,7 @@ pulsec_rt_init proc
     mov qword ptr [rt_str_lens_ptr], rax
     mov rcx, qword ptr [rsp+32]
     mov edx, 8
-    mov r8d, 16384
+    mov r8d, 512
     call HeapAlloc
     test rax, rax
     jz pulsec_rt_init_fail_free_lens
@@ -596,7 +557,7 @@ pulsec_rt_objectClassId_plain:
     mov eax, dword ptr [rax+r10*4]
     ret
 pulsec_rt_objectClassId_string_kind:
-    mov eax, 36
+    mov eax, 15
     ret
 pulsec_rt_objectClassId_stale:
     lea rcx, rt_stale_handle_err
@@ -610,6 +571,23 @@ pulsec_rt_objectClassId_invalid:
     xor eax, eax
     ret
 pulsec_rt_objectClassId endp
+
+pulsec_rt_classIdInSet proc
+    xor eax, eax
+    test r8d, r8d
+    jle pulsec_rt_classIdInSet_done
+pulsec_rt_classIdInSet_loop:
+    cmp ecx, dword ptr [rdx]
+    je pulsec_rt_classIdInSet_found
+    add rdx, 4
+    sub r8d, 1
+    jg pulsec_rt_classIdInSet_loop
+    jmp pulsec_rt_classIdInSet_done
+pulsec_rt_classIdInSet_found:
+    mov eax, 1
+pulsec_rt_classIdInSet_done:
+    ret
+pulsec_rt_classIdInSet endp
 
 pulsec_rt_objectHashCode proc
     test rcx, rcx
@@ -628,10 +606,6 @@ pulsec_rt_objectHashCode endp
 pulsec_rt_stringFromBytes proc
     mov r10, rcx
     mov r11d, edx
-    cmp r11d, 255
-    jbe pulsec_rt_stringFromBytes_len_ok
-    jmp pulsec_rt_stringFromBytes_fail
-pulsec_rt_stringFromBytes_len_ok:
     mov qword ptr [rt_tmp_ptr_c], r10
     mov dword ptr [rt_tmp_arg_val], r11d
     mov eax, dword ptr [rt_arc_free_head]
@@ -661,18 +635,37 @@ pulsec_rt_stringFromBytes_allocslot_have_room:
     add eax, 1
     mov dword ptr [rt_handle_next], eax
 pulsec_rt_stringFromBytes_allocslot_done:
+    mov dword ptr [rt_tmp_size], eax
+    call GetProcessHeap
+    test rax, rax
+    jz pulsec_rt_stringFromBytes_fail
+    mov qword ptr [rt_tmp_ptr_b], rax
+    mov ecx, dword ptr [rt_tmp_arg_val]
+    add ecx, 1
+    mov r8d, ecx
+    mov rcx, qword ptr [rt_tmp_ptr_b]
+    xor edx, edx
+    call HeapAlloc
+    test rax, rax
+    jz pulsec_rt_stringFromBytes_fail
+    mov qword ptr [rt_tmp_ptr_a], rax
+pulsec_rt_stringFromBytes_buf_alloc_ok:
     mov r10, qword ptr [rt_tmp_ptr_c]
     mov r11d, dword ptr [rt_tmp_arg_val]
     mov edx, dword ptr [rt_str_count]
     add edx, 1
     mov dword ptr [rt_str_count], edx
     mov r9, qword ptr [rt_str_lens_ptr]
-    mov dword ptr [r9+rax*4], r11d
-    mov dword ptr [rt_arc_kinds+rax*4], 3
-    mov dword ptr [rt_arc_refcounts+rax*4], 1
-    mov dword ptr [rt_arc_flags+rax*4], 0
-    mov dword ptr [rt_arc_meta+rax*4], 0
-    mov edx, dword ptr [rt_arc_generation+rax*4]
+    mov ecx, dword ptr [rt_tmp_size]
+    mov dword ptr [r9+rcx*4], r11d
+    mov r9, qword ptr [rt_str_data_ptr]
+    mov rdx, qword ptr [rt_tmp_ptr_a]
+    mov qword ptr [r9+rcx*8], rdx
+    mov dword ptr [rt_arc_kinds+rcx*4], 3
+    mov dword ptr [rt_arc_refcounts+rcx*4], 1
+    mov dword ptr [rt_arc_flags+rcx*4], 0
+    mov dword ptr [rt_arc_meta+rcx*4], 0
+    mov edx, dword ptr [rt_arc_generation+rcx*4]
     add edx, 1
     jnz @F
     sub rsp, 40
@@ -686,11 +679,9 @@ pulsec_rt_stringFromBytes_allocslot_done:
     call ExitProcess
     add rsp, 40
 @@:
-    mov dword ptr [rt_arc_generation+rax*4], edx
-    mov r8d, eax
-    imul r8d, 256
-    mov r9, qword ptr [rt_str_data_ptr]
-    add r9, r8
+    mov ecx, dword ptr [rt_tmp_size]
+    mov dword ptr [rt_arc_generation+rcx*4], edx
+    mov r9, qword ptr [rt_tmp_ptr_a]
     xor ecx, ecx
 pulsec_rt_stringFromBytes_copy_loop:
     cmp ecx, r11d
@@ -700,6 +691,8 @@ pulsec_rt_stringFromBytes_copy_loop:
     add ecx, 1
     jmp pulsec_rt_stringFromBytes_copy_loop
 pulsec_rt_stringFromBytes_done:
+    mov byte ptr [r9+rcx], 0
+    mov eax, dword ptr [rt_tmp_size]
     mov edx, dword ptr [rt_arc_generation+rax*4]
     shl rdx, 32
     or rax, rdx
@@ -775,11 +768,9 @@ pulsec_rt_stringEquals_loop:
     jae pulsec_rt_stringEquals_done_true
     mov r8, qword ptr [rt_str_data_ptr]
     mov r10d, dword ptr [rsp+32]
-    imul r10d, 256
-    add r10, r8
+    mov r10, qword ptr [r8+r10*8]
     mov r11d, dword ptr [rsp+36]
-    imul r11d, 256
-    add r11, r8
+    mov r11, qword ptr [r8+r11*8]
     mov dl, byte ptr [r10+rax]
     cmp dl, byte ptr [r11+rax]
     jne pulsec_rt_stringEquals_done_false
@@ -815,6 +806,89 @@ pulsec_rt_writeRaw proc
     add rsp, 40
     ret
 pulsec_rt_writeRaw endp
+
+pulsec_rt_hostPathAlloc proc
+    sub rsp, 56
+    test rcx, rcx
+    jz pulsec_rt_hostPathAlloc_null_input
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_hostPathAlloc_live_panic
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_hostPathAlloc_live_panic
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_hostPathAlloc_live
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_hostPathAlloc_live_panic
+pulsec_rt_hostPathAlloc_live:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je pulsec_rt_hostPathAlloc_live_panic
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne pulsec_rt_hostPathAlloc_live_panic
+    jmp pulsec_rt_hostPathAlloc_ok
+pulsec_rt_hostPathAlloc_live_panic:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+pulsec_rt_hostPathAlloc_ok:
+    mov ecx, r10d
+    mov dword ptr [rsp+44], ecx
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov edx, dword ptr [rax+rcx*4]
+    mov dword ptr [rsp+48], edx
+    mov ecx, edx
+    add ecx, 1
+    mov dword ptr [rsp+40], ecx
+    call GetProcessHeap
+    test rax, rax
+    jz pulsec_rt_hostPathAlloc_alloc_fail
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    xor edx, edx
+    mov r8d, dword ptr [rsp+40]
+    call HeapAlloc
+    test rax, rax
+    jz pulsec_rt_hostPathAlloc_alloc_fail
+    mov r10, rax
+    mov ecx, dword ptr [rsp+44]
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov r9, qword ptr [rax+rcx*8]
+    mov r8d, dword ptr [rsp+48]
+    xor ecx, ecx
+pulsec_rt_hostPathAlloc_copy_loop:
+    cmp ecx, r8d
+    jae pulsec_rt_hostPathAlloc_copy_done
+    mov al, byte ptr [r9+rcx]
+    cmp al, '/'
+    jne @F
+    mov al, '\'
+@@:
+    mov byte ptr [r10+rcx], al
+    add ecx, 1
+    jmp pulsec_rt_hostPathAlloc_copy_loop
+pulsec_rt_hostPathAlloc_copy_done:
+    mov byte ptr [r10+rcx], 0
+    mov edx, r8d
+    mov rax, r10
+    add rsp, 56
+    ret
+pulsec_rt_hostPathAlloc_alloc_fail:
+    xor eax, eax
+    xor edx, edx
+    add rsp, 56
+    ret
+pulsec_rt_hostPathAlloc_null_input:
+    xor eax, eax
+    xor edx, edx
+    add rsp, 56
+    ret
+pulsec_rt_hostPathAlloc endp
 
 pulsec_rt_fpToInt proc
     movq xmm0, rcx
@@ -1062,60 +1136,6 @@ pulsec_rt_objectClassName proc
     je pulsec_rt_objectClassName_c19
     cmp eax, 20
     je pulsec_rt_objectClassName_c20
-    cmp eax, 21
-    je pulsec_rt_objectClassName_c21
-    cmp eax, 22
-    je pulsec_rt_objectClassName_c22
-    cmp eax, 23
-    je pulsec_rt_objectClassName_c23
-    cmp eax, 24
-    je pulsec_rt_objectClassName_c24
-    cmp eax, 25
-    je pulsec_rt_objectClassName_c25
-    cmp eax, 26
-    je pulsec_rt_objectClassName_c26
-    cmp eax, 27
-    je pulsec_rt_objectClassName_c27
-    cmp eax, 28
-    je pulsec_rt_objectClassName_c28
-    cmp eax, 29
-    je pulsec_rt_objectClassName_c29
-    cmp eax, 30
-    je pulsec_rt_objectClassName_c30
-    cmp eax, 31
-    je pulsec_rt_objectClassName_c31
-    cmp eax, 32
-    je pulsec_rt_objectClassName_c32
-    cmp eax, 33
-    je pulsec_rt_objectClassName_c33
-    cmp eax, 34
-    je pulsec_rt_objectClassName_c34
-    cmp eax, 35
-    je pulsec_rt_objectClassName_c35
-    cmp eax, 36
-    je pulsec_rt_objectClassName_c36
-    cmp eax, 37
-    je pulsec_rt_objectClassName_c37
-    cmp eax, 38
-    je pulsec_rt_objectClassName_c38
-    cmp eax, 39
-    je pulsec_rt_objectClassName_c39
-    cmp eax, 40
-    je pulsec_rt_objectClassName_c40
-    cmp eax, 41
-    je pulsec_rt_objectClassName_c41
-    cmp eax, 42
-    je pulsec_rt_objectClassName_c42
-    cmp eax, 43
-    je pulsec_rt_objectClassName_c43
-    cmp eax, 44
-    je pulsec_rt_objectClassName_c44
-    cmp eax, 45
-    je pulsec_rt_objectClassName_c45
-    cmp eax, 46
-    je pulsec_rt_objectClassName_c46
-    cmp eax, 47
-    je pulsec_rt_objectClassName_c47
     jmp pulsec_rt_objectClassName_invalid
 pulsec_rt_objectClassName_c1:
     lea rcx, rt_obj_class_name_1
@@ -1217,141 +1237,6 @@ pulsec_rt_objectClassName_c20:
     mov edx, rt_obj_class_name_20_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c21:
-    lea rcx, rt_obj_class_name_21
-    mov edx, rt_obj_class_name_21_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c22:
-    lea rcx, rt_obj_class_name_22
-    mov edx, rt_obj_class_name_22_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c23:
-    lea rcx, rt_obj_class_name_23
-    mov edx, rt_obj_class_name_23_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c24:
-    lea rcx, rt_obj_class_name_24
-    mov edx, rt_obj_class_name_24_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c25:
-    lea rcx, rt_obj_class_name_25
-    mov edx, rt_obj_class_name_25_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c26:
-    lea rcx, rt_obj_class_name_26
-    mov edx, rt_obj_class_name_26_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c27:
-    lea rcx, rt_obj_class_name_27
-    mov edx, rt_obj_class_name_27_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c28:
-    lea rcx, rt_obj_class_name_28
-    mov edx, rt_obj_class_name_28_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c29:
-    lea rcx, rt_obj_class_name_29
-    mov edx, rt_obj_class_name_29_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c30:
-    lea rcx, rt_obj_class_name_30
-    mov edx, rt_obj_class_name_30_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c31:
-    lea rcx, rt_obj_class_name_31
-    mov edx, rt_obj_class_name_31_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c32:
-    lea rcx, rt_obj_class_name_32
-    mov edx, rt_obj_class_name_32_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c33:
-    lea rcx, rt_obj_class_name_33
-    mov edx, rt_obj_class_name_33_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c34:
-    lea rcx, rt_obj_class_name_34
-    mov edx, rt_obj_class_name_34_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c35:
-    lea rcx, rt_obj_class_name_35
-    mov edx, rt_obj_class_name_35_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c36:
-    lea rcx, rt_obj_class_name_36
-    mov edx, rt_obj_class_name_36_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c37:
-    lea rcx, rt_obj_class_name_37
-    mov edx, rt_obj_class_name_37_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c38:
-    lea rcx, rt_obj_class_name_38
-    mov edx, rt_obj_class_name_38_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c39:
-    lea rcx, rt_obj_class_name_39
-    mov edx, rt_obj_class_name_39_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c40:
-    lea rcx, rt_obj_class_name_40
-    mov edx, rt_obj_class_name_40_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c41:
-    lea rcx, rt_obj_class_name_41
-    mov edx, rt_obj_class_name_41_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c42:
-    lea rcx, rt_obj_class_name_42
-    mov edx, rt_obj_class_name_42_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c43:
-    lea rcx, rt_obj_class_name_43
-    mov edx, rt_obj_class_name_43_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c44:
-    lea rcx, rt_obj_class_name_44
-    mov edx, rt_obj_class_name_44_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c45:
-    lea rcx, rt_obj_class_name_45
-    mov edx, rt_obj_class_name_45_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c46:
-    lea rcx, rt_obj_class_name_46
-    mov edx, rt_obj_class_name_46_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
-pulsec_rt_objectClassName_c47:
-    lea rcx, rt_obj_class_name_47
-    mov edx, rt_obj_class_name_47_len
-    call pulsec_rt_stringFromBytes
-    jmp pulsec_rt_objectClassName_done
 pulsec_rt_objectClassName_invalid:
     lea rcx, rt_empty
     xor edx, edx
@@ -1402,11 +1287,11 @@ pulsec_rt_ensureSlotCapacity_prep_alloc:
     mov dword ptr [rsp+260], eax
     mov eax, dword ptr [rsp+248]
     add eax, 1
-    shl eax, 8
+    shl eax, 3
     mov dword ptr [rsp+264], eax
     mov eax, dword ptr [rsp+252]
     add eax, 1
-    shl eax, 8
+    shl eax, 3
     mov dword ptr [rsp+268], eax
     mov qword ptr [rsp+88], 0
     mov qword ptr [rsp+96], 0
@@ -1533,7 +1418,7 @@ pulsec_rt_ensureSlotCapacity_alloc_weak_gen:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_str_lens_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_str_lens_done
+    jae pulsec_rt_ensureSlotCapacity_grow_str_lens_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_str_lens_next
@@ -1555,14 +1440,14 @@ pulsec_rt_ensureSlotCapacity_grow_str_lens_done:
     mov qword ptr [rsp+144], rax
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_str_data_loop:
-    cmp ecx, dword ptr [rsp+268]
+    cmp ecx, dword ptr [rsp+256]
     jae pulsec_rt_ensureSlotCapacity_grow_str_data_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_str_data_next
     mov r11, qword ptr [rsp+144]
-    mov dl, byte ptr [r10+rcx]
-    mov byte ptr [r11+rcx], dl
+    mov rdx, qword ptr [r10+rcx*8]
+    mov qword ptr [r11+rcx*8], rdx
 pulsec_rt_ensureSlotCapacity_grow_str_data_next:
     add ecx, 1
     jmp pulsec_rt_ensureSlotCapacity_grow_str_data_loop
@@ -1585,7 +1470,7 @@ pulsec_rt_ensureSlotCapacity_copy_ref:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_ref_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_kinds
+    jae pulsec_rt_ensureSlotCapacity_copy_kinds
     mov r10, qword ptr [rsp+40]
     mov r11, qword ptr [rsp+88]
     mov edx, dword ptr [r10+rax*4]
@@ -1596,7 +1481,7 @@ pulsec_rt_ensureSlotCapacity_copy_kinds:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_kinds_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_flags
+    jae pulsec_rt_ensureSlotCapacity_copy_flags
     mov r10, qword ptr [rsp+48]
     mov r11, qword ptr [rsp+96]
     mov edx, dword ptr [r10+rax*4]
@@ -1607,7 +1492,7 @@ pulsec_rt_ensureSlotCapacity_copy_flags:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_flags_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_meta
+    jae pulsec_rt_ensureSlotCapacity_copy_meta
     mov r10, qword ptr [rsp+56]
     mov r11, qword ptr [rsp+104]
     mov edx, dword ptr [r10+rax*4]
@@ -1618,7 +1503,7 @@ pulsec_rt_ensureSlotCapacity_copy_meta:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_meta_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_gen
+    jae pulsec_rt_ensureSlotCapacity_copy_gen
     mov r10, qword ptr [rsp+64]
     mov r11, qword ptr [rsp+112]
     mov edx, dword ptr [r10+rax*4]
@@ -1629,7 +1514,7 @@ pulsec_rt_ensureSlotCapacity_copy_gen:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_gen_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_free
+    jae pulsec_rt_ensureSlotCapacity_copy_free
     mov r10, qword ptr [rsp+72]
     mov r11, qword ptr [rsp+120]
     mov edx, dword ptr [r10+rax*4]
@@ -1640,7 +1525,7 @@ pulsec_rt_ensureSlotCapacity_copy_free:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_free_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_wfree
+    jae pulsec_rt_ensureSlotCapacity_copy_wfree
     mov r10, qword ptr [rsp+80]
     mov r11, qword ptr [rsp+128]
     mov edx, dword ptr [r10+rax*4]
@@ -1651,7 +1536,7 @@ pulsec_rt_ensureSlotCapacity_copy_wfree:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_wfree_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_wslot
+    jae pulsec_rt_ensureSlotCapacity_copy_wslot
     mov r10, qword ptr [rsp+168]
     mov r11, qword ptr [rsp+200]
     mov edx, dword ptr [r10+rax*4]
@@ -1662,7 +1547,7 @@ pulsec_rt_ensureSlotCapacity_copy_wslot:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_wslot_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_wtgen
+    jae pulsec_rt_ensureSlotCapacity_copy_wtgen
     mov r10, qword ptr [rsp+176]
     mov r11, qword ptr [rsp+208]
     mov edx, dword ptr [r10+rax*4]
@@ -1673,7 +1558,7 @@ pulsec_rt_ensureSlotCapacity_copy_wtgen:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_wtgen_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_copy_wgen
+    jae pulsec_rt_ensureSlotCapacity_copy_wgen
     mov r10, qword ptr [rsp+184]
     mov r11, qword ptr [rsp+216]
     mov edx, dword ptr [r10+rax*4]
@@ -1684,7 +1569,7 @@ pulsec_rt_ensureSlotCapacity_copy_wgen:
     xor eax, eax
 pulsec_rt_ensureSlotCapacity_copy_wgen_done:
     cmp eax, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_free_old
+    jae pulsec_rt_ensureSlotCapacity_free_old
     mov r10, qword ptr [rsp+192]
     mov r11, qword ptr [rsp+224]
     mov edx, dword ptr [r10+rax*4]
@@ -1767,7 +1652,7 @@ pulsec_rt_ensureSlotCapacity_commit:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_0_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_0_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_0_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_0_copy_next
@@ -1806,7 +1691,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_0_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_1_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_1_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_1_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_1_copy_next
@@ -1845,7 +1730,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_1_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_2_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_2_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_2_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_2_copy_next
@@ -1884,7 +1769,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_2_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_3_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_3_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_3_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_3_copy_next
@@ -1924,7 +1809,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_3_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_4_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_4_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_4_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_4_copy_next
@@ -1963,7 +1848,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_4_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_5_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_5_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_5_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_5_copy_next
@@ -2002,7 +1887,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_5_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_6_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_6_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_6_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_6_copy_next
@@ -2041,7 +1926,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_6_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_7_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_7_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_7_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_7_copy_next
@@ -2080,7 +1965,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_7_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_8_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_8_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_8_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_8_copy_next
@@ -2119,7 +2004,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_8_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_9_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_9_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_9_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_9_copy_next
@@ -2159,7 +2044,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_9_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_10_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_10_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_10_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_10_copy_next
@@ -2198,7 +2083,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_10_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_11_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_11_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_11_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_11_copy_next
@@ -2237,7 +2122,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_11_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_12_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_12_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_12_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_12_copy_next
@@ -2276,7 +2161,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_12_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_13_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_13_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_13_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_13_copy_next
@@ -2315,7 +2200,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_13_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_14_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_14_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_14_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_14_copy_next
@@ -2354,7 +2239,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_14_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_15_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_15_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_15_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_15_copy_next
@@ -2393,7 +2278,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_15_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_16_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_16_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_16_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_16_copy_next
@@ -2433,7 +2318,7 @@ pulsec_rt_ensureSlotCapacity_grow_tbl_16_done:
     xor ecx, ecx
 pulsec_rt_ensureSlotCapacity_grow_tbl_17_copy_loop:
     cmp ecx, dword ptr [rsp+256]
-    ja pulsec_rt_ensureSlotCapacity_grow_tbl_17_copy_done
+    jae pulsec_rt_ensureSlotCapacity_grow_tbl_17_copy_done
     mov r10, qword ptr [rt_tmp_ptr_b]
     test r10, r10
     jz pulsec_rt_ensureSlotCapacity_grow_tbl_17_copy_next
@@ -2551,11 +2436,12 @@ pulsec_rt_ensureSlotCapacity_fail:
 pulsec_rt_ensureSlotCapacity endp
 
 pulsec_rt_arcTeardown proc
+    sub rsp, 72
     cmp ecx, 1
     jb pulsec_rt_arcTeardown_done
     cmp ecx, dword ptr [rt_slot_capacity]
     ja pulsec_rt_arcTeardown_done
-    mov dword ptr [rt_tmp_arr_slot], ecx
+    mov dword ptr [rsp+32], ecx
     mov eax, dword ptr [rt_arc_kinds+rcx*4]
     cmp eax, 1
     je pulsec_rt_arcTeardown_kind_object
@@ -2569,24 +2455,24 @@ pulsec_rt_arcTeardown proc
 pulsec_rt_arcTeardown_kind_object:
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+rcx*4]
-    cmp edx, 12
-    je pulsec_rt_arcTeardown_kind_object_c12
-    cmp edx, 37
-    je pulsec_rt_arcTeardown_kind_object_c37
-    cmp edx, 40
-    je pulsec_rt_arcTeardown_kind_object_c40
+    cmp edx, 4
+    je pulsec_rt_arcTeardown_kind_object_c4
+    cmp edx, 16
+    je pulsec_rt_arcTeardown_kind_object_c16
+    cmp edx, 17
+    je pulsec_rt_arcTeardown_kind_object_c17
     jmp pulsec_rt_arcTeardown_kind_object_unmatched
-pulsec_rt_arcTeardown_kind_object_c12:
-    call pulsec_fcap_com_pulse_lang_Class_arc_teardown
-    mov ecx, dword ptr [rt_tmp_arr_slot]
+pulsec_rt_arcTeardown_kind_object_c4:
+    call pulsec_fcap_pulse_lang_Class_arc_teardown
+    mov ecx, dword ptr [rsp+32]
     jmp pulsec_rt_arcTeardown_kind_object_done
-pulsec_rt_arcTeardown_kind_object_c37:
-    call pulsec_fcap_com_pulse_lang_StringBuilder_arc_teardown
-    mov ecx, dword ptr [rt_tmp_arr_slot]
+pulsec_rt_arcTeardown_kind_object_c16:
+    call pulsec_fcap_pulse_lang_StringBuilder_arc_teardown
+    mov ecx, dword ptr [rsp+32]
     jmp pulsec_rt_arcTeardown_kind_object_done
-pulsec_rt_arcTeardown_kind_object_c40:
-    call pulsec_fcap_com_pulse_lang_Throwable_arc_teardown
-    mov ecx, dword ptr [rt_tmp_arr_slot]
+pulsec_rt_arcTeardown_kind_object_c17:
+    call pulsec_fcap_pulse_lang_Throwable_arc_teardown
+    mov ecx, dword ptr [rsp+32]
     jmp pulsec_rt_arcTeardown_kind_object_done
 pulsec_rt_arcTeardown_kind_object_unmatched:
 pulsec_rt_arcTeardown_kind_object_done:
@@ -2596,12 +2482,11 @@ pulsec_rt_arcTeardown_kind_array:
     ja pulsec_rt_arcTeardown_clear_header
     mov rax, qword ptr [rt_arr_len_ptr]
     mov eax, dword ptr [rax+rcx*4]
-    mov dword ptr [rt_tmp_size], eax
+    mov dword ptr [rsp+36], eax
     mov rax, qword ptr [rt_arr_len_ptr]
     mov dword ptr [rax+rcx*4], 0
     mov rax, qword ptr [rt_arr_alive_ptr]
     mov dword ptr [rax+rcx*4], 0
-    mov dword ptr [rt_tmp_arr_slot], ecx
     mov rax, qword ptr [rt_arr_i_ptr_ptr]
     mov r11, qword ptr [rax+rcx*8]
     mov qword ptr [rax+rcx*8], 0
@@ -2615,28 +2500,28 @@ pulsec_rt_arcTeardown_kind_array:
     call HeapFree
     add rsp, 40
 pulsec_rt_arcTeardown_free_array_i_done:
-    mov ecx, dword ptr [rt_tmp_arr_slot]
+    mov ecx, dword ptr [rsp+32]
     mov rax, qword ptr [rt_arr_s_ptr_ptr]
     mov r11, qword ptr [rax+rcx*8]
     mov qword ptr [rax+rcx*8], 0
-    mov qword ptr [rt_tmp_ptr_d], r11
-    mov dword ptr [rt_tmp_arr_len], 0
+    mov qword ptr [rsp+56], r11
+    mov dword ptr [rsp+64], 0
 pulsec_rt_arcTeardown_release_array_loop:
-    mov ecx, dword ptr [rt_tmp_arr_len]
-    cmp ecx, dword ptr [rt_tmp_size]
+    mov ecx, dword ptr [rsp+64]
+    cmp ecx, dword ptr [rsp+36]
     jae pulsec_rt_arcTeardown_release_array_done
-    mov rax, qword ptr [rt_tmp_ptr_d]
+    mov rax, qword ptr [rsp+56]
     test rax, rax
     jz pulsec_rt_arcTeardown_release_array_skip
     mov rcx, qword ptr [rax+rcx*8]
     call pulsec_rt_arcRelease
 pulsec_rt_arcTeardown_release_array_skip:
-    mov ecx, dword ptr [rt_tmp_arr_len]
+    mov ecx, dword ptr [rsp+64]
     add ecx, 1
-    mov dword ptr [rt_tmp_arr_len], ecx
+    mov dword ptr [rsp+64], ecx
     jmp pulsec_rt_arcTeardown_release_array_loop
 pulsec_rt_arcTeardown_release_array_done:
-    mov r11, qword ptr [rt_tmp_ptr_d]
+    mov r11, qword ptr [rsp+56]
     test r11, r11
     jz pulsec_rt_arcTeardown_free_array_s_done
     sub rsp, 40
@@ -2651,17 +2536,19 @@ pulsec_rt_arcTeardown_free_array_s_done:
 pulsec_rt_arcTeardown_kind_string:
     mov rax, qword ptr [rt_str_lens_ptr]
     mov dword ptr [rax+rcx*4], 0
-    mov r8d, ecx
-    imul r8d, 256
-    xor eax, eax
-pulsec_rt_arcTeardown_loop_string:
-    cmp eax, 256
-    jae pulsec_rt_arcTeardown_clear_header
-    mov r11, qword ptr [rt_str_data_ptr]
-    add r11, r8
-    mov byte ptr [r11+rax], 0
-    add eax, 1
-    jmp pulsec_rt_arcTeardown_loop_string
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov r11, qword ptr [rax+rcx*8]
+    mov qword ptr [rax+rcx*8], 0
+    test r11, r11
+    jz pulsec_rt_arcTeardown_clear_header
+    sub rsp, 40
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, r11
+    call HeapFree
+    add rsp, 40
+    jmp pulsec_rt_arcTeardown_clear_header
 pulsec_rt_arcTeardown_kind_collection:
     mov eax, dword ptr [rt_arc_meta+rcx*4]
     cmp eax, 1
@@ -2677,31 +2564,31 @@ pulsec_rt_arcTeardown_collection_list:
     mov r10d, ecx
     mov rax, qword ptr [rt_list_size_ptr]
     mov eax, dword ptr [rax+r10*4]
-    mov dword ptr [rt_tmp_size], eax
+    mov dword ptr [rsp+36], eax
     mov rax, qword ptr [rt_list_kind_ptr]
     mov eax, dword ptr [rax+r10*4]
     cmp eax, 2
     jne pulsec_rt_arcTeardown_release_list_done
     mov rax, qword ptr [rt_list_s_ptr_ptr]
     mov rax, qword ptr [rax+r10*8]
-    mov qword ptr [rt_tmp_ptr_d], rax
-    mov dword ptr [rt_tmp_arr_len], 0
+    mov qword ptr [rsp+56], rax
+    mov dword ptr [rsp+64], 0
 pulsec_rt_arcTeardown_release_list_loop:
-    mov ecx, dword ptr [rt_tmp_arr_len]
-    cmp ecx, dword ptr [rt_tmp_size]
+    mov ecx, dword ptr [rsp+64]
+    cmp ecx, dword ptr [rsp+36]
     jae pulsec_rt_arcTeardown_release_list_done
-    mov rax, qword ptr [rt_tmp_ptr_d]
+    mov rax, qword ptr [rsp+56]
     test rax, rax
     jz pulsec_rt_arcTeardown_release_list_skip
     mov rcx, qword ptr [rax+rcx*8]
     call pulsec_rt_arcRelease
 pulsec_rt_arcTeardown_release_list_skip:
-    mov ecx, dword ptr [rt_tmp_arr_len]
+    mov ecx, dword ptr [rsp+64]
     add ecx, 1
-    mov dword ptr [rt_tmp_arr_len], ecx
+    mov dword ptr [rsp+64], ecx
     jmp pulsec_rt_arcTeardown_release_list_loop
 pulsec_rt_arcTeardown_release_list_done:
-    mov r10d, dword ptr [rt_tmp_arr_slot]
+    mov r10d, dword ptr [rsp+32]
     mov rax, qword ptr [rt_list_size_ptr]
     mov dword ptr [rax+r10*4], 0
     mov rax, qword ptr [rt_list_kind_ptr]
@@ -2723,7 +2610,7 @@ pulsec_rt_arcTeardown_release_list_done:
     call HeapFree
     add rsp, 40
 pulsec_rt_arcTeardown_free_list_i_done:
-    mov r10d, dword ptr [rt_tmp_arr_slot]
+    mov r10d, dword ptr [rsp+32]
     mov rax, qword ptr [rt_list_s_ptr_ptr]
     mov r11, qword ptr [rax+r10*8]
     mov qword ptr [rax+r10*8], 0
@@ -2746,45 +2633,45 @@ pulsec_rt_arcTeardown_collection_map:
     mov r10d, ecx
     mov rax, qword ptr [rt_map_size_ptr]
     mov eax, dword ptr [rax+r10*4]
-    mov dword ptr [rt_tmp_size], eax
+    mov dword ptr [rsp+36], eax
     mov rax, qword ptr [rt_map_keys_ptr_ptr]
     mov rax, qword ptr [rax+r10*8]
-    mov qword ptr [rt_tmp_ptr_a], rax
+    mov qword ptr [rsp+40], rax
     mov rax, qword ptr [rt_map_tags_ptr_ptr]
     mov rax, qword ptr [rax+r10*8]
-    mov qword ptr [rt_tmp_ptr_b], rax
+    mov qword ptr [rsp+48], rax
     mov rax, qword ptr [rt_map_s_ptr_ptr]
     mov rax, qword ptr [rax+r10*8]
-    mov qword ptr [rt_tmp_ptr_d], rax
-    mov dword ptr [rt_tmp_arr_len], 0
+    mov qword ptr [rsp+56], rax
+    mov dword ptr [rsp+64], 0
 pulsec_rt_arcTeardown_release_map_loop:
-    mov ecx, dword ptr [rt_tmp_arr_len]
-    cmp ecx, dword ptr [rt_tmp_size]
+    mov ecx, dword ptr [rsp+64]
+    cmp ecx, dword ptr [rsp+36]
     jae pulsec_rt_arcTeardown_release_map_done
-    mov rax, qword ptr [rt_tmp_ptr_a]
+    mov rax, qword ptr [rsp+40]
     test rax, rax
     jz pulsec_rt_arcTeardown_release_map_skip_key
     mov rcx, qword ptr [rax+rcx*8]
     call pulsec_rt_arcRelease
 pulsec_rt_arcTeardown_release_map_skip_key:
-    mov ecx, dword ptr [rt_tmp_arr_len]
-    mov rax, qword ptr [rt_tmp_ptr_b]
+    mov ecx, dword ptr [rsp+64]
+    mov rax, qword ptr [rsp+48]
     test rax, rax
     jz pulsec_rt_arcTeardown_release_map_skip_value
     cmp dword ptr [rax+rcx*4], 2
     jne pulsec_rt_arcTeardown_release_map_skip_value
-    mov rax, qword ptr [rt_tmp_ptr_d]
+    mov rax, qword ptr [rsp+56]
     test rax, rax
     jz pulsec_rt_arcTeardown_release_map_skip_value
     mov rcx, qword ptr [rax+rcx*8]
     call pulsec_rt_arcRelease
 pulsec_rt_arcTeardown_release_map_skip_value:
-    mov ecx, dword ptr [rt_tmp_arr_len]
+    mov ecx, dword ptr [rsp+64]
     add ecx, 1
-    mov dword ptr [rt_tmp_arr_len], ecx
+    mov dword ptr [rsp+64], ecx
     jmp pulsec_rt_arcTeardown_release_map_loop
 pulsec_rt_arcTeardown_release_map_done:
-    mov r10d, dword ptr [rt_tmp_arr_slot]
+    mov r10d, dword ptr [rsp+32]
     mov rax, qword ptr [rt_map_size_ptr]
     mov dword ptr [rax+r10*4], 0
     mov rax, qword ptr [rt_map_cap_ptr]
@@ -2804,7 +2691,7 @@ pulsec_rt_arcTeardown_release_map_done:
     call HeapFree
     add rsp, 40
 pulsec_rt_arcTeardown_free_map_keys_done:
-    mov r10d, dword ptr [rt_tmp_arr_slot]
+    mov r10d, dword ptr [rsp+32]
     mov rax, qword ptr [rt_map_tags_ptr_ptr]
     mov r11, qword ptr [rax+r10*8]
     mov qword ptr [rax+r10*8], 0
@@ -2818,7 +2705,7 @@ pulsec_rt_arcTeardown_free_map_keys_done:
     call HeapFree
     add rsp, 40
 pulsec_rt_arcTeardown_free_map_tags_done:
-    mov r10d, dword ptr [rt_tmp_arr_slot]
+    mov r10d, dword ptr [rsp+32]
     mov rax, qword ptr [rt_map_i_ptr_ptr]
     mov r11, qword ptr [rax+r10*8]
     mov qword ptr [rax+r10*8], 0
@@ -2832,7 +2719,7 @@ pulsec_rt_arcTeardown_free_map_tags_done:
     call HeapFree
     add rsp, 40
 pulsec_rt_arcTeardown_free_map_i_done:
-    mov r10d, dword ptr [rt_tmp_arr_slot]
+    mov r10d, dword ptr [rsp+32]
     mov rax, qword ptr [rt_map_s_ptr_ptr]
     mov r11, qword ptr [rax+r10*8]
     mov qword ptr [rax+r10*8], 0
@@ -2848,7 +2735,7 @@ pulsec_rt_arcTeardown_free_map_i_done:
 pulsec_rt_arcTeardown_free_map_s_done:
     jmp pulsec_rt_arcTeardown_clear_header
 pulsec_rt_arcTeardown_clear_header:
-    mov ecx, dword ptr [rt_tmp_arr_slot]
+    mov ecx, dword ptr [rsp+32]
     cmp ecx, 4294967295
     ja pulsec_rt_arcTeardown_clear_obj_id_skip
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
@@ -2863,6 +2750,7 @@ pulsec_rt_arcTeardown_clear_obj_id_skip:
     mov dword ptr [rt_arc_free_head], ecx
 pulsec_rt_arcTeardown_done:
     xor eax, eax
+    add rsp, 72
     ret
 pulsec_rt_arcTeardown endp
 
@@ -2887,24 +2775,24 @@ pulsec_rt_arcCycleFullPass_scan_edges_loop:
     je pulsec_rt_arcCycleFullPass_scan_edges_next
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+r8*4]
-    cmp edx, 12
-    je pulsec_rt_arcCycleFullPass_scan_edges_c12
-    cmp edx, 37
-    je pulsec_rt_arcCycleFullPass_scan_edges_c37
-    cmp edx, 40
-    je pulsec_rt_arcCycleFullPass_scan_edges_c40
+    cmp edx, 4
+    je pulsec_rt_arcCycleFullPass_scan_edges_c4
+    cmp edx, 16
+    je pulsec_rt_arcCycleFullPass_scan_edges_c16
+    cmp edx, 17
+    je pulsec_rt_arcCycleFullPass_scan_edges_c17
     jmp pulsec_rt_arcCycleFullPass_scan_edges_unmatched
-pulsec_rt_arcCycleFullPass_scan_edges_c12:
+pulsec_rt_arcCycleFullPass_scan_edges_c4:
     mov ecx, r8d
-    call pulsec_fcap_com_pulse_lang_Class_arc_scan_edges
+    call pulsec_fcap_pulse_lang_Class_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
-pulsec_rt_arcCycleFullPass_scan_edges_c37:
+pulsec_rt_arcCycleFullPass_scan_edges_c16:
     mov ecx, r8d
-    call pulsec_fcap_com_pulse_lang_StringBuilder_arc_scan_edges
+    call pulsec_fcap_pulse_lang_StringBuilder_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
-pulsec_rt_arcCycleFullPass_scan_edges_c40:
+pulsec_rt_arcCycleFullPass_scan_edges_c17:
     mov ecx, r8d
-    call pulsec_fcap_com_pulse_lang_Throwable_arc_scan_edges
+    call pulsec_fcap_pulse_lang_Throwable_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
 pulsec_rt_arcCycleFullPass_scan_edges_unmatched:
 pulsec_rt_arcCycleFullPass_scan_edges_next:
@@ -2946,24 +2834,24 @@ pulsec_rt_arcCycleFullPass_invalidate_loop:
     jne pulsec_rt_arcCycleFullPass_invalidate_next
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+r8*4]
-    cmp edx, 12
-    je pulsec_rt_arcCycleFullPass_invalidate_c12
-    cmp edx, 37
-    je pulsec_rt_arcCycleFullPass_invalidate_c37
-    cmp edx, 40
-    je pulsec_rt_arcCycleFullPass_invalidate_c40
+    cmp edx, 4
+    je pulsec_rt_arcCycleFullPass_invalidate_c4
+    cmp edx, 16
+    je pulsec_rt_arcCycleFullPass_invalidate_c16
+    cmp edx, 17
+    je pulsec_rt_arcCycleFullPass_invalidate_c17
     jmp pulsec_rt_arcCycleFullPass_invalidate_unmatched
-pulsec_rt_arcCycleFullPass_invalidate_c12:
+pulsec_rt_arcCycleFullPass_invalidate_c4:
     mov ecx, r8d
-    call pulsec_fcap_com_pulse_lang_Class_arc_invalidate_edges
+    call pulsec_fcap_pulse_lang_Class_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
-pulsec_rt_arcCycleFullPass_invalidate_c37:
+pulsec_rt_arcCycleFullPass_invalidate_c16:
     mov ecx, r8d
-    call pulsec_fcap_com_pulse_lang_StringBuilder_arc_invalidate_edges
+    call pulsec_fcap_pulse_lang_StringBuilder_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
-pulsec_rt_arcCycleFullPass_invalidate_c40:
+pulsec_rt_arcCycleFullPass_invalidate_c17:
     mov ecx, r8d
-    call pulsec_fcap_com_pulse_lang_Throwable_arc_invalidate_edges
+    call pulsec_fcap_pulse_lang_Throwable_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
 pulsec_rt_arcCycleFullPass_invalidate_unmatched:
 pulsec_rt_arcCycleFullPass_invalidate_next:
@@ -3406,7 +3294,7 @@ pulsec_rt_arrayNew_allocslot_done:
     sub rsp, 40
     call GetProcessHeap
     mov rcx, rax
-    xor edx, edx
+    mov edx, 8
     mov r8, qword ptr [rt_tmp_arr_bytes]
     call HeapAlloc
     add rsp, 40
@@ -3421,7 +3309,7 @@ pulsec_rt_arrayNew_allocslot_done:
     sub rsp, 40
     call GetProcessHeap
     mov rcx, rax
-    xor edx, edx
+    mov edx, 8
     mov r8, qword ptr [rt_tmp_arr_bytes]
     call HeapAlloc
     add rsp, 40
@@ -3707,137 +3595,15 @@ pulsec_rt_arraySetString_ref_release_done:
     ret
 pulsec_rt_arraySetString endp
 
-pulsec_rt_booleanToString proc
-    cmp ecx, 0
-    je pulsec_rt_booleanToString_false
-    lea rcx, rt_true
-    mov edx, 4
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_booleanToString_false:
-    lea rcx, rt_false
-    mov edx, 5
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_booleanToString endp
-
 pulsec_rt_charToString proc
+    sub rsp, 40
     mov byte ptr [rt_tmpbuf], cl
     lea rcx, rt_tmpbuf
     mov edx, 1
     call pulsec_rt_stringFromBytes
+    add rsp, 40
     ret
 pulsec_rt_charToString endp
-
-pulsec_rt_classPackageName proc
-    mov r10d, ecx
-    cmp r10d, 1
-    jb pulsec_rt_classPackageName_live_panic
-    cmp r10d, dword ptr [rt_slot_capacity]
-    ja pulsec_rt_classPackageName_live_panic
-    mov r11, rcx
-    shr r11, 32
-    test r11d, r11d
-    jz pulsec_rt_classPackageName_live
-    cmp r11d, dword ptr [rt_arc_generation+r10*4]
-    jne pulsec_rt_classPackageName_live_panic
-pulsec_rt_classPackageName_live:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je pulsec_rt_classPackageName_live_panic
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne pulsec_rt_classPackageName_live_panic
-    jmp pulsec_rt_classPackageName_ok
-pulsec_rt_classPackageName_live_panic:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-pulsec_rt_classPackageName_ok:
-    mov ecx, r10d
-    mov r11d, ecx
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov edx, dword ptr [rax+r11*4]
-    mov eax, r11d
-    imul eax, 256
-    mov r9, qword ptr [rt_str_data_ptr]
-    add r9, rax
-    mov r10d, edx
-pulsec_rt_classPackageName_scan:
-    cmp r10d, 0
-    je pulsec_rt_classPackageName_empty
-    sub r10d, 1
-    cmp byte ptr [r9+r10], '.'
-    jne pulsec_rt_classPackageName_scan
-    mov rcx, r9
-    mov edx, r10d
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_classPackageName_empty:
-    lea rcx, rt_empty
-    xor edx, edx
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_classPackageName endp
-
-pulsec_rt_classSimpleName proc
-    mov r8, rcx
-    mov r10d, ecx
-    cmp r10d, 1
-    jb pulsec_rt_classSimpleName_live_panic
-    cmp r10d, dword ptr [rt_slot_capacity]
-    ja pulsec_rt_classSimpleName_live_panic
-    mov r11, rcx
-    shr r11, 32
-    test r11d, r11d
-    jz pulsec_rt_classSimpleName_live
-    cmp r11d, dword ptr [rt_arc_generation+r10*4]
-    jne pulsec_rt_classSimpleName_live_panic
-pulsec_rt_classSimpleName_live:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je pulsec_rt_classSimpleName_live_panic
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne pulsec_rt_classSimpleName_live_panic
-    jmp pulsec_rt_classSimpleName_ok
-pulsec_rt_classSimpleName_live_panic:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-pulsec_rt_classSimpleName_ok:
-    mov ecx, r10d
-    mov r11d, ecx
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov edx, dword ptr [rax+r11*4]
-    mov eax, r11d
-    imul eax, 256
-    mov r9, qword ptr [rt_str_data_ptr]
-    add r9, rax
-    mov r10d, edx
-pulsec_rt_classSimpleName_scan:
-    cmp r10d, 0
-    je pulsec_rt_classSimpleName_no_dot
-    sub r10d, 1
-    cmp byte ptr [r9+r10], '.'
-    jne pulsec_rt_classSimpleName_scan
-    mov rcx, r9
-    add rcx, r10
-    add rcx, 1
-    mov eax, edx
-    sub eax, r10d
-    sub eax, 1
-    mov edx, eax
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_classSimpleName_no_dot:
-    mov rax, r8
-    ret
-pulsec_rt_classSimpleName endp
 
 pulsec_rt_consoleErrorWrite proc
     sub rsp, 56
@@ -3862,13 +3628,10 @@ pulsec_rt_consoleErrorWrite_plain:
     mov eax, dword ptr [rt_arc_kinds+r10*4]
     cmp eax, 3
     jne pulsec_rt_consoleErrorWrite_stale
-    mov eax, r10d
     mov rax, qword ptr [rt_str_lens_ptr]
     mov edx, dword ptr [rax+r10*4]
-    mov r8d, r10d
-    imul r8d, 256
-    mov rcx, qword ptr [rt_str_data_ptr]
-    add rcx, r8
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov rcx, qword ptr [rax+r10*8]
     jmp pulsec_rt_consoleErrorWrite_ready
 pulsec_rt_consoleErrorWrite_empty:
     lea rcx, rt_empty
@@ -3920,13 +3683,10 @@ pulsec_rt_consoleErrorWriteLine_plain:
     mov eax, dword ptr [rt_arc_kinds+r10*4]
     cmp eax, 3
     jne pulsec_rt_consoleErrorWriteLine_stale
-    mov eax, r10d
     mov rax, qword ptr [rt_str_lens_ptr]
     mov edx, dword ptr [rax+r10*4]
-    mov r8d, r10d
-    imul r8d, 256
-    mov rcx, qword ptr [rt_str_data_ptr]
-    add rcx, r8
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov rcx, qword ptr [rax+r10*8]
     jmp pulsec_rt_consoleErrorWriteLine_ready
 pulsec_rt_consoleErrorWriteLine_empty:
     lea rcx, rt_empty
@@ -3963,6 +3723,100 @@ pulsec_rt_consoleErrorWriteLine_stale:
     ret
 pulsec_rt_consoleErrorWriteLine endp
 
+pulsec_rt_consoleReadLine proc
+    sub rsp, 120
+    mov qword ptr [rsp+40], 0
+    mov qword ptr [rsp+48], 0
+    mov dword ptr [rsp+56], 0
+    mov qword ptr [rsp+64], 0
+    mov dword ptr [rsp+72], 0
+    mov qword ptr [rsp+80], 0
+    mov qword ptr [rsp+88], 0
+    mov rcx, -10
+    call GetStdHandle
+    mov qword ptr [rsp+40], rax
+    call GetProcessHeap
+    test rax, rax
+    jz pulsec_rt_consoleReadLine_cleanup
+    mov qword ptr [rsp+80], rax
+    mov dword ptr [rsp+72], 256
+    mov rcx, qword ptr [rsp+80]
+    xor edx, edx
+    mov r8d, 256
+    call HeapAlloc
+    test rax, rax
+    jz pulsec_rt_consoleReadLine_cleanup
+    mov qword ptr [rsp+64], rax
+pulsec_rt_consoleReadLine_loop:
+    mov eax, dword ptr [rsp+56]
+    cmp eax, dword ptr [rsp+72]
+    jb pulsec_rt_consoleReadLine_have_capacity
+pulsec_rt_consoleReadLine_grow:
+    mov eax, dword ptr [rsp+72]
+    add eax, eax
+    test eax, eax
+    jnz pulsec_rt_consoleReadLine_grow_done
+    mov eax, 256
+pulsec_rt_consoleReadLine_grow_done:
+    mov dword ptr [rsp+72], eax
+    mov rcx, qword ptr [rsp+80]
+    xor edx, edx
+    mov r8, qword ptr [rsp+64]
+    mov r9d, dword ptr [rsp+72]
+    mov qword ptr [rsp+32], 0
+    call HeapReAlloc
+    test rax, rax
+    jz pulsec_rt_consoleReadLine_cleanup
+    mov qword ptr [rsp+64], rax
+pulsec_rt_consoleReadLine_have_capacity:
+    mov eax, dword ptr [rsp+56]
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+64]
+    add rdx, rax
+    mov r8d, 1
+    lea r9, [rsp+48]
+    mov qword ptr [rsp+32], 0
+    call ReadFile
+    cmp eax, 0
+    je pulsec_rt_consoleReadLine_eof
+    cmp qword ptr [rsp+48], 0
+    je pulsec_rt_consoleReadLine_eof
+    mov eax, dword ptr [rsp+56]
+    mov r10, qword ptr [rsp+64]
+    add r10, rax
+    movzx edx, byte ptr [r10]
+    cmp dl, 10
+    je pulsec_rt_consoleReadLine_finish
+    cmp dl, 13
+    je pulsec_rt_consoleReadLine_loop
+    add eax, 1
+    mov dword ptr [rsp+56], eax
+    jmp pulsec_rt_consoleReadLine_loop
+pulsec_rt_consoleReadLine_eof:
+    cmp dword ptr [rsp+56], 0
+    je pulsec_rt_consoleReadLine_null
+pulsec_rt_consoleReadLine_finish:
+    mov rcx, qword ptr [rsp+64]
+    mov edx, dword ptr [rsp+56]
+    call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+88], rax
+    jmp pulsec_rt_consoleReadLine_cleanup
+pulsec_rt_consoleReadLine_null:
+    xor eax, eax
+    mov qword ptr [rsp+88], rax
+pulsec_rt_consoleReadLine_cleanup:
+    mov r8, qword ptr [rsp+64]
+    test r8, r8
+    jz pulsec_rt_consoleReadLine_return
+    mov rcx, qword ptr [rsp+80]
+    xor edx, edx
+    call HeapFree
+pulsec_rt_consoleReadLine_return:
+    mov rax, qword ptr [rsp+88]
+    add rsp, 120
+    ret
+pulsec_rt_consoleReadLine endp
+
 pulsec_rt_consoleWrite proc
     sub rsp, 56
     xor edx, edx
@@ -3986,13 +3840,10 @@ pulsec_rt_consoleWrite_plain:
     mov eax, dword ptr [rt_arc_kinds+r10*4]
     cmp eax, 3
     jne pulsec_rt_consoleWrite_stale
-    mov eax, r10d
     mov rax, qword ptr [rt_str_lens_ptr]
     mov edx, dword ptr [rax+r10*4]
-    mov r8d, r10d
-    imul r8d, 256
-    mov rcx, qword ptr [rt_str_data_ptr]
-    add rcx, r8
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov rcx, qword ptr [rax+r10*8]
     jmp pulsec_rt_consoleWrite_ready
 pulsec_rt_consoleWrite_empty:
     lea rcx, rt_empty
@@ -4044,13 +3895,10 @@ pulsec_rt_consoleWriteLine_plain:
     mov eax, dword ptr [rt_arc_kinds+r10*4]
     cmp eax, 3
     jne pulsec_rt_consoleWriteLine_stale
-    mov eax, r10d
     mov rax, qword ptr [rt_str_lens_ptr]
     mov edx, dword ptr [rax+r10*4]
-    mov r8d, r10d
-    imul r8d, 256
-    mov rcx, qword ptr [rt_str_data_ptr]
-    add rcx, r8
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov rcx, qword ptr [rax+r10*8]
     jmp pulsec_rt_consoleWriteLine_ready
 pulsec_rt_consoleWriteLine_empty:
     lea rcx, rt_empty
@@ -4121,47 +3969,714 @@ pulsec_rt_dispatchNullReceiverPanic proc
     ret
 pulsec_rt_dispatchNullReceiverPanic endp
 
-pulsec_rt_intToString proc
-    mov eax, ecx
-    lea r8, rt_tmpbuf
-    add r8, 31
-    xor r9d, r9d
-    cmp eax, 0
-    jne pulsec_rt_intToString_nonzero
-    mov byte ptr [r8], '0'
-    mov rcx, r8
-    mov edx, 1
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_intToString_nonzero:
-    cmp eax, 0
-    jge pulsec_rt_intToString_positive
-    neg eax
-    mov r9d, 1
-pulsec_rt_intToString_positive:
-    mov r10d, 10
-    xor r11d, r11d
-pulsec_rt_intToString_digit_loop:
-    xor edx, edx
-    div r10d
-    add dl, '0'
-    mov byte ptr [r8], dl
-    sub r8, 1
-    add r11d, 1
+pulsec_rt_hostCopyFile proc
+    sub rsp, 104
+    mov dword ptr [rsp+56], 0
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+80], rdx
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostCopyFile_fail
+    mov qword ptr [rsp+64], rax
+    mov ecx, dword ptr [rsp+80]
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostCopyFile_cleanup
+    mov qword ptr [rsp+72], rax
+    mov rcx, qword ptr [rsp+64]
+    mov rdx, qword ptr [rsp+72]
+    xor r8d, r8d
+    call CopyFileA
     test eax, eax
-    jne pulsec_rt_intToString_digit_loop
-    cmp r9d, 0
-    je pulsec_rt_intToString_after_sign
-    mov byte ptr [r8], '-'
-    sub r8, 1
-    add r11d, 1
-pulsec_rt_intToString_after_sign:
-    add r8, 1
-    mov rcx, r8
-    mov edx, r11d
-    call pulsec_rt_stringFromBytes
+    jz pulsec_rt_hostCopyFile_cleanup
+    mov dword ptr [rsp+56], 1
+    jmp pulsec_rt_hostCopyFile_cleanup
+pulsec_rt_hostCopyFile_fail:
+    mov dword ptr [rsp+56], 0
+pulsec_rt_hostCopyFile_cleanup:
+    mov r8, qword ptr [rsp+72]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+72]
+    call HeapFree
+@@:
+    mov r8, qword ptr [rsp+64]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+64]
+    call HeapFree
+@@:
+    mov eax, dword ptr [rsp+56]
+pulsec_rt_hostCopyFile_done:
+    add rsp, 104
     ret
-pulsec_rt_intToString endp
+pulsec_rt_hostCopyFile endp
+
+pulsec_rt_hostCreateDirectory proc
+    sub rsp, 56
+    mov qword ptr [rsp+32], 0
+    mov dword ptr [rsp+40], -1
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostCreateDirectory_fail
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    xor edx, edx
+    call CreateDirectoryA
+    test eax, eax
+    jnz @F
+    mov rcx, qword ptr [rsp+32]
+    call GetFileAttributesA
+    mov dword ptr [rsp+40], eax
+    cmp dword ptr [rsp+40], -1
+    je pulsec_rt_hostCreateDirectory_fail
+    test dword ptr [rsp+40], 10h
+    jz pulsec_rt_hostCreateDirectory_fail
+@@:
+    mov eax, 1
+    jmp pulsec_rt_hostCreateDirectory_cleanup
+pulsec_rt_hostCreateDirectory_fail:
+    xor eax, eax
+pulsec_rt_hostCreateDirectory_cleanup:
+    mov dword ptr [rsp+40], eax
+    mov r8, qword ptr [rsp+32]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+32]
+    call HeapFree
+@@:
+    mov eax, dword ptr [rsp+40]
+pulsec_rt_hostCreateDirectory_done:
+    add rsp, 56
+    ret
+pulsec_rt_hostCreateDirectory endp
+
+pulsec_rt_hostExists proc
+    sub rsp, 56
+    mov dword ptr [rsp+40], -1
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostExists_done
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call GetFileAttributesA
+    mov dword ptr [rsp+40], eax
+    call GetProcessHeap
+    mov rcx, rax
+    mov r8, qword ptr [rsp+32]
+    xor edx, edx
+    call HeapFree
+    cmp dword ptr [rsp+40], -1
+    jne @F
+    xor eax, eax
+    jmp pulsec_rt_hostExists_done
+@@:
+    mov eax, 1
+pulsec_rt_hostExists_done:
+    add rsp, 56
+    ret
+pulsec_rt_hostExists endp
+
+pulsec_rt_hostIsDirectory proc
+    sub rsp, 56
+    mov dword ptr [rsp+40], -1
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostIsDirectory_done
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call GetFileAttributesA
+    mov dword ptr [rsp+40], eax
+    call GetProcessHeap
+    mov rcx, rax
+    mov r8, qword ptr [rsp+32]
+    xor edx, edx
+    call HeapFree
+    cmp dword ptr [rsp+40], -1
+    jne @F
+    xor eax, eax
+    jmp pulsec_rt_hostIsDirectory_done
+@@:
+    test dword ptr [rsp+40], 10h
+    jz @F
+    mov eax, 1
+    jmp pulsec_rt_hostIsDirectory_done
+@@:
+    xor eax, eax
+pulsec_rt_hostIsDirectory_done:
+    add rsp, 56
+    ret
+pulsec_rt_hostIsDirectory endp
+
+pulsec_rt_hostIsFile proc
+    sub rsp, 56
+    mov dword ptr [rsp+40], -1
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostIsFile_done
+    mov qword ptr [rsp+32], rax
+    mov rcx, rax
+    call GetFileAttributesA
+    mov dword ptr [rsp+40], eax
+    call GetProcessHeap
+    mov rcx, rax
+    mov r8, qword ptr [rsp+32]
+    xor edx, edx
+    call HeapFree
+    cmp dword ptr [rsp+40], -1
+    jne @F
+    xor eax, eax
+    jmp pulsec_rt_hostIsFile_done
+@@:
+    test dword ptr [rsp+40], 10h
+    jz @F
+    xor eax, eax
+    jmp pulsec_rt_hostIsFile_done
+@@:
+    mov eax, 1
+pulsec_rt_hostIsFile_done:
+    add rsp, 56
+    ret
+pulsec_rt_hostIsFile endp
+
+pulsec_rt_hostListChildren proc
+    sub rsp, 440
+    mov qword ptr [rsp+32], 0
+    mov dword ptr [rsp+40], 0
+    mov qword ptr [rsp+48], 0
+    mov qword ptr [rsp+56], 0
+    mov qword ptr [rsp+64], 0
+    mov dword ptr [rsp+72], 0
+    mov qword ptr [rsp+80], 0
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostListChildren_empty
+    mov qword ptr [rsp+32], rax
+    mov dword ptr [rsp+40], edx
+    call GetProcessHeap
+    test rax, rax
+    jz pulsec_rt_hostListChildren_cleanup
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    xor edx, edx
+    mov r8d, dword ptr [rsp+40]
+    add r8d, 3
+    call HeapAlloc
+    test rax, rax
+    jz pulsec_rt_hostListChildren_cleanup
+    mov qword ptr [rsp+48], rax
+    mov r10, rax
+    mov r11, qword ptr [rsp+32]
+    mov r8d, dword ptr [rsp+40]
+    xor ecx, ecx
+@@:
+    cmp ecx, r8d
+    jae @F
+    mov al, byte ptr [r11+rcx]
+    mov byte ptr [r10+rcx], al
+    add ecx, 1
+    jmp @B
+@@:
+    test ecx, ecx
+    jz @F
+    mov al, byte ptr [r10+rcx-1]
+    cmp al, '\'
+    je @F
+    mov byte ptr [r10+rcx], '\'
+    add ecx, 1
+@@:
+    mov byte ptr [r10+rcx], '*'
+    add ecx, 1
+    mov byte ptr [r10+rcx], 0
+    mov rcx, qword ptr [rsp+80]
+    xor edx, edx
+    mov r8d, 4096
+    call HeapAlloc
+    test rax, rax
+    jz pulsec_rt_hostListChildren_cleanup
+    mov qword ptr [rsp+64], rax
+    mov rcx, qword ptr [rsp+48]
+    lea rdx, [rsp+96]
+    call FindFirstFileA
+    cmp rax, -1
+    je pulsec_rt_hostListChildren_empty
+    mov qword ptr [rsp+56], rax
+pulsec_rt_hostListChildren_loop:
+    lea r10, [rsp+96]
+    lea r11, [r10+44]
+    mov al, byte ptr [r11]
+    cmp al, '.'
+    jne pulsec_rt_hostListChildren_append
+    mov al, byte ptr [r11+1]
+    test al, al
+    jz pulsec_rt_hostListChildren_next
+    cmp al, '.'
+    jne pulsec_rt_hostListChildren_append
+    cmp byte ptr [r11+2], 0
+    je pulsec_rt_hostListChildren_next
+pulsec_rt_hostListChildren_append:
+    xor ecx, ecx
+pulsec_rt_hostListChildren_name_len_loop:
+    cmp byte ptr [r11+rcx], 0
+    je @F
+    add ecx, 1
+    jmp pulsec_rt_hostListChildren_name_len_loop
+@@:
+    mov edx, dword ptr [rsp+72]
+    add edx, ecx
+    add edx, 1
+    cmp edx, 4095
+    ja pulsec_rt_hostListChildren_overflow
+    mov r10, qword ptr [rsp+64]
+    mov edx, dword ptr [rsp+72]
+    add r10, rdx
+    xor edx, edx
+pulsec_rt_hostListChildren_copy_loop:
+    cmp byte ptr [r11+rdx], 0
+    je @F
+    mov al, byte ptr [r11+rdx]
+    mov byte ptr [r10+rdx], al
+    add edx, 1
+    jmp pulsec_rt_hostListChildren_copy_loop
+@@:
+    mov byte ptr [r10+rdx], 10
+    mov eax, dword ptr [rsp+72]
+    add eax, edx
+    add eax, 1
+    mov dword ptr [rsp+72], eax
+pulsec_rt_hostListChildren_next:
+    mov rcx, qword ptr [rsp+56]
+    lea rdx, [rsp+96]
+    call FindNextFileA
+    test eax, eax
+    jnz pulsec_rt_hostListChildren_loop
+pulsec_rt_hostListChildren_close_find:
+    mov rcx, qword ptr [rsp+56]
+    test rcx, rcx
+    jz @F
+    call FindClose
+    mov qword ptr [rsp+56], 0
+@@:
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    jz pulsec_rt_hostListChildren_empty
+    mov edx, dword ptr [rsp+72]
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_hostListChildren_cleanup
+pulsec_rt_hostListChildren_overflow:
+    lea rcx, rt_string_alloc_err
+    mov edx, rt_string_alloc_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+pulsec_rt_hostListChildren_empty:
+    lea rcx, rt_empty
+    xor edx, edx
+    call pulsec_rt_stringFromBytes
+pulsec_rt_hostListChildren_cleanup:
+    mov qword ptr [rsp+24], rax
+    mov rcx, qword ptr [rsp+56]
+    test rcx, rcx
+    jz @F
+    call FindClose
+@@:
+    mov rcx, qword ptr [rsp+80]
+    test rcx, rcx
+    jz pulsec_rt_hostListChildren_done
+    mov r8, qword ptr [rsp+64]
+    test r8, r8
+    jz @F
+    xor edx, edx
+    call HeapFree
+@@:
+    mov rcx, qword ptr [rsp+80]
+    mov r8, qword ptr [rsp+48]
+    test r8, r8
+    jz @F
+    xor edx, edx
+    call HeapFree
+@@:
+    mov rcx, qword ptr [rsp+80]
+    mov r8, qword ptr [rsp+32]
+    test r8, r8
+    jz @F
+    xor edx, edx
+    call HeapFree
+@@:
+pulsec_rt_hostListChildren_done:
+    mov rax, qword ptr [rsp+24]
+    add rsp, 440
+    ret
+pulsec_rt_hostListChildren_fail:
+    xor eax, eax
+    add rsp, 440
+    ret
+pulsec_rt_hostListChildren endp
+
+pulsec_rt_hostReadAllText proc
+    sub rsp, 120
+    mov qword ptr [rsp+56], 0
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+80], 0
+    mov qword ptr [rsp+88], 0
+    mov dword ptr [rsp+96], 0
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostReadAllText_fail
+    mov qword ptr [rsp+64], rax
+    mov rcx, qword ptr [rsp+64]
+    mov edx, 80000000h
+    mov r8d, 1
+    xor r9d, r9d
+    mov qword ptr [rsp+32], 3
+    mov qword ptr [rsp+40], 80h
+    mov qword ptr [rsp+48], 0
+    call CreateFileA
+    cmp rax, -1
+    je pulsec_rt_hostReadAllText_cleanup
+    mov qword ptr [rsp+72], rax
+    call GetProcessHeap
+    test rax, rax
+    jz pulsec_rt_hostReadAllText_cleanup
+    mov rcx, rax
+    xor edx, edx
+    mov r8d, 4096
+    call HeapAlloc
+    test rax, rax
+    jz pulsec_rt_hostReadAllText_cleanup
+    mov qword ptr [rsp+80], rax
+    mov rcx, qword ptr [rsp+72]
+    mov rdx, rax
+    mov r8d, 4095
+    lea r9, [rsp+88]
+    mov qword ptr [rsp+32], 0
+    call ReadFile
+    test eax, eax
+    jz pulsec_rt_hostReadAllText_cleanup
+    mov eax, dword ptr [rsp+88]
+    test eax, eax
+    jz pulsec_rt_hostReadAllText_empty
+    cmp eax, 4095
+    jne pulsec_rt_hostReadAllText_emit
+    mov rcx, qword ptr [rsp+72]
+    lea rdx, [rsp+104]
+    mov r8d, 1
+    lea r9, [rsp+96]
+    mov qword ptr [rsp+32], 0
+    call ReadFile
+    test eax, eax
+    jz pulsec_rt_hostReadAllText_cleanup
+    cmp dword ptr [rsp+96], 0
+    jne pulsec_rt_hostReadAllText_overflow
+pulsec_rt_hostReadAllText_emit:
+    mov rcx, qword ptr [rsp+80]
+    mov edx, dword ptr [rsp+88]
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_hostReadAllText_cleanup
+pulsec_rt_hostReadAllText_overflow:
+    lea rcx, rt_string_alloc_err
+    mov edx, rt_string_alloc_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+pulsec_rt_hostReadAllText_empty:
+    lea rcx, rt_empty
+    xor edx, edx
+    call pulsec_rt_stringFromBytes
+pulsec_rt_hostReadAllText_cleanup:
+    mov qword ptr [rsp+56], rax
+    mov rcx, qword ptr [rsp+72]
+    test rcx, rcx
+    jz @F
+    call CloseHandle
+@@:
+    mov r8, qword ptr [rsp+80]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+80]
+    call HeapFree
+@@:
+    mov r8, qword ptr [rsp+64]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+64]
+    call HeapFree
+@@:
+    mov rax, qword ptr [rsp+56]
+    jmp pulsec_rt_hostReadAllText_done
+pulsec_rt_hostReadAllText_fail:
+    xor eax, eax
+pulsec_rt_hostReadAllText_done:
+    add rsp, 120
+    ret
+pulsec_rt_hostReadAllText endp
+
+pulsec_rt_hostRunShellProcess proc
+    sub rsp, 280
+    mov qword ptr [rsp+88], 0
+    mov qword ptr [rsp+96], 0
+    mov qword ptr [rsp+104], 0
+    mov qword ptr [rsp+112], 0
+    mov qword ptr [rsp+120], 0
+    mov dword ptr [rsp+128], edx
+    mov dword ptr [rsp+132], -1
+    mov dword ptr [rsp+136], 0
+    call pulsec_rt_hostPathAlloc
+    mov qword ptr [rsp+96], rax
+    call GetProcessHeap
+    test rax, rax
+    jz pulsec_rt_hostRunShellProcess_cleanup
+    mov qword ptr [rsp+88], rax
+    mov ecx, dword ptr [rsp+128]
+    test ecx, ecx
+    jz pulsec_rt_hostRunShellProcess_cleanup
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_hostRunShellProcess_live_panic
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_hostRunShellProcess_live_panic
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_hostRunShellProcess_live
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_hostRunShellProcess_live_panic
+pulsec_rt_hostRunShellProcess_live:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je pulsec_rt_hostRunShellProcess_live_panic
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne pulsec_rt_hostRunShellProcess_live_panic
+    jmp pulsec_rt_hostRunShellProcess_ok
+pulsec_rt_hostRunShellProcess_live_panic:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+pulsec_rt_hostRunShellProcess_ok:
+    mov ecx, r10d
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov edx, dword ptr [rax+rcx*4]
+    mov dword ptr [rsp+136], edx
+    mov r8d, edx
+    add r8d, 1
+    mov rcx, qword ptr [rsp+88]
+    xor edx, edx
+    call HeapAlloc
+    test rax, rax
+    jz pulsec_rt_hostRunShellProcess_alloc_fail
+    mov qword ptr [rsp+104], rax
+    mov ecx, dword ptr [rsp+128]
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov r9, qword ptr [rax+rcx*8]
+    mov r10, qword ptr [rsp+104]
+    mov r8d, dword ptr [rsp+136]
+    xor ecx, ecx
+pulsec_rt_hostRunShellProcess_copy_loop:
+    cmp ecx, r8d
+    jae pulsec_rt_hostRunShellProcess_copy_done
+    mov al, byte ptr [r9+rcx]
+    mov byte ptr [r10+rcx], al
+    add ecx, 1
+    jmp pulsec_rt_hostRunShellProcess_copy_loop
+pulsec_rt_hostRunShellProcess_copy_done:
+    mov byte ptr [r10+rcx], 0
+    xor eax, eax
+    mov qword ptr [rsp+144], rax
+    mov qword ptr [rsp+152], rax
+    mov qword ptr [rsp+160], rax
+    mov qword ptr [rsp+168], rax
+    mov qword ptr [rsp+176], rax
+    mov qword ptr [rsp+184], rax
+    mov qword ptr [rsp+192], rax
+    mov qword ptr [rsp+200], rax
+    mov qword ptr [rsp+208], rax
+    mov qword ptr [rsp+216], rax
+    mov qword ptr [rsp+224], rax
+    mov qword ptr [rsp+232], rax
+    mov qword ptr [rsp+240], rax
+    mov qword ptr [rsp+248], rax
+    mov qword ptr [rsp+256], rax
+    mov qword ptr [rsp+264], rax
+    mov dword ptr [rsp+144], 104
+pulsec_rt_hostRunShellProcess_launch:
+    xor ecx, ecx
+    mov rdx, qword ptr [rsp+104]
+    xor r8d, r8d
+    xor r9d, r9d
+    mov qword ptr [rsp+32], 0
+    mov qword ptr [rsp+40], 0
+    mov qword ptr [rsp+48], 0
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+56], rax
+    lea rax, [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rax, [rsp+248]
+    mov qword ptr [rsp+72], rax
+    call CreateProcessA
+    test eax, eax
+    jz pulsec_rt_hostRunShellProcess_cleanup
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+256]
+    mov qword ptr [rsp+120], rax
+    mov rcx, qword ptr [rsp+112]
+    mov edx, 0FFFFFFFFh
+    call WaitForSingleObject
+    mov rcx, qword ptr [rsp+112]
+    lea rdx, [rsp+132]
+    call GetExitCodeProcess
+    jmp pulsec_rt_hostRunShellProcess_cleanup
+pulsec_rt_hostRunShellProcess_alloc_fail:
+    mov dword ptr [rsp+132], -1
+pulsec_rt_hostRunShellProcess_cleanup:
+    mov rcx, qword ptr [rsp+120]
+    test rcx, rcx
+    jz @F
+    call CloseHandle
+@@:
+    mov rcx, qword ptr [rsp+112]
+    test rcx, rcx
+    jz @F
+    call CloseHandle
+@@:
+    mov r8, qword ptr [rsp+104]
+    test r8, r8
+    jz @F
+    mov rcx, qword ptr [rsp+88]
+    test rcx, rcx
+    jz @F
+    xor edx, edx
+    call HeapFree
+@@:
+    mov r8, qword ptr [rsp+96]
+    test r8, r8
+    jz @F
+    mov rcx, qword ptr [rsp+88]
+    test rcx, rcx
+    jz @F
+    xor edx, edx
+    call HeapFree
+@@:
+    mov eax, dword ptr [rsp+132]
+pulsec_rt_hostRunShellProcess_done:
+    add rsp, 280
+    ret
+pulsec_rt_hostRunShellProcess endp
+
+pulsec_rt_hostWriteAllText proc
+    sub rsp, 120
+    mov dword ptr [rsp+56], 0
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+80], rdx
+    mov qword ptr [rsp+88], 0
+    mov dword ptr [rsp+96], 0
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostWriteAllText_fail
+    mov qword ptr [rsp+64], rax
+    mov rcx, qword ptr [rsp+64]
+    mov edx, 40000000h
+    xor r8d, r8d
+    xor r9d, r9d
+    mov qword ptr [rsp+32], 2
+    mov qword ptr [rsp+40], 80h
+    mov qword ptr [rsp+48], 0
+    call CreateFileA
+    cmp rax, -1
+    je pulsec_rt_hostWriteAllText_cleanup
+    mov qword ptr [rsp+72], rax
+    mov ecx, dword ptr [rsp+80]
+    test ecx, ecx
+    jz @F
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_hostWriteAllText_live_panic
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_hostWriteAllText_live_panic
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_hostWriteAllText_live
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_hostWriteAllText_live_panic
+pulsec_rt_hostWriteAllText_live:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je pulsec_rt_hostWriteAllText_live_panic
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne pulsec_rt_hostWriteAllText_live_panic
+    jmp pulsec_rt_hostWriteAllText_ok
+pulsec_rt_hostWriteAllText_live_panic:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+pulsec_rt_hostWriteAllText_ok:
+    mov ecx, r10d
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov rdx, qword ptr [rax+rcx*8]
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov r8d, dword ptr [rax+rcx*4]
+    mov dword ptr [rsp+96], r8d
+    test r8d, r8d
+    jz @F
+    mov rcx, qword ptr [rsp+72]
+    lea r9, [rsp+88]
+    mov qword ptr [rsp+32], 0
+    call WriteFile
+    test eax, eax
+    jz pulsec_rt_hostWriteAllText_cleanup
+    mov eax, dword ptr [rsp+96]
+    cmp dword ptr [rsp+88], eax
+    jne pulsec_rt_hostWriteAllText_cleanup
+@@:
+    mov dword ptr [rsp+56], 1
+    jmp pulsec_rt_hostWriteAllText_cleanup
+pulsec_rt_hostWriteAllText_fail:
+    mov dword ptr [rsp+56], 0
+pulsec_rt_hostWriteAllText_cleanup:
+    mov rcx, qword ptr [rsp+72]
+    test rcx, rcx
+    jz @F
+    call CloseHandle
+@@:
+    mov r8, qword ptr [rsp+64]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+64]
+    call HeapFree
+@@:
+    mov eax, dword ptr [rsp+56]
+pulsec_rt_hostWriteAllText_done:
+    add rsp, 120
+    ret
+pulsec_rt_hostWriteAllText endp
 
 pulsec_rt_listAddInt proc
     mov r10d, ecx
@@ -4682,6 +5197,43 @@ pulsec_rt_listGetString_ok:
     ret
 pulsec_rt_listGetString endp
 
+pulsec_rt_listKind proc
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_listKind_live_panic
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_listKind_live_panic
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_listKind_live
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_listKind_live_panic
+pulsec_rt_listKind_live:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je pulsec_rt_listKind_live_panic
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 4
+    jne pulsec_rt_listKind_live_panic
+    mov eax, dword ptr [rt_arc_meta+r10*4]
+    cmp eax, 1
+    jne pulsec_rt_listKind_live_panic
+    jmp pulsec_rt_listKind_ok
+pulsec_rt_listKind_live_panic:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+pulsec_rt_listKind_ok:
+    mov ecx, r10d
+    mov r10d, ecx
+    mov rax, qword ptr [rt_list_kind_ptr]
+    mov eax, dword ptr [rax+r10*4]
+    ret
+pulsec_rt_listKind endp
+
 pulsec_rt_listNew proc
     mov eax, dword ptr [rt_arc_free_head]
     cmp eax, 1
@@ -4855,51 +5407,6 @@ pulsec_rt_listSize_ok:
     xor eax, eax
     ret
 pulsec_rt_listSize endp
-
-pulsec_rt_longToString proc
-    mov rax, rcx
-    lea r8, rt_tmpbuf
-    add r8, 31
-    xor r9d, r9d
-    xor ecx, ecx
-    cmp rax, 0
-    jne pulsec_rt_longToString_nonzero
-    mov byte ptr [r8], '0'
-    mov rcx, r8
-    mov edx, 1
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_longToString_nonzero:
-    cmp rax, 0
-    jge pulsec_rt_longToString_digit_loop
-    mov r9d, 1
-pulsec_rt_longToString_digit_loop:
-    mov r10, 10
-    cqo
-    idiv r10
-    mov r11, rdx
-    test r11, r11
-    jge pulsec_rt_longToString_positive_rem
-    neg r11
-pulsec_rt_longToString_positive_rem:
-    add r11b, '0'
-    mov byte ptr [r8], r11b
-    sub r8, 1
-    add ecx, 1
-    test rax, rax
-    jne pulsec_rt_longToString_digit_loop
-    cmp r9d, 0
-    je pulsec_rt_longToString_after_sign
-    mov byte ptr [r8], '-'
-    sub r8, 1
-    add ecx, 1
-pulsec_rt_longToString_after_sign:
-    add r8, 1
-    mov rdx, rcx
-    mov rcx, r8
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_longToString endp
 
 pulsec_rt_mapClear proc
     mov r10d, ecx
@@ -5290,6 +5797,10 @@ pulsec_rt_mapGet_loop:
     test rax, rax
     jz pulsec_rt_mapGet_end
     mov rax, qword ptr [rax+r9*8]
+    mov qword ptr [rt_tmp_arg_val], rax
+    mov rcx, rax
+    call pulsec_rt_arcRetain
+    mov rax, qword ptr [rt_tmp_arg_val]
     ret
 pulsec_rt_mapGet_next:
     add r9d, 1
@@ -6203,366 +6714,6 @@ pulsec_rt_panic proc
     ret
 pulsec_rt_panic endp
 
-pulsec_rt_parseBoolean proc
-    mov r10d, ecx
-    and r10d, 4294967295
-    mov r8, rcx
-    shr r8, 32
-    cmp r10d, 0
-    jl rt_parse_bool_fail
-    cmp r10d, dword ptr [rt_slot_capacity]
-    jg rt_parse_bool_fail
-    test r8d, r8d
-    jz rt_parse_bool_plain
-    cmp r8d, dword ptr [rt_arc_generation+r10*4]
-    jne rt_parse_bool_stale
-rt_parse_bool_plain:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je rt_parse_bool_stale
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne rt_parse_bool_stale
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov r11d, dword ptr [rax+r10*4]
-    mov r9, qword ptr [rt_str_data_ptr]
-    mov r8d, r10d
-    imul r8d, 256
-    add r9, r8
-    cmp r11d, 4
-    jne rt_parse_bool_false_check
-    mov al, byte ptr [r9]
-    cmp al, 't'
-    jne rt_parse_bool_fail
-    mov al, byte ptr [r9+1]
-    cmp al, 'r'
-    jne rt_parse_bool_fail
-    mov al, byte ptr [r9+2]
-    cmp al, 'u'
-    jne rt_parse_bool_fail
-    mov al, byte ptr [r9+3]
-    cmp al, 'e'
-    jne rt_parse_bool_fail
-    mov eax, 1
-    ret
-rt_parse_bool_false_check:
-    cmp r11d, 5
-    jne rt_parse_bool_fail
-    mov al, byte ptr [r9]
-    cmp al, 'f'
-    jne rt_parse_bool_fail
-    mov al, byte ptr [r9+1]
-    cmp al, 'a'
-    jne rt_parse_bool_fail
-    mov al, byte ptr [r9+2]
-    cmp al, 'l'
-    jne rt_parse_bool_fail
-    mov al, byte ptr [r9+3]
-    cmp al, 's'
-    jne rt_parse_bool_fail
-    mov al, byte ptr [r9+4]
-    cmp al, 'e'
-    jne rt_parse_bool_fail
-    xor eax, eax
-    ret
-rt_parse_bool_fail:
-    lea rcx, rt_parse_bool_err
-    mov edx, 23
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-rt_parse_bool_stale:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-pulsec_rt_parseBoolean endp
-
-pulsec_rt_parseInt proc
-    mov r10d, ecx
-    and r10d, 4294967295
-    mov r8, rcx
-    shr r8, 32
-    cmp r10d, 0
-    jl rt_parse_int_fail
-    cmp r10d, dword ptr [rt_slot_capacity]
-    jg rt_parse_int_fail
-    test r8d, r8d
-    jz rt_parse_int_plain
-    cmp r8d, dword ptr [rt_arc_generation+r10*4]
-    jne rt_parse_int_stale
-rt_parse_int_plain:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je rt_parse_int_stale
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne rt_parse_int_stale
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov r11d, dword ptr [rax+r10*4]
-    cmp r11d, 0
-    je rt_parse_int_fail
-    mov r9, qword ptr [rt_str_data_ptr]
-    mov r8d, r10d
-    imul r8d, 256
-    add r9, r8
-    xor eax, eax
-    xor r8d, r8d
-    mov edx, 1
-    mov bl, byte ptr [r9]
-    cmp bl, '-'
-    jne rt_parse_int_loop
-    cmp r11d, 1
-    je rt_parse_int_fail
-    mov edx, -1
-    mov r8d, 1
-rt_parse_int_loop:
-    cmp r8d, r11d
-    jge rt_parse_int_done
-    mov bl, byte ptr [r9+r8]
-    cmp bl, '0'
-    jb rt_parse_int_fail
-    cmp bl, '9'
-    ja rt_parse_int_fail
-    movzx ecx, bl
-    sub ecx, '0'
-    imul eax, eax, 10
-    add eax, ecx
-    inc r8d
-    jmp rt_parse_int_loop
-rt_parse_int_done:
-    cmp edx, -1
-    jne rt_parse_int_ret
-    neg eax
-rt_parse_int_ret:
-    ret
-rt_parse_int_fail:
-    lea rcx, rt_parse_int_err
-    mov edx, 23
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-rt_parse_int_stale:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-pulsec_rt_parseInt endp
-
-pulsec_rt_parseLong proc
-    mov r10d, ecx
-    and r10d, 4294967295
-    mov r8, rcx
-    shr r8, 32
-    cmp r10d, 0
-    jl rt_parse_long_fail
-    cmp r10d, dword ptr [rt_slot_capacity]
-    jg rt_parse_long_fail
-    test r8d, r8d
-    jz rt_parse_long_plain
-    cmp r8d, dword ptr [rt_arc_generation+r10*4]
-    jne rt_parse_long_stale
-rt_parse_long_plain:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je rt_parse_long_stale
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne rt_parse_long_stale
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov r11d, dword ptr [rax+r10*4]
-    cmp r11d, 0
-    je rt_parse_long_fail
-    mov r9, qword ptr [rt_str_data_ptr]
-    mov r8d, r10d
-    imul r8d, 256
-    add r9, r8
-    xor rax, rax
-    xor r8d, r8d
-    mov ecx, 1
-    mov bl, byte ptr [r9]
-    cmp bl, '-'
-    jne rt_parse_long_loop
-    cmp r11d, 1
-    je rt_parse_long_fail
-    mov ecx, -1
-    mov r8d, 1
-rt_parse_long_loop:
-    cmp r8d, r11d
-    jge rt_parse_long_done
-    mov bl, byte ptr [r9+r8]
-    cmp bl, '0'
-    jb rt_parse_long_fail
-    cmp bl, '9'
-    ja rt_parse_long_fail
-    movzx edx, bl
-    sub edx, '0'
-    imul rax, rax, 10
-    add rax, rdx
-    inc r8d
-    jmp rt_parse_long_loop
-rt_parse_long_done:
-    cmp ecx, -1
-    jne rt_parse_long_ret
-    neg rax
-rt_parse_long_ret:
-    ret
-rt_parse_long_fail:
-    lea rcx, rt_parse_long_err
-    mov edx, 20
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-rt_parse_long_stale:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-pulsec_rt_parseLong endp
-
-pulsec_rt_parseUInt proc
-    mov r10d, ecx
-    and r10d, 4294967295
-    mov r8, rcx
-    shr r8, 32
-    cmp r10d, 0
-    jl rt_parse_uint_fail
-    cmp r10d, dword ptr [rt_slot_capacity]
-    jg rt_parse_uint_fail
-    test r8d, r8d
-    jz rt_parse_uint_plain
-    cmp r8d, dword ptr [rt_arc_generation+r10*4]
-    jne rt_parse_uint_stale
-rt_parse_uint_plain:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je rt_parse_uint_stale
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne rt_parse_uint_stale
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov r11d, dword ptr [rax+r10*4]
-    cmp r11d, 0
-    je rt_parse_uint_fail
-    mov r9, qword ptr [rt_str_data_ptr]
-    mov r8d, r10d
-    imul r8d, 256
-    add r9, r8
-    xor eax, eax
-    xor r8d, r8d
-rt_parse_uint_loop:
-    cmp r8d, r11d
-    jge rt_parse_uint_ret
-    mov bl, byte ptr [r9+r8]
-    cmp bl, '0'
-    jb rt_parse_uint_fail
-    cmp bl, '9'
-    ja rt_parse_uint_fail
-    movzx ecx, bl
-    sub ecx, '0'
-    imul eax, eax, 10
-    add eax, ecx
-    inc r8d
-    jmp rt_parse_uint_loop
-rt_parse_uint_ret:
-    ret
-rt_parse_uint_fail:
-    lea rcx, rt_parse_uint_err
-    mov edx, 20
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-rt_parse_uint_stale:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-pulsec_rt_parseUInt endp
-
-pulsec_rt_parseULong proc
-    mov r10d, ecx
-    and r10d, 4294967295
-    mov r8, rcx
-    shr r8, 32
-    cmp r10d, 0
-    jl rt_parse_ulong_fail
-    cmp r10d, dword ptr [rt_slot_capacity]
-    jg rt_parse_ulong_fail
-    test r8d, r8d
-    jz rt_parse_ulong_plain
-    cmp r8d, dword ptr [rt_arc_generation+r10*4]
-    jne rt_parse_ulong_stale
-rt_parse_ulong_plain:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je rt_parse_ulong_stale
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne rt_parse_ulong_stale
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov r11d, dword ptr [rax+r10*4]
-    cmp r11d, 0
-    je rt_parse_ulong_fail
-    mov r9, qword ptr [rt_str_data_ptr]
-    mov r8d, r10d
-    imul r8d, 256
-    add r9, r8
-    xor rax, rax
-    xor r8d, r8d
-rt_parse_ulong_loop:
-    cmp r8d, r11d
-    jge rt_parse_ulong_ret
-    mov bl, byte ptr [r9+r8]
-    cmp bl, '0'
-    jb rt_parse_ulong_fail
-    cmp bl, '9'
-    ja rt_parse_ulong_fail
-    movzx edx, bl
-    sub edx, '0'
-    imul rax, rax, 10
-    add rax, rdx
-    inc r8d
-    jmp rt_parse_ulong_loop
-rt_parse_ulong_ret:
-    ret
-rt_parse_ulong_fail:
-    lea rcx, rt_parse_ulong_err
-    mov edx, 21
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-rt_parse_ulong_stale:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-pulsec_rt_parseULong endp
-
 pulsec_rt_stringCharAt proc
     mov r9d, edx
     mov r10d, ecx
@@ -6599,10 +6750,8 @@ pulsec_rt_stringCharAt_ok:
     mov edx, dword ptr [rax+r11*4]
     cmp r9d, edx
     jae pulsec_rt_stringCharAt_fail
-    mov eax, r11d
-    imul eax, 256
-    mov r10, qword ptr [rt_str_data_ptr]
-    add r10, rax
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov r10, qword ptr [rax+r11*8]
     movzx eax, byte ptr [r10+r9]
     ret
 pulsec_rt_stringCharAt_fail:
@@ -6616,10 +6765,16 @@ pulsec_rt_stringCharAt_fail:
 pulsec_rt_stringCharAt endp
 
 pulsec_rt_stringConcat proc
+    sub rsp, 88
+    mov qword ptr [rsp+32], 0
+    mov qword ptr [rsp+40], 0
+    mov qword ptr [rsp+56], 0
     mov r10, rcx
     mov r11, rdx
     xor r8d, r8d
     xor r9d, r9d
+    mov qword ptr [rt_tmp_ptr_b], 0
+    mov qword ptr [rt_tmp_ptr_c], 0
     mov ecx, r10d
     and ecx, 4294967295
     cmp ecx, 1
@@ -6649,6 +6804,9 @@ pulsec_rt_stringConcat_h2_live:
     jne pulsec_rt_stringConcat_check_h2
     mov rax, qword ptr [rt_str_lens_ptr]
     mov r8d, dword ptr [rax+r10*4]
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov rax, qword ptr [rax+r10*8]
+    mov qword ptr [rt_tmp_ptr_b], rax
 pulsec_rt_stringConcat_check_h2:
     mov ecx, r11d
     and ecx, 4294967295
@@ -6679,60 +6837,69 @@ pulsec_rt_stringConcat_h2_ready:
     jne pulsec_rt_stringConcat_total_ready
     mov rax, qword ptr [rt_str_lens_ptr]
     mov r9d, dword ptr [rax+r11*4]
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov rax, qword ptr [rax+r11*8]
+    mov qword ptr [rt_tmp_ptr_c], rax
 pulsec_rt_stringConcat_total_ready:
+    mov dword ptr [rsp+48], r8d
+    mov dword ptr [rsp+52], r9d
     mov eax, r8d
     add eax, r9d
-    cmp eax, 255
-    jbe pulsec_rt_stringConcat_copy_h1
-    jmp pulsec_rt_stringConcat_fail
-pulsec_rt_stringConcat_copy_h1:
-    mov dword ptr [rt_tmp_concat_len], eax
+    mov dword ptr [rsp+64], eax
+    call GetProcessHeap
+    test rax, rax
+    jz pulsec_rt_stringConcat_fail
+    mov qword ptr [rsp+40], rax
+    mov ecx, dword ptr [rsp+64]
+    add ecx, 1
+    mov r8d, ecx
+    mov rcx, qword ptr [rsp+40]
+    xor edx, edx
+    call HeapAlloc
+    test rax, rax
+    jz pulsec_rt_stringConcat_fail
+    mov qword ptr [rsp+32], rax
     xor ecx, ecx
-    lea rdx, rt_tmp_concat
-    cmp r10d, 1
-    jb pulsec_rt_stringConcat_copy_h2
-    cmp r10d, dword ptr [rt_slot_capacity]
-    ja pulsec_rt_stringConcat_copy_h2
-    mov eax, r10d
-    imul eax, 256
-    mov r10, qword ptr [rt_str_data_ptr]
-    add r10, rax
 pulsec_rt_stringConcat_copy_h1_loop:
-    cmp ecx, r8d
+    cmp ecx, dword ptr [rsp+48]
     jae pulsec_rt_stringConcat_copy_h2
-    cmp ecx, dword ptr [rt_tmp_concat_len]
-    jae pulsec_rt_stringConcat_copy_h2
+    mov r10, qword ptr [rt_tmp_ptr_b]
+    test r10, r10
+    jz pulsec_rt_stringConcat_copy_h2
+    mov rdx, qword ptr [rsp+32]
     mov al, byte ptr [r10+rcx]
     mov byte ptr [rdx+rcx], al
     add ecx, 1
     jmp pulsec_rt_stringConcat_copy_h1_loop
 pulsec_rt_stringConcat_copy_h2:
-    cmp r11d, 1
-    jb pulsec_rt_stringConcat_emit
-    cmp r11d, dword ptr [rt_slot_capacity]
-    ja pulsec_rt_stringConcat_emit
-    mov eax, r11d
-    imul eax, 256
-    mov r11, qword ptr [rt_str_data_ptr]
-    add r11, rax
     xor r8d, r8d
 pulsec_rt_stringConcat_copy_h2_loop:
-    cmp r8d, r9d
+    cmp r8d, dword ptr [rsp+52]
     jae pulsec_rt_stringConcat_emit
-    cmp ecx, dword ptr [rt_tmp_concat_len]
-    jae pulsec_rt_stringConcat_emit
+    mov r11, qword ptr [rt_tmp_ptr_c]
+    test r11, r11
+    jz pulsec_rt_stringConcat_emit
+    mov rdx, qword ptr [rsp+32]
     mov al, byte ptr [r11+r8]
     mov byte ptr [rdx+rcx], al
     add r8d, 1
     add ecx, 1
     jmp pulsec_rt_stringConcat_copy_h2_loop
 pulsec_rt_stringConcat_emit:
-    lea rcx, rt_tmp_concat
-    mov edx, dword ptr [rt_tmp_concat_len]
+    mov rdx, qword ptr [rsp+32]
+    mov byte ptr [rdx+rcx], 0
+    mov rcx, qword ptr [rsp+32]
+    mov edx, dword ptr [rsp+64]
     call pulsec_rt_stringFromBytes
+    mov qword ptr [rsp+56], rax
+    mov rcx, qword ptr [rsp+40]
+    xor edx, edx
+    mov r8, qword ptr [rsp+32]
+    call HeapFree
+    mov rax, qword ptr [rsp+56]
+    add rsp, 88
     ret
 pulsec_rt_stringConcat_fail:
-    sub rsp, 40
     lea rcx, rt_string_alloc_err
     mov edx, rt_string_alloc_err_len
     call pulsec_rt_writeRaw
@@ -6741,7 +6908,7 @@ pulsec_rt_stringConcat_fail:
     call pulsec_rt_writeRaw
     mov ecx, 1
     call ExitProcess
-    add rsp, 40
+    add rsp, 88
     xor eax, eax
     ret
 pulsec_rt_stringConcat endp
@@ -6780,132 +6947,12 @@ pulsec_rt_stringLength_fail:
     ret
 pulsec_rt_stringLength endp
 
-pulsec_rt_stringSubstring proc
-    mov r10d, ecx
-    cmp r10d, 1
-    jb pulsec_rt_stringSubstring_live_panic
-    cmp r10d, dword ptr [rt_slot_capacity]
-    ja pulsec_rt_stringSubstring_live_panic
-    mov r11, rcx
-    shr r11, 32
-    test r11d, r11d
-    jz pulsec_rt_stringSubstring_live
-    cmp r11d, dword ptr [rt_arc_generation+r10*4]
-    jne pulsec_rt_stringSubstring_live_panic
-pulsec_rt_stringSubstring_live:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je pulsec_rt_stringSubstring_live_panic
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne pulsec_rt_stringSubstring_live_panic
-    jmp pulsec_rt_stringSubstring_ok
-pulsec_rt_stringSubstring_live_panic:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-pulsec_rt_stringSubstring_ok:
-    mov ecx, r10d
-    mov r11d, ecx
-    mov r9d, edx
-    mov r10d, r8d
-    cmp r9d, 0
-    jl pulsec_rt_stringSubstring_fail
-    cmp r10d, r9d
-    jl pulsec_rt_stringSubstring_fail
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov edx, dword ptr [rax+r11*4]
-    cmp r10d, edx
-    jg pulsec_rt_stringSubstring_fail
-    mov eax, r10d
-    sub eax, r9d
-    mov r8d, eax
-    mov eax, r11d
-    imul eax, 256
-    mov rcx, qword ptr [rt_str_data_ptr]
-    add rcx, rax
-    add rcx, r9
-    mov edx, r8d
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_stringSubstring_fail:
-    lea rcx, rt_string_substring_bounds_err
-    mov edx, rt_string_substring_bounds_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    ret
-pulsec_rt_stringSubstring endp
-
 pulsec_rt_systemExit proc
     sub rsp, 40
     call ExitProcess
     add rsp, 40
     ret
 pulsec_rt_systemExit endp
-
-pulsec_rt_uintToString proc
-    mov eax, ecx
-    lea r8, rt_tmpbuf
-    add r8, 31
-    xor ecx, ecx
-    cmp eax, 0
-    jne pulsec_rt_uintToString_nonzero
-    mov byte ptr [r8], '0'
-    mov rcx, r8
-    mov edx, 1
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_uintToString_nonzero:
-    mov r10d, 10
-pulsec_rt_uintToString_digit_loop:
-    xor edx, edx
-    div r10d
-    add dl, '0'
-    mov byte ptr [r8], dl
-    sub r8, 1
-    add ecx, 1
-    test eax, eax
-    jne pulsec_rt_uintToString_digit_loop
-    add r8, 1
-    mov rdx, rcx
-    mov rcx, r8
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_uintToString endp
-
-pulsec_rt_ulongToString proc
-    mov rax, rcx
-    lea r8, rt_tmpbuf
-    add r8, 31
-    xor ecx, ecx
-    cmp rax, 0
-    jne pulsec_rt_ulongToString_nonzero
-    mov byte ptr [r8], '0'
-    mov rcx, r8
-    mov edx, 1
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_ulongToString_nonzero:
-    mov r10, 10
-pulsec_rt_ulongToString_digit_loop:
-    xor edx, edx
-    div r10
-    add dl, '0'
-    mov byte ptr [r8], dl
-    sub r8, 1
-    add ecx, 1
-    test rax, rax
-    jne pulsec_rt_ulongToString_digit_loop
-    add r8, 1
-    mov rdx, rcx
-    mov rcx, r8
-    call pulsec_rt_stringFromBytes
-    ret
-pulsec_rt_ulongToString endp
 
 pulsec_rt_weakClear proc
     cmp ecx, 0
@@ -7096,147 +7143,5 @@ pulsec_rt_weakNew_exhausted:
 pulsec_rt_weakNew_done:
     ret
 pulsec_rt_weakNew endp
-
-pulsec_std_com_pulse_lang_IO_print proc
-    sub rsp, 56
-    xor edx, edx
-    cmp ecx, 0
-    je pulsec_std_com_pulse_lang_IO_print_empty
-    mov r10d, ecx
-    cmp r10d, 1
-    jb pulsec_std_com_pulse_lang_IO_print_empty
-    cmp r10d, dword ptr [rt_slot_capacity]
-    ja pulsec_std_com_pulse_lang_IO_print_empty
-    mov r11, rcx
-    shr r11, 32
-    test r11d, r11d
-    jz pulsec_std_com_pulse_lang_IO_print_plain
-    cmp r11d, dword ptr [rt_arc_generation+r10*4]
-    jne pulsec_std_com_pulse_lang_IO_print_stale
-pulsec_std_com_pulse_lang_IO_print_plain:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je pulsec_std_com_pulse_lang_IO_print_stale
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne pulsec_std_com_pulse_lang_IO_print_stale
-    mov eax, r10d
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov edx, dword ptr [rax+r10*4]
-    mov r8d, r10d
-    imul r8d, 256
-    mov rcx, qword ptr [rt_str_data_ptr]
-    add rcx, r8
-    jmp pulsec_std_com_pulse_lang_IO_print_ready
-pulsec_std_com_pulse_lang_IO_print_empty:
-    lea rcx, rt_empty
-pulsec_std_com_pulse_lang_IO_print_ready:
-    mov qword ptr [rsp+16], rcx
-    mov dword ptr [rsp+24], edx
-    mov rcx, -11
-    call GetStdHandle
-    mov rcx, rax
-    mov rdx, qword ptr [rsp+16]
-    mov r8d, dword ptr [rsp+24]
-    lea r9, written
-    mov qword ptr [rsp+32], 0
-    call WriteFile
-    xor eax, eax
-    add rsp, 56
-    ret
-pulsec_std_com_pulse_lang_IO_print_stale:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    add rsp, 56
-    ret
-pulsec_std_com_pulse_lang_IO_print endp
-
-pulsec_std_com_pulse_lang_IO_println proc
-    sub rsp, 56
-    xor edx, edx
-    cmp ecx, 0
-    je pulsec_std_com_pulse_lang_IO_println_empty
-    mov r10d, ecx
-    cmp r10d, 1
-    jb pulsec_std_com_pulse_lang_IO_println_empty
-    cmp r10d, dword ptr [rt_slot_capacity]
-    ja pulsec_std_com_pulse_lang_IO_println_empty
-    mov r11, rcx
-    shr r11, 32
-    test r11d, r11d
-    jz pulsec_std_com_pulse_lang_IO_println_plain
-    cmp r11d, dword ptr [rt_arc_generation+r10*4]
-    jne pulsec_std_com_pulse_lang_IO_println_stale
-pulsec_std_com_pulse_lang_IO_println_plain:
-    mov eax, dword ptr [rt_arc_refcounts+r10*4]
-    cmp eax, 0
-    je pulsec_std_com_pulse_lang_IO_println_stale
-    mov eax, dword ptr [rt_arc_kinds+r10*4]
-    cmp eax, 3
-    jne pulsec_std_com_pulse_lang_IO_println_stale
-    mov eax, r10d
-    mov rax, qword ptr [rt_str_lens_ptr]
-    mov edx, dword ptr [rax+r10*4]
-    mov r8d, r10d
-    imul r8d, 256
-    mov rcx, qword ptr [rt_str_data_ptr]
-    add rcx, r8
-    jmp pulsec_std_com_pulse_lang_IO_println_ready
-pulsec_std_com_pulse_lang_IO_println_empty:
-    lea rcx, rt_empty
-pulsec_std_com_pulse_lang_IO_println_ready:
-    mov qword ptr [rsp+16], rcx
-    mov dword ptr [rsp+24], edx
-    mov rcx, -11
-    call GetStdHandle
-    mov rcx, rax
-    mov rdx, qword ptr [rsp+16]
-    mov r8d, dword ptr [rsp+24]
-    lea r9, written
-    mov qword ptr [rsp+32], 0
-    call WriteFile
-    mov rcx, -11
-    call GetStdHandle
-    mov rcx, rax
-    lea rdx, rt_newline
-    mov r8d, 2
-    lea r9, written
-    mov qword ptr [rsp+32], 0
-    call WriteFile
-    xor eax, eax
-    add rsp, 56
-    ret
-pulsec_std_com_pulse_lang_IO_println_stale:
-    lea rcx, rt_stale_handle_err
-    mov edx, rt_stale_handle_err_len
-    call pulsec_rt_stringFromBytes
-    mov rcx, rax
-    call pulsec_rt_panic
-    xor eax, eax
-    add rsp, 56
-    ret
-pulsec_std_com_pulse_lang_IO_println endp
-
-pulsec_std_com_pulse_math_Math_abs proc
-    mov eax, ecx
-    test eax, eax
-    jge @F
-    neg eax
-@@:
-    ret
-pulsec_std_com_pulse_math_Math_abs endp
-
-pulsec_std_com_pulse_math_Math_max proc
-    mov eax, ecx
-    cmp edx, ecx
-    jle @F
-    mov eax, edx
-@@:
-    ret
-pulsec_std_com_pulse_math_Math_max endp
 
 end

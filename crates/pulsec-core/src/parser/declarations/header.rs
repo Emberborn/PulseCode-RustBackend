@@ -1,8 +1,11 @@
-use super::*;
 use super::super::shared::tokens::can_start_type_name;
+use super::*;
 
 impl Parser {
-    pub(crate) fn parse_type_path_list(&mut self, first_message: &str) -> Result<Vec<String>, ParseError> {
+    pub(crate) fn parse_type_path_list(
+        &mut self,
+        first_message: &str,
+    ) -> Result<Vec<String>, ParseError> {
         let mut out = Vec::new();
         if !can_start_type_name(self.peek()) {
             return Err(self.error_here(first_message));
@@ -45,7 +48,11 @@ impl Parser {
                     is_varargs = true;
                 }
                 let name = self.expect_identifier("Expected parameter name")?;
-                params.push(ParamDecl { ty, name, is_varargs });
+                params.push(ParamDecl {
+                    ty,
+                    name,
+                    is_varargs,
+                });
 
                 if self.matches_symbol(",") {
                     continue;

@@ -1,6 +1,6 @@
+mod common;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -29,7 +29,7 @@ fn write_file(path: &Path, contents: &str) {
 }
 
 fn run_pulsec(args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_pulsec"))
+    common::pulsec_command()
         .args(args)
         .output()
         .expect("run pulsec")
@@ -166,7 +166,7 @@ fn lock_cast_06_boxed_long_contextual_int_literal_assignment_typecheck() {
         &entry,
         r#"
         package app.core;
-        import com.pulse.lang.Long;
+        import pulse.lang.Long;
         class Main {
             public static void main() {
                 Long a = 20;
@@ -194,3 +194,4 @@ fn lock_cast_07_unparenthesized_negative_decimal_cast_typecheck() {
     );
     assert_check_ok(&entry, &src_root);
 }
+

@@ -1,0 +1,287 @@
+package pulse.collections;
+
+import pulse.lang.Iterator;
+import pulse.lang.Object;
+import pulse.rt.Intrinsics;
+
+/**
+ * Resizable list implementation that currently delegates to the raw-object linked list baseline.
+ */
+public class ArrayList<T> implements List<T> {
+    private LinkedList<T> values;
+
+    /**
+     * Panics unless the supplied index points at an existing element.
+     */
+    private void requireElementIndex(int index) {
+        if (index < 0 || index >= this.values.size()) {
+            Intrinsics.panic("ArrayList index out of bounds");
+        }
+    }
+
+    /**
+     * Panics unless the supplied index is valid for an insertion point.
+     */
+    private void requireInsertIndex(int index) {
+        if (index < 0 || index > this.values.size()) {
+            Intrinsics.panic("ArrayList index out of bounds");
+        }
+    }
+
+    /**
+     * Creates an empty resizable list.
+     */
+    public ArrayList() {
+        this.values = new LinkedList();
+    }
+
+    /**
+     * Returns the number of values stored in the list.
+     */
+    public int size() {
+        return this.values.size();
+    }
+
+    /**
+     * Returns an iterator over the current list values.
+     */
+    public Iterator iterator() {
+        return this.values.iterator();
+    }
+
+    /**
+     * Reports whether the list currently stores any values.
+     */
+    public boolean isEmpty() {
+        return this.values.isEmpty();
+    }
+
+    /**
+     * Removes all values from the list.
+     */
+    public void clear() {
+        this.values.clear();
+    }
+
+    /**
+     * Appends one raw-object value to the list.
+     */
+    public boolean add(T value) {
+        return this.values.add(value);
+    }
+
+    /**
+     * Appends one primitive integer to the list.
+     */
+    public boolean add(int value) {
+        return this.values.add(value);
+    }
+
+    /**
+     * Appends one string to the list.
+     */
+    public boolean add(String value) {
+        return this.values.add(value);
+    }
+
+    /**
+     * Appends all values exposed by the supplied collection to the list.
+     */
+    public boolean addAll(Collection<T> values) {
+        if (values == this) {
+            return this.values.addAll(this.values);
+        }
+        return this.values.addAll(values);
+    }
+
+    /**
+     * Reports whether every value in the supplied collection is present in the list.
+     */
+    public boolean containsAll(Collection<T> values) {
+        return this.values.containsAll(values);
+    }
+
+    /**
+     * Removes every value in the supplied collection from the list.
+     */
+    public boolean removeAll(Collection<T> values) {
+        return this.values.removeAll(values);
+    }
+
+    /**
+     * Retains only the values from the supplied collection in the list.
+     */
+    public boolean retainAll(Collection<T> values) {
+        return this.values.retainAll(values);
+    }
+
+    /**
+     * Inserts one raw-object value at the supplied index.
+     */
+    public void add(int index, T value) {
+        this.requireInsertIndex(index);
+        this.values.add(index, value);
+    }
+
+    /**
+     * Inserts one primitive integer at the supplied index.
+     */
+    public void add(int index, int value) {
+        this.requireInsertIndex(index);
+        this.values.add(index, value);
+    }
+
+    /**
+     * Inserts one string at the supplied index.
+     */
+    public void add(int index, String value) {
+        this.requireInsertIndex(index);
+        this.values.add(index, value);
+    }
+
+    /**
+     * Returns the raw-object value stored at the supplied index.
+     */
+    public T get(int index) {
+        this.requireElementIndex(index);
+        return this.values.get(index);
+    }
+
+    /**
+     * Returns the first raw-object value stored in the list.
+     */
+    public T getFirst() {
+        if (this.values.isEmpty()) {
+            Intrinsics.panic("ArrayList is empty");
+        }
+        return this.values.getFirst();
+    }
+
+    /**
+     * Returns the last raw-object value stored in the list.
+     */
+    public T getLast() {
+        if (this.values.isEmpty()) {
+            Intrinsics.panic("ArrayList is empty");
+        }
+        return this.values.getLast();
+    }
+
+    /**
+     * Returns the integer stored at the supplied index.
+     */
+    public int getInt(int index) {
+        this.requireElementIndex(index);
+        return this.values.getInt(index);
+    }
+
+    /**
+     * Returns the string stored at the supplied index.
+     */
+    public String getString(int index) {
+        this.requireElementIndex(index);
+        return this.values.getString(index);
+    }
+
+    /**
+     * Removes and returns the raw-object value stored at the supplied index.
+     */
+    public T remove(int index) {
+        this.requireElementIndex(index);
+        return this.values.remove(index);
+    }
+
+    /**
+     * Removes the first matching raw-object value from the list.
+     */
+    public boolean remove(T value) {
+        return this.values.remove(value);
+    }
+
+    /**
+     * Replaces the value at the supplied index and returns the prior value.
+     */
+    public T set(int index, T value) {
+        this.requireElementIndex(index);
+        return this.values.set(index, value);
+    }
+
+    /**
+     * Replaces the value at the supplied index with an integer and returns the prior integer.
+     */
+    public int set(int index, int value) {
+        this.requireElementIndex(index);
+        return this.values.set(index, value);
+    }
+
+    /**
+     * Replaces the value at the supplied index with a string and returns the prior string.
+     */
+    public String set(int index, String value) {
+        this.requireElementIndex(index);
+        return this.values.set(index, value);
+    }
+
+    /**
+     * Reports whether the supplied raw-object value is present in the list.
+     */
+    public boolean contains(T value) {
+        return this.values.contains(value);
+    }
+
+    /**
+     * Reports whether the supplied integer is present in the list.
+     */
+    public boolean contains(int value) {
+        return this.values.contains(value);
+    }
+
+    /**
+     * Reports whether the supplied string is present in the list.
+     */
+    public boolean contains(String value) {
+        return this.values.contains(value);
+    }
+
+    /**
+     * Returns the first index containing the supplied raw-object value.
+     */
+    public int indexOf(T value) {
+        return this.values.indexOf(value);
+    }
+
+    /**
+     * Returns the first index containing the supplied integer.
+     */
+    public int indexOf(int value) {
+        return this.values.indexOf(value);
+    }
+
+    /**
+     * Returns the first index containing the supplied string.
+     */
+    public int indexOf(String value) {
+        return this.values.indexOf(value);
+    }
+
+    /**
+     * Returns the last index containing the supplied raw-object value.
+     */
+    public int lastIndexOf(T value) {
+        return this.values.lastIndexOf(value);
+    }
+
+    /**
+     * Returns the last index containing the supplied integer.
+     */
+    public int lastIndexOf(int value) {
+        return this.values.lastIndexOf(value);
+    }
+
+    /**
+     * Returns the last index containing the supplied string.
+     */
+    public int lastIndexOf(String value) {
+        return this.values.lastIndexOf(value);
+    }
+}

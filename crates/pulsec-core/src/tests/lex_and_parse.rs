@@ -69,12 +69,18 @@ fn lex_skips_region_line_comments() {
 fn lex_recognizes_f1_keyword_expansion() {
     let src = "package app.core; class Main { public static void main() { enum throw try catch finally assert new throws; } }";
     let tokens = lex(src).expect("lex should pass");
-    for keyword in ["enum", "throw", "try", "catch", "finally", "assert", "new", "throws"] {
+    for keyword in [
+        "enum", "throw", "try", "catch", "finally", "assert", "new", "throws",
+    ] {
         let token = tokens
             .iter()
             .find(|token| token.lexeme == keyword)
             .expect("keyword present");
-        assert_eq!(token.kind, TokenKind::Keyword, "{keyword} should lex as keyword");
+        assert_eq!(
+            token.kind,
+            TokenKind::Keyword,
+            "{keyword} should lex as keyword"
+        );
     }
 }
 
@@ -152,7 +158,7 @@ fn parses_sample_program() {
     let src = r#"
         package game.demo;
 
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private int score;
@@ -200,7 +206,7 @@ fn parse_accepts_java_close_numeric_literals() {
 fn check_accepts_char_literals_in_declarations_and_calls() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Char;
+        import pulse.lang.Char;
 
         class Main {
             public static void main() {
@@ -243,7 +249,9 @@ fn parse_rejects_non_terminal_varargs_parameter() {
     "#;
 
     let err = parse(src).expect_err("varargs must be last");
-    assert!(err.to_string().contains("Varargs parameter must be the last parameter"));
+    assert!(err
+        .to_string()
+        .contains("Varargs parameter must be the last parameter"));
 }
 
 #[test]
@@ -311,7 +319,7 @@ fn parse_rejects_anonymous_class_expressions_with_explicit_diagnostic() {
 fn check_accepts_void_main_without_args() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main() {
@@ -326,7 +334,7 @@ fn check_accepts_void_main_without_args() {
 fn check_accepts_void_main_with_string_array_args() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static void main(String[] args) {
@@ -344,7 +352,7 @@ fn check_accepts_fully_qualified_static_call_without_import() {
 
         class Main {
             public static void main() {
-                com.pulse.lang.IO.println("ok");
+                pulse.lang.IO.println("ok");
             }
         }
     "#;
@@ -356,7 +364,7 @@ fn check_accepts_fully_qualified_static_call_without_import() {
 fn check_accepts_static_wildcard_import_for_io_println() {
     let src = r#"
         package app.core;
-        import static com.pulse.lang.IO.*;
+        import static pulse.lang.IO.*;
 
         class Main {
             public static void main() {
@@ -372,7 +380,7 @@ fn check_accepts_static_wildcard_import_for_io_println() {
 fn check_rejects_non_void_main() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             public static int main() {
@@ -389,7 +397,7 @@ fn check_rejects_non_void_main() {
 fn check_rejects_unknown_field_type() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private Mystery score;
@@ -406,7 +414,7 @@ fn check_rejects_unknown_field_type() {
 fn check_accepts_unsigned_types() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.IO;
+        import pulse.lang.IO;
 
         class Main {
             private uint ticks;
@@ -422,19 +430,19 @@ fn check_accepts_unsigned_types() {
 fn check_accepts_wrapper_types_in_declarations() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Byte;
-        import com.pulse.lang.Short;
-        import com.pulse.lang.Integer;
-        import com.pulse.lang.Long;
-        import com.pulse.lang.Float;
-        import com.pulse.lang.Double;
-        import com.pulse.lang.Char;
-        import com.pulse.lang.Boolean;
-        import com.pulse.lang.UByte;
-        import com.pulse.lang.UShort;
-        import com.pulse.lang.UInteger;
-        import com.pulse.lang.ULong;
-        import com.pulse.lang.Void;
+        import pulse.lang.Byte;
+        import pulse.lang.Short;
+        import pulse.lang.Integer;
+        import pulse.lang.Long;
+        import pulse.lang.Float;
+        import pulse.lang.Double;
+        import pulse.lang.Char;
+        import pulse.lang.Boolean;
+        import pulse.lang.UByte;
+        import pulse.lang.UShort;
+        import pulse.lang.UInteger;
+        import pulse.lang.ULong;
+        import pulse.lang.Void;
 
         class Main {
             private Byte b;
@@ -463,8 +471,8 @@ fn check_accepts_wrapper_types_in_declarations() {
 fn check_accepts_wrapper_api_surface_calls() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Integer;
-        import com.pulse.lang.Boolean;
+        import pulse.lang.Integer;
+        import pulse.lang.Boolean;
 
         class Main {
             public static void main() {
@@ -489,12 +497,12 @@ fn check_accepts_wrapper_api_surface_calls() {
 fn check_accepts_core_bootstrap_lang_class_usage() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Object;
-        import com.pulse.lang.Class;
-        import com.pulse.lang.StringBuilder;
-        import com.pulse.lang.Comparable;
-        import com.pulse.lang.Iterable;
-        import com.pulse.lang.Iterator;
+        import pulse.lang.Object;
+        import pulse.lang.Class;
+        import pulse.lang.StringBuilder;
+        import pulse.lang.Comparable;
+        import pulse.lang.Iterable;
+        import pulse.lang.Iterator;
 
         class CounterIter implements Iterator {
             private int i;
@@ -561,9 +569,9 @@ fn check_accepts_core_bootstrap_lang_class_usage() {
 fn check_accepts_exception_base_hierarchy_assignments_and_methods() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Throwable;
-        import com.pulse.lang.Exception;
-        import com.pulse.lang.RuntimeException;
+        import pulse.lang.Throwable;
+        import pulse.lang.Exception;
+        import pulse.lang.RuntimeException;
 
         class Main {
             public static void main() {
@@ -584,7 +592,7 @@ fn check_accepts_exception_base_hierarchy_assignments_and_methods() {
 fn check_accepts_stdlib_enum_bootstrap_type_import() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Enum;
+        import pulse.lang.Enum;
 
         class Main {
             private Enum kind;
@@ -601,7 +609,7 @@ fn check_accepts_stdlib_enum_bootstrap_type_import() {
 fn check_accepts_stdlib_autocloseable_bootstrap_type_import() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.AutoCloseable;
+        import pulse.lang.AutoCloseable;
 
         class Main {
             private AutoCloseable handle;
@@ -615,10 +623,10 @@ fn check_accepts_stdlib_autocloseable_bootstrap_type_import() {
 }
 
 #[test]
-fn parse_rejects_try_with_resources_for_current_f1_baseline() {
+fn parse_accepts_try_with_resources_statement() {
     let src = r#"
         package app.core;
-        import com.pulse.io.InputStream;
+        import pulse.io.InputStream;
 
         class Main {
             public static void main() {
@@ -628,25 +636,47 @@ fn parse_rejects_try_with_resources_for_current_f1_baseline() {
         }
     "#;
 
-    let err = parse(src).expect_err("try-with-resources should stay fenced in current F1 baseline");
-    assert!(err
-        .to_string()
-        .contains("Try-with-resources is not supported in the current F1 baseline"));
+    let program = parse(src).expect("try-with-resources should parse");
+    let method = match &program.classes[0].members[0] {
+        crate::ClassMember::Method(method) => method,
+        _ => panic!("expected method"),
+    };
+    match &method.body[0] {
+        crate::Stmt::Try { resources, .. } => assert_eq!(resources.len(), 1),
+        _ => panic!("expected try statement"),
+    }
+}
+
+#[test]
+fn parse_accepts_modulo_and_mod_compound_assignment() {
+    let src = r#"
+        package app.core;
+
+        class Main {
+            public static void main() {
+                int x = 10 % 3;
+                x %= 2;
+                double y = 5.5d % 2.0d;
+            }
+        }
+    "#;
+
+    parse(src).expect("parser should accept modulo expressions and %= assignments");
 }
 
 #[test]
 fn check_accepts_runtime_exception_subclasses_in_base_slots() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Throwable;
-        import com.pulse.lang.Exception;
-        import com.pulse.lang.RuntimeException;
-        import com.pulse.lang.IllegalArgumentException;
-        import com.pulse.lang.IllegalStateException;
-        import com.pulse.lang.NullPointerException;
-        import com.pulse.lang.IndexOutOfBoundsException;
-        import com.pulse.lang.UnsupportedOperationException;
-        import com.pulse.lang.NumberFormatException;
+        import pulse.lang.Throwable;
+        import pulse.lang.Exception;
+        import pulse.lang.RuntimeException;
+        import pulse.lang.IllegalArgumentException;
+        import pulse.lang.IllegalStateException;
+        import pulse.lang.NullPointerException;
+        import pulse.lang.IndexOutOfBoundsException;
+        import pulse.lang.UnsupportedOperationException;
+        import pulse.lang.NumberFormatException;
 
         class Main {
             public static void main() {
@@ -683,7 +713,7 @@ fn check_accepts_runtime_exception_subclasses_in_base_slots() {
 fn check_accepts_boxing_and_unboxing_at_assignment_boundaries() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Integer;
+        import pulse.lang.Integer;
 
         class Main {
             public static void main() {
@@ -703,18 +733,18 @@ fn check_accepts_boxing_and_unboxing_at_assignment_boundaries() {
 fn check_accepts_boxing_unboxing_roundtrip_for_all_supported_pairs() {
     let src = r#"
         package app.core;
-        import com.pulse.lang.Byte;
-        import com.pulse.lang.Short;
-        import com.pulse.lang.Integer;
-        import com.pulse.lang.Long;
-        import com.pulse.lang.Float;
-        import com.pulse.lang.Double;
-        import com.pulse.lang.Char;
-        import com.pulse.lang.Boolean;
-        import com.pulse.lang.UByte;
-        import com.pulse.lang.UShort;
-        import com.pulse.lang.UInteger;
-        import com.pulse.lang.ULong;
+        import pulse.lang.Byte;
+        import pulse.lang.Short;
+        import pulse.lang.Integer;
+        import pulse.lang.Long;
+        import pulse.lang.Float;
+        import pulse.lang.Double;
+        import pulse.lang.Char;
+        import pulse.lang.Boolean;
+        import pulse.lang.UByte;
+        import pulse.lang.UShort;
+        import pulse.lang.UInteger;
+        import pulse.lang.ULong;
 
         class Main {
             public static void probe(
@@ -757,12 +787,12 @@ fn check_accepts_boxing_unboxing_roundtrip_for_all_supported_pairs() {
 fn check_accepts_runtime_intrinsics_calls() {
     let src = r#"
         package app.core;
-        import com.pulse.rt.Intrinsics;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
                 Intrinsics.consoleWrite("tick");
-                Intrinsics.consoleWriteLine(1);
+                Intrinsics.consoleWriteLine("1");
             }
         }
     "#;
@@ -774,7 +804,7 @@ fn check_accepts_runtime_intrinsics_calls() {
 fn check_accepts_arc_retain_release_intrinsics_calls() {
     let src = r#"
         package app.core;
-        import com.pulse.memory.Memory;
+        import pulse.memory.Memory;
 
         class Main {
             public static void main() {
@@ -791,7 +821,7 @@ fn check_accepts_arc_retain_release_intrinsics_calls() {
 fn check_accepts_static_wildcard_import_for_memory_surface() {
     let src = r#"
         package app.core;
-        import static com.pulse.memory.Memory.*;
+        import static pulse.memory.Memory.*;
 
         class Main {
             public static void main() {
@@ -809,7 +839,7 @@ fn check_accepts_static_wildcard_import_for_memory_surface() {
 fn check_accepts_runtime_panic_intrinsic_call() {
     let src = r#"
         package app.core;
-        import com.pulse.rt.Intrinsics;
+        import pulse.rt.Intrinsics;
 
         class Main {
             public static void main() {
@@ -820,4 +850,3 @@ fn check_accepts_runtime_panic_intrinsic_call() {
 
     check(src).expect("runtime panic intrinsic call should pass");
 }
-

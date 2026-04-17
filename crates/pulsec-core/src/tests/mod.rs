@@ -29,13 +29,15 @@ fn analyze_merged_with_contexts(sources: &[&str]) -> Result<(), crate::SemanticE
     analyze_with_class_contexts(&merged, &contexts)
 }
 
-#[path = "lex_and_parse.rs"]
-mod lex_and_parse;
 #[path = "f1_baselines.rs"]
 mod f1_baselines;
-#[path = "semantic_rules.rs"]
-mod semantic_rules;
+#[path = "lex_and_parse.rs"]
+mod lex_and_parse;
 #[path = "multi_source_analysis.rs"]
 mod multi_source_analysis;
+#[path = "prelude_contract.rs"]
+mod prelude_contract;
+#[path = "semantic_rules.rs"]
+mod semantic_rules;
 #[path = "stdlib_surface.rs"]
 mod stdlib_surface;

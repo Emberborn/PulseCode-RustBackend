@@ -11,7 +11,7 @@
 - [E3_PARITY_EVIDENCE_STRATEGY.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_EVIDENCE_STRATEGY.md)
 - [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
 - [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/PulseCode/docs/PROJECT_LAYOUT_CONVENTIONS.md)
-- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
 - [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
 
 ## Lock Suites
@@ -19,7 +19,6 @@
 - `cargo test -q -p pulsec --test e3_parity`
 - `cargo test -q -p pulsec --test fixture_projects`
 - `cargo test -q -p pulsec --test phase_d_cli`
-- `cargo test -q -p pulsec --test packaging_regressions`
 - `cargo test -q -p pulsec --test stage_locks`
 - `cargo test -q -p pulsec --test stage_locks_d`
 - `cargo test -q -p pulsec`

@@ -4,7 +4,7 @@ This document captures the forward-compatible architecture for moving from `puls
 
 ## Design Targets
 
-1. Keep artifact and layout contracts stable (`build/asm`, `build/generated`, `build/distro`, `build/staging`).
+1. Keep artifact and layout contracts stable (`build/asm`, `build/generated`, `build/distro`, `build/assets`, `build/tmp`).
 2. Keep command surface stable while allowing future Gradle-style task expansion.
 3. Isolate config frontend (`toml` today, script DSL later) from task execution core.
 
@@ -19,7 +19,7 @@ This document captures the forward-compatible architecture for moving from `puls
 3. `Task graph layer`
    - Task definitions, dependencies, ordering, and reusable execution graph.
 4. `Executor layer`
-   - Concrete build/test/package/doc installers and platform actions.
+   - Concrete build/test/doc and platform actions.
 5. `Artifact contract layer`
    - Deterministic output locations and manifest/report schemas.
 

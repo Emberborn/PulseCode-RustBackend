@@ -10,7 +10,7 @@
 - [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
 - [SHARED_RUNTIME_ABI.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_ABI.md)
 - [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/PulseCode/docs/PROJECT_LAYOUT_CONVENTIONS.md)
-- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
 - [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
 
 ## Lock Suites
@@ -18,7 +18,6 @@
 - `cargo test -q -p pulsec --test fixture_projects`
 - `cargo test -q -p pulsec --test stage_locks_d`
 - `cargo test -q -p pulsec --test phase_d_cli`
-- `cargo test -q -p pulsec --test packaging_regressions`
 - `cargo test -q -p pulsec`
 
 ## Key E1 Coverage
@@ -32,7 +31,6 @@
 - `lock_e1_18_shared_profile_request_requires_output_entry_and_fails_deterministically`
 - `e1_11_shared_profile_build_publishes_bin_lib_and_metadata_layout`
 - `e1_13_shared_profile_debug_release_publication_rules_are_locked`
-- `e1_12_shared_package_staging_reuses_shared_build_outputs_consistently`
 
 ## Roadmap Reference
 
