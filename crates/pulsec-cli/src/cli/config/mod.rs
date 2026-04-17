@@ -279,6 +279,11 @@ fn emit_build_invocation_bridge_source() -> String {
         import author.build.BuildSummaryWriter;
         import author.build.BuildPublicationWriter;
         import author.build.BuildInvocationResolver;
+        import author.project.CheckInvocationBridge;
+        import author.project.ProjectDiscovery;
+        import author.project.ProjectDiscoveryBridge;
+        import author.project.ProjectInvocationResolver;
+        import author.project.TestInvocationBridge;
                 import author.compiler.CheckResult;
                 import author.compiler.CheckSummaryWriter;
                 import author.compiler.TestDiscoveryResult;
@@ -332,6 +337,20 @@ fn emit_build_invocation_bridge_source() -> String {
                     String text = BuildInvocationBridge.toBridgeText(invocation);
                     {debug_after_render}
                     IO.print(text);
+                    return;
+                }}
+                if (mode.equals("project-resolve-check-invocation")) {{
+                    IO.print(Main.resolveProjectCheckInvocationBridgeText(Main.readLines(3)));
+                    return;
+                }}
+                if (mode.equals("project-resolve-test-invocation")) {{
+                    IO.print(Main.resolveProjectTestInvocationBridgeText(Main.readLines(2)));
+                    return;
+                }}
+                if (mode.equals("project-discover-test-files")) {{
+                    IO.print(ProjectDiscoveryBridge.toBridgeText(
+                        ProjectDiscovery.discoverTestFiles(Main.readValue(Main.readLines(1), 0))
+                    ));
                     return;
                 }}
                 if (mode.equals("toolchain-discovery")) {{
@@ -798,6 +817,25 @@ fn emit_build_invocation_bridge_source() -> String {
                 return CheckSummaryWriter.renderCheckResult(result);
             }}
 
+            private static String resolveProjectCheckInvocationBridgeText(String request) {{
+                return CheckInvocationBridge.toBridgeText(
+                    ProjectInvocationResolver.resolveCheckInvocation(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2)
+                    )
+                );
+            }}
+
+            private static String resolveProjectTestInvocationBridgeText(String request) {{
+                return TestInvocationBridge.toBridgeText(
+                    ProjectInvocationResolver.resolveTestInvocation(
+                        Main.readValue(request, 0),
+                        Main.readValue(request, 1)
+                    )
+                );
+            }}
+
             private static String renderCompilerTestDiscoveryResult(String request) {{
                 TestDiscoveryResult result;
                 if ("true".equals(Main.readValue(request, 0))) {{
@@ -1048,24 +1086,7 @@ pub(crate) fn normalize_bridge_path(value: &str) -> String {
 }
 
 fn parse_build_invocation_bridge_output(text: &str) -> Result<BuildInvocation, String> {
-    let mut values = HashMap::new();
-    for line in text.lines() {
-        if line.trim().is_empty() {
-            continue;
-        }
-        let (key, raw) = line
-            .split_once('=')
-            .ok_or_else(|| format!("invalid author bridge line '{}'", line))?;
-        let (present, encoded) = raw
-            .split_once(':')
-            .ok_or_else(|| format!("invalid author bridge value '{}'", line))?;
-        let value = match present {
-            "0" => None,
-            "1" => Some(unescape_bridge_value(encoded)?),
-            _ => return Err(format!("invalid author bridge presence tag '{}'", present)),
-        };
-        values.insert(key.to_string(), value);
-    }
+    let values = parse_bridge_keyed_values(text)?;
 
     Ok(BuildInvocation {
         entry_path: required_bridge_value(&values, "entryPath")?,
@@ -1092,6 +1113,28 @@ fn parse_build_invocation_bridge_output(text: &str) -> Result<BuildInvocation, S
         used_manifest: parse_bridge_bool(&values, "usedManifest")?,
         authorlib_enabled: parse_bridge_bool(&values, "authorlibEnabled")?,
     })
+}
+
+pub(crate) fn parse_bridge_keyed_values(text: &str) -> Result<HashMap<String, Option<String>>, String> {
+    let mut values = HashMap::new();
+    for line in text.lines() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let (key, raw) = line
+            .split_once('=')
+            .ok_or_else(|| format!("invalid author bridge line '{}'", line))?;
+        let (present, encoded) = raw
+            .split_once(':')
+            .ok_or_else(|| format!("invalid author bridge value '{}'", line))?;
+        let value = match present {
+            "0" => None,
+            "1" => Some(unescape_bridge_value(encoded)?),
+            _ => return Err(format!("invalid author bridge presence tag '{}'", present)),
+        };
+        values.insert(key.to_string(), value);
+    }
+    Ok(values)
 }
 
 fn required_bridge_value(
@@ -1470,16 +1513,26 @@ fn emit_author_build_bridge_with_retry(
 }
 
 fn wait_for_author_build_bridge_exe(path: &Path) -> bool {
-    if path.exists() {
+    if author_build_bridge_link_completed(path) || path.exists() {
         return true;
     }
-    for _ in 0..10 {
+    for _ in 0..120 {
         std::thread::sleep(Duration::from_millis(250));
-        if path.exists() {
+        if author_build_bridge_link_completed(path) || path.exists() {
             return true;
         }
     }
     false
+}
+
+fn author_build_bridge_link_completed(exe_path: &Path) -> bool {
+    let Some(parent) = exe_path.parent() else {
+        return false;
+    };
+    let report_path = parent.join("native.link.txt");
+    fs::read_to_string(report_path)
+        .map(|text| text.contains("status=linked"))
+        .unwrap_or(false)
 }
 
 fn is_transient_author_bridge_output_lock_error(err: &str) -> bool {
@@ -1550,6 +1603,29 @@ pub(super) fn resolve_check_invocation(
     entry_arg: Option<&str>,
     flags: &CliFlags,
 ) -> Result<CheckInvocation, String> {
+    if let Ok(invocation) = resolve_check_invocation_via_authorlib(entry_arg, flags) {
+        return Ok(invocation);
+    }
+    resolve_check_invocation_fallback(entry_arg, flags)
+}
+
+fn resolve_check_invocation_via_authorlib(
+    entry_arg: Option<&str>,
+    flags: &CliFlags,
+) -> Result<CheckInvocation, String> {
+    let request = emit_project_check_invocation_bridge_request(
+        &bridge_start_path(entry_arg, flags)?,
+        flags.source_root.as_deref(),
+        entry_arg,
+    );
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_check_invocation_bridge_output(&stdout)
+}
+
+fn resolve_check_invocation_fallback(
+    entry_arg: Option<&str>,
+    flags: &CliFlags,
+) -> Result<CheckInvocation, String> {
     let mut used_manifest = false;
     let mut authorlib_enabled = false;
     let manifest_info = find_and_load_manifest_for_check(entry_arg, flags)?;
@@ -1610,6 +1686,29 @@ pub(super) fn resolve_check_invocation(
         source_root,
         used_manifest,
         authorlib_enabled,
+    })
+}
+
+fn emit_project_check_invocation_bridge_request(
+    start_path: &str,
+    source_root_override: Option<&str>,
+    entry_path_override: Option<&str>,
+) -> String {
+    let mut out = String::new();
+    out.push_str("project-resolve-check-invocation\n");
+    append_bridge_request_raw_value(&mut out, Some(start_path));
+    append_bridge_request_raw_value(&mut out, source_root_override);
+    append_bridge_request_raw_value(&mut out, entry_path_override);
+    out
+}
+
+fn parse_check_invocation_bridge_output(text: &str) -> Result<CheckInvocation, String> {
+    let values = parse_bridge_keyed_values(text)?;
+    Ok(CheckInvocation {
+        entry_path: required_bridge_value(&values, "entryPath")?,
+        source_root: optional_bridge_value(&values, "sourceRoot"),
+        used_manifest: parse_bridge_bool(&values, "usedManifest")?,
+        authorlib_enabled: parse_bridge_bool(&values, "authorlibEnabled")?,
     })
 }
 

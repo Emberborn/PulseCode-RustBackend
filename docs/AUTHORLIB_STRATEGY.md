@@ -67,6 +67,10 @@ The current target taxonomy is:
 
 - `author.project.*`
   - manifest, workspace, project layout, source/resource/build-root resolution
+  - live bridge contracts now also exist through:
+    - `author.project.CheckInvocationBridge`
+    - `author.project.TestInvocationBridge`
+    - `author.project.ProjectDiscoveryBridge`
 - `author.build.*`
   - artifact layout, publication, packaging-adjacent build metadata
 - `author.toolchain.*`

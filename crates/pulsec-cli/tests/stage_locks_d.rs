@@ -1015,7 +1015,7 @@ fn lock_d2_02_project_model_defaults_follow_gradle_layout() {
         norm(&test_output.stdout),
         norm(&test_output.stderr)
     );
-    assert!(norm(&test_output.stdout).contains("src\\test\\pulse"));
+    assert!(norm_slashes(&norm(&test_output.stdout)).contains("src/test/pulse"));
 
     let build_output = run_pulsec(&["build", "--project-root", project.to_str().expect("utf8")]);
     assert!(
@@ -1079,7 +1079,7 @@ fn lock_d2_03_layout_overrides_are_respected() {
         test.status.success(),
         "test should respect test_pulse override"
     );
-    assert!(norm(&test.stdout).contains("code\\tests"));
+    assert!(norm_slashes(&norm(&test.stdout)).contains("code/tests"));
 
     let build = run_pulsec(&["build", "--project-root", project.to_str().expect("utf8")]);
     assert!(

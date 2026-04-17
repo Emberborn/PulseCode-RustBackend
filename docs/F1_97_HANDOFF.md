@@ -356,6 +356,11 @@ Current immediate continuation inside that target:
       - no-tests-found text
       - workspace member no-tests-found text
       - aggregate `one or more tests failed` / `one or more workspace tests failed` text
+  - `author.project.*` now also owns more of the hot `pulsec check` / `pulsec test` path through bridge-first contracts:
+    - `author.project.CheckInvocationBridge`
+    - `author.project.TestInvocationBridge`
+    - `author.project.ProjectDiscoveryBridge`
+    - Rust `resolve_check_invocation(...)`, `resolve_test_invocation(...)`, and test-file discovery now prefer those authored project contracts and only fall back to the older Rust path if the bridge is unavailable
   - remaining Rust-owned build publication/materialization residue is now:
     - fallback/bootstrap publication-plan mirroring
     - fallback/bootstrap layout materialization mirroring
@@ -380,6 +385,9 @@ Important current compiler truth:
 - the later authored compiler discovery lift exposed one more bridge-structure truth:
   - the generated cached bridge dispatcher had become too large to trust as one giant `bridge.internal.Main.main()` body
   - compiler render branches are now routed through helper methods inside the generated bridge source instead of keeping all compiler render paths inline in `Main.main()`
+- the widened authored project bridge slice exposed one more bootstrap/testing truth:
+  - cold author-bridge prewarm can still fail transiently while another test process is finishing the cached bridge build
+  - `tests/common/mod.rs` now retries `__prewarm-author-build-bridge` instead of treating the first transient cold-build failure as terminal
 
 Current parser-direction rule for this slice:
 

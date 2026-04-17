@@ -1242,9 +1242,17 @@ Bridge / tooling truths added during the current `F1-97` push:
   - `pulsec test` and workspace-test discovery/summary lines now prefer that authored compiler surface through the cached bridge
   - `author.compiler.*` now also has a third live slice through `author.compiler.TestDiagnosticWriter`
   - `pulsec test` now prefers that authored compiler surface for discovery-failure/no-tests/aggregate-failure message text
+  - `author.project.*` now also owns more of the normal `pulsec check` / `pulsec test` path through:
+    - `author.project.CheckInvocationBridge`
+    - `author.project.TestInvocationBridge`
+    - `author.project.ProjectDiscoveryBridge`
+  - Rust check/test invocation resolution and test-file discovery now prefer those authored project contracts and only fall back to the older Rust path if the bridge is unavailable
   - the later authored compiler discovery lift also exposed a bridge-structure truth:
     - the generated cached bridge dispatcher had become too large to trust as one giant `bridge.internal.Main.main()` body
     - compiler render branches now dispatch through helper methods inside the generated bridge source instead of keeping all compiler render paths inline
+  - the widened authored project bridge slice exposed one more bootstrap/testing truth:
+    - cold bridge prewarm can still fail transiently while another process is finishing the cached bridge build
+    - the integration-test prewarm helper now retries `__prewarm-author-build-bridge` instead of treating the first transient cold-build failure as terminal
   - Rust `cli/build/mod.rs` now uses bridge-first author-build copy paths for:
     - published artifact file copies
     - published tree copies

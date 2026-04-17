@@ -121,6 +121,8 @@ enabled = true
         import author.project.ManifestPackage;
         import author.project.AuthorlibConfig;
         import author.project.CheckInvocation;
+        import author.project.CheckInvocationBridge;
+        import author.project.ProjectDiscoveryBridge;
         import author.project.ProjectDiscovery;
         import author.project.ProjectInvocationResolver;
         import author.project.ProjectLayout;
@@ -129,6 +131,7 @@ enabled = true
         import author.project.ProjectManifestParser;
         import author.project.ProjectSources;
         import author.project.TestInvocation;
+        import author.project.TestInvocationBridge;
         import author.project.WorkspaceManifest;
         import author.toolchain.ToolchainCandidateBridge;
         import author.toolchain.ToolchainCandidatePlan;
@@ -625,6 +628,11 @@ enabled = true
                     "workspace/demo/src/main/pulse/app/core",
                     null
                 );
+                String checkInvocationText = CheckInvocationBridge.toBridgeText(checkInvocation);
+                String testInvocationText = TestInvocationBridge.toBridgeText(testInvocation);
+                String discoveredTestsText = ProjectDiscoveryBridge.toBridgeText(
+                    ProjectDiscovery.discoverTestFiles("workspace/demo/src/test/pulse")
+                );
                 BuildInvocation buildInvocation = BuildInvocationResolver.resolveBuildInvocation(
                     "workspace/demo/src/main/pulse/app/core",
                     null,
@@ -856,8 +864,13 @@ enabled = true
                     && checkInvocation.usedManifest()
                     && !checkInvocation.authorlibEnabled()
                     && checkInvocation.entryPath().equals("workspace/demo/src/main/pulse/app/core/Main.pulse")
+                    && checkInvocationText.contains("entryPath=1:workspace/demo/src/main/pulse/app/core/Main.pulse")
+                    && checkInvocationText.contains("usedManifest=1:true")
                     && testInvocation.projectRoot().equals("workspace/demo")
                     && testInvocation.testsRoot().equals("workspace/demo/src/test/pulse")
+                    && testInvocationText.contains("projectRoot=1:workspace/demo")
+                    && testInvocationText.contains("testsRoot=1:workspace/demo/src/test/pulse")
+                    && discoveredTestsText.equals("count=1:0\n")
                     && buildInvocation.usedManifest()
                     && buildInvocation.outputRoot().equals("workspace/demo/build/distro/debug")
                     && buildInvocation.mainResourcesRoot().equals("workspace/demo/src/main/resources")
