@@ -39,11 +39,11 @@ pub(super) fn lower_field_initializer(
         Expr::LongLiteral(v) => Some(IrFieldInit::Int(*v)),
         Expr::CharLiteral(v) => Some(IrFieldInit::Int(*v as i64)),
         Expr::FloatLiteral(raw) if field_ty.rsplit('.').next().unwrap_or(field_ty) == "float" => {
-            raw.parse::<f32>().ok().map(|value| IrFieldInit::Float(value.to_bits()))
+            raw.parse::<f32>()
+                .ok()
+                .map(|value| IrFieldInit::Float(value.to_bits()))
         }
-        Expr::DoubleLiteral(raw)
-            if field_ty.rsplit('.').next().unwrap_or(field_ty) == "double" =>
-        {
+        Expr::DoubleLiteral(raw) if field_ty.rsplit('.').next().unwrap_or(field_ty) == "double" => {
             raw.parse::<f64>()
                 .ok()
                 .map(|value| IrFieldInit::Double(value.to_bits()))
@@ -72,7 +72,14 @@ pub(super) fn lower_field_initializer(
             _ => lower_cast_field_initializer(field_ty, init?, field_constants),
         },
         Expr::Cast { ty, expr } => lower_cast_field_initializer(ty, expr.as_ref(), field_constants)
-            .or_else(|| lower_field_initializer(Some(expr.as_ref()), field_ty, enum_constants, field_constants)),
+            .or_else(|| {
+                lower_field_initializer(
+                    Some(expr.as_ref()),
+                    field_ty,
+                    enum_constants,
+                    field_constants,
+                )
+            }),
         Expr::Var(_) => lookup_field_constant(init?, field_constants)
             .or_else(|| lower_cast_field_initializer(field_ty, init?, field_constants)),
         _ => lower_cast_field_initializer(field_ty, init?, field_constants),

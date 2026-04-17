@@ -11,11 +11,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 pub(crate) use self::adapters::resolve_plan_target_adapter_metadata;
-pub(crate) use self::support::PlanTargetAdapterMetadata;
 pub use self::host_bootstrap::RustHostBootstrapBackend;
+pub(crate) use self::support::PlanTargetAdapterMetadata;
 use pulsec_core::intermediate::{
-    IrBinaryOp, IrBlock, IrField, IrFieldInit, IrFieldInitArg, IrInstr, IrTerminator, IrUnaryOp, IrValueId,
-    IrValueKind,
+    IrBinaryOp, IrBlock, IrField, IrFieldInit, IrFieldInitArg, IrInstr, IrTerminator, IrUnaryOp,
+    IrValueId, IrValueKind,
 };
 use pulsec_core::{IrClass, IrMethod, IrProgram, IrVisibility};
 

@@ -1934,4 +1934,3 @@ fn lock_c3_18_dispatch_heavy_frame_and_win64_abi_guards_are_locked() {
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
     assert_eq!(out, "21\n", "unexpected dispatch-heavy runtime output");
 }
-

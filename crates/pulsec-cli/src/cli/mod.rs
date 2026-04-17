@@ -105,7 +105,10 @@ pub(crate) fn run() {
                 process::exit(EXIT_OK);
             }
             Err(err) => {
-                emit_error(DIAG_COMMAND, &format!("Author build bridge prewarm failed: {err}"));
+                emit_error(
+                    DIAG_COMMAND,
+                    &format!("Author build bridge prewarm failed: {err}"),
+                );
                 process::exit(EXIT_COMMAND_FAILURE);
             }
         },
@@ -197,7 +200,15 @@ pub(crate) fn run() {
                         Ok(config) => config,
                         Err(err) => {
                             failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), err);
+                            eprintln!(
+                                "{}",
+                                render_workspace_check_member_result(
+                                    member_root,
+                                    None,
+                                    0,
+                                    Some(&err),
+                                )
+                            );
                             continue;
                         }
                     };
@@ -220,7 +231,15 @@ pub(crate) fn run() {
                         }
                         Err(err) => {
                             failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), err);
+                            eprintln!(
+                                "{}",
+                                render_workspace_check_member_result(
+                                    member_root,
+                                    None,
+                                    0,
+                                    Some(&err),
+                                )
+                            );
                         }
                     }
                 }
@@ -229,7 +248,16 @@ pub(crate) fn run() {
                     render_workspace_check_summary(passed, failed, workspace.member_roots.len())
                 );
                 if failed > 0 {
-                    emit_error(DIAG_CHECK, "one or more workspace members failed check");
+                    emit_error(
+                        DIAG_CHECK,
+                        &render_workspace_check_failed(
+                            &workspace.root,
+                            workspace.member_roots.len(),
+                            mode_label,
+                            passed,
+                            failed,
+                        ),
+                    );
                     emit_hint(
                         "inspect [FAIL] lines and re-run on the failing member with --project-root",
                     );
@@ -428,7 +456,14 @@ pub(crate) fn run() {
                         Ok(invocation) => invocation,
                         Err(err) => {
                             failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), err);
+                            eprintln!(
+                                "{}",
+                                render_test_execution_result(
+                                    Some(member_root),
+                                    "<discovery>",
+                                    Some(&err),
+                                )
+                            );
                             continue;
                         }
                     };
@@ -436,7 +471,14 @@ pub(crate) fn run() {
                         Ok(tests) => tests,
                         Err(err) => {
                             failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), err);
+                            eprintln!(
+                                "{}",
+                                render_test_execution_result(
+                                    Some(member_root),
+                                    "<discovery>",
+                                    Some(&err),
+                                )
+                            );
                             continue;
                         }
                     };
@@ -444,10 +486,7 @@ pub(crate) fn run() {
                         failed += 1;
                         eprintln!(
                             "{}",
-                            render_workspace_member_no_tests(
-                                member_root,
-                                &invocation.tests_root
-                            )
+                            render_workspace_member_no_tests(member_root, &invocation.tests_root)
                         );
                         continue;
                     }
@@ -471,15 +510,24 @@ pub(crate) fn run() {
                         ) {
                             Ok(_) => {
                                 passed += 1;
-                                println!("[PASS] {}::{}", member_root.display(), display_name);
+                                println!(
+                                    "{}",
+                                    render_test_execution_result(
+                                        Some(member_root),
+                                        &display_name,
+                                        None
+                                    )
+                                );
                             }
                             Err(err) => {
                                 failed += 1;
                                 eprintln!(
-                                    "[FAIL] {}::{} :: {}",
-                                    member_root.display(),
-                                    display_name,
-                                    err
+                                    "{}",
+                                    render_test_execution_result(
+                                        Some(member_root),
+                                        &display_name,
+                                        Some(&err)
+                                    )
                                 );
                             }
                         }
@@ -490,7 +538,17 @@ pub(crate) fn run() {
                     render_workspace_test_summary(mode_label, passed, failed, total)
                 );
                 if failed > 0 {
-                    emit_error(DIAG_TEST, &render_workspace_tests_failed());
+                    emit_error(
+                        DIAG_TEST,
+                        &render_workspace_tests_failed(
+                            &workspace.root,
+                            workspace.member_roots.len(),
+                            mode_label,
+                            passed,
+                            failed,
+                            total,
+                        ),
+                    );
                     emit_hint("review [FAIL] diagnostics above and re-run for the failing member");
                     process::exit(EXIT_COMMAND_FAILURE);
                 }
@@ -546,11 +604,17 @@ pub(crate) fn run() {
                 ) {
                     Ok(_) => {
                         passed += 1;
-                        println!("[PASS] {}", display_name);
+                        println!(
+                            "{}",
+                            render_test_execution_result(None, &display_name, None)
+                        );
                     }
                     Err(err) => {
                         failed += 1;
-                        eprintln!("[FAIL] {} :: {}", display_name, err);
+                        eprintln!(
+                            "{}",
+                            render_test_execution_result(None, &display_name, Some(&err))
+                        );
                     }
                 }
             }
@@ -594,19 +658,45 @@ fn render_workspace_check_start(root: &Path, member_count: usize, mode: &str) ->
     })
 }
 
-fn render_workspace_check_pass(member_root: &Path, package_name: &str, files_loaded: usize) -> String {
+fn render_workspace_check_pass(
+    member_root: &Path,
+    package_name: &str,
+    files_loaded: usize,
+) -> String {
+    render_workspace_check_member_result(member_root, Some(package_name), files_loaded, None)
+}
+
+fn render_workspace_check_member_result(
+    member_root: &Path,
+    package_name: Option<&str>,
+    files_loaded: usize,
+    detail: Option<&str>,
+) -> String {
     let files = files_loaded.to_string();
     let request = emit_compiler_bridge_summary_request(
-        "compiler-render-workspace-check-pass",
-        &[member_root.to_str(), Some(package_name), Some(files.as_str())],
+        "compiler-render-workspace-check-member",
+        &[
+            Some(if detail.is_none() { "true" } else { "false" }),
+            member_root.to_str(),
+            package_name,
+            Some(if detail.is_none() {
+                files.as_str()
+            } else {
+                detail.unwrap_or("")
+            }),
+        ],
     );
     run_author_build_bridge_request(&request).unwrap_or_else(|_| {
-        format!(
-            "[PASS] {} package={} files={}",
-            member_root.display(),
-            package_name,
-            files_loaded
-        )
+        if let Some(detail) = detail {
+            format!("[FAIL] {} :: {}", member_root.display(), detail)
+        } else {
+            format!(
+                "[PASS] {} package={} files={}",
+                member_root.display(),
+                package_name.unwrap_or("<unknown>"),
+                files_loaded
+            )
+        }
     })
 }
 
@@ -628,6 +718,30 @@ fn render_workspace_check_summary(passed: usize, failed: usize, total: usize) ->
             passed, failed, total
         )
     })
+}
+
+fn render_workspace_check_failed(
+    root: &Path,
+    member_count: usize,
+    mode: &str,
+    passed: usize,
+    failed: usize,
+) -> String {
+    let member_value = member_count.to_string();
+    let passed_value = passed.to_string();
+    let failed_value = failed.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-workspace-check-failed",
+        &[
+            root.to_str(),
+            Some(member_value.as_str()),
+            Some(mode),
+            Some(passed_value.as_str()),
+            Some(failed_value.as_str()),
+        ],
+    );
+    run_author_build_bridge_request(&request)
+        .unwrap_or_else(|_| "one or more workspace members failed check".to_string())
 }
 
 fn render_check_success(
@@ -752,6 +866,47 @@ fn render_test_summary(mode: &str, passed: usize, failed: usize, total: usize) -
     })
 }
 
+fn render_test_execution_result(
+    member_root: Option<&Path>,
+    test_name: &str,
+    detail: Option<&str>,
+) -> String {
+    let workspace = if member_root.is_some() {
+        "true"
+    } else {
+        "false"
+    };
+    let success = if detail.is_none() { "true" } else { "false" };
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-render-test-execution",
+        &[
+            Some(workspace),
+            Some(success),
+            member_root.and_then(|path| path.to_str()),
+            Some(test_name),
+            detail,
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        if let Some(member_root) = member_root {
+            if let Some(detail) = detail {
+                format!(
+                    "[FAIL] {}::{} :: {}",
+                    member_root.display(),
+                    test_name,
+                    detail
+                )
+            } else {
+                format!("[PASS] {}::{}", member_root.display(), test_name)
+            }
+        } else if let Some(detail) = detail {
+            format!("[FAIL] {} :: {}", test_name, detail)
+        } else {
+            format!("[PASS] {}", test_name)
+        }
+    })
+}
+
 fn render_workspace_test_start(root: &Path, member_count: usize, mode: &str) -> String {
     let count = member_count.to_string();
     let request = emit_compiler_bridge_summary_request(
@@ -806,9 +961,8 @@ fn render_workspace_test_summary(mode: &str, passed: usize, failed: usize, total
     let failed_value = failed.to_string();
     let total_value = total.to_string();
     let request = emit_compiler_bridge_summary_request(
-        "compiler-render-test-summary",
+        "compiler-render-workspace-test-summary",
         &[
-            Some("true"),
             Some(mode),
             Some(passed_value.as_str()),
             Some(failed_value.as_str()),
@@ -892,10 +1046,28 @@ fn render_workspace_member_no_tests(member_root: &Path, tests_root: &Path) -> St
     })
 }
 
-fn render_workspace_tests_failed() -> String {
+fn render_workspace_tests_failed(
+    root: &Path,
+    member_count: usize,
+    mode: &str,
+    passed: usize,
+    failed: usize,
+    total: usize,
+) -> String {
+    let member_value = member_count.to_string();
+    let passed_value = passed.to_string();
+    let failed_value = failed.to_string();
+    let total_value = total.to_string();
     let request = emit_compiler_bridge_summary_request(
-        "compiler-render-tests-failed",
-        &[Some("true"), Some("friendly"), Some("0"), Some("1"), Some("1")],
+        "compiler-render-workspace-tests-failed",
+        &[
+            root.to_str(),
+            Some(member_value.as_str()),
+            Some(mode),
+            Some(passed_value.as_str()),
+            Some(failed_value.as_str()),
+            Some(total_value.as_str()),
+        ],
     );
     run_author_build_bridge_request(&request)
         .unwrap_or_else(|_| "one or more workspace tests failed".to_string())
@@ -904,7 +1076,13 @@ fn render_workspace_tests_failed() -> String {
 fn render_tests_failed() -> String {
     let request = emit_compiler_bridge_summary_request(
         "compiler-render-tests-failed",
-        &[Some("false"), Some("friendly"), Some("0"), Some("1"), Some("1")],
+        &[
+            Some("false"),
+            Some("friendly"),
+            Some("0"),
+            Some("1"),
+            Some("1"),
+        ],
     );
     run_author_build_bridge_request(&request)
         .unwrap_or_else(|_| "one or more tests failed".to_string())
@@ -1370,7 +1548,9 @@ mod tests {
             "#,
         );
         let err = load_manifest_config(&removed_alias).expect_err("removed alias should fail");
-        assert!(err.contains("[build].target must be one of: windows-x64, pulseos-x64, linux-x64, macos-arm64"));
+        assert!(err.contains(
+            "[build].target must be one of: windows-x64, pulseos-x64, linux-x64, macos-arm64"
+        ));
         let _ = fs::remove_dir_all(root);
     }
 
@@ -1599,7 +1779,11 @@ mod tests {
             Some(src_root.to_str().expect("src utf8")),
             true,
         );
-        assert!(result.is_ok(), "supported import sample failed: {:?}", result);
+        assert!(
+            result.is_ok(),
+            "supported import sample failed: {:?}",
+            result
+        );
 
         let _ = fs::remove_dir_all(root);
     }
@@ -1877,7 +2061,11 @@ mod tests {
             Some(src_root.to_str().expect("src utf8")),
             true,
         );
-        assert!(result.is_ok(), "supported import sample failed: {:?}", result);
+        assert!(
+            result.is_ok(),
+            "supported import sample failed: {:?}",
+            result
+        );
 
         let _ = fs::remove_dir_all(root);
     }
@@ -2036,7 +2224,11 @@ mod tests {
             Some(src_root.to_str().expect("src utf8")),
             true,
         );
-        assert!(result.is_ok(), "supported import sample failed: {:?}", result);
+        assert!(
+            result.is_ok(),
+            "supported import sample failed: {:?}",
+            result
+        );
 
         let _ = fs::remove_dir_all(root);
     }
@@ -2069,11 +2261,7 @@ mod tests {
         .expect("expected check success");
 
         assert!(
-            result
-                .merged
-                .classes
-                .iter()
-                .any(|c| c.name == "System"),
+            result.merged.classes.iter().any(|c| c.name == "System"),
             "expected imported stdlib class 'System' to be loaded into merged program"
         );
 
@@ -2193,7 +2381,11 @@ mod tests {
             Some(src_root.to_str().expect("src utf8")),
             true,
         );
-        assert!(result.is_ok(), "prelude/default import sample failed: {:?}", result);
+        assert!(
+            result.is_ok(),
+            "prelude/default import sample failed: {:?}",
+            result
+        );
 
         let _ = fs::remove_dir_all(root);
     }
@@ -2265,20 +2457,24 @@ mod tests {
             "#,
         );
 
-        let resolved = resolve_check_invocation(None, &CliFlags {
-            strict_package: true,
-            friendly: false,
-            project_root: Some(root.display().to_string()),
-            source_root: None,
-            profile: None,
-            target: None,
-            output_mode: None,
-            runtime_debug_allocator: None,
-            runtime_cycle_collector: None,
-            out_dir: None,
-            assembler: None,
-            linker: None,
-        }).expect("resolve manifest invocation");
+        let resolved = resolve_check_invocation(
+            None,
+            &CliFlags {
+                strict_package: true,
+                friendly: false,
+                project_root: Some(root.display().to_string()),
+                source_root: None,
+                profile: None,
+                target: None,
+                output_mode: None,
+                runtime_debug_allocator: None,
+                runtime_cycle_collector: None,
+                out_dir: None,
+                assembler: None,
+                linker: None,
+            },
+        )
+        .expect("resolve manifest invocation");
 
         let result = check_project_with_authorlib(
             &resolved.entry_path,
@@ -2286,7 +2482,10 @@ mod tests {
             true,
             resolved.authorlib_enabled,
         );
-        assert!(result.is_ok(), "expected authorlib import success: {result:?}");
+        assert!(
+            result.is_ok(),
+            "expected authorlib import success: {result:?}"
+        );
 
         let _ = fs::remove_dir_all(root);
     }

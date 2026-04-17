@@ -194,4 +194,3 @@ fn lock_cast_07_unparenthesized_negative_decimal_cast_typecheck() {
     );
     assert_check_ok(&entry, &src_root);
 }
-

@@ -58,7 +58,9 @@ fn lock_pulse_feature_01_implicit_prelude_contract_resolves_without_imports() {
         }
     "#;
 
-    check(src).expect("implicit prelude/default import contract should remain usable without explicit imports");
+    check(src).expect(
+        "implicit prelude/default import contract should remain usable without explicit imports",
+    );
 }
 
 #[test]
@@ -115,9 +117,14 @@ enabled = true
         import author.compiler.CheckResult;
         import author.compiler.CheckSummaryWriter;
         import author.compiler.TestDiscoveryResult;
+        import author.compiler.TestExecutionResult;
+        import author.compiler.TestExecutionWriter;
         import author.compiler.TestResult;
         import author.compiler.TestDiagnosticWriter;
         import author.compiler.TestSummaryWriter;
+        import author.compiler.WorkspaceCheckMemberResult;
+        import author.compiler.WorkspaceCheckResult;
+        import author.compiler.WorkspaceTestResult;
         import author.project.ManifestPackage;
         import author.project.AuthorlibConfig;
         import author.project.CheckInvocation;
@@ -417,7 +424,23 @@ enabled = true
                         "workspace/demo/src/main/pulse"
                     )
                 );
+                String workspaceCheckMemberPassText =
+                    CheckSummaryWriter.renderWorkspaceCheckMemberResult(
+                        WorkspaceCheckMemberResult.success("workspace/demo", "demo", 4)
+                    );
+                String workspaceCheckMemberFailText =
+                    CheckSummaryWriter.renderWorkspaceCheckMemberResult(
+                        WorkspaceCheckMemberResult.failure("workspace/shared", "missing entry")
+                    );
                 String workspaceCheckText = CheckSummaryWriter.renderWorkspaceCheckSummary(2, 1, 3);
+                String workspaceCheckStartText =
+                    CheckSummaryWriter.renderWorkspaceCheckStartResult(
+                        new WorkspaceCheckResult("workspace", 2, "friendly", 0, 0)
+                    );
+                String workspaceCheckFailureText =
+                    CheckSummaryWriter.renderWorkspaceCheckFailure(
+                        new WorkspaceCheckResult("workspace", 2, "friendly", 1, 1)
+                    );
                 String testDiscoveryText = TestSummaryWriter.renderTestDiscoveryResult(
                     TestDiscoveryResult.success(
                         "manifest",
@@ -430,6 +453,14 @@ enabled = true
                 String testSummaryText = TestSummaryWriter.renderTestResult(
                     new TestResult(false, "friendly", 2, 0, 2)
                 );
+                String testExecutionPassText =
+                    TestExecutionWriter.renderTestExecutionResult(
+                        TestExecutionResult.pass("demo/AlphaTest")
+                    );
+                String testExecutionFailText =
+                    TestExecutionWriter.renderTestExecutionResult(
+                        TestExecutionResult.fail("demo/BetaTest", "compile error")
+                    );
                 String workspaceTestStartText = TestSummaryWriter.renderWorkspaceTestStart(
                     "workspace",
                     2,
@@ -445,8 +476,20 @@ enabled = true
                         )
                     );
                 String workspaceTestSummaryText =
-                    TestSummaryWriter.renderTestResult(
-                        new TestResult(true, "friendly", 2, 0, 2)
+                    TestSummaryWriter.renderWorkspaceTestSummaryResult(
+                        new WorkspaceTestResult("workspace", 2, "friendly", 2, 0, 2)
+                    );
+                String workspaceTestExecutionPassText =
+                    TestExecutionWriter.renderTestExecutionResult(
+                        TestExecutionResult.workspacePass("workspace/demo", "demo/AlphaTest")
+                    );
+                String workspaceTestExecutionFailText =
+                    TestExecutionWriter.renderTestExecutionResult(
+                        TestExecutionResult.workspaceFail(
+                            "workspace/demo",
+                            "demo/BetaTest",
+                            "compile error"
+                        )
                     );
                 String testDiscoveryFailureText =
                     TestDiagnosticWriter.renderTestDiscoveryResult(
@@ -757,14 +800,30 @@ enabled = true
                     && checkFailText.equals(
                         "Check FAILED: mode=strict entry=workspace/demo/src/main/pulse/app/core/Main.pulse source_root=workspace/demo/src/main/pulse"
                     )
+                    && workspaceCheckStartText.equals(
+                        "Workspace check: root=workspace members=2 mode=friendly"
+                    )
+                    && workspaceCheckMemberPassText.equals(
+                        "[PASS] workspace/demo package=demo files=4"
+                    )
+                    && workspaceCheckMemberFailText.equals(
+                        "[FAIL] workspace/shared :: missing entry"
+                    )
                     && workspaceCheckText.equals(
                         "Workspace check summary: passed=2 failed=1 total=3"
+                    )
+                    && workspaceCheckFailureText.equals(
+                        "one or more workspace members failed check"
                     )
                     && testDiscoveryText.equals(
                         "Test discovery: project_mode=manifest project_root=workspace/demo tests_root=workspace/demo/tests source_root=workspace/demo/src/main/pulse count=2"
                     )
                     && testSummaryText.equals(
                         "Test summary: mode=friendly passed=2 failed=0 total=2"
+                    )
+                    && testExecutionPassText.equals("[PASS] demo/AlphaTest")
+                    && testExecutionFailText.equals(
+                        "[FAIL] demo/BetaTest :: compile error"
                     )
                     && workspaceTestStartText.equals(
                         "Workspace test: root=workspace members=2 mode=friendly"
@@ -774,6 +833,12 @@ enabled = true
                     )
                     && workspaceTestSummaryText.equals(
                         "Workspace test summary: mode=friendly passed=2 failed=0 total=2"
+                    )
+                    && workspaceTestExecutionPassText.equals(
+                        "[PASS] workspace/demo::demo/AlphaTest"
+                    )
+                    && workspaceTestExecutionFailText.equals(
+                        "[FAIL] workspace/demo::demo/BetaTest :: compile error"
                     )
                     && testDiscoveryFailureText.equals(
                         "Test discovery failed: missing tests root"
@@ -948,7 +1013,10 @@ entry = "app/core/Main.pulse"
         root.to_str().expect("root utf8"),
         "--strict-package",
     ]);
-    assert!(!output.status.success(), "expected authorlib-gated check failure");
+    assert!(
+        !output.status.success(),
+        "expected authorlib-gated check failure"
+    );
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         stderr.contains("Import 'author.*' requires [authorlib].enabled = true in pulsec.toml"),
@@ -1128,4 +1196,3 @@ entry = "app/core/Main.pulse"
         stderr
     );
 }
-

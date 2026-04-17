@@ -117,10 +117,8 @@ pub(crate) fn emit_masm_db(out: &mut String, label: &str, text: &str) {
         return;
     }
     let bytes = text.as_bytes();
-    let use_inline_string = bytes.len() <= 64
-        && bytes
-            .iter()
-            .all(|b| (32..=126).contains(b) && *b != b'"');
+    let use_inline_string =
+        bytes.len() <= 64 && bytes.iter().all(|b| (32..=126).contains(b) && *b != b'"');
     if use_inline_string {
         out.push_str(&format!("{label} db {}\n", masm_db_payload(text)));
         return;
@@ -836,9 +834,9 @@ fn value_nested_call_preserve_depth(
         | IrValueKind::Cast { value: operand, .. }
         | IrValueKind::InstanceOf { value: operand, .. }
         | IrValueKind::ArrayLength { array: operand }
-        | IrValueKind::MemberAccess { object: operand, .. } => {
-            value_nested_call_preserve_depth(method, *operand, memo)
-        }
+        | IrValueKind::MemberAccess {
+            object: operand, ..
+        } => value_nested_call_preserve_depth(method, *operand, memo),
         IrValueKind::Binary { left, right, .. } => std::cmp::max(
             value_nested_call_preserve_depth(method, *left, memo),
             value_nested_call_preserve_depth(method, *right, memo),
@@ -876,7 +874,10 @@ fn value_nested_call_preserve_depth(
                 value_nested_call_preserve_depth(method, *default, memo),
             )
         }
-        IrValueKind::ArrayNew { lengths, .. } | IrValueKind::ArrayNewInitialized { values: lengths, .. } => lengths
+        IrValueKind::ArrayNew { lengths, .. }
+        | IrValueKind::ArrayNewInitialized {
+            values: lengths, ..
+        } => lengths
             .iter()
             .copied()
             .map(|id| value_nested_call_preserve_depth(method, id, memo))
@@ -887,7 +888,10 @@ fn value_nested_call_preserve_depth(
             value_nested_call_preserve_depth(method, *index, memo),
         ),
         IrValueKind::ArraySet {
-            array, index, value, ..
+            array,
+            index,
+            value,
+            ..
         } => [
             value_nested_call_preserve_depth(method, *array, memo),
             value_nested_call_preserve_depth(method, *index, memo),
@@ -928,10 +932,7 @@ pub(crate) fn masm_call_receiver_spill_offset(method: &IrMethod) -> usize {
     masm_call_receiver_spill_offset_at_depth(method, 0)
 }
 
-pub(crate) fn masm_call_receiver_spill_offset_at_depth(
-    method: &IrMethod,
-    depth: usize,
-) -> usize {
+pub(crate) fn masm_call_receiver_spill_offset_at_depth(method: &IrMethod, depth: usize) -> usize {
     arc_arg_spill_offset(
         method,
         masm_arc_arg_spill_count(method) + 2 + (depth * (masm_arc_arg_spill_count(method) + 1)),

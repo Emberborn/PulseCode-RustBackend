@@ -361,6 +361,15 @@ Current immediate continuation inside that target:
     - `author.project.TestInvocationBridge`
     - `author.project.ProjectDiscoveryBridge`
     - Rust `resolve_check_invocation(...)`, `resolve_test_invocation(...)`, and test-file discovery now prefer those authored project contracts and only fall back to the older Rust path if the bridge is unavailable
+  - `author.compiler.*` now also owns workspace check/test aggregation models:
+    - `author.compiler.WorkspaceCheckResult`
+    - `author.compiler.WorkspaceTestResult`
+  - `author.compiler.*` now also owns workspace member and test execution outcome models:
+    - `author.compiler.WorkspaceCheckMemberResult`
+    - `author.compiler.TestExecutionResult`
+    - `author.compiler.TestExecutionWriter`
+  - Rust CLI check/test loops now prefer authored rendering for workspace-member check outcomes and single/workspace test pass/fail lines instead of assembling raw `[PASS]` / `[FAIL]` text inline
+    - workspace check/test start/summary/failure rendering now routes through authored workspace result models instead of raw Rust counters and fixed strings
   - remaining Rust-owned build publication/materialization residue is now:
     - fallback/bootstrap publication-plan mirroring
     - fallback/bootstrap layout materialization mirroring
@@ -388,6 +397,7 @@ Important current compiler truth:
 - the widened authored project bridge slice exposed one more bootstrap/testing truth:
   - cold author-bridge prewarm can still fail transiently while another test process is finishing the cached bridge build
   - `tests/common/mod.rs` now retries `__prewarm-author-build-bridge` instead of treating the first transient cold-build failure as terminal
+  - the integration-test helper also now captures transient failed prewarm stderr/stdout instead of leaking noisy cold-build failures into otherwise passing test output
 
 Current parser-direction rule for this slice:
 

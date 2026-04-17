@@ -874,7 +874,8 @@ fn lock_f1_board_explicitly_tracks_scanner_util_concurrency_network_and_defers_d
     assert!(board.contains("Objects"));
     assert!(board.contains("Optional"));
     assert!(board.contains("Lock F1 generics scope"));
-    assert!(board.contains("The selected F1 generics baseline is now explicit, executable, and documented"));
+    assert!(board
+        .contains("The selected F1 generics baseline is now explicit, executable, and documented"));
     assert!(board.contains("collection-wide generic closure"));
     assert!(board.contains("F1-29"));
     assert!(board.contains("F1-35"));
@@ -910,7 +911,9 @@ fn lock_f1_board_explicitly_tracks_scanner_util_concurrency_network_and_defers_d
     assert!(roadmap.contains("concurrent collections"));
     assert!(roadmap.contains("executor/semaphore"));
     assert!(roadmap.contains("reflection-lite"));
-    assert!(roadmap.contains("full reflection/invocation deferred until after the self-sustained-hosting transition"));
+    assert!(roadmap.contains(
+        "full reflection/invocation deferred until after the self-sustained-hosting transition"
+    ));
     assert!(roadmap.contains("external library/binding ecosystem work remains in Phase F-A"));
     assert!(roadmap.contains("desktop UI families"));
     assert!(roadmap.contains("after the self-sustained-hosting transition"));
@@ -1029,8 +1032,8 @@ fn lock_self_sustained_hosting_direction_and_authorlib_inventory_are_documented(
         .expect("read standalone roadmap");
     let handoff = fs::read_to_string(root.join("docs").join("CODEX_HANDOFF_PHASE_F.md"))
         .expect("read handoff");
-    let fb = fs::read_to_string(root.join("docs").join("FB_TASK_BOARD.md"))
-        .expect("read FB task board");
+    let fb =
+        fs::read_to_string(root.join("docs").join("FB_TASK_BOARD.md")).expect("read FB task board");
     let authorlib = fs::read_to_string(root.join("docs").join("AUTHORLIB_STRATEGY.md"))
         .expect("read authorlib strategy");
 
@@ -1039,7 +1042,8 @@ fn lock_self_sustained_hosting_direction_and_authorlib_inventory_are_documented(
     assert!(roadmap.contains("## Phase G: Self-Sustained-Hosting Transition"));
     assert!(roadmap.contains("`stdlib` remains the public user-facing library"));
     assert!(roadmap.contains("`authorlib` becomes the privileged Pulse-owned extension library"));
-    assert!(handoff.contains("self-sustained hosting is the transition mechanism, not the end-state goal"));
+    assert!(handoff
+        .contains("self-sustained hosting is the transition mechanism, not the end-state goal"));
     assert!(handoff.contains("`authorlib` is the privileged Pulse-owned extension library"));
     assert!(handoff.contains("a dedicated pre-Phase-G `F-B` inventory pass now exists"));
     assert!(fb.contains("Self-Sustained Elevation Inventory"));
@@ -1194,9 +1198,7 @@ fn lock_generated_stdlib_reference_docs_cover_shipped_stdlib_surface() {
     assert!(script.contains("docs\\language\\stdlib"));
     assert!(script.contains("Remove-Item -Recurse -Force $docsPulseRoot"));
     assert!(script.contains("## Members"));
-    assert!(
-        stdlib_readme.contains("overwrites the generated `docs/language/stdlib/pulse/**` tree")
-    );
+    assert!(stdlib_readme.contains("overwrites the generated `docs/language/stdlib/pulse/**` tree"));
     assert_eq!(
         pulse_files.len(),
         doc_files.len(),
@@ -1493,7 +1495,8 @@ fn lock_f1_11_and_f1_31_generics_contract_is_documented_as_compile_time_instanti
     assert!(generics.contains("runtime lowering still erases instantiated generic owners"));
     assert!(board.contains("| F1-11 |"));
     assert!(board.contains("| F1-11 | Lock F1 generics scope and implement the selected baseline for classes/interfaces/methods | F1-02, F1-07 | Codex | 2026-04-10 | Done (Locked) |"));
-    assert!(board.contains("The selected F1 generics baseline is now explicit, executable, and documented"));
+    assert!(board
+        .contains("The selected F1 generics baseline is now explicit, executable, and documented"));
     assert!(board.contains("| F1-31 |"));
     assert!(board.contains("Done (Locked)"));
     let _ = policy;
@@ -1764,8 +1767,9 @@ fn lock_rb_05_manifest_target_surface_and_handoff_resume_point_are_documented() 
         "`RB-05` has rebased manifest validation, scaffold defaults, and manifest-facing examples"
     ));
     assert!(manifest_schema.contains("Rebase note (`RB-05`)"));
-    assert!(manifest_schema
-        .contains("manifest v1 now accepts `windows-x64`, `pulseos-x64`, `linux-x64`, and `macos-arm64`"));
+    assert!(manifest_schema.contains(
+        "manifest v1 now accepts `windows-x64`, `pulseos-x64`, `linux-x64`, and `macos-arm64`"
+    ));
     assert!(
         manifest_schema.contains("`native-x64` has been removed from the public manifest surface")
     );
@@ -4498,6 +4502,7 @@ fn lock_f1_59_path_and_file_metadata_baseline_is_board_locked() {
     assert!(files_doc.contains("public static boolean isDirectory(String path)"));
     assert!(board.contains("| F1-59 |"));
     assert!(board.contains("Done (Locked)"));
-    assert!(board.contains("selected path/file metadata and utility baseline is already real and fixture-validated"));
+    assert!(board.contains(
+        "selected path/file metadata and utility baseline is already real and fixture-validated"
+    ));
 }
-

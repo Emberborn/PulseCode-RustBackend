@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    implicit_prelude_packages,
-    is_builtin_type, BinaryOp, CatchClause, ClassContext, ClassDecl, ClassMember, Expr, ImportDecl,
-    IncDecOp, MethodDecl, Modifier, Program, SemanticError, Stmt, UnaryOp,
+    implicit_prelude_packages, is_builtin_type, BinaryOp, CatchClause, ClassContext, ClassDecl,
+    ClassMember, Expr, ImportDecl, IncDecOp, MethodDecl, Modifier, Program, SemanticError, Stmt,
+    UnaryOp,
 };
 
 #[path = "bootstrap/builtins.rs"]
@@ -324,7 +324,9 @@ fn collect_fqcn_names(class_index: &HashMap<String, ClassInfo>) -> HashSet<Strin
         .collect()
 }
 
-fn collect_simple_to_fqcns(class_index: &HashMap<String, ClassInfo>) -> HashMap<String, Vec<String>> {
+fn collect_simple_to_fqcns(
+    class_index: &HashMap<String, ClassInfo>,
+) -> HashMap<String, Vec<String>> {
     let mut out: HashMap<String, Vec<String>> = HashMap::new();
     for fqcn in class_index.keys().filter(|name| name.contains('.')) {
         let simple = class_simple_name(fqcn).to_string();

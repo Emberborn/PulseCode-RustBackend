@@ -279,7 +279,11 @@ fn latest_local_store_before_statement(
                 continue;
             }
             let candidate = (source.statement_index, block_idx, instr_idx, *value);
-            if best.as_ref().map(|current| candidate > *current).unwrap_or(true) {
+            if best
+                .as_ref()
+                .map(|current| candidate > *current)
+                .unwrap_or(true)
+            {
                 best = Some(candidate);
             }
         }
@@ -428,14 +432,20 @@ fn wrapper_value_is_boxed_object(
     field_types: &HashMap<String, String>,
     method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
 ) -> bool {
-    let value_ty = value_declared_type(method, value_id, local_types, field_types, current_class_name)
-        .unwrap_or_else(|| {
-            method
-                .values
-                .get(value_id as usize)
-                .map(|value| value.ty.clone())
-                .unwrap_or_default()
-        });
+    let value_ty = value_declared_type(
+        method,
+        value_id,
+        local_types,
+        field_types,
+        current_class_name,
+    )
+    .unwrap_or_else(|| {
+        method
+            .values
+            .get(value_id as usize)
+            .map(|value| value.ty.clone())
+            .unwrap_or_default()
+    });
     if !is_wrapper_type_name(&value_ty) {
         return false;
     }
@@ -653,7 +663,8 @@ fn call_returns_raw_runtime_handle(
             )
             .unwrap_or_default();
             let owner = normalize_class_owner_name(&owner, class_names).unwrap_or(owner);
-            owner == "pulse.rt.Intrinsics" && matches!(member.as_str(), "arrayNew" | "listNew" | "mapNew")
+            owner == "pulse.rt.Intrinsics"
+                && matches!(member.as_str(), "arrayNew" | "listNew" | "mapNew")
         }
         _ => false,
     }
@@ -674,8 +685,14 @@ fn value_is_raw_runtime_handle_impl(
     let Some(value) = method.values.get(value_id as usize) else {
         return false;
     };
-    let declared_ty = value_declared_type(method, value_id, local_types, field_types, current_class_name)
-        .unwrap_or_else(|| value.ty.clone());
+    let declared_ty = value_declared_type(
+        method,
+        value_id,
+        local_types,
+        field_types,
+        current_class_name,
+    )
+    .unwrap_or_else(|| value.ty.clone());
     if normalize_type_token(&declared_ty) != "long" {
         visiting_values.remove(&value_id);
         return false;
@@ -1060,8 +1077,7 @@ fn resolve_backend_call_value_type(
                         field_types,
                         method_symbols_by_sig,
                     ) {
-                        normalize_class_owner_name(&resolved_ty, class_names)
-                            .unwrap_or(resolved_ty)
+                        normalize_class_owner_name(&resolved_ty, class_names).unwrap_or(resolved_ty)
                     } else {
                         return None;
                     }
@@ -1080,8 +1096,7 @@ fn resolve_backend_call_value_type(
                         field_types,
                         method_symbols_by_sig,
                     ) {
-                        normalize_class_owner_name(&resolved_ty, class_names)
-                            .unwrap_or(resolved_ty)
+                        normalize_class_owner_name(&resolved_ty, class_names).unwrap_or(resolved_ty)
                     } else if let Some(field_ty) = field_types.get(owner_member) {
                         normalize_class_owner_name(field_ty, class_names)
                             .unwrap_or_else(|| field_ty.clone())
@@ -1096,9 +1111,7 @@ fn resolve_backend_call_value_type(
             let resolved_owner = if owner_name == "System.out" || owner_name == "System.err" {
                 normalize_class_owner_name("PrintStream", class_names)
                     .unwrap_or_else(|| "PrintStream".to_string())
-            } else if let Some(normalized) =
-                normalize_class_owner_name(&owner_name, class_names)
-            {
+            } else if let Some(normalized) = normalize_class_owner_name(&owner_name, class_names) {
                 normalized
             } else if owner_name == "this" {
                 current_class_name.to_string()
@@ -1526,7 +1539,10 @@ fn type_assignable_to_backend(actual: &str, expected: &str) -> bool {
     if actual.ends_with("Arr") {
         return expected == "Object";
     }
-    if interfaces_of_type(actual).iter().any(|iface| iface == expected) {
+    if interfaces_of_type(actual)
+        .iter()
+        .any(|iface| iface == expected)
+    {
         return true;
     }
     let mut current = actual.to_string();
@@ -1620,12 +1636,10 @@ fn resolve_class_owner_from_short_name(
     if class_names.iter().any(|name| name == &same_package) {
         return Some((current_package_name.to_string(), candidate.to_string()));
     }
-    let mut matches = class_names
-        .iter()
-        .filter_map(|name| {
-            name.strip_suffix(&format!(".{}", candidate))
-                .map(|package| (package.to_string(), candidate.to_string()))
-        });
+    let mut matches = class_names.iter().filter_map(|name| {
+        name.strip_suffix(&format!(".{}", candidate))
+            .map(|package| (package.to_string(), candidate.to_string()))
+    });
     let first = matches.next()?;
     if matches.next().is_none() {
         Some(first)
@@ -1649,7 +1663,10 @@ fn resolve_static_field_owner(
     match &owner_value.kind {
         IrValueKind::LocalRef(name) => {
             if name == current_class_name {
-                return Some((current_package_name.to_string(), current_class_name.to_string()));
+                return Some((
+                    current_package_name.to_string(),
+                    current_class_name.to_string(),
+                ));
             }
             if let Some(owner) =
                 resolve_class_owner_from_short_name(name, current_package_name, class_names)
@@ -1738,11 +1755,11 @@ fn resolve_member_access_value_type(
     let owner_ty = match &owner_value.kind {
         IrValueKind::ThisRef => Some(current_class_name.to_string()),
         IrValueKind::SuperRef => class_super_of(current_class_name),
-        IrValueKind::LocalRef(name) => lookup_local_decl_type(method, name).map(|ty| {
-            normalize_class_owner_name(&ty, class_names).unwrap_or(ty)
-        }),
+        IrValueKind::LocalRef(name) => lookup_local_decl_type(method, name)
+            .map(|ty| normalize_class_owner_name(&ty, class_names).unwrap_or(ty)),
         IrValueKind::NewObject { class_name, .. } => Some(
-            normalize_class_owner_name(class_name, class_names).unwrap_or_else(|| class_name.clone()),
+            normalize_class_owner_name(class_name, class_names)
+                .unwrap_or_else(|| class_name.clone()),
         ),
         IrValueKind::Call { .. } => backend_resolution_arg_type(
             method,
@@ -2057,13 +2074,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
             || primitive_boxes_to_wrapper
             || call_result_is_arc_by_value_type
             || expected_arc_arg
-            || value_is_arc_managed(
-                method,
-                arg_id,
-                local_types,
-                field_types,
-                current_class_name,
-            )
+            || value_is_arc_managed(method, arg_id, local_types, field_types, current_class_name)
             || value_is_raw_runtime_handle(
                 method,
                 arg_id,
@@ -2080,8 +2091,8 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                     arg_ty
                         .as_deref()
                         .map(|ty| is_handle_type_name(ty) || uses_qword_scalar_type_name(ty))
-            })
-            .unwrap_or(false);
+                })
+                .unwrap_or(false);
         let call_arg_needs_early_retain = is_arc_arg
             && matches!(
                 method.values.get(arg_id as usize).map(|value| &value.kind),
@@ -3691,25 +3702,23 @@ pub(crate) fn emit_masm_method_body(
                             field_types,
                         )
                         || target_is_raw_runtime_handle;
-                    let wrapper_target_holds_boxed_object =
-                        is_wrapper_type_name(&target_ty)
-                            && wrapper_value_is_boxed_object(
-                                method,
-                                *value,
-                                current_class_name,
-                                class_names,
-                                &local_types,
-                                field_types,
-                                method_symbols_by_sig,
-                            );
+                    let wrapper_target_holds_boxed_object = is_wrapper_type_name(&target_ty)
+                        && wrapper_value_is_boxed_object(
+                            method,
+                            *value,
+                            current_class_name,
+                            class_names,
+                            &local_types,
+                            field_types,
+                            method_symbols_by_sig,
+                        );
                     let is_wide_target = uses_qword_scalar_type_name(&target_ty)
                         || is_handle_type_name(&target_ty)
                         || wrapper_target_holds_boxed_object
                         || target_is_raw_runtime_handle;
-                    let target_is_arc =
-                        is_arc_managed_type_name(&target_ty)
-                            || wrapper_target_holds_boxed_object
-                            || target_is_raw_runtime_handle;
+                    let target_is_arc = is_arc_managed_type_name(&target_ty)
+                        || wrapper_target_holds_boxed_object
+                        || target_is_raw_runtime_handle;
                     if let Some(slot) = local_offsets.get(name) {
                         let offset = local_base + (slot * 8);
                         if target_is_arc {
@@ -3765,7 +3774,10 @@ pub(crate) fn emit_masm_method_body(
                 continue;
             };
 
-            if matches!(v.kind, IrValueKind::Call { .. } | IrValueKind::NewObject { .. }) {
+            if matches!(
+                v.kind,
+                IrValueKind::Call { .. } | IrValueKind::NewObject { .. }
+            ) {
                 let mut lookahead = i + 1;
                 let mut skip_standalone_rhs = false;
                 while let Some(next_instr) = block.instructions.get(lookahead) {
@@ -3895,18 +3907,17 @@ pub(crate) fn emit_masm_method_body(
                             i += 1;
                             continue;
                         }
-                        let target_is_raw_runtime_handle =
-                            normalize_type_token(&target_ty) == "long"
-                                && value_is_raw_runtime_handle(
-                                    method,
-                                    *rhs_value,
-                                    current_class_name,
-                                    class_names,
-                                    &local_types,
-                                    field_types,
-                                );
-                        let retain_new =
-                            value_requires_arc_retain_on_store(method, *rhs_value)
+                        let target_is_raw_runtime_handle = normalize_type_token(&target_ty)
+                            == "long"
+                            && value_is_raw_runtime_handle(
+                                method,
+                                *rhs_value,
+                                current_class_name,
+                                class_names,
+                                &local_types,
+                                field_types,
+                            );
+                        let retain_new = value_requires_arc_retain_on_store(method, *rhs_value)
                             || call_result_requires_arc_retain_on_store(
                                 method,
                                 *rhs_value,
@@ -3961,7 +3972,10 @@ pub(crate) fn emit_masm_method_body(
                                 let tmp = masm_arc_local_tmp_offset(method);
                                 out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
                                 if retain_new {
-                                    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+                                    out.push_str(&format!(
+                                        "    mov rax, qword ptr [rsp+{}]\n",
+                                        tmp
+                                    ));
                                     emit_arc_retain_from_eax(out);
                                 }
                                 if initialized_arc_locals.contains(target_name) {
@@ -4005,7 +4019,10 @@ pub(crate) fn emit_masm_method_body(
                                 let tmp = masm_arc_local_tmp_offset(method);
                                 out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
                                 if retain_new {
-                                    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+                                    out.push_str(&format!(
+                                        "    mov rax, qword ptr [rsp+{}]\n",
+                                        tmp
+                                    ));
                                     emit_arc_retain_from_eax(out);
                                 }
                                 if initialized_arc_params.contains(target_name) {
@@ -4080,7 +4097,10 @@ pub(crate) fn emit_masm_method_body(
                             if target_is_arc {
                                 if is_static_field {
                                     let tmp = masm_arc_local_tmp_offset(method);
-                                    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
+                                    out.push_str(&format!(
+                                        "    mov qword ptr [rsp+{}], rax\n",
+                                        tmp
+                                    ));
                                     if let Some(setter_sym) = &same_class_static_setter_sym {
                                         if target_uses_qword {
                                             out.push_str("    mov rcx, rax\n");
@@ -4099,7 +4119,10 @@ pub(crate) fn emit_masm_method_body(
                                             field_sym
                                         ));
                                     }
-                                    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+                                    out.push_str(&format!(
+                                        "    mov rax, qword ptr [rsp+{}]\n",
+                                        tmp
+                                    ));
                                     i += 2;
                                     continue;
                                 } else {
@@ -4153,7 +4176,7 @@ pub(crate) fn emit_masm_method_body(
                                 &local_offsets,
                                 &param_offsets,
                                 print_literals,
-                                )?;
+                            )?;
                             if target_is_arc && retain_new {
                                 emit_arc_retain_from_eax(out);
                             }
@@ -4213,115 +4236,215 @@ pub(crate) fn emit_masm_method_body(
                         if let Some(target_v) = method.values.get(*target_value as usize) {
                             if let IrValueKind::MemberAccess { object, member } = &target_v.kind {
                                 if let Some(obj_val) = method.values.get(*object as usize) {
-                                let is_this = matches!(
-                                    obj_val.kind,
-                                    IrValueKind::ThisRef | IrValueKind::SuperRef
-                                );
-                                let is_local_same_class = match &obj_val.kind {
-                                    IrValueKind::LocalRef(name) => local_types
-                                        .get(name)
-                                        .map(|ty| ty == current_class_name)
-                                        .unwrap_or(false),
-                                    _ => false,
-                                };
-                                let static_owner = resolve_static_field_owner(
-                                    method,
-                                    *object,
-                                    current_package_name,
-                                    current_class_name,
-                                    &local_types,
-                                    class_names,
-                                );
-                                let is_same_class_static_owner = static_owner
-                                    .as_ref()
-                                    .map(|(package, class_name)| {
-                                        package == current_package_name
-                                            && class_name == current_class_name
-                                    })
-                                    .unwrap_or(false);
-                                if is_this || is_local_same_class || is_same_class_static_owner {
-                                    let field_sym = field_symbols.get(member).ok_or_else(|| {
-                                        format!(
-                                            "Unknown field symbol '{}.{}'",
-                                            current_class_name, member
-                                        )
-                                    })?;
-                                    let is_static_field =
-                                        *field_is_static.get(member).unwrap_or(&false);
-                                    let field_ty = field_types
-                                        .get(member)
-                                        .cloned()
-                                        .unwrap_or_else(|| "unknown".to_string());
-                                    let same_class_static_setter_sym = if is_static_field {
-                                        let (owner_package, owner_class) =
-                                            split_owner_package_and_class(current_class_name)
-                                                .unwrap_or_else(|| {
-                                                    (
-                                                        current_package_name.to_string(),
-                                                        current_class_name.to_string(),
-                                                    )
-                                                });
-                                        Some(mangle_static_field_setter_symbol(
-                                            &owner_package,
-                                            &owner_class,
-                                            member,
-                                        ))
-                                    } else {
-                                        None
+                                    let is_this = matches!(
+                                        obj_val.kind,
+                                        IrValueKind::ThisRef | IrValueKind::SuperRef
+                                    );
+                                    let is_local_same_class = match &obj_val.kind {
+                                        IrValueKind::LocalRef(name) => local_types
+                                            .get(name)
+                                            .map(|ty| ty == current_class_name)
+                                            .unwrap_or(false),
+                                        _ => false,
                                     };
+                                    let static_owner = resolve_static_field_owner(
+                                        method,
+                                        *object,
+                                        current_package_name,
+                                        current_class_name,
+                                        &local_types,
+                                        class_names,
+                                    );
+                                    let is_same_class_static_owner = static_owner
+                                        .as_ref()
+                                        .map(|(package, class_name)| {
+                                            package == current_package_name
+                                                && class_name == current_class_name
+                                        })
+                                        .unwrap_or(false);
+                                    if is_this || is_local_same_class || is_same_class_static_owner
+                                    {
+                                        let field_sym =
+                                            field_symbols.get(member).ok_or_else(|| {
+                                                format!(
+                                                    "Unknown field symbol '{}.{}'",
+                                                    current_class_name, member
+                                                )
+                                            })?;
+                                        let is_static_field =
+                                            *field_is_static.get(member).unwrap_or(&false);
+                                        let field_ty = field_types
+                                            .get(member)
+                                            .cloned()
+                                            .unwrap_or_else(|| "unknown".to_string());
+                                        let same_class_static_setter_sym = if is_static_field {
+                                            let (owner_package, owner_class) =
+                                                split_owner_package_and_class(current_class_name)
+                                                    .unwrap_or_else(|| {
+                                                        (
+                                                            current_package_name.to_string(),
+                                                            current_class_name.to_string(),
+                                                        )
+                                                    });
+                                            Some(mangle_static_field_setter_symbol(
+                                                &owner_package,
+                                                &owner_class,
+                                                member,
+                                            ))
+                                        } else {
+                                            None
+                                        };
                                         if lowered_assignment_target_matches_rhs(
                                             method,
                                             *value,
                                             &field_ty,
                                             current_class_name,
-                                        class_names,
-                                        &local_types,
-                                        field_types,
+                                            class_names,
+                                            &local_types,
+                                            field_types,
                                             method_symbols_by_sig,
                                         ) {
-                                        let field_uses_qword = uses_qword_field_storage(&field_ty);
-                                        let field_is_arc = is_arc_managed_type_name(&field_ty)
-                                            || raw_runtime_handle_field(current_class_name, member);
-                                        emit_value_to_eax_masm(
-                                            out,
-                                            method,
-                                            *value,
-                                            method.is_static,
-                                            current_package_name,
-                                            current_class_name,
-                                            method_symbols,
-                                            method_staticness,
-                                            method_symbols_by_sig,
-                                            method_staticness_by_sig,
-                                            stdlib_symbols,
-                                            class_names,
-                                            field_symbols,
-                                            field_is_static,
-                                            field_types,
-                                            class_object_counter_symbol,
-                                            &local_offsets,
-                                            &param_offsets,
-                                            print_literals,
-                                        )?;
-                                        if field_is_arc {
-                                            let tmp = masm_arc_local_tmp_offset(method);
-                                            out.push_str(&format!(
-                                                "    mov qword ptr [rsp+{}], rax\n",
-                                                tmp
-                                            ));
-                                            if is_static_field {
+                                            let field_uses_qword =
+                                                uses_qword_field_storage(&field_ty);
+                                            let field_is_arc = is_arc_managed_type_name(&field_ty)
+                                                || raw_runtime_handle_field(
+                                                    current_class_name,
+                                                    member,
+                                                );
+                                            emit_value_to_eax_masm(
+                                                out,
+                                                method,
+                                                *value,
+                                                method.is_static,
+                                                current_package_name,
+                                                current_class_name,
+                                                method_symbols,
+                                                method_staticness,
+                                                method_symbols_by_sig,
+                                                method_staticness_by_sig,
+                                                stdlib_symbols,
+                                                class_names,
+                                                field_symbols,
+                                                field_is_static,
+                                                field_types,
+                                                class_object_counter_symbol,
+                                                &local_offsets,
+                                                &param_offsets,
+                                                print_literals,
+                                            )?;
+                                            if field_is_arc {
+                                                let tmp = masm_arc_local_tmp_offset(method);
+                                                out.push_str(&format!(
+                                                    "    mov qword ptr [rsp+{}], rax\n",
+                                                    tmp
+                                                ));
+                                                if is_static_field {
+                                                    out.push_str(&format!(
+                                                        "    mov rax, qword ptr [rsp+{}]\n",
+                                                        tmp
+                                                    ));
+                                                } else {
+                                                    emit_arc_retain_from_eax(out);
+                                                    if is_local_same_class {
+                                                        let local_name = match &obj_val.kind {
+                                                            IrValueKind::LocalRef(name) => name,
+                                                            _ => unreachable!(),
+                                                        };
+                                                        if let Some(slot) =
+                                                            local_offsets.get(local_name)
+                                                        {
+                                                            let offset =
+                                                                masm_local_base_offset(method)
+                                                                    + (slot * 8);
+                                                            out.push_str(&format!(
+                                                                "    mov edx, dword ptr [rsp+{}]\n",
+                                                                offset
+                                                            ));
+                                                        } else if let Some(offset) =
+                                                            param_offsets.get(local_name)
+                                                        {
+                                                            out.push_str(&format!(
+                                                                "    mov edx, dword ptr [rsp+{}]\n",
+                                                                offset
+                                                            ));
+                                                        } else {
+                                                            return Err(format!(
+                                                            "Unsupported local receiver '{}' in masm-full member write",
+                                                            local_name
+                                                        ));
+                                                        }
+                                                    } else if let Some(this_offset) =
+                                                        param_offsets.get("__this")
+                                                    {
+                                                        out.push_str(&format!(
+                                                            "    mov edx, dword ptr [rsp+{}]\n",
+                                                            this_offset
+                                                        ));
+                                                    } else {
+                                                        out.push_str("    mov edx, ecx\n");
+                                                    }
+                                                    out.push_str(&format!(
+                                                        "    cmp edx, {}\n",
+                                                        OBJECT_SLOT_CAPACITY
+                                                    ));
+                                                    out.push_str("    jbe @F\n");
+                                                    out.push_str(&format!(
+                                                        "    mov edx, {}\n",
+                                                        OBJECT_SLOT_CAPACITY
+                                                    ));
+                                                    out.push_str("@@:\n");
+                                                    out.push_str(&format!(
+                                                        "    mov r10, qword ptr [{}]\n",
+                                                        field_sym
+                                                    ));
+                                                    if field_uses_qword {
+                                                        out.push_str(
+                                                            "    mov rax, qword ptr [r10+rdx*8]\n",
+                                                        );
+                                                    } else {
+                                                        out.push_str(
+                                                            "    mov eax, dword ptr [r10+rdx*4]\n",
+                                                        );
+                                                    }
+                                                    emit_arc_release_from_eax(out);
+                                                }
                                                 out.push_str(&format!(
                                                     "    mov rax, qword ptr [rsp+{}]\n",
                                                     tmp
                                                 ));
+                                            }
+                                            if is_static_field {
+                                                if let Some(setter_sym) =
+                                                    &same_class_static_setter_sym
+                                                {
+                                                    if field_uses_qword {
+                                                        out.push_str("    mov rcx, rax\n");
+                                                    } else {
+                                                        out.push_str("    mov ecx, eax\n");
+                                                    }
+                                                    out.push_str(&format!(
+                                                        "    call {}\n",
+                                                        setter_sym
+                                                    ));
+                                                } else if field_uses_qword {
+                                                    out.push_str(&format!(
+                                                        "    mov qword ptr [{}], rax\n",
+                                                        field_sym
+                                                    ));
+                                                } else {
+                                                    out.push_str(&format!(
+                                                        "    mov dword ptr [{}], eax\n",
+                                                        field_sym
+                                                    ));
+                                                }
                                             } else {
-                                                emit_arc_retain_from_eax(out);
                                                 if is_local_same_class {
                                                     let local_name = match &obj_val.kind {
                                                         IrValueKind::LocalRef(name) => name,
                                                         _ => unreachable!(),
                                                     };
-                                                    if let Some(slot) = local_offsets.get(local_name)
+                                                    if let Some(slot) =
+                                                        local_offsets.get(local_name)
                                                     {
                                                         let offset = masm_local_base_offset(method)
                                                             + (slot * 8);
@@ -4338,9 +4461,9 @@ pub(crate) fn emit_masm_method_body(
                                                         ));
                                                     } else {
                                                         return Err(format!(
-                                                            "Unsupported local receiver '{}' in masm-full member write",
-                                                            local_name
-                                                        ));
+                                                        "Unsupported local receiver '{}' in masm-full member write",
+                                                        local_name
+                                                    ));
                                                     }
                                                 } else if let Some(this_offset) =
                                                     param_offsets.get("__this")
@@ -4368,161 +4491,75 @@ pub(crate) fn emit_masm_method_body(
                                                 ));
                                                 if field_uses_qword {
                                                     out.push_str(
-                                                        "    mov rax, qword ptr [r10+rdx*8]\n",
+                                                        "    mov qword ptr [r10+rdx*8], rax\n",
                                                     );
                                                 } else {
                                                     out.push_str(
-                                                        "    mov eax, dword ptr [r10+rdx*4]\n",
+                                                        "    mov dword ptr [r10+rdx*4], eax\n",
                                                     );
                                                 }
-                                                emit_arc_release_from_eax(out);
                                             }
-                                            out.push_str(&format!(
-                                                "    mov rax, qword ptr [rsp+{}]\n",
-                                                tmp
-                                            ));
+                                            i += 2;
+                                            continue;
                                         }
-                                        if is_static_field {
-                                            if let Some(setter_sym) = &same_class_static_setter_sym
-                                            {
-                                                if field_uses_qword {
-                                                    out.push_str("    mov rcx, rax\n");
-                                                } else {
-                                                    out.push_str("    mov ecx, eax\n");
-                                                }
-                                                out.push_str(&format!("    call {}\n", setter_sym));
-                                            } else if field_uses_qword {
-                                                out.push_str(&format!(
-                                                    "    mov qword ptr [{}], rax\n",
-                                                    field_sym
-                                                ));
-                                            } else {
-                                                out.push_str(&format!(
-                                                    "    mov dword ptr [{}], eax\n",
-                                                    field_sym
-                                                ));
-                                            }
-                                        } else {
-                                            if is_local_same_class {
-                                                let local_name = match &obj_val.kind {
-                                                    IrValueKind::LocalRef(name) => name,
-                                                    _ => unreachable!(),
-                                                };
-                                                if let Some(slot) = local_offsets.get(local_name) {
-                                                    let offset =
-                                                        masm_local_base_offset(method) + (slot * 8);
-                                                    out.push_str(&format!(
-                                                        "    mov edx, dword ptr [rsp+{}]\n",
-                                                        offset
-                                                    ));
-                                                } else if let Some(offset) =
-                                                    param_offsets.get(local_name)
-                                                {
-                                                    out.push_str(&format!(
-                                                        "    mov edx, dword ptr [rsp+{}]\n",
-                                                        offset
-                                                    ));
-                                                } else {
-                                                    return Err(format!(
-                                                        "Unsupported local receiver '{}' in masm-full member write",
-                                                        local_name
-                                                    ));
-                                                }
-                                            } else if let Some(this_offset) =
-                                                param_offsets.get("__this")
-                                            {
-                                                out.push_str(&format!(
-                                                    "    mov edx, dword ptr [rsp+{}]\n",
-                                                    this_offset
-                                                ));
-                                            } else {
-                                                out.push_str("    mov edx, ecx\n");
-                                            }
-                                            out.push_str(&format!(
-                                                "    cmp edx, {}\n",
-                                                OBJECT_SLOT_CAPACITY
-                                            ));
-                                            out.push_str("    jbe @F\n");
-                                            out.push_str(&format!(
-                                                "    mov edx, {}\n",
-                                                OBJECT_SLOT_CAPACITY
-                                            ));
-                                            out.push_str("@@:\n");
-                                            out.push_str(&format!(
-                                                "    mov r10, qword ptr [{}]\n",
-                                                field_sym
-                                            ));
-                                            if field_uses_qword {
-                                                out.push_str(
-                                                    "    mov qword ptr [r10+rdx*8], rax\n",
-                                                );
-                                            } else {
-                                                out.push_str(
-                                                    "    mov dword ptr [r10+rdx*4], eax\n",
-                                                );
-                                            }
-                                        }
-                                        i += 2;
+                                        i += 1;
                                         continue;
                                     }
-                                    i += 1;
-                                    continue;
-                                }
-                                if let Some((owner_package, owner_class)) = static_owner {
-                                    let field_ty = target_v.ty.clone();
-                                    if lowered_assignment_target_matches_rhs(
-                                        method,
-                                        *value,
-                                        &field_ty,
-                                        current_class_name,
-                                        class_names,
-                                        &local_types,
-                                        field_types,
-                                        method_symbols_by_sig,
-                                    ) {
-                                        let field_uses_qword =
-                                            uses_qword_field_storage(&field_ty);
-                                        let setter_sym = mangle_static_field_setter_symbol(
-                                            &owner_package,
-                                            &owner_class,
-                                            member,
-                                        );
-                                        emit_value_to_eax_masm(
-                                            out,
+                                    if let Some((owner_package, owner_class)) = static_owner {
+                                        let field_ty = target_v.ty.clone();
+                                        if lowered_assignment_target_matches_rhs(
                                             method,
                                             *value,
-                                            method.is_static,
-                                            current_package_name,
+                                            &field_ty,
                                             current_class_name,
-                                            method_symbols,
-                                            method_staticness,
-                                            method_symbols_by_sig,
-                                            method_staticness_by_sig,
-                                            stdlib_symbols,
                                             class_names,
-                                            field_symbols,
-                                            field_is_static,
+                                            &local_types,
                                             field_types,
-                                            class_object_counter_symbol,
-                                            &local_offsets,
-                                            &param_offsets,
-                                            print_literals,
-                                        )?;
-                                        if field_uses_qword {
-                                            out.push_str("    mov rcx, rax\n");
-                                        } else {
-                                            out.push_str("    mov ecx, eax\n");
+                                            method_symbols_by_sig,
+                                        ) {
+                                            let field_uses_qword =
+                                                uses_qword_field_storage(&field_ty);
+                                            let setter_sym = mangle_static_field_setter_symbol(
+                                                &owner_package,
+                                                &owner_class,
+                                                member,
+                                            );
+                                            emit_value_to_eax_masm(
+                                                out,
+                                                method,
+                                                *value,
+                                                method.is_static,
+                                                current_package_name,
+                                                current_class_name,
+                                                method_symbols,
+                                                method_staticness,
+                                                method_symbols_by_sig,
+                                                method_staticness_by_sig,
+                                                stdlib_symbols,
+                                                class_names,
+                                                field_symbols,
+                                                field_is_static,
+                                                field_types,
+                                                class_object_counter_symbol,
+                                                &local_offsets,
+                                                &param_offsets,
+                                                print_literals,
+                                            )?;
+                                            if field_uses_qword {
+                                                out.push_str("    mov rcx, rax\n");
+                                            } else {
+                                                out.push_str("    mov ecx, eax\n");
+                                            }
+                                            out.push_str(&format!("    call {}\n", setter_sym));
+                                            i += 2;
+                                            continue;
                                         }
-                                        out.push_str(&format!("    call {}\n", setter_sym));
-                                        i += 2;
-                                        continue;
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
             }
 
             if let IrValueKind::MemberAccess { object, member } = &v.kind {
@@ -4628,7 +4665,10 @@ pub(crate) fn emit_masm_method_body(
                                 )?;
                                 if field_is_arc {
                                     let tmp = masm_arc_local_tmp_offset(method);
-                                    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", tmp));
+                                    out.push_str(&format!(
+                                        "    mov qword ptr [rsp+{}], rax\n",
+                                        tmp
+                                    ));
                                     if is_static_field {
                                         out.push_str(&format!(
                                             "    mov rax, qword ptr [rsp+{}]\n",
@@ -4661,7 +4701,9 @@ pub(crate) fn emit_masm_method_body(
                                                     local_name
                                                 ));
                                             }
-                                        } else if let Some(this_offset) = param_offsets.get("__this") {
+                                        } else if let Some(this_offset) =
+                                            param_offsets.get("__this")
+                                        {
                                             out.push_str(&format!(
                                                 "    mov edx, dword ptr [rsp+{}]\n",
                                                 this_offset
@@ -4690,7 +4732,10 @@ pub(crate) fn emit_masm_method_body(
                                         }
                                         emit_arc_release_from_eax(out);
                                     }
-                                    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", tmp));
+                                    out.push_str(&format!(
+                                        "    mov rax, qword ptr [rsp+{}]\n",
+                                        tmp
+                                    ));
                                 }
                                 if is_static_field {
                                     if let Some(setter_sym) = &same_class_static_setter_sym {
@@ -4724,8 +4769,7 @@ pub(crate) fn emit_masm_method_body(
                                                 "    mov edx, dword ptr [rsp+{}]\n",
                                                 offset
                                             ));
-                                        } else if let Some(offset) = param_offsets.get(local_name)
-                                        {
+                                        } else if let Some(offset) = param_offsets.get(local_name) {
                                             out.push_str(&format!(
                                                 "    mov edx, dword ptr [rsp+{}]\n",
                                                 offset
@@ -5008,8 +5052,7 @@ pub(crate) fn emit_masm_method_body(
                     }
                 }
                 IrValueKind::Call { callee, .. } => {
-                    if let Some(normalized) =
-                        normalize_class_owner_name(&object_v.ty, class_names)
+                    if let Some(normalized) = normalize_class_owner_name(&object_v.ty, class_names)
                     {
                         normalized
                     } else {
@@ -5125,9 +5168,7 @@ pub(crate) fn emit_masm_method_body(
             let resolved_owner = if owner == "System.out" || owner == "System.err" {
                 normalize_class_owner_name("PrintStream", class_names)
                     .unwrap_or_else(|| "PrintStream".to_string())
-            } else if let Some(normalized) =
-                normalize_class_owner_name(&owner, class_names)
-            {
+            } else if let Some(normalized) = normalize_class_owner_name(&owner, class_names) {
                 normalized
             } else if let Some(normalized) = normalize_class_owner_name(&object_v.ty, class_names) {
                 normalized
@@ -5195,48 +5236,44 @@ pub(crate) fn emit_masm_method_body(
                 &param_offsets,
                 print_literals,
             )?;
-                if !is_target_static {
-                    if is_super_receiver || owner == "this" || owner == current_class_name {
-                        if method.is_static {
-                            out.push_str("    mov ecx, 1\n");
-                        } else if let Some(this_offset) = param_offsets.get("__this") {
-                            out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", this_offset));
-                        }
-                    } else {
-                        emit_preserve_call_arg_registers(out, method);
-                        emit_preserve_nested_arg_spills(out, method, arc_arg_flags.len());
-                        with_nested_arg_preserve_depth(|| {
-                            emit_value_to_eax_masm(
-                                out,
-                                method,
-                                *object,
-                                method.is_static,
-                                current_package_name,
-                                current_class_name,
-                                method_symbols,
-                                method_staticness,
-                                method_symbols_by_sig,
-                                method_staticness_by_sig,
-                                stdlib_symbols,
-                                class_names,
-                                field_symbols,
-                                field_is_static,
-                                field_types,
-                                class_object_counter_symbol,
-                                &local_offsets,
-                                &param_offsets,
-                                print_literals,
-                            )
-                        })?;
-                        emit_restore_nested_arg_spills_preserving_rax(
+            if !is_target_static {
+                if is_super_receiver || owner == "this" || owner == current_class_name {
+                    if method.is_static {
+                        out.push_str("    mov ecx, 1\n");
+                    } else if let Some(this_offset) = param_offsets.get("__this") {
+                        out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", this_offset));
+                    }
+                } else {
+                    emit_preserve_call_arg_registers(out, method);
+                    emit_preserve_nested_arg_spills(out, method, arc_arg_flags.len());
+                    with_nested_arg_preserve_depth(|| {
+                        emit_value_to_eax_masm(
                             out,
                             method,
-                            arc_arg_flags.len(),
-                        );
-                        out.push_str("    mov rcx, rax\n");
-                        emit_restore_call_arg_registers(out, method);
-                    }
+                            *object,
+                            method.is_static,
+                            current_package_name,
+                            current_class_name,
+                            method_symbols,
+                            method_staticness,
+                            method_symbols_by_sig,
+                            method_staticness_by_sig,
+                            stdlib_symbols,
+                            class_names,
+                            field_symbols,
+                            field_is_static,
+                            field_types,
+                            class_object_counter_symbol,
+                            &local_offsets,
+                            &param_offsets,
+                            print_literals,
+                        )
+                    })?;
+                    emit_restore_nested_arg_spills_preserving_rax(out, method, arc_arg_flags.len());
+                    out.push_str("    mov rcx, rax\n");
+                    emit_restore_call_arg_registers(out, method);
                 }
+            }
             let devirt = !is_target_static
                 && !is_super_receiver
                 && is_devirtualizable_instance_call(&resolved_owner, member, args, method);
@@ -6135,8 +6172,7 @@ pub(crate) fn emit_value_to_eax_masm(
                         field_types,
                         method_symbols_by_sig,
                     ) {
-                        normalize_class_owner_name(&resolved_ty, class_names)
-                            .unwrap_or(resolved_ty)
+                        normalize_class_owner_name(&resolved_ty, class_names).unwrap_or(resolved_ty)
                     } else if let Some(path) = value_dotted_path(method, *object) {
                         path
                     } else {
@@ -6147,9 +6183,7 @@ pub(crate) fn emit_value_to_eax_masm(
                     }
                 }
                 _ => {
-                    if let Some(normalized) =
-                        normalize_class_owner_name(&owner_v.ty, class_names)
-                    {
+                    if let Some(normalized) = normalize_class_owner_name(&owner_v.ty, class_names) {
                         normalized
                     } else if let Some(resolved_ty) = backend_resolution_arg_type(
                         method,
@@ -6159,8 +6193,7 @@ pub(crate) fn emit_value_to_eax_masm(
                         field_types,
                         method_symbols_by_sig,
                     ) {
-                        normalize_class_owner_name(&resolved_ty, class_names)
-                            .unwrap_or(resolved_ty)
+                        normalize_class_owner_name(&resolved_ty, class_names).unwrap_or(resolved_ty)
                     } else {
                         return Err(format!(
                             "Unsupported call owner kind for expression value id {} in {}.{}",
@@ -6172,9 +6205,7 @@ pub(crate) fn emit_value_to_eax_masm(
             let resolved_owner = if owner_name == "System.out" || owner_name == "System.err" {
                 normalize_class_owner_name("PrintStream", class_names)
                     .unwrap_or_else(|| "PrintStream".to_string())
-            } else if let Some(normalized) =
-                normalize_class_owner_name(&owner_name, class_names)
-            {
+            } else if let Some(normalized) = normalize_class_owner_name(&owner_name, class_names) {
                 normalized
             } else if owner_name == "this" {
                 current_class_name.to_string()
@@ -6204,8 +6235,9 @@ pub(crate) fn emit_value_to_eax_masm(
                 )
             })?;
             let std_owner = normalize_stdlib_owner(&resolved_owner).to_string();
-            let needs_materialized_receiver =
-                !is_target_static && !is_super_receiver && !matches!(owner_v.kind, IrValueKind::ThisRef);
+            let needs_materialized_receiver = !is_target_static
+                && !is_super_receiver
+                && !matches!(owner_v.kind, IrValueKind::ThisRef);
             if needs_materialized_receiver {
                 with_nested_arg_preserve_depth(|| {
                     emit_value_to_eax_masm(
@@ -6280,7 +6312,10 @@ pub(crate) fn emit_value_to_eax_masm(
                 if !is_target_static {
                     if is_super_receiver || matches!(owner_v.kind, IrValueKind::ThisRef) {
                         if let Some(this_offset) = param_offsets.get("__this") {
-                            out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", this_offset));
+                            out.push_str(&format!(
+                                "    mov rcx, qword ptr [rsp+{}]\n",
+                                this_offset
+                            ));
                         }
                     } else {
                         out.push_str(&format!(
@@ -6478,8 +6513,7 @@ pub(crate) fn emit_value_to_eax_masm(
             }
 
             if is_wrapper_type_name(ty) {
-                if is_handle_type_name(&source_ty) || normalize_type_token(&source_ty) == "Object"
-                {
+                if is_handle_type_name(&source_ty) || normalize_type_token(&source_ty) == "Object" {
                     let target_ty =
                         normalize_class_owner_name(ty, class_names).unwrap_or_else(|| ty.clone());
                     let targets = collect_instanceof_class_ids(&target_ty);
@@ -6511,8 +6545,7 @@ pub(crate) fn emit_value_to_eax_masm(
                     )?;
                     emit_runtime_numeric_coercion(
                         out,
-                        wrapper_primitive_type_name(&source_ty)
-                            .expect("wrapper primitive type"),
+                        wrapper_primitive_type_name(&source_ty).expect("wrapper primitive type"),
                         wrapper_primitive_type_name(ty).expect("wrapper primitive type"),
                         method,
                         current_class_name,

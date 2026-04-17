@@ -1128,8 +1128,8 @@ fn resolve_call_declared_throws(
                     )
                 })
                 .collect::<Vec<_>>();
-            select_best_constructor_overload(&arg_types, &instantiated_ctors, class_index)?
-                .map(|ctor| MethodSignature {
+            select_best_constructor_overload(&arg_types, &instantiated_ctors, class_index)?.map(
+                |ctor| MethodSignature {
                     type_params: Vec::new(),
                     param_types: ctor.param_types.clone(),
                     return_type: "void".to_string(),
@@ -1139,7 +1139,8 @@ fn resolve_call_declared_throws(
                     is_final: true,
                     is_abstract: false,
                     visibility: MemberVisibility::Public,
-                })
+                },
+            )
         }
         Expr::Super => {
             let Some(super_class) = class_info.super_class.as_deref() else {
@@ -1153,8 +1154,8 @@ fn resolve_call_declared_throws(
                 .iter()
                 .map(|ctor| instantiate_constructor_signature(ctor, target_class, super_class))
                 .collect::<Vec<_>>();
-            select_best_constructor_overload(&arg_types, &instantiated_ctors, class_index)?
-                .map(|ctor| MethodSignature {
+            select_best_constructor_overload(&arg_types, &instantiated_ctors, class_index)?.map(
+                |ctor| MethodSignature {
                     type_params: Vec::new(),
                     param_types: ctor.param_types.clone(),
                     return_type: "void".to_string(),
@@ -1164,7 +1165,8 @@ fn resolve_call_declared_throws(
                     is_final: true,
                     is_abstract: false,
                     visibility: MemberVisibility::Public,
-                })
+                },
+            )
         }
         Expr::Var(name) => {
             if resolve_class_fqcn(name, &class_info.package_name, imports, class_index)?.is_some() {

@@ -5,12 +5,18 @@ package author.compiler;
  */
 public final class CheckSummaryWriter {
     public static String renderWorkspaceCheckStart(String rootPath, int memberCount, String mode) {
+        return CheckSummaryWriter.renderWorkspaceCheckStartResult(
+            new WorkspaceCheckResult(rootPath, memberCount, mode, 0, 0)
+        );
+    }
+
+    public static String renderWorkspaceCheckStartResult(WorkspaceCheckResult result) {
         return "Workspace check: root="
-            .concat(rootPath)
+            .concat(result.rootPath())
             .concat(" members=")
-            .concat(String.valueOf(memberCount))
+            .concat(String.valueOf(result.memberCount()))
             .concat(" mode=")
-            .concat(mode);
+            .concat(result.mode());
     }
 
     public static String renderWorkspaceCheckPass(
@@ -18,12 +24,24 @@ public final class CheckSummaryWriter {
         String packageName,
         int filesLoaded
     ) {
-        return "[PASS] "
-            .concat(memberRoot)
-            .concat(" package=")
-            .concat(packageName)
-            .concat(" files=")
-            .concat(String.valueOf(filesLoaded));
+        return CheckSummaryWriter.renderWorkspaceCheckMemberResult(
+            WorkspaceCheckMemberResult.success(memberRoot, packageName, filesLoaded)
+        );
+    }
+
+    public static String renderWorkspaceCheckMemberResult(WorkspaceCheckMemberResult result) {
+        if (result.success()) {
+            return "[PASS] "
+                .concat(result.memberRoot())
+                .concat(" package=")
+                .concat(result.packageName())
+                .concat(" files=")
+                .concat(String.valueOf(result.filesLoaded()));
+        }
+        return "[FAIL] "
+            .concat(result.memberRoot())
+            .concat(" :: ")
+            .concat(result.detail());
     }
 
     public static String renderWorkspaceCheckSummary(
@@ -31,12 +49,22 @@ public final class CheckSummaryWriter {
         int failed,
         int total
     ) {
+        return CheckSummaryWriter.renderWorkspaceCheckSummaryResult(
+            new WorkspaceCheckResult("<workspace>", total, "friendly", passed, failed)
+        );
+    }
+
+    public static String renderWorkspaceCheckSummaryResult(WorkspaceCheckResult result) {
         return "Workspace check summary: passed="
-            .concat(String.valueOf(passed))
+            .concat(String.valueOf(result.passed()))
             .concat(" failed=")
-            .concat(String.valueOf(failed))
+            .concat(String.valueOf(result.failed()))
             .concat(" total=")
-            .concat(String.valueOf(total));
+            .concat(String.valueOf(result.memberCount()));
+    }
+
+    public static String renderWorkspaceCheckFailure(WorkspaceCheckResult result) {
+        return "one or more workspace members failed check";
     }
 
     public static String renderCheckResult(CheckResult result) {

@@ -313,7 +313,9 @@ fn lower_ir_captures_foreign_static_constant_reference_initializers_out_of_order
         .expect("BIG_AS_DOUBLE field present");
     assert_eq!(
         big_as_double.init,
-        Some(IrFieldInit::Double((9_223_372_036_854_775_807f64).to_bits()))
+        Some(IrFieldInit::Double(
+            (9_223_372_036_854_775_807f64).to_bits()
+        ))
     );
 }
 

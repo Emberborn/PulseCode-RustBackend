@@ -50,10 +50,8 @@ pub(super) fn validate_foreach_stmt(
     )?;
 
     let native_array_baseline = iterable_ty.ty.ends_with("[]");
-    let array_baseline =
-        types_compatible("pulse.collections.Array", &iterable_ty.ty, class_index);
-    let iterable_baseline =
-        types_compatible("pulse.lang.Iterable", &iterable_ty.ty, class_index);
+    let array_baseline = types_compatible("pulse.collections.Array", &iterable_ty.ty, class_index);
+    let iterable_baseline = types_compatible("pulse.lang.Iterable", &iterable_ty.ty, class_index);
 
     if !native_array_baseline && !array_baseline && !iterable_baseline {
         return Err(semantic_error(format!(
@@ -95,10 +93,7 @@ pub(super) fn validate_foreach_stmt(
         }
     }
 
-    if array_baseline
-        && !iterable_baseline
-        && inferred_ty != "int"
-        && !is_string_type(&inferred_ty)
+    if array_baseline && !iterable_baseline && inferred_ty != "int" && !is_string_type(&inferred_ty)
     {
         return Err(semantic_error(format!(
             "Foreach over pulse.collections.Array currently supports loop variables of type 'int' or 'String', got '{}'",

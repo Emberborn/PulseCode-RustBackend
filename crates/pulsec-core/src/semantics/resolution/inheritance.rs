@@ -145,12 +145,7 @@ fn validate_interface_inheritance_inner(
                 parent_info.simple_name
             )));
         }
-        validate_interface_inheritance_inner(
-            root_iface_fqcn,
-            &parent_erased,
-            class_index,
-            active,
-        )?;
+        validate_interface_inheritance_inner(root_iface_fqcn, &parent_erased, class_index, active)?;
         active.remove(&parent_erased);
     }
     Ok(())
@@ -366,8 +361,7 @@ pub(super) fn find_instance_method_in_class_hierarchy(
                 method_name,
                 target,
                 class_index,
-            )
-            {
+            ) {
                 return Some(sig);
             }
         }
@@ -402,8 +396,7 @@ fn find_instance_method_in_interface_hierarchy(
             method_name,
             target,
             class_index,
-        )
-        {
+        ) {
             return Some(sig);
         }
     }

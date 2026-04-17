@@ -156,11 +156,9 @@ pub(super) fn publish_build_artifacts(
     artifact: &BackendArtifact,
     publication_plan: &BuildPublicationPlan,
 ) -> Result<BackendArtifact, String> {
-    if let Ok(output) = run_author_build_bridge_request(&emit_build_publish_artifacts_bridge_request(
-        resolved,
-        artifact,
-        publication_plan,
-    )) {
+    if let Ok(output) = run_author_build_bridge_request(
+        &emit_build_publish_artifacts_bridge_request(resolved, artifact, publication_plan),
+    ) {
         let (
             ir_artifact_path,
             native_plan_path,
@@ -199,7 +197,10 @@ fn publish_build_artifacts_fallback(
     }
 
     if publication_plan.publish_debug_diagnostics {
-        copy_file_into(&artifact.ir_artifact_path, &publication_plan.published_ir_path)?;
+        copy_file_into(
+            &artifact.ir_artifact_path,
+            &publication_plan.published_ir_path,
+        )?;
         copy_file_into(
             &artifact.native_plan_path,
             &publication_plan.published_native_plan_path,
@@ -232,7 +233,9 @@ fn publish_build_artifacts_fallback(
     };
     let runtime_import_library_path = if let (Some(src), Some(target)) = (
         artifact.runtime_import_library_path.as_ref(),
-        publication_plan.published_runtime_import_library_path.as_ref(),
+        publication_plan
+            .published_runtime_import_library_path
+            .as_ref(),
     ) {
         copy_file_into(src, target)?;
         Some(target.clone())
@@ -364,8 +367,16 @@ fn emit_build_publication_plan_bridge_request(
     append_bridge_request_raw_value(&mut out, resolved.package_version.as_deref());
     append_bridge_request_value(&mut out, "backendOutDir", backend_out_dir.to_str());
     append_bridge_request_value(&mut out, "irPath", artifact.ir_artifact_path.to_str());
-    append_bridge_request_value(&mut out, "nativePlanPath", artifact.native_plan_path.to_str());
-    append_bridge_request_value(&mut out, "linkReportPath", artifact.link_report_path.to_str());
+    append_bridge_request_value(
+        &mut out,
+        "nativePlanPath",
+        artifact.native_plan_path.to_str(),
+    );
+    append_bridge_request_value(
+        &mut out,
+        "linkReportPath",
+        artifact.link_report_path.to_str(),
+    );
     append_bridge_request_value(&mut out, "objectPath", artifact.object_path.to_str());
     append_bridge_request_value(
         &mut out,
@@ -375,7 +386,10 @@ fn emit_build_publication_plan_bridge_request(
     append_bridge_request_value(
         &mut out,
         "runtimeLibraryPath",
-        artifact.runtime_library_path.as_deref().and_then(Path::to_str),
+        artifact
+            .runtime_library_path
+            .as_deref()
+            .and_then(Path::to_str),
     );
     append_bridge_request_value(
         &mut out,
@@ -387,7 +401,11 @@ fn emit_build_publication_plan_bridge_request(
     );
     append_bridge_request_raw_value(
         &mut out,
-        Some(if publish_profile_layout { "true" } else { "false" }),
+        Some(if publish_profile_layout {
+            "true"
+        } else {
+            "false"
+        }),
     );
     append_bridge_request_raw_value(
         &mut out,
@@ -435,10 +453,7 @@ fn parse_build_publication_plan_bridge_output(text: &str) -> Result<BuildPublica
             &values,
             "publishDebugDiagnostics",
         )?,
-        shared_profile_layout: parse_build_publication_bridge_bool(
-            &values,
-            "sharedProfileLayout",
-        )?,
+        shared_profile_layout: parse_build_publication_bridge_bool(&values, "sharedProfileLayout")?,
         published_ir_path: PathBuf::from(required_build_publication_bridge_value(
             &values,
             "publishedIrPath",
@@ -467,7 +482,10 @@ fn parse_build_publication_plan_bridge_output(text: &str) -> Result<BuildPublica
             &values,
             "publishedRuntimeImportLibraryPath",
         ),
-        published_assets_root: optional_build_publication_bridge_path(&values, "publishedAssetsRoot"),
+        published_assets_root: optional_build_publication_bridge_path(
+            &values,
+            "publishedAssetsRoot",
+        ),
         shared_launch_metadata_path: optional_build_publication_bridge_path(
             &values,
             "sharedLaunchMetadataPath",
@@ -498,11 +516,7 @@ fn optional_build_publication_bridge_path(
     values: &HashMap<String, Option<String>>,
     key: &str,
 ) -> Option<PathBuf> {
-    values
-        .get(key)
-        .cloned()
-        .flatten()
-        .map(PathBuf::from)
+    values.get(key).cloned().flatten().map(PathBuf::from)
 }
 
 fn parse_build_publication_bridge_bool(
@@ -548,13 +562,15 @@ fn resolve_build_publication_plan(
     publish_profile_layout: bool,
     publish_debug_diagnostics: bool,
 ) -> Result<BuildPublicationPlan, String> {
-    if let Ok(output) = run_author_build_bridge_request(&emit_build_publication_plan_bridge_request(
-        resolved,
-        artifact,
-        backend_out_dir,
-        publish_profile_layout,
-        publish_debug_diagnostics,
-    )) {
+    if let Ok(output) =
+        run_author_build_bridge_request(&emit_build_publication_plan_bridge_request(
+            resolved,
+            artifact,
+            backend_out_dir,
+            publish_profile_layout,
+            publish_debug_diagnostics,
+        ))
+    {
         return parse_build_publication_plan_bridge_output(&output);
     }
 
@@ -788,7 +804,11 @@ fn emit_build_materialize_layout_bridge_request(
         artifact.object_path.with_extension("asm").to_str(),
     );
     append_bridge_request_value(&mut out, "objectPath", artifact.object_path.to_str());
-    append_bridge_request_value(&mut out, "publishedObjectPath", published_object_path.to_str());
+    append_bridge_request_value(
+        &mut out,
+        "publishedObjectPath",
+        published_object_path.to_str(),
+    );
     append_bridge_request_value(
         &mut out,
         "mainResourcesRoot",
@@ -823,7 +843,12 @@ fn emit_build_write_config_plan_bridge_request(
     );
     append_bridge_request_raw_value(
         &mut out,
-        Some(target_adapter_metadata.requested_target.support_level.as_str()),
+        Some(
+            target_adapter_metadata
+                .requested_target
+                .support_level
+                .as_str(),
+        ),
     );
     append_bridge_request_raw_value(
         &mut out,
@@ -853,10 +878,7 @@ fn emit_build_write_config_plan_bridge_request(
         &mut out,
         Some(&target_adapter_metadata.active_target.os_family),
     );
-    append_bridge_request_raw_value(
-        &mut out,
-        Some(&target_adapter_metadata.active_target.arch),
-    );
+    append_bridge_request_raw_value(&mut out, Some(&target_adapter_metadata.active_target.arch));
     append_bridge_request_raw_value(
         &mut out,
         Some(target_adapter_metadata.active_target.support_level.as_str()),
@@ -902,7 +924,11 @@ fn emit_build_write_config_plan_bridge_request(
     append_bridge_request_value(&mut out, "sanityRoot", resolved.build_sanity_dir.to_str());
     append_bridge_request_value(&mut out, "tmpRoot", resolved.build_tmp_dir.to_str());
     append_bridge_request_value(&mut out, "distroRoot", resolved.output_root.to_str());
-    append_bridge_request_value(&mut out, "nativePlanPath", artifact.native_plan_path.to_str());
+    append_bridge_request_value(
+        &mut out,
+        "nativePlanPath",
+        artifact.native_plan_path.to_str(),
+    );
     append_bridge_request_value(&mut out, "irPath", artifact.ir_artifact_path.to_str());
     append_bridge_request_value(&mut out, "objectPath", artifact.object_path.to_str());
     out
@@ -920,10 +946,7 @@ fn emit_build_render_summary_bridge_request(build: &BuildRun) -> String {
     append_bridge_request_raw_value(&mut out, Some(&build.resolved.output_mode));
     append_bridge_request_raw_value(&mut out, Some(&build.resolved.output_entry));
     append_bridge_request_raw_value(&mut out, Some(&build.resolved.runtime_debug_allocator));
-    append_bridge_request_raw_value(
-        &mut out,
-        Some(&build.resolved.runtime_cycle_collector),
-    );
+    append_bridge_request_raw_value(&mut out, Some(&build.resolved.runtime_cycle_collector));
     append_bridge_request_raw_value(
         &mut out,
         Some(if build.resolved.used_manifest {
@@ -932,7 +955,11 @@ fn emit_build_render_summary_bridge_request(build: &BuildRun) -> String {
             "false"
         }),
     );
-    append_bridge_request_value(&mut out, "sourceRoot", build.resolved.source_root.as_deref());
+    append_bridge_request_value(
+        &mut out,
+        "sourceRoot",
+        build.resolved.source_root.as_deref(),
+    );
     append_bridge_request_value(&mut out, "outputRoot", build.resolved.output_root.to_str());
     append_bridge_request_value(
         &mut out,
@@ -993,7 +1020,10 @@ fn emit_build_publish_artifacts_bridge_request(
     append_bridge_request_value(
         &mut out,
         "sourceRuntimeLibraryPath",
-        artifact.runtime_library_path.as_deref().and_then(Path::to_str),
+        artifact
+            .runtime_library_path
+            .as_deref()
+            .and_then(Path::to_str),
     );
     append_bridge_request_value(
         &mut out,
@@ -1003,7 +1033,11 @@ fn emit_build_publish_artifacts_bridge_request(
             .as_deref()
             .and_then(Path::to_str),
     );
-    append_bridge_request_value(&mut out, "sourceAssetsRoot", resolved.build_assets_dir.to_str());
+    append_bridge_request_value(
+        &mut out,
+        "sourceAssetsRoot",
+        resolved.build_assets_dir.to_str(),
+    );
     append_bridge_request_raw_value(&mut out, Some(&resolved.profile));
     append_bridge_request_raw_value(
         &mut out,
@@ -1137,8 +1171,16 @@ fn emit_build_finalize_artifacts_bridge_request(
     append_bridge_request_raw_value(&mut out, resolved.assembler.as_deref());
     append_bridge_request_value(&mut out, "backendOutDir", backend_out_dir.to_str());
     append_bridge_request_value(&mut out, "irPath", artifact.ir_artifact_path.to_str());
-    append_bridge_request_value(&mut out, "nativePlanPath", artifact.native_plan_path.to_str());
-    append_bridge_request_value(&mut out, "linkReportPath", artifact.link_report_path.to_str());
+    append_bridge_request_value(
+        &mut out,
+        "nativePlanPath",
+        artifact.native_plan_path.to_str(),
+    );
+    append_bridge_request_value(
+        &mut out,
+        "linkReportPath",
+        artifact.link_report_path.to_str(),
+    );
     append_bridge_request_value(&mut out, "objectPath", artifact.object_path.to_str());
     append_bridge_request_value(
         &mut out,
@@ -1148,7 +1190,10 @@ fn emit_build_finalize_artifacts_bridge_request(
     append_bridge_request_value(
         &mut out,
         "runtimeLibraryPath",
-        artifact.runtime_library_path.as_deref().and_then(Path::to_str),
+        artifact
+            .runtime_library_path
+            .as_deref()
+            .and_then(Path::to_str),
     );
     append_bridge_request_value(
         &mut out,
@@ -1160,7 +1205,11 @@ fn emit_build_finalize_artifacts_bridge_request(
     );
     append_bridge_request_raw_value(
         &mut out,
-        Some(if publish_profile_layout { "true" } else { "false" }),
+        Some(if publish_profile_layout {
+            "true"
+        } else {
+            "false"
+        }),
     );
     append_bridge_request_raw_value(
         &mut out,
@@ -1184,7 +1233,12 @@ fn emit_build_finalize_artifacts_bridge_request(
     );
     append_bridge_request_raw_value(
         &mut out,
-        Some(target_adapter_metadata.requested_target.support_level.as_str()),
+        Some(
+            target_adapter_metadata
+                .requested_target
+                .support_level
+                .as_str(),
+        ),
     );
     append_bridge_request_raw_value(
         &mut out,
@@ -1214,10 +1268,7 @@ fn emit_build_finalize_artifacts_bridge_request(
         &mut out,
         Some(&target_adapter_metadata.active_target.os_family),
     );
-    append_bridge_request_raw_value(
-        &mut out,
-        Some(&target_adapter_metadata.active_target.arch),
-    );
+    append_bridge_request_raw_value(&mut out, Some(&target_adapter_metadata.active_target.arch));
     append_bridge_request_raw_value(
         &mut out,
         Some(target_adapter_metadata.active_target.support_level.as_str()),
@@ -1291,9 +1342,18 @@ fn parse_build_published_artifact_bridge_output(
 
     Ok((
         PathBuf::from(required_build_publication_bridge_value(&values, "irPath")?),
-        PathBuf::from(required_build_publication_bridge_value(&values, "nativePlanPath")?),
-        PathBuf::from(required_build_publication_bridge_value(&values, "linkReportPath")?),
-        PathBuf::from(required_build_publication_bridge_value(&values, "objectPath")?),
+        PathBuf::from(required_build_publication_bridge_value(
+            &values,
+            "nativePlanPath",
+        )?),
+        PathBuf::from(required_build_publication_bridge_value(
+            &values,
+            "linkReportPath",
+        )?),
+        PathBuf::from(required_build_publication_bridge_value(
+            &values,
+            "objectPath",
+        )?),
         optional_build_publication_bridge_path(&values, "executablePath"),
         optional_build_publication_bridge_path(&values, "runtimeLibraryPath"),
         optional_build_publication_bridge_path(&values, "runtimeImportLibraryPath"),
@@ -1330,8 +1390,9 @@ fn parse_build_finalization_bridge_output(
         match present {
             "0" => build_config_plan_path = None,
             "1" => {
-                build_config_plan_path =
-                    Some(PathBuf::from(unescape_build_publication_bridge_value(encoded)?))
+                build_config_plan_path = Some(PathBuf::from(
+                    unescape_build_publication_bridge_value(encoded)?,
+                ))
             }
             _ => {
                 return Err(format!(
@@ -1389,15 +1450,16 @@ fn author_build_write_shared_runtime_lookup_metadata(
     runtime_import_library: &Path,
     runtime_relative_dir: &str,
 ) -> Result<(), String> {
-    let output = run_author_build_bridge_request(&emit_build_write_launch_metadata_bridge_request(
-        descriptor_path,
-        profile,
-        artifact_stamp,
-        exe,
-        runtime_library,
-        runtime_import_library,
-        runtime_relative_dir,
-    ))?;
+    let output =
+        run_author_build_bridge_request(&emit_build_write_launch_metadata_bridge_request(
+            descriptor_path,
+            profile,
+            artifact_stamp,
+            exe,
+            runtime_library,
+            runtime_import_library,
+            runtime_relative_dir,
+        ))?;
     let written = output.trim();
     if written.is_empty() {
         return Err("author build launch metadata writer returned no path".to_string());
@@ -1455,11 +1517,12 @@ fn author_build_copy_recursive_extension(
     destination_path: &Path,
     extension: &str,
 ) -> Result<(), String> {
-    let output = run_author_build_bridge_request(&emit_build_copy_recursive_extension_bridge_request(
-        source_path,
-        destination_path,
-        extension,
-    ))?;
+    let output =
+        run_author_build_bridge_request(&emit_build_copy_recursive_extension_bridge_request(
+            source_path,
+            destination_path,
+            extension,
+        ))?;
     let written = output.trim();
     if written.is_empty() {
         return Err("author build copy recursive extension returned no path".to_string());
@@ -1666,12 +1729,9 @@ pub(super) fn emit_resolved_build_config_plan(
     let target_adapter_metadata =
         resolve_plan_target_adapter_metadata(&resolved.target, &resolved.output_mode)?;
     let plan_path = publication_plan.build_config_plan_path.clone();
-    if let Ok(()) = author_build_write_config_plan(
-        &plan_path,
-        resolved,
-        artifact,
-        &target_adapter_metadata,
-    ) {
+    if let Ok(()) =
+        author_build_write_config_plan(&plan_path, resolved, artifact, &target_adapter_metadata)
+    {
         return Ok(plan_path);
     }
     let mut out = String::new();
@@ -1794,11 +1854,7 @@ pub(super) fn emit_resolved_build_config_plan(
     ));
     out.push_str(&format!(
         "  \"toolchain\": {{ \"linker\": \"{}\", \"assembler\": \"{}\" }},\n",
-        resolved
-            .linker
-            .as_ref()
-            .map(|s| s.as_str())
-            .unwrap_or(""),
+        resolved.linker.as_ref().map(|s| s.as_str()).unwrap_or(""),
         resolved
             .assembler
             .as_ref()
@@ -1842,7 +1898,8 @@ pub(super) fn materialize_build_layout(
         None
     };
     if let Some(target) = published_object_target.as_ref() {
-        if let Ok(()) = author_build_materialize_layout(resolved, artifact, backend_out_dir, target) {
+        if let Ok(()) = author_build_materialize_layout(resolved, artifact, backend_out_dir, target)
+        {
             return Ok(());
         }
     }
@@ -1897,9 +1954,8 @@ pub(super) fn materialize_build_layout(
         copy_file_into(&sibling_asm, &asm_target)?;
     }
     if artifact.object_path.exists() {
-        let obj_target = published_object_target.unwrap_or_else(|| {
-            published_object_path(resolved, artifact, backend_out_dir)
-        });
+        let obj_target = published_object_target
+            .unwrap_or_else(|| published_object_path(resolved, artifact, backend_out_dir));
         copy_file_into(&artifact.object_path, &obj_target)?;
     }
     if resolved.main_resources_root.exists() {
@@ -2062,13 +2118,18 @@ fn render_build_summary_fallback(build: &BuildRun) -> String {
         build.build_config_plan_path.display()
     ));
     out.push_str(&format!("Artifact stamp: {}\n", artifact_stamp));
-    out.push_str(&format!("Entry codegen: {}\n", build.artifact.entry_codegen));
+    out.push_str(&format!(
+        "Entry codegen: {}\n",
+        build.artifact.entry_codegen
+    ));
     if let Some(exe) = &build.artifact.exe_path {
         out.push_str(&format!("Executable: {}\n", exe.display()));
     } else {
         out.push_str("Executable: not produced (no linker available or link failed)\n");
     }
-    out.push_str("Native backend spike (Phase B) is complete; next is runtime hardening in Phase C.\n");
+    out.push_str(
+        "Native backend spike (Phase B) is complete; next is runtime hardening in Phase C.\n",
+    );
     out
 }
 
@@ -2109,7 +2170,10 @@ mod tests {
         let root = unique_temp_root();
         fs::create_dir_all(root.join("build")).expect("create build dir");
         let resolved = BuildInvocation {
-            entry_path: root.join("src/main/pulse/app/core/Main.pulse").display().to_string(),
+            entry_path: root
+                .join("src/main/pulse/app/core/Main.pulse")
+                .display()
+                .to_string(),
             source_root: Some(root.join("src/main/pulse").display().to_string()),
             build_root: root.join("build"),
             output_root: root.join("build"),
@@ -2162,21 +2226,18 @@ mod tests {
             linker: Some("cli-link".to_string()),
         };
 
-        let publication_plan = resolve_build_publication_plan(
-            &resolved,
-            &artifact,
-            &root.join("build"),
-            false,
-            false,
-        )
-        .expect("resolve publication plan");
+        let publication_plan =
+            resolve_build_publication_plan(&resolved, &artifact, &root.join("build"), false, false)
+                .expect("resolve publication plan");
         let plan_path =
             emit_resolved_build_config_plan(&resolved, &artifact, &publication_plan, &flags)
                 .expect("emit build plan");
         let plan_text = fs::read_to_string(&plan_path).expect("read build plan");
 
         assert!(
-            plan_text.contains("\"toolchain\": { \"linker\": \"resolved-link\", \"assembler\": \"resolved-asm\" }"),
+            plan_text.contains(
+                "\"toolchain\": { \"linker\": \"resolved-link\", \"assembler\": \"resolved-asm\" }"
+            ),
             "expected resolved toolchain in build plan\n{}",
             plan_text
         );

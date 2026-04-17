@@ -28,16 +28,6 @@ public final class TestSummaryWriter {
     }
 
     public static String renderTestResult(TestResult result) {
-        if (result.workspace()) {
-            return "Workspace test summary: mode="
-                .concat(result.mode())
-                .concat(" passed=")
-                .concat(String.valueOf(result.passed()))
-                .concat(" failed=")
-                .concat(String.valueOf(result.failed()))
-                .concat(" total=")
-                .concat(String.valueOf(result.total()));
-        }
         return "Test summary: mode="
             .concat(result.mode())
             .concat(" passed=")
@@ -48,12 +38,29 @@ public final class TestSummaryWriter {
             .concat(String.valueOf(result.total()));
     }
 
+    public static String renderWorkspaceTestSummaryResult(WorkspaceTestResult result) {
+        return "Workspace test summary: mode="
+            .concat(result.mode())
+            .concat(" passed=")
+            .concat(String.valueOf(result.passed()))
+            .concat(" failed=")
+            .concat(String.valueOf(result.failed()))
+            .concat(" total=")
+            .concat(String.valueOf(result.total()));
+    }
+
     public static String renderWorkspaceTestStart(String rootPath, int memberCount, String mode) {
+        return TestSummaryWriter.renderWorkspaceTestStartResult(
+            new WorkspaceTestResult(rootPath, memberCount, mode, 0, 0, 0)
+        );
+    }
+
+    public static String renderWorkspaceTestStartResult(WorkspaceTestResult result) {
         return "Workspace test: root="
-            .concat(rootPath)
+            .concat(result.rootPath())
             .concat(" members=")
-            .concat(String.valueOf(memberCount))
+            .concat(String.valueOf(result.memberCount()))
             .concat(" mode=")
-            .concat(mode);
+            .concat(result.mode());
     }
 }

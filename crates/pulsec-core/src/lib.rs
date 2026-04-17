@@ -1,8 +1,8 @@
 use thiserror::Error;
 
 pub mod intermediate;
-mod prelude;
 pub(crate) mod parser;
+mod prelude;
 pub(crate) mod semantics;
 
 #[cfg(test)]
@@ -280,7 +280,11 @@ pub fn desugar_try_with_resources(
     }
 }
 
-fn desugar_try_resource_body(resources: &[TryResource], body: &[Stmt], source_line: usize) -> Vec<Stmt> {
+fn desugar_try_resource_body(
+    resources: &[TryResource],
+    body: &[Stmt],
+    source_line: usize,
+) -> Vec<Stmt> {
     let Some((first, rest)) = resources.split_first() else {
         return body.to_vec();
     };

@@ -207,10 +207,8 @@ impl IrBuilder {
             let array_local = format!("__foreach{}_array", stmt_index);
             let index_local = format!("__foreach{}_index", stmt_index);
             let length_local = format!("__foreach{}_length", stmt_index);
-            self.local_types.insert(
-                array_local.clone(),
-                "pulse.collections.Array".to_string(),
-            );
+            self.local_types
+                .insert(array_local.clone(), "pulse.collections.Array".to_string());
 
             self.emit(
                 current,

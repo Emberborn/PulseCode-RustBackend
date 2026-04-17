@@ -2738,4 +2738,3 @@ fn lock_c2_24_runtime_abi_mismatch_fails_deterministically() {
         out
     );
 }
-

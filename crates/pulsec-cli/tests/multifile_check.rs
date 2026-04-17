@@ -268,4 +268,3 @@ fn cli_check_same_package_resolution_is_demand_driven_not_whole_package() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("files=2"));
 }
-

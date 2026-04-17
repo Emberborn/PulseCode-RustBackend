@@ -270,16 +270,86 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 }
             },
             "sources" => match key {
-                "root" => root = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "main_pulse" => main_pulse = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "main_resources" => main_resources = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "test_pulse" => test_pulse = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "test_resources" => test_resources = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "api_pulse" => api_pulse = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "api_resources" => api_resources = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "docs" => docs_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "libraries" => libraries_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "entry" => entry = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "root" => {
+                    root = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "main_pulse" => {
+                    main_pulse = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "main_resources" => {
+                    main_resources = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "test_pulse" => {
+                    test_pulse = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "test_resources" => {
+                    test_resources = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "api_pulse" => {
+                    api_pulse = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "api_resources" => {
+                    api_resources = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "docs" => {
+                    docs_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "libraries" => {
+                    libraries_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "entry" => {
+                    entry = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [sources] at line {}",
@@ -290,19 +360,110 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 }
             },
             "build" => match key {
-                "profile" => profile = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "target" => target = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "output_mode" => output_mode = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "output_entry" => output_entry = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "runtime_debug_allocator" => runtime_debug_allocator = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "runtime_cycle_collector" => runtime_cycle_collector = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "out_dir" => out_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "asm_dir" => asm_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "generated_dir" => generated_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "assets_dir" => assets_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "sanity_dir" => sanity_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "tmp_dir" => tmp_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "distro_dir" => distro_dir = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "profile" => {
+                    profile = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "target" => {
+                    target = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "output_mode" => {
+                    output_mode = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "output_entry" => {
+                    output_entry = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "runtime_debug_allocator" => {
+                    runtime_debug_allocator = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "runtime_cycle_collector" => {
+                    runtime_cycle_collector = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "out_dir" => {
+                    out_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "asm_dir" => {
+                    asm_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "generated_dir" => {
+                    generated_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "assets_dir" => {
+                    assets_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "sanity_dir" => {
+                    sanity_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "tmp_dir" => {
+                    tmp_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "distro_dir" => {
+                    distro_dir = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [build] at line {}",
@@ -313,8 +474,22 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 }
             },
             "toolchain" => match key {
-                "linker" => linker = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
-                "assembler" => assembler = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "linker" => {
+                    linker = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
+                "assembler" => {
+                    assembler = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [toolchain] at line {}",
@@ -325,7 +500,14 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
                 }
             },
             "workspace" => match key {
-                "members" => workspace_members = Some(require_manifest_string(manifest_path, key, v.trim(), line_no + 1)?),
+                "members" => {
+                    workspace_members = Some(require_manifest_string(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
+                }
                 _ => {
                     return Err(format!(
                         "Manifest parse error in '{}': unknown key '{}' in [workspace] at line {}",
@@ -337,8 +519,12 @@ pub(super) fn load_manifest_config(manifest_path: &Path) -> Result<ManifestConfi
             },
             "authorlib" => match key {
                 "enabled" => {
-                    authorlib_enabled =
-                        Some(require_manifest_bool(manifest_path, key, v.trim(), line_no + 1)?)
+                    authorlib_enabled = Some(require_manifest_bool(
+                        manifest_path,
+                        key,
+                        v.trim(),
+                        line_no + 1,
+                    )?)
                 }
                 _ => {
                     return Err(format!(

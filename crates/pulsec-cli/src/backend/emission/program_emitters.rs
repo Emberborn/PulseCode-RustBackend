@@ -7,7 +7,11 @@ fn static_field_lazy_init(
     let IrFieldInit::NewObject { class_name, args } = field.init.as_ref()? else {
         return None;
     };
-    let owner = class_name.rsplit('.').next().unwrap_or(class_name).to_string();
+    let owner = class_name
+        .rsplit('.')
+        .next()
+        .unwrap_or(class_name)
+        .to_string();
     let sig = args
         .iter()
         .map(|arg| match arg {
@@ -259,7 +263,10 @@ fn rewrite_single_method_stack_frame(method_code: &mut String, old_size: usize, 
     if old_size == new_size {
         return;
     }
-    let mut lines = method_code.lines().map(|line| line.to_string()).collect::<Vec<_>>();
+    let mut lines = method_code
+        .lines()
+        .map(|line| line.to_string())
+        .collect::<Vec<_>>();
     if let Some(idx) = lines
         .iter()
         .position(|line| line.starts_with("    sub rsp, "))
@@ -461,8 +468,7 @@ pub(crate) fn emit_masm_split_program_objects(
         source.push_str("extrn pulsec_rt_panic:proc\n");
         source.push_str("extrn pulsec_rt_fpToInt:proc\n");
         source.push_str("extrn pulsec_rt_fpToLong:proc\n");
-        let object_to_string_symbol =
-            mangle_method_symbol("pulse.lang", "Object", "toString", &[]);
+        let object_to_string_symbol = mangle_method_symbol("pulse.lang", "Object", "toString", &[]);
         let throwable_to_string_symbol =
             mangle_method_symbol("pulse.lang", "Throwable", "toString", &[]);
         if !(class.package_name == "pulse.lang" && class.name == "Object") {
@@ -715,15 +721,8 @@ pub(crate) fn emit_masm_split_program_objects(
         for ext in externs {
             source.push_str(&format!("extrn {}:proc\n", ext));
         }
-        for (
-            _sym,
-            getter_sym,
-            setter_sym,
-            _uses_qword,
-            _field_ty,
-            owner_package,
-            owner_class,
-        ) in &global_static_field_symbols
+        for (_sym, getter_sym, setter_sym, _uses_qword, _field_ty, owner_package, owner_class) in
+            &global_static_field_symbols
         {
             if owner_package == &class.package_name && owner_class == &class.name {
                 continue;
@@ -824,43 +823,23 @@ pub(crate) fn emit_masm_split_program_objects(
             let mut single_method_code = String::new();
             single_method_code.push_str(&format!("{} proc\n", symbol));
             single_method_code.push_str(&format!("    sub rsp, {}\n", stack_size));
-            single_method_code.push_str(&format!(
-                "    mov qword ptr [rsp+{}], rcx\n",
-                incoming_rcx
-            ));
-            single_method_code.push_str(&format!(
-                "    mov qword ptr [rsp+{}], rdx\n",
-                incoming_rdx
-            ));
-            single_method_code.push_str(&format!(
-                "    mov qword ptr [rsp+{}], r8\n",
-                incoming_r8
-            ));
-            single_method_code.push_str(&format!(
-                "    mov qword ptr [rsp+{}], r9\n",
-                incoming_r9
-            ));
+            single_method_code
+                .push_str(&format!("    mov qword ptr [rsp+{}], rcx\n", incoming_rcx));
+            single_method_code
+                .push_str(&format!("    mov qword ptr [rsp+{}], rdx\n", incoming_rdx));
+            single_method_code.push_str(&format!("    mov qword ptr [rsp+{}], r8\n", incoming_r8));
+            single_method_code.push_str(&format!("    mov qword ptr [rsp+{}], r9\n", incoming_r9));
             if let Some(trace_label) = &trace_label {
                 single_method_code.push_str(&format!("    lea rcx, {}\n", trace_label));
                 single_method_code.push_str(&format!("    mov edx, {}_len\n", trace_label));
                 single_method_code.push_str(&format!("    call {}\n", TRACE_PUSH_SYMBOL));
             }
-            single_method_code.push_str(&format!(
-                "    mov rcx, qword ptr [rsp+{}]\n",
-                incoming_rcx
-            ));
-            single_method_code.push_str(&format!(
-                "    mov rdx, qword ptr [rsp+{}]\n",
-                incoming_rdx
-            ));
-            single_method_code.push_str(&format!(
-                "    mov r8, qword ptr [rsp+{}]\n",
-                incoming_r8
-            ));
-            single_method_code.push_str(&format!(
-                "    mov r9, qword ptr [rsp+{}]\n",
-                incoming_r9
-            ));
+            single_method_code
+                .push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", incoming_rcx));
+            single_method_code
+                .push_str(&format!("    mov rdx, qword ptr [rsp+{}]\n", incoming_rdx));
+            single_method_code.push_str(&format!("    mov r8, qword ptr [rsp+{}]\n", incoming_r8));
+            single_method_code.push_str(&format!("    mov r9, qword ptr [rsp+{}]\n", incoming_r9));
             emit_masm_method_body(
                 &mut single_method_code,
                 &class.package_name,
@@ -1012,11 +991,7 @@ pub(crate) fn emit_masm_split_program_objects(
             }
             emit_static_field_getter_proc(
                 &mut method_code,
-                &mangle_static_field_getter_symbol(
-                    &class.package_name,
-                    &class.name,
-                    &field.name,
-                ),
+                &mangle_static_field_getter_symbol(&class.package_name, &class.name, &field.name),
                 &mangle_field_symbol(&class.package_name, &class.name, &field.name),
                 &field.ty,
                 static_field_lazy_init(field, &method_symbols_by_sig).as_ref(),
@@ -1024,11 +999,7 @@ pub(crate) fn emit_masm_split_program_objects(
             method_code.push('\n');
             emit_static_field_setter_proc(
                 &mut method_code,
-                &mangle_static_field_setter_symbol(
-                    &class.package_name,
-                    &class.name,
-                    &field.name,
-                ),
+                &mangle_static_field_setter_symbol(&class.package_name, &class.name, &field.name),
                 &mangle_field_symbol(&class.package_name, &class.name, &field.name),
                 &field.ty,
             );
@@ -1672,43 +1643,19 @@ pub(crate) fn emit_masm_full_program_object(
             let mut method_code = String::new();
             method_code.push_str(&format!("{} proc\n", symbol));
             method_code.push_str(&format!("    sub rsp, {}\n", stack_size));
-            method_code.push_str(&format!(
-                "    mov qword ptr [rsp+{}], rcx\n",
-                incoming_rcx
-            ));
-            method_code.push_str(&format!(
-                "    mov qword ptr [rsp+{}], rdx\n",
-                incoming_rdx
-            ));
-            method_code.push_str(&format!(
-                "    mov qword ptr [rsp+{}], r8\n",
-                incoming_r8
-            ));
-            method_code.push_str(&format!(
-                "    mov qword ptr [rsp+{}], r9\n",
-                incoming_r9
-            ));
+            method_code.push_str(&format!("    mov qword ptr [rsp+{}], rcx\n", incoming_rcx));
+            method_code.push_str(&format!("    mov qword ptr [rsp+{}], rdx\n", incoming_rdx));
+            method_code.push_str(&format!("    mov qword ptr [rsp+{}], r8\n", incoming_r8));
+            method_code.push_str(&format!("    mov qword ptr [rsp+{}], r9\n", incoming_r9));
             if let Some(trace_label) = trace_label {
                 method_code.push_str(&format!("    lea rcx, {}\n", trace_label));
                 method_code.push_str(&format!("    mov edx, {}_len\n", trace_label));
                 method_code.push_str(&format!("    call {}\n", TRACE_PUSH_SYMBOL));
             }
-            method_code.push_str(&format!(
-                "    mov rcx, qword ptr [rsp+{}]\n",
-                incoming_rcx
-            ));
-            method_code.push_str(&format!(
-                "    mov rdx, qword ptr [rsp+{}]\n",
-                incoming_rdx
-            ));
-            method_code.push_str(&format!(
-                "    mov r8, qword ptr [rsp+{}]\n",
-                incoming_r8
-            ));
-            method_code.push_str(&format!(
-                "    mov r9, qword ptr [rsp+{}]\n",
-                incoming_r9
-            ));
+            method_code.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", incoming_rcx));
+            method_code.push_str(&format!("    mov rdx, qword ptr [rsp+{}]\n", incoming_rdx));
+            method_code.push_str(&format!("    mov r8, qword ptr [rsp+{}]\n", incoming_r8));
+            method_code.push_str(&format!("    mov r9, qword ptr [rsp+{}]\n", incoming_r9));
             emit_masm_method_body(
                 &mut method_code,
                 &class.package_name,
@@ -1756,11 +1703,7 @@ pub(crate) fn emit_masm_full_program_object(
             }
             emit_static_field_getter_proc(
                 &mut source,
-                &mangle_static_field_getter_symbol(
-                    &class.package_name,
-                    &class.name,
-                    &field.name,
-                ),
+                &mangle_static_field_getter_symbol(&class.package_name, &class.name, &field.name),
                 &mangle_field_symbol(&class.package_name, &class.name, &field.name),
                 &field.ty,
                 static_field_lazy_init(field, &method_symbols_by_sig).as_ref(),
@@ -1768,11 +1711,7 @@ pub(crate) fn emit_masm_full_program_object(
             source.push('\n');
             emit_static_field_setter_proc(
                 &mut source,
-                &mangle_static_field_setter_symbol(
-                    &class.package_name,
-                    &class.name,
-                    &field.name,
-                ),
+                &mangle_static_field_setter_symbol(&class.package_name, &class.name, &field.name),
                 &mangle_field_symbol(&class.package_name, &class.name, &field.name),
                 &field.ty,
             );

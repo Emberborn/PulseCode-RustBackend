@@ -26,4 +26,8 @@ public final class TestDiagnosticWriter {
         }
         return "one or more tests failed";
     }
+
+    public static String renderWorkspaceTestsFailed(WorkspaceTestResult result) {
+        return "one or more workspace tests failed";
+    }
 }

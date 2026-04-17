@@ -32,7 +32,9 @@ pub(super) fn analyze_impl(
         &mut class_index,
     )?;
     for (fqcn, info) in &class_index {
-        visible_generic_arity.entry(fqcn.clone()).or_insert(info.generic_arity);
+        visible_generic_arity
+            .entry(fqcn.clone())
+            .or_insert(info.generic_arity);
     }
 
     for (idx, class) in program.classes.iter().enumerate() {

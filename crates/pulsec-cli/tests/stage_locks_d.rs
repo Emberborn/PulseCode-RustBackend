@@ -1771,8 +1771,9 @@ fn lock_d2_04_invalid_target_or_runtime_toggle_is_rejected() {
     let stderr = norm(&build.stderr);
     assert!(stderr.contains("Manifest validation error"));
     assert!(
-        stderr.contains("[build].target must be one of: windows-x64, pulseos-x64, linux-x64, macos-arm64")
-            || stderr.contains("[build].runtime_debug_allocator must be 'on' or 'off'")
+        stderr.contains(
+            "[build].target must be one of: windows-x64, pulseos-x64, linux-x64, macos-arm64"
+        ) || stderr.contains("[build].runtime_debug_allocator must be 'on' or 'off'")
             || stderr.contains("[build].output_mode must be 'fat' or 'shared'")
     );
     assert!(stderr.contains("diag.code=PULSEC:E_USAGE"));
@@ -2038,4 +2039,3 @@ fn lock_d2_06_workspace_test_runs_member_test_fixtures() {
     assert!(stdout.contains("app_b"));
     assert!(stdout.contains("Workspace test summary: mode=friendly passed=2 failed=0 total=2"));
 }
-

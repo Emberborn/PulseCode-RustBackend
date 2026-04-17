@@ -208,9 +208,7 @@ pub(crate) fn install_class_package_resolution(map: &HashMap<String, (String, St
     }
 }
 
-pub(crate) fn install_field_type_resolution(
-    map: &HashMap<(String, String, String), String>,
-) {
+pub(crate) fn install_field_type_resolution(map: &HashMap<(String, String, String), String>) {
     let mutex = FIELD_TYPE_RESOLUTION.get_or_init(|| Mutex::new(HashMap::new()));
     if let Ok(mut guard) = mutex.lock() {
         guard.clear();

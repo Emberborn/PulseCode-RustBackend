@@ -58,7 +58,10 @@ pub(super) fn validate_try_stmt(
             "pulse.lang.AutoCloseable",
             &resource_ty,
             None,
-            &format!("try-with-resources value in '{}.{}'", class.name, method.name),
+            &format!(
+                "try-with-resources value in '{}.{}'",
+                class.name, method.name
+            ),
             class_names,
             class_index,
         )?;

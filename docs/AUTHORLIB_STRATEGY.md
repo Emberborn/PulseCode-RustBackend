@@ -75,13 +75,18 @@ The current target taxonomy is:
   - artifact layout, publication, packaging-adjacent build metadata
 - `author.toolchain.*`
   - assembler/linker/process/env invocation and related toolchain facades
-- `author.compiler.*`
+  - `author.compiler.*`
   - compiler-only APIs such as analysis, IR, lowering, diagnostics, codegen support
   - first live slices now exist through:
     - `author.compiler.CheckResult` for structured compiler check results
     - `author.compiler.CheckSummaryWriter` for compiler-facing check/workspace-check status rendering
+    - `author.compiler.WorkspaceCheckResult` for structured workspace-check aggregation state
+    - `author.compiler.WorkspaceCheckMemberResult` for structured workspace-member check outcomes
     - `author.compiler.TestDiscoveryResult` for structured compiler test discovery success/failure state
+    - `author.compiler.TestExecutionResult` for structured compiler test pass/fail outcomes
+    - `author.compiler.TestExecutionWriter` for compiler-facing test pass/fail line rendering
     - `author.compiler.TestResult` for structured compiler test result state
+    - `author.compiler.WorkspaceTestResult` for structured workspace-test aggregation state
     - `author.compiler.TestSummaryWriter` for compiler-facing test/workspace-test discovery and summary rendering
     - `author.compiler.TestDiagnosticWriter` for compiler-facing test discovery/no-tests/aggregate-failure diagnostic text
 - `author.runtime.*`

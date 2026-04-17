@@ -167,4 +167,3 @@ fn e3_12_parity_ci_suite_runs_matched_fat_shared_fixture_corpus() {
         );
     }
 }
-

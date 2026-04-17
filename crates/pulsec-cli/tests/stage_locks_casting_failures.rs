@@ -154,4 +154,3 @@ fn lock_cast_fail_05_rejects_float_to_int_without_cast() {
         "Implicit numeric conversion 'float' -> 'int'",
     );
 }
-

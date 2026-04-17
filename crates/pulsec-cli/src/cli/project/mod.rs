@@ -188,8 +188,7 @@ pub(super) fn load_unit(
     for import in &program.imports {
         validate_pulse_import(import, authorlib_enabled)?;
         if is_builtin_import(&import.path) {
-            if let Some(stdlib_targets) =
-                resolve_builtin_import_targets(import, authorlib_enabled)?
+            if let Some(stdlib_targets) = resolve_builtin_import_targets(import, authorlib_enabled)?
             {
                 let stdlib_root = stdlib_source_root();
                 let stdlib_root_text = stdlib_root.to_string_lossy().to_string();
@@ -329,7 +328,12 @@ fn collect_stmt_candidate_names(stmt: &Stmt, out: &mut HashSet<String>) {
                 }
             }
         }
-        Stmt::While { condition, body, .. } | Stmt::DoWhile { body, condition, .. } => {
+        Stmt::While {
+            condition, body, ..
+        }
+        | Stmt::DoWhile {
+            body, condition, ..
+        } => {
             collect_expr_candidate_names(condition, out);
             for stmt in body {
                 collect_stmt_candidate_names(stmt, out);
@@ -423,8 +427,7 @@ fn collect_stmt_candidate_names(stmt: &Stmt, out: &mut HashSet<String>) {
                 collect_expr_candidate_names(message, out);
             }
         }
-        Stmt::Throw(expr, _)
-        | Stmt::ExprStmt(expr, _) => collect_expr_candidate_names(expr, out),
+        Stmt::Throw(expr, _) | Stmt::ExprStmt(expr, _) => collect_expr_candidate_names(expr, out),
         Stmt::Return(expr, _) => {
             if let Some(expr) = expr {
                 collect_expr_candidate_names(expr, out);
@@ -480,7 +483,11 @@ fn collect_expr_candidate_names(expr: &Expr, out: &mut HashSet<String>) {
             collect_expr_candidate_names(then_expr, out);
             collect_expr_candidate_names(else_expr, out);
         }
-        Expr::SwitchExpr { expr, cases, default } => {
+        Expr::SwitchExpr {
+            expr,
+            cases,
+            default,
+        } => {
             collect_expr_candidate_names(expr, out);
             for case in cases {
                 collect_expr_candidate_names(&case.label, out);
@@ -590,7 +597,10 @@ fn try_load_same_package_candidate(
             continue;
         };
         let candidate = parent.join(&file_name);
-        if !candidate.exists() || same_path(&candidate, &unit_path) || units.contains_key(&candidate) {
+        if !candidate.exists()
+            || same_path(&candidate, &unit_path)
+            || units.contains_key(&candidate)
+        {
             continue;
         }
         if path_in_stack(&candidate, stack) {
@@ -631,8 +641,7 @@ pub(super) fn resolve_builtin_import_targets(
         };
         if class_path.starts_with("author.") && !authorlib_enabled {
             return Err(
-                "Import 'author.*' requires [authorlib].enabled = true in pulsec.toml"
-                    .to_string(),
+                "Import 'author.*' requires [authorlib].enabled = true in pulsec.toml".to_string(),
             );
         }
         let path = resolve_import_path_from_root(&stdlib_root, &class_path);
@@ -646,8 +655,7 @@ pub(super) fn resolve_builtin_import_targets(
         let dir = resolve_package_dir_from_root(&stdlib_root, &import.path);
         if import.path.starts_with("author.") && !authorlib_enabled {
             return Err(
-                "Import 'author.*' requires [authorlib].enabled = true in pulsec.toml"
-                    .to_string(),
+                "Import 'author.*' requires [authorlib].enabled = true in pulsec.toml".to_string(),
             );
         }
         if !dir.exists() {
@@ -676,7 +684,9 @@ pub(super) fn resolve_builtin_import_targets(
     }
 
     if import.path.starts_with("author.") && !authorlib_enabled {
-        return Err("Import 'author.*' requires [authorlib].enabled = true in pulsec.toml".to_string());
+        return Err(
+            "Import 'author.*' requires [authorlib].enabled = true in pulsec.toml".to_string(),
+        );
     }
     let path = resolve_import_path_from_root(&stdlib_root, &import.path);
     if path.exists() {
@@ -973,10 +983,7 @@ pub(super) fn escape_pulse_string(value: &str) -> String {
 }
 
 pub(super) fn is_builtin_import(path: &str) -> bool {
-    path == "pulse"
-        || path.starts_with("pulse.")
-        || path == "author"
-        || path.starts_with("author.")
+    path == "pulse" || path.starts_with("pulse.") || path == "author" || path.starts_with("author.")
 }
 
 pub(super) fn validate_pulse_import(
@@ -996,10 +1003,15 @@ pub(super) fn validate_pulse_import(
         ));
     }
     if import.path == "author" {
-        return Err("Import 'author' is too broad. Import a package under 'author.*' or a specific class".to_string());
+        return Err(
+            "Import 'author' is too broad. Import a package under 'author.*' or a specific class"
+                .to_string(),
+        );
     }
     if is_author_import && !authorlib_enabled {
-        return Err("Import 'author.*' requires [authorlib].enabled = true in pulsec.toml".to_string());
+        return Err(
+            "Import 'author.*' requires [authorlib].enabled = true in pulsec.toml".to_string(),
+        );
     }
 
     let stdlib_root = stdlib_source_root();

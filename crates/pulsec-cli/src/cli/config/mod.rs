@@ -190,8 +190,7 @@ fn resolve_build_invocation_via_authorlib(
     let direct_entry_override = if let Some(entry) = entry_arg {
         Some(entry.to_string())
     } else if let Some(src_root) = direct_source_root_override.as_ref() {
-        discover_entry_from_source_root(Path::new(src_root))?
-            .map(|path| path.display().to_string())
+        discover_entry_from_source_root(Path::new(src_root))?.map(|path| path.display().to_string())
     } else {
         None
     };
@@ -286,10 +285,15 @@ fn emit_build_invocation_bridge_source() -> String {
         import author.project.TestInvocationBridge;
                 import author.compiler.CheckResult;
                 import author.compiler.CheckSummaryWriter;
-                import author.compiler.TestDiscoveryResult;
-                import author.compiler.TestResult;
                 import author.compiler.TestDiagnosticWriter;
+                import author.compiler.TestDiscoveryResult;
+                import author.compiler.TestExecutionResult;
+                import author.compiler.TestExecutionWriter;
+                import author.compiler.TestResult;
                 import author.compiler.TestSummaryWriter;
+                import author.compiler.WorkspaceCheckMemberResult;
+                import author.compiler.WorkspaceCheckResult;
+                import author.compiler.WorkspaceTestResult;
         import author.toolchain.ToolchainCandidateBridge;
         import author.toolchain.ToolchainCandidatePlan;
         import author.toolchain.ToolchainDiscoveryBridge;
@@ -726,12 +730,7 @@ fn emit_build_invocation_bridge_source() -> String {
                     return;
                 }}
                 if (mode.equals("compiler-render-workspace-check-start")) {{
-                    String request = Main.readLines(3);
-                    IO.print(CheckSummaryWriter.renderWorkspaceCheckStart(
-                        Main.readValue(request, 0),
-                        Main.parseCount(Main.readValue(request, 1)),
-                        Main.readValue(request, 2)
-                    ));
+                    IO.print(Main.renderCompilerWorkspaceCheckStart(Main.readLines(3)));
                     return;
                 }}
                 if (mode.equals("compiler-render-workspace-check-pass")) {{
@@ -743,13 +742,16 @@ fn emit_build_invocation_bridge_source() -> String {
                     ));
                     return;
                 }}
+                if (mode.equals("compiler-render-workspace-check-member")) {{
+                    IO.print(Main.renderCompilerWorkspaceCheckMember(Main.readLines(4)));
+                    return;
+                }}
                 if (mode.equals("compiler-render-workspace-check-summary")) {{
-                    String request = Main.readLines(3);
-                    IO.print(CheckSummaryWriter.renderWorkspaceCheckSummary(
-                        Main.parseCount(Main.readValue(request, 0)),
-                        Main.parseCount(Main.readValue(request, 1)),
-                        Main.parseCount(Main.readValue(request, 2))
-                    ));
+                    IO.print(Main.renderCompilerWorkspaceCheckSummary(Main.readLines(3)));
+                    return;
+                }}
+                if (mode.equals("compiler-render-workspace-check-failed")) {{
+                    IO.print(Main.renderCompilerWorkspaceCheckFailure(Main.readLines(5)));
                     return;
                 }}
                 if (mode.equals("compiler-render-check-result")) {{
@@ -764,13 +766,12 @@ fn emit_build_invocation_bridge_source() -> String {
                     IO.print(Main.renderCompilerTestResult(Main.readLines(5)));
                     return;
                 }}
+                if (mode.equals("compiler-render-test-execution")) {{
+                    IO.print(Main.renderCompilerTestExecutionResult(Main.readLines(5)));
+                    return;
+                }}
                 if (mode.equals("compiler-render-workspace-test-start")) {{
-                    String request = Main.readLines(3);
-                    IO.print(TestSummaryWriter.renderWorkspaceTestStart(
-                        Main.readValue(request, 0),
-                        Main.parseCount(Main.readValue(request, 1)),
-                        Main.readValue(request, 2)
-                    ));
+                    IO.print(Main.renderCompilerWorkspaceTestStart(Main.readLines(3)));
                     return;
                 }}
                 if (mode.equals("compiler-render-workspace-member-discovery")) {{
@@ -779,6 +780,14 @@ fn emit_build_invocation_bridge_source() -> String {
                 }}
                 if (mode.equals("compiler-render-tests-failed")) {{
                     IO.print(Main.renderCompilerTestsFailed(Main.readLines(5)));
+                    return;
+                }}
+                if (mode.equals("compiler-render-workspace-test-summary")) {{
+                    IO.print(Main.renderCompilerWorkspaceTestSummary(Main.readLines(4)));
+                    return;
+                }}
+                if (mode.equals("compiler-render-workspace-tests-failed")) {{
+                    IO.print(Main.renderCompilerWorkspaceTestsFailed(Main.readLines(6)));
                     return;
                 }}
                 IO.print("error=1:unknown bridge mode ");
@@ -815,6 +824,59 @@ fn emit_build_invocation_bridge_source() -> String {
                     );
                 }}
                 return CheckSummaryWriter.renderCheckResult(result);
+            }}
+
+            private static String renderCompilerWorkspaceCheckStart(String request) {{
+                return CheckSummaryWriter.renderWorkspaceCheckStartResult(
+                    new WorkspaceCheckResult(
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.readValue(request, 2),
+                        0,
+                        0
+                    )
+                );
+            }}
+
+            private static String renderCompilerWorkspaceCheckSummary(String request) {{
+                return CheckSummaryWriter.renderWorkspaceCheckSummaryResult(
+                    new WorkspaceCheckResult(
+                        "<workspace>",
+                        Main.parseCount(Main.readValue(request, 2)),
+                        "friendly",
+                        Main.parseCount(Main.readValue(request, 0)),
+                        Main.parseCount(Main.readValue(request, 1))
+                    )
+                );
+            }}
+
+            private static String renderCompilerWorkspaceCheckMember(String request) {{
+                WorkspaceCheckMemberResult result;
+                if ("true".equals(Main.readValue(request, 0))) {{
+                    result = WorkspaceCheckMemberResult.success(
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2),
+                        Main.parseCount(Main.readValue(request, 3))
+                    );
+                }} else {{
+                    result = WorkspaceCheckMemberResult.failure(
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 3)
+                    );
+                }}
+                return CheckSummaryWriter.renderWorkspaceCheckMemberResult(result);
+            }}
+
+            private static String renderCompilerWorkspaceCheckFailure(String request) {{
+                return CheckSummaryWriter.renderWorkspaceCheckFailure(
+                    new WorkspaceCheckResult(
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.readValue(request, 2),
+                        Main.parseCount(Main.readValue(request, 3)),
+                        Main.parseCount(Main.readValue(request, 4))
+                    )
+                );
             }}
 
             private static String resolveProjectCheckInvocationBridgeText(String request) {{
@@ -884,6 +946,60 @@ fn emit_build_invocation_bridge_source() -> String {
                 );
             }}
 
+            private static String renderCompilerTestExecutionResult(String request) {{
+                TestExecutionResult result;
+                boolean workspace = "true".equals(Main.readValue(request, 0));
+                boolean success = "true".equals(Main.readValue(request, 1));
+                if (workspace) {{
+                    if (success) {{
+                        result = TestExecutionResult.workspacePass(
+                            Main.readValue(request, 2),
+                            Main.readValue(request, 3)
+                        );
+                    }} else {{
+                        result = TestExecutionResult.workspaceFail(
+                            Main.readValue(request, 2),
+                            Main.readValue(request, 3),
+                            Main.readValue(request, 4)
+                        );
+                    }}
+                }} else if (success) {{
+                    result = TestExecutionResult.pass(Main.readValue(request, 3));
+                }} else {{
+                    result = TestExecutionResult.fail(
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 4)
+                    );
+                }}
+                return TestExecutionWriter.renderTestExecutionResult(result);
+            }}
+
+            private static String renderCompilerWorkspaceTestStart(String request) {{
+                return TestSummaryWriter.renderWorkspaceTestStartResult(
+                    new WorkspaceTestResult(
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.readValue(request, 2),
+                        0,
+                        0,
+                        0
+                    )
+                );
+            }}
+
+            private static String renderCompilerWorkspaceTestSummary(String request) {{
+                return TestSummaryWriter.renderWorkspaceTestSummaryResult(
+                    new WorkspaceTestResult(
+                        "<workspace>",
+                        0,
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.parseCount(Main.readValue(request, 2)),
+                        Main.parseCount(Main.readValue(request, 3))
+                    )
+                );
+            }}
+
             private static String renderCompilerWorkspaceMemberDiscovery(String request) {{
                 return TestSummaryWriter.renderTestDiscoveryResult(
                     TestDiscoveryResult.workspaceMemberSuccess(
@@ -903,6 +1019,19 @@ fn emit_build_invocation_bridge_source() -> String {
                         Main.parseCount(Main.readValue(request, 2)),
                         Main.parseCount(Main.readValue(request, 3)),
                         Main.parseCount(Main.readValue(request, 4))
+                    )
+                );
+            }}
+
+            private static String renderCompilerWorkspaceTestsFailed(String request) {{
+                return TestDiagnosticWriter.renderWorkspaceTestsFailed(
+                    new WorkspaceTestResult(
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.readValue(request, 2),
+                        Main.parseCount(Main.readValue(request, 3)),
+                        Main.parseCount(Main.readValue(request, 4)),
+                        Main.parseCount(Main.readValue(request, 5))
                     )
                 );
             }}
@@ -1115,7 +1244,9 @@ fn parse_build_invocation_bridge_output(text: &str) -> Result<BuildInvocation, S
     })
 }
 
-pub(crate) fn parse_bridge_keyed_values(text: &str) -> Result<HashMap<String, Option<String>>, String> {
+pub(crate) fn parse_bridge_keyed_values(
+    text: &str,
+) -> Result<HashMap<String, Option<String>>, String> {
     let mut values = HashMap::new();
     for line in text.lines() {
         if line.trim().is_empty() {
@@ -1152,14 +1283,14 @@ fn optional_bridge_value(values: &HashMap<String, Option<String>>, key: &str) ->
     values.get(key).cloned().flatten()
 }
 
-fn parse_bridge_bool(
-    values: &HashMap<String, Option<String>>,
-    key: &str,
-) -> Result<bool, String> {
+fn parse_bridge_bool(values: &HashMap<String, Option<String>>, key: &str) -> Result<bool, String> {
     match required_bridge_value(values, key)?.as_str() {
         "true" => Ok(true),
         "false" => Ok(false),
-        other => Err(format!("author bridge key '{}' has invalid boolean '{}'", key, other)),
+        other => Err(format!(
+            "author bridge key '{}' has invalid boolean '{}'",
+            key, other
+        )),
     }
 }
 
@@ -1268,9 +1399,24 @@ fn hash_bridge_source_tree(hasher: &mut DefaultHasher, root: &Path, extension: &
 fn current_author_build_bridge_input_fingerprint() -> String {
     let workspace_root = author_build_bridge_workspace_root();
     let mut hasher = DefaultHasher::new();
-    hash_bridge_source_tree(&mut hasher, &workspace_root.join("crates").join("pulsec-cli").join("src"), "rs");
-    hash_bridge_source_tree(&mut hasher, &workspace_root.join("crates").join("pulsec-core").join("src"), "rs");
-    hash_bridge_source_tree(&mut hasher, &workspace_root.join("stdlib").join("src"), "pulse");
+    hash_bridge_source_tree(
+        &mut hasher,
+        &workspace_root.join("crates").join("pulsec-cli").join("src"),
+        "rs",
+    );
+    hash_bridge_source_tree(
+        &mut hasher,
+        &workspace_root
+            .join("crates")
+            .join("pulsec-core")
+            .join("src"),
+        "rs",
+    );
+    hash_bridge_source_tree(
+        &mut hasher,
+        &workspace_root.join("stdlib").join("src"),
+        "pulse",
+    );
     format!("{:016x}", hasher.finish())
 }
 
@@ -1288,7 +1434,9 @@ fn author_build_bridge_stamp(_cache_root: &Path) -> String {
 fn author_build_bridge_build_dir(cache_root: &Path, expected_stamp: &str) -> PathBuf {
     let mut hasher = DefaultHasher::new();
     expected_stamp.hash(&mut hasher);
-    cache_root.join("builds").join(format!("{:016x}", hasher.finish()))
+    cache_root
+        .join("builds")
+        .join(format!("{:016x}", hasher.finish()))
 }
 
 fn author_build_bridge_lock_info_path(lock_path: &Path) -> PathBuf {
@@ -1319,12 +1467,14 @@ fn author_build_bridge_lock_age(path: &Path) -> Result<Option<Duration>, String>
         Ok(metadata) => metadata,
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(None),
         Err(err) if err.kind() == std::io::ErrorKind::PermissionDenied => return Ok(None),
-        Err(err) => return Err(format!("Failed to stat author bridge lock '{}': {err}", path.display())),
+        Err(err) => {
+            return Err(format!(
+                "Failed to stat author bridge lock '{}': {err}",
+                path.display()
+            ))
+        }
     };
-    let modified = metadata
-        .modified()
-        .or_else(|_| metadata.created())
-        .ok();
+    let modified = metadata.modified().or_else(|_| metadata.created()).ok();
     Ok(modified.and_then(|time| SystemTime::now().duration_since(time).ok()))
 }
 
@@ -1427,17 +1577,19 @@ fn ensure_author_build_bridge_runner(cache_root: &Path) -> Result<PathBuf, Strin
 
     let src_root = cache_root.join("src");
     let entry = src_root.join("bridge/internal/Main.pulse");
-    fs::create_dir_all(entry.parent().ok_or_else(|| "missing bridge parent".to_string())?)
-        .map_err(|e| format!("Failed to create author bridge source root: {e}"))?;
-    fs::write(
-        &entry,
-        emit_build_invocation_bridge_source(),
+    fs::create_dir_all(
+        entry
+            .parent()
+            .ok_or_else(|| "missing bridge parent".to_string())?,
     )
-    .map_err(|e| format!("Failed to write author bridge source: {e}"))?;
+    .map_err(|e| format!("Failed to create author bridge source root: {e}"))?;
+    fs::write(&entry, emit_build_invocation_bridge_source())
+        .map_err(|e| format!("Failed to write author bridge source: {e}"))?;
 
     let check_started_at = Instant::now();
     let result = check_project_with_authorlib(
-        entry.to_str()
+        entry
+            .to_str()
             .ok_or_else(|| "author bridge entry path must be utf-8".to_string())?,
         Some(
             src_root
@@ -1447,7 +1599,10 @@ fn ensure_author_build_bridge_runner(cache_root: &Path) -> Result<PathBuf, Strin
         true,
         true,
     )?;
-    emit_build_resolution_timing("bridge compile check_project_with_authorlib", check_started_at);
+    emit_build_resolution_timing(
+        "bridge compile check_project_with_authorlib",
+        check_started_at,
+    );
     if result.class_contexts.len() != result.merged.classes.len() {
         return Err(format!(
             "author bridge class context mismatch: {} contexts for {} classes",
@@ -1500,7 +1655,8 @@ fn emit_author_build_bridge_with_retry(
             Ok(artifact) => return Ok(artifact),
             Err(err) => {
                 let text = err.to_string();
-                if attempt + 1 < max_attempts && is_transient_author_bridge_output_lock_error(&text) {
+                if attempt + 1 < max_attempts && is_transient_author_bridge_output_lock_error(&text)
+                {
                     std::thread::sleep(Duration::from_millis(1_000));
                     last_err = Some(text);
                     continue;
@@ -2091,7 +2247,6 @@ mod tests {
         let _ = fs::remove_dir_all(root);
     }
 
-
     #[test]
     fn resolve_build_invocation_via_authorlib_bridge_executes_direct_mode() {
         ensure_author_build_bridge_ready_for_tests();
@@ -2175,7 +2330,8 @@ mod tests {
     }
 
     #[test]
-    fn resolve_build_invocation_manifest_follows_author_build_output_mode_and_toolchain_precedence() {
+    fn resolve_build_invocation_manifest_follows_author_build_output_mode_and_toolchain_precedence()
+    {
         ensure_author_build_bridge_ready_for_tests();
         let root = unique_temp_root();
         write_file(

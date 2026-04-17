@@ -6,7 +6,6 @@ use super::adapters::windows_x64::{
     windows_x64_artifact_contract, windows_x64_runtime_service_imports,
     windows_x64_startup_loader_contract, windows_x64_target_adapter,
 };
-use super::BackendAdapter;
 use super::adapters::TargetAdapter;
 use super::adapters::{
     resolve_active_adapter_artifact_contract, resolve_active_adapter_startup_loader_contract,
@@ -25,15 +24,13 @@ use super::analysis::{
     render_native_build_plan_with_target_and_output_mode,
 };
 use super::emission::{
-    begin_class_id_set_table_collection,
-    emit_arc_teardown_proc, emit_array_get_proc, emit_array_new_proc, emit_array_set_proc,
-    emit_checked_reference_cast, emit_ensure_slot_capacity_proc, emit_instanceof_check,
-    emit_list_add_proc, emit_list_get_proc, emit_map_contains_proc, emit_map_get_proc,
-    emit_map_put_proc, emit_runtime_init_proc, emit_runtime_shutdown_proc, emit_startup_entry_proc,
-    take_class_id_set_tables,
-    emit_virtual_dispatch_call, is_devirtualizable_instance_call,
-    resolve_method_staticness_for_call, resolve_method_symbol_for_call,
-    shared_runtime_export_symbols,
+    begin_class_id_set_table_collection, emit_arc_teardown_proc, emit_array_get_proc,
+    emit_array_new_proc, emit_array_set_proc, emit_checked_reference_cast,
+    emit_ensure_slot_capacity_proc, emit_instanceof_check, emit_list_add_proc, emit_list_get_proc,
+    emit_map_contains_proc, emit_map_get_proc, emit_map_put_proc, emit_runtime_init_proc,
+    emit_runtime_shutdown_proc, emit_startup_entry_proc, emit_virtual_dispatch_call,
+    is_devirtualizable_instance_call, resolve_method_staticness_for_call,
+    resolve_method_symbol_for_call, shared_runtime_export_symbols, take_class_id_set_tables,
 };
 use super::host_bootstrap::{
     resolve_host_bootstrap_runtime_contract, resolve_runtime_ownership_model,
@@ -43,8 +40,9 @@ use super::support::{
     default_stdlib_symbols, emit_runtime_data_tables, mangle_method_symbol,
     windows_x64_backend_contract,
 };
+use super::BackendAdapter;
 use super::{
-    DISPATCH_NULL_PANIC_SYMBOL, DISPATCH_TYPE_PANIC_SYMBOL, RustHostBootstrapBackend,
+    RustHostBootstrapBackend, DISPATCH_NULL_PANIC_SYMBOL, DISPATCH_TYPE_PANIC_SYMBOL,
     WRITE_RAW_SYMBOL,
 };
 use pulsec_core::intermediate::{
@@ -2068,7 +2066,11 @@ fn e2_10_instanceof_and_checked_cast_codegen_use_runtime_class_id_proc_boundary(
     let mut instanceof_src = String::new();
     emit_instanceof_check(&mut instanceof_src, "instof", &[2, 5]);
     let tables = take_class_id_set_tables();
-    assert_eq!(tables.len(), 1, "instanceof should register one shared class-id table");
+    assert_eq!(
+        tables.len(),
+        1,
+        "instanceof should register one shared class-id table"
+    );
     assert!(
         instanceof_src.contains("test rax, rax") && instanceof_src.contains("mov rcx, rax"),
         "instanceof must preserve packed 64-bit object handles before class-id lookup"
@@ -2094,7 +2096,11 @@ fn e2_10_instanceof_and_checked_cast_codegen_use_runtime_class_id_proc_boundary(
     let mut cast_src = String::new();
     emit_checked_reference_cast(&mut cast_src, "cast", &[3], "panic_invalid_cast");
     let tables = take_class_id_set_tables();
-    assert_eq!(tables.len(), 1, "checked cast should register one shared class-id table");
+    assert_eq!(
+        tables.len(),
+        1,
+        "checked cast should register one shared class-id table"
+    );
     assert!(
         cast_src.contains("test rax, rax") && cast_src.contains("mov rcx, rax"),
         "checked cast must preserve packed 64-bit object handles before class-id lookup"
@@ -2170,12 +2176,10 @@ fn e2_11_release_asm_omits_statement_trace_payload_while_debug_keeps_it() {
     assert_eq!(debug_artifact.entry_codegen, "masm-split-stdlib");
     assert_eq!(release_app_artifact.entry_codegen, "masm-split-stdlib");
 
-    let release_stdlib_asm =
-        fs::read_to_string(release_stdlib_dir.join("obj/pulse/lang/Main.asm"))
-            .expect("read release stdlib asm");
-    let debug_stdlib_asm =
-        fs::read_to_string(debug_stdlib_dir.join("obj/pulse/lang/Main.asm"))
-            .expect("read debug stdlib asm");
+    let release_stdlib_asm = fs::read_to_string(release_stdlib_dir.join("obj/pulse/lang/Main.asm"))
+        .expect("read release stdlib asm");
+    let debug_stdlib_asm = fs::read_to_string(debug_stdlib_dir.join("obj/pulse/lang/Main.asm"))
+        .expect("read debug stdlib asm");
     let release_app_asm = fs::read_to_string(release_app_dir.join("obj/app/core/Main.asm"))
         .expect("read release app asm");
 
@@ -2433,19 +2437,25 @@ fn c3_07_method_symbol_resolution_prefers_long_overload_for_long_binary_expressi
             },
         ];
 
-        let method_symbols = HashMap::from([
-            (
-                ("Instant".to_string(), "Instant".to_string()),
-                "sym_ctor_default".to_string(),
-            ),
-        ]);
+        let method_symbols = HashMap::from([(
+            ("Instant".to_string(), "Instant".to_string()),
+            "sym_ctor_default".to_string(),
+        )]);
         let method_symbols_by_sig = HashMap::from([
             (
-                ("Instant".to_string(), "Instant".to_string(), vec!["int".to_string()]),
+                (
+                    "Instant".to_string(),
+                    "Instant".to_string(),
+                    vec!["int".to_string()],
+                ),
                 "sym_ctor_int".to_string(),
             ),
             (
-                ("Instant".to_string(), "Instant".to_string(), vec!["long".to_string()]),
+                (
+                    "Instant".to_string(),
+                    "Instant".to_string(),
+                    vec!["long".to_string()],
+                ),
                 "sym_ctor_long".to_string(),
             ),
         ]);

@@ -852,5 +852,3 @@ fn d5_02_cli_workspace_lifecycle_runs_on_real_fixture_members() {
     assert!(test_stdout.contains("battle_app"));
     assert!(test_stdout.contains("passed=2 failed=0 total=2"));
 }
-
-

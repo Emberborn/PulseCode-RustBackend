@@ -19,32 +19,35 @@ pub(super) fn validate_target_mutability(
         }
         match target_expr {
             Expr::Var(name) => name == field_name,
-            Expr::MemberAccess { object, member } => matches!(object.as_ref(), Expr::This) && member == field_name,
+            Expr::MemberAccess { object, member } => {
+                matches!(object.as_ref(), Expr::This) && member == field_name
+            }
             _ => false,
         }
     };
-    let fail_for_field = |owner_fqcn: &str, field_name: &str, field: &FieldInfo, target_expr: &Expr| {
-        let owner_display = class_index
-            .get(owner_fqcn)
-            .map(|i| i.simple_name.clone())
-            .unwrap_or_else(|| class_simple_name(owner_fqcn).to_string());
-        if field.is_runtime_managed {
-            return Err(semantic_error(format!(
-                "Cannot assign to runtime-managed field '{}.{}'",
-                owner_display, field_name
-            )));
-        }
-        if field.is_final {
-            if can_initialize_final(owner_fqcn, field_name, target_expr) {
-                return Ok(());
+    let fail_for_field =
+        |owner_fqcn: &str, field_name: &str, field: &FieldInfo, target_expr: &Expr| {
+            let owner_display = class_index
+                .get(owner_fqcn)
+                .map(|i| i.simple_name.clone())
+                .unwrap_or_else(|| class_simple_name(owner_fqcn).to_string());
+            if field.is_runtime_managed {
+                return Err(semantic_error(format!(
+                    "Cannot assign to runtime-managed field '{}.{}'",
+                    owner_display, field_name
+                )));
             }
-            return Err(semantic_error(format!(
-                "Cannot assign to final field '{}.{}'",
-                owner_display, field_name
-            )));
-        }
-        Ok(())
-    };
+            if field.is_final {
+                if can_initialize_final(owner_fqcn, field_name, target_expr) {
+                    return Ok(());
+                }
+                return Err(semantic_error(format!(
+                    "Cannot assign to final field '{}.{}'",
+                    owner_display, field_name
+                )));
+            }
+            Ok(())
+        };
 
     match target {
         Expr::Var(name) => {

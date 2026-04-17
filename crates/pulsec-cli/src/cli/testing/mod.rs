@@ -138,7 +138,10 @@ fn parse_bridge_string_list_output(text: &str) -> Result<Vec<String>, String> {
         .map_err(|e| format!("author bridge count parse failed: {e}"))?;
     let mut out = Vec::with_capacity(count);
     for index in 0..count {
-        out.push(testing_required_bridge_value(&values, &format!("item{index}"))?);
+        out.push(testing_required_bridge_value(
+            &values,
+            &format!("item{index}"),
+        )?);
     }
     Ok(out)
 }
@@ -170,6 +173,9 @@ fn testing_parse_bridge_bool(
     match testing_required_bridge_value(values, key)?.as_str() {
         "true" => Ok(true),
         "false" => Ok(false),
-        other => Err(format!("author bridge key '{}' has invalid boolean '{}'", key, other)),
+        other => Err(format!(
+            "author bridge key '{}' has invalid boolean '{}'",
+            key, other
+        )),
     }
 }

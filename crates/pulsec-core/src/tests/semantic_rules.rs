@@ -1193,7 +1193,9 @@ fn check_prefers_exact_wrapper_boxing_over_widening_helper_overload() {
         }
     "#;
 
-    check(src).expect("overload resolution should prefer exact wrapper boxing over widening helper matches");
+    check(src).expect(
+        "overload resolution should prefer exact wrapper boxing over widening helper matches",
+    );
 }
 
 #[test]

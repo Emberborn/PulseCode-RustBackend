@@ -220,7 +220,8 @@ fn check_accepts_math_rounding_overloads_and_random_usage() {
         }
     "#;
 
-    check(src).expect("math overload growth, rounding helpers, and seeded random usage should typecheck");
+    check(src)
+        .expect("math overload growth, rounding helpers, and seeded random usage should typecheck");
 }
 
 #[test]
@@ -2166,7 +2167,8 @@ fn check_accepts_collection_iteration_baseline() {
         }
     "#;
 
-    check(src).expect("Collection iteration baseline should typecheck across list/set implementations");
+    check(src)
+        .expect("Collection iteration baseline should typecheck across list/set implementations");
 }
 
 #[test]
@@ -2222,7 +2224,8 @@ fn check_accepts_map_key_iteration_baseline() {
         }
     "#;
 
-    check(src).expect("Map key iteration baseline should typecheck through the shared map contract");
+    check(src)
+        .expect("Map key iteration baseline should typecheck through the shared map contract");
 }
 
 #[test]
@@ -2538,7 +2541,8 @@ fn check_accepts_wrapper_based_collection_usage_without_primitive_helpers() {
         }
     "#;
 
-    check(src).expect("wrapper-based collection usage should typecheck without primitive helper methods");
+    check(src)
+        .expect("wrapper-based collection usage should typecheck without primitive helper methods");
 }
 
 #[test]
@@ -2655,7 +2659,8 @@ fn check_accepts_collection_value_kind_matrix_without_primitive_helpers() {
         }
     "#;
 
-    check(src).expect("collection value-kind matrix should typecheck without primitive helper methods");
+    check(src)
+        .expect("collection value-kind matrix should typecheck without primitive helper methods");
 }
 
 #[test]
@@ -2854,7 +2859,8 @@ fn check_accepts_collection_remove_contract_across_list_and_set() {
         }
     "#;
 
-    check(src).expect("Collection remove contract should typecheck across list and set implementations");
+    check(src)
+        .expect("Collection remove contract should typecheck across list and set implementations");
 }
 
 #[test]

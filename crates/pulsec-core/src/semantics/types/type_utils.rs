@@ -251,7 +251,8 @@ pub(super) fn conversion_score(
     if class_simple_name(&expected_erased) == "Object"
         && (actual.ends_with("[]")
             || is_string_type(actual)
-            || (!is_primitive_non_void(&actual_erased) && class_simple_name(&actual_erased) != "void")
+            || (!is_primitive_non_void(&actual_erased)
+                && class_simple_name(&actual_erased) != "void")
             || class_index.contains_key(&actual_erased)
             || class_index
                 .keys()
@@ -369,7 +370,8 @@ pub(super) fn types_compatible(
     if class_simple_name(&expected_erased) == "Object"
         && (actual.ends_with("[]")
             || is_string_type(actual)
-            || (!is_primitive_non_void(&actual_erased) && class_simple_name(&actual_erased) != "void")
+            || (!is_primitive_non_void(&actual_erased)
+                && class_simple_name(&actual_erased) != "void")
             || class_index.contains_key(&actual_erased))
     {
         return true;

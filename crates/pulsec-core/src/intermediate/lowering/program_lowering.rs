@@ -160,10 +160,7 @@ pub(crate) fn lower_program_with_contexts(
                 .modifiers
                 .iter()
                 .any(|m| matches!(m, crate::Modifier::Final)),
-            super_class: class
-                .extends
-                .clone()
-                .or_else(|| default_super_class(class)),
+            super_class: class.extends.clone().or_else(|| default_super_class(class)),
             interfaces: class.implements.clone(),
             fields,
             methods,

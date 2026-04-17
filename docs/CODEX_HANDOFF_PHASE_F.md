@@ -1247,12 +1247,22 @@ Bridge / tooling truths added during the current `F1-97` push:
     - `author.project.TestInvocationBridge`
     - `author.project.ProjectDiscoveryBridge`
   - Rust check/test invocation resolution and test-file discovery now prefer those authored project contracts and only fall back to the older Rust path if the bridge is unavailable
+  - `author.compiler.*` now also owns workspace aggregation models through:
+    - `author.compiler.WorkspaceCheckResult`
+    - `author.compiler.WorkspaceTestResult`
+  - `author.compiler.*` now also owns workspace member/test execution outcome models through:
+    - `author.compiler.WorkspaceCheckMemberResult`
+    - `author.compiler.TestExecutionResult`
+    - `author.compiler.TestExecutionWriter`
+  - Rust CLI check/test loops now prefer authored rendering for workspace-member check results and single/workspace test pass/fail lines instead of raw inline `[PASS]` / `[FAIL]` formatting
+  - workspace check/test start/summary/failure rendering now routes through those authored workspace models instead of raw Rust counters and fixed strings
   - the later authored compiler discovery lift also exposed a bridge-structure truth:
     - the generated cached bridge dispatcher had become too large to trust as one giant `bridge.internal.Main.main()` body
     - compiler render branches now dispatch through helper methods inside the generated bridge source instead of keeping all compiler render paths inline
   - the widened authored project bridge slice exposed one more bootstrap/testing truth:
     - cold bridge prewarm can still fail transiently while another process is finishing the cached bridge build
     - the integration-test prewarm helper now retries `__prewarm-author-build-bridge` instead of treating the first transient cold-build failure as terminal
+    - it also now captures transient failed prewarm output instead of leaking cold-build stderr into otherwise passing runs
   - Rust `cli/build/mod.rs` now uses bridge-first author-build copy paths for:
     - published artifact file copies
     - published tree copies

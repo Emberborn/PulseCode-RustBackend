@@ -3957,7 +3957,7 @@ fn cli_build_executes_core_string_search_slice_and_trim_flow() {
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-      assert_eq!(
+    assert_eq!(
           out,
             "true\npulse\nPULSE\ntrue\n112\npulse\ncode\ntrue\ntrue\ntrue\ntrue\n3\n3\n7\n6\n7\n6\nbeam beam code\npulse-pulse-code\nnanana\nvalue\nvalue\n007\n7..\n3\na\nb\ntrue\n4\ntrue\npulse\ncode\ntrue\npulse-null-code\n5\np\ne\nok\nbc\nzip\nod\n\0\nu\ne\ntrue\ntrue\ntrue\ntrue\npulse\npulse\npulse\n106642798\n-2147483648\n-2147483648\n-42\n9000000000\n-7\n1234\n200\n60000\n4000000000\ntrue\ntrue\nfalse\n42\n9000000000\n-9223372036854775808\n4000000000\napp.core.Main\none plus six is: 7\n1x\napp.core.Main ready\nnull=null\napp.core.Main\nok\n1.5\n2.5\n4000000000\n"
         );
@@ -4092,7 +4092,7 @@ fn cli_build_executes_stringbuilder_insert_delete_setlength_and_object_append_fl
         "expected executable success\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&run.stdout),
         String::from_utf8_lossy(&run.stderr)
-      );
+    );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
     let lines: Vec<&str> = out.split('\n').collect();
     assert_eq!(lines.len(), 39);
@@ -7959,8 +7959,14 @@ fn cli_build_executes_list_remove_helper_flow() {
     let Some(shared_out) = build_and_run_source_in_mode(source, "shared") else {
         return;
     };
-    assert_eq!(fat_out, "b\n2\nfalse\ntrue\n1\npulse\nfalse\ntrue\n1\nlang\n");
-    assert_eq!(shared_out, fat_out, "list remove fat/shared outputs diverged");
+    assert_eq!(
+        fat_out,
+        "b\n2\nfalse\ntrue\n1\npulse\nfalse\ntrue\n1\nlang\n"
+    );
+    assert_eq!(
+        shared_out, fat_out,
+        "list remove fat/shared outputs diverged"
+    );
 }
 
 #[test]
@@ -9095,7 +9101,10 @@ fn cli_build_executes_transcendental_math_closure_slice() {
     let run = Command::new(exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "1000\n500\n-1000\n1000\n1000\n1000\n2718\n2718\n1000\n0\n3000\n2000\n");
+    assert_eq!(
+        out,
+        "1000\n500\n-1000\n1000\n1000\n1000\n2718\n2718\n1000\n0\n3000\n2000\n"
+    );
 
     let _ = fs::remove_dir_all(root);
 }
@@ -9152,7 +9161,10 @@ fn cli_build_executes_inverse_hyperbolic_math_closure_slice() {
     let run = Command::new(exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "524\n524\n1047\n1047\n785\n785\n2356\n-2356\n1175\n1175\n1543\n1543\n762\n762\n");
+    assert_eq!(
+        out,
+        "524\n524\n1047\n1047\n785\n785\n2356\n-2356\n1175\n1175\n1543\n1543\n762\n762\n"
+    );
 
     let _ = fs::remove_dir_all(root);
 }
@@ -9324,7 +9336,10 @@ fn cli_build_executes_full_primitive_math_closure_slice() {
     let run = Command::new(exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "7\n12\n65\n150\n1\n3000\n9\n9\n2\n1\n-873\n11002\n785\n1175\n1134\n5000\n");
+    assert_eq!(
+        out,
+        "7\n12\n65\n150\n1\n3000\n9\n9\n2\n1\n-873\n11002\n785\n1175\n1134\n5000\n"
+    );
 
     let _ = fs::remove_dir_all(root);
 }
@@ -9575,84 +9590,187 @@ fn cli_build_executes_expanded_random_deterministically() {
     assert_eq!(lines.len(), 97, "unexpected output: {}", out);
 
     for i in 0..38 {
-        assert_eq!(lines[i], lines[i + 38], "expanded random mismatch at line {}", i);
+        assert_eq!(
+            lines[i],
+            lines[i + 38],
+            "expanded random mismatch at line {}",
+            i
+        );
     }
 
     assert_eq!(lines[76], lines[77], "default-seed reset mismatch");
     assert_eq!(lines[78], lines[79], "copy mismatch");
     assert_eq!(lines[80], lines[81], "copy+skip mismatch");
-    assert_eq!(lines[82], lines[83], "long-seed constructor/setSeed mismatch");
+    assert_eq!(
+        lines[82], lines[83],
+        "long-seed constructor/setSeed mismatch"
+    );
     assert_eq!(lines[84], lines[85], "reset/default-seed mismatch");
-    assert_eq!(lines[86], lines[95], "uint seed constructor/setSeed mismatch");
+    assert_eq!(
+        lines[86], lines[95],
+        "uint seed constructor/setSeed mismatch"
+    );
 
     let bounded = lines[1].parse::<i32>().expect("bounded int");
-    assert!((0..10).contains(&bounded), "unexpected nextInt(bound): {}", bounded);
+    assert!(
+        (0..10).contains(&bounded),
+        "unexpected nextInt(bound): {}",
+        bounded
+    );
 
     let ranged = lines[2].parse::<i32>().expect("ranged int");
-    assert!((3..9).contains(&ranged), "unexpected nextInt(origin,bound): {}", ranged);
+    assert!(
+        (3..9).contains(&ranged),
+        "unexpected nextInt(origin,bound): {}",
+        ranged
+    );
 
     let long_bounded = lines[5].parse::<i64>().expect("bounded long");
-    assert!((0..100).contains(&long_bounded), "unexpected nextLong(bound): {}", long_bounded);
+    assert!(
+        (0..100).contains(&long_bounded),
+        "unexpected nextLong(bound): {}",
+        long_bounded
+    );
 
     let long_ranged = lines[6].parse::<i64>().expect("ranged long");
-    assert!((20..40).contains(&long_ranged), "unexpected nextLong(origin,bound): {}", long_ranged);
+    assert!(
+        (20..40).contains(&long_ranged),
+        "unexpected nextLong(origin,bound): {}",
+        long_ranged
+    );
 
     let bounded_byte = lines[8].parse::<i32>().expect("bounded byte");
-    assert!((0..20).contains(&bounded_byte), "unexpected nextByte(bound): {}", bounded_byte);
+    assert!(
+        (0..20).contains(&bounded_byte),
+        "unexpected nextByte(bound): {}",
+        bounded_byte
+    );
 
     let ranged_byte = lines[9].parse::<i32>().expect("ranged byte");
-    assert!((4..12).contains(&ranged_byte), "unexpected nextByte(origin,bound): {}", ranged_byte);
+    assert!(
+        (4..12).contains(&ranged_byte),
+        "unexpected nextByte(origin,bound): {}",
+        ranged_byte
+    );
 
     let bounded_short = lines[11].parse::<i32>().expect("bounded short");
-    assert!((0..500).contains(&bounded_short), "unexpected nextShort(bound): {}", bounded_short);
+    assert!(
+        (0..500).contains(&bounded_short),
+        "unexpected nextShort(bound): {}",
+        bounded_short
+    );
 
     let ranged_short = lines[12].parse::<i32>().expect("ranged short");
-    assert!((100..200).contains(&ranged_short), "unexpected nextShort(origin,bound): {}", ranged_short);
+    assert!(
+        (100..200).contains(&ranged_short),
+        "unexpected nextShort(origin,bound): {}",
+        ranged_short
+    );
 
     let bounded_char = lines[14].parse::<u32>().expect("bounded char");
-    assert!(bounded_char < 128, "unexpected nextChar(bound): {}", bounded_char);
+    assert!(
+        bounded_char < 128,
+        "unexpected nextChar(bound): {}",
+        bounded_char
+    );
 
     let ranged_char = lines[15].parse::<u32>().expect("ranged char");
-    assert!((65..91).contains(&ranged_char), "unexpected nextChar(origin,bound): {}", ranged_char);
+    assert!(
+        (65..91).contains(&ranged_char),
+        "unexpected nextChar(origin,bound): {}",
+        ranged_char
+    );
 
     let gaussian_scaled = lines[23].parse::<f64>().expect("scaled gaussian");
-    assert!(gaussian_scaled >= -1000.0, "unexpected nextGaussian(mean,stddev): {}", gaussian_scaled);
+    assert!(
+        gaussian_scaled >= -1000.0,
+        "unexpected nextGaussian(mean,stddev): {}",
+        gaussian_scaled
+    );
 
     let uint_bounded = lines[87].parse::<u32>().expect("bounded uint");
-    assert!(uint_bounded < 50, "unexpected nextUInt(bound): {}", uint_bounded);
+    assert!(
+        uint_bounded < 50,
+        "unexpected nextUInt(bound): {}",
+        uint_bounded
+    );
 
     let uint_ranged = lines[88].parse::<u32>().expect("ranged uint");
-    assert!((10..20).contains(&uint_ranged), "unexpected nextUInt(origin,bound): {}", uint_ranged);
+    assert!(
+        (10..20).contains(&uint_ranged),
+        "unexpected nextUInt(origin,bound): {}",
+        uint_ranged
+    );
 
     let ulong_bounded = lines[90].parse::<u64>().expect("bounded ulong");
-    assert!(ulong_bounded < 100, "unexpected nextULong(bound): {}", ulong_bounded);
+    assert!(
+        ulong_bounded < 100,
+        "unexpected nextULong(bound): {}",
+        ulong_bounded
+    );
 
     let ulong_ranged = lines[91].parse::<u64>().expect("ranged ulong");
-    assert!((30..60).contains(&ulong_ranged), "unexpected nextULong(origin,bound): {}", ulong_ranged);
+    assert!(
+        (30..60).contains(&ulong_ranged),
+        "unexpected nextULong(origin,bound): {}",
+        ulong_ranged
+    );
 
     let ubyte_bounded = lines[93].parse::<u8>().expect("bounded ubyte");
-    assert!(ubyte_bounded < 25, "unexpected nextUByte(bound): {}", ubyte_bounded);
+    assert!(
+        ubyte_bounded < 25,
+        "unexpected nextUByte(bound): {}",
+        ubyte_bounded
+    );
 
     let ushort_bounded = lines[94].parse::<u16>().expect("bounded ushort");
-    assert!(ushort_bounded < 500, "unexpected nextUShort(bound): {}", ushort_bounded);
+    assert!(
+        ushort_bounded < 500,
+        "unexpected nextUShort(bound): {}",
+        ushort_bounded
+    );
 
     let next_float = lines[16].parse::<f32>().expect("next float");
-    assert!((0.0..1.0).contains(&next_float), "unexpected nextFloat(): {}", next_float);
+    assert!(
+        (0.0..1.0).contains(&next_float),
+        "unexpected nextFloat(): {}",
+        next_float
+    );
 
     let next_double = lines[17].parse::<f64>().expect("next double");
-    assert!((0.0..1.0).contains(&next_double), "unexpected nextDouble(): {}", next_double);
+    assert!(
+        (0.0..1.0).contains(&next_double),
+        "unexpected nextDouble(): {}",
+        next_double
+    );
 
     let bounded_float = lines[18].parse::<f32>().expect("bounded float");
-    assert!((0.0..5.0).contains(&bounded_float), "unexpected nextFloat(bound): {}", bounded_float);
+    assert!(
+        (0.0..5.0).contains(&bounded_float),
+        "unexpected nextFloat(bound): {}",
+        bounded_float
+    );
 
     let ranged_float = lines[19].parse::<f32>().expect("ranged float");
-    assert!((2.0..6.0).contains(&ranged_float), "unexpected nextFloat(origin,bound): {}", ranged_float);
+    assert!(
+        (2.0..6.0).contains(&ranged_float),
+        "unexpected nextFloat(origin,bound): {}",
+        ranged_float
+    );
 
     let bounded_double = lines[20].parse::<f64>().expect("bounded double");
-    assert!((0.0..8.0).contains(&bounded_double), "unexpected nextDouble(bound): {}", bounded_double);
+    assert!(
+        (0.0..8.0).contains(&bounded_double),
+        "unexpected nextDouble(bound): {}",
+        bounded_double
+    );
 
     let ranged_double = lines[21].parse::<f64>().expect("ranged double");
-    assert!((3.0..9.0).contains(&ranged_double), "unexpected nextDouble(origin,bound): {}", ranged_double);
+    assert!(
+        (3.0..9.0).contains(&ranged_double),
+        "unexpected nextDouble(origin,bound): {}",
+        ranged_double
+    );
 
     for idx in 25..28 {
         let value = lines[idx].parse::<i32>().expect("bulk int");
@@ -9661,32 +9779,72 @@ fn cli_build_executes_expanded_random_deterministically() {
 
     for idx in 28..30 {
         let value = lines[idx].parse::<i32>().expect("bounded bulk int");
-        assert!((0..10).contains(&value), "unexpected bulk nextInt(bound): {}", value);
+        assert!(
+            (0..10).contains(&value),
+            "unexpected bulk nextInt(bound): {}",
+            value
+        );
     }
 
     let bulk_byte_a = lines[30].parse::<i32>().expect("bulk byte a");
     let bulk_byte_b = lines[31].parse::<i32>().expect("bulk byte b");
-    assert!((-128..128).contains(&bulk_byte_a), "unexpected bulk nextByte(): {}", bulk_byte_a);
-    assert!((-128..128).contains(&bulk_byte_b), "unexpected bulk nextByte(): {}", bulk_byte_b);
+    assert!(
+        (-128..128).contains(&bulk_byte_a),
+        "unexpected bulk nextByte(): {}",
+        bulk_byte_a
+    );
+    assert!(
+        (-128..128).contains(&bulk_byte_b),
+        "unexpected bulk nextByte(): {}",
+        bulk_byte_b
+    );
 
     let bulk_short_a = lines[32].parse::<i32>().expect("bulk short a");
     let bulk_short_b = lines[33].parse::<i32>().expect("bulk short b");
-    assert!((-32768..32768).contains(&bulk_short_a), "unexpected bulk nextShort(): {}", bulk_short_a);
-    assert!((-32768..32768).contains(&bulk_short_b), "unexpected bulk nextShort(): {}", bulk_short_b);
+    assert!(
+        (-32768..32768).contains(&bulk_short_a),
+        "unexpected bulk nextShort(): {}",
+        bulk_short_a
+    );
+    assert!(
+        (-32768..32768).contains(&bulk_short_b),
+        "unexpected bulk nextShort(): {}",
+        bulk_short_b
+    );
 
     let bulk_char_a = lines[34].parse::<u32>().expect("bulk char a");
     let bulk_char_b = lines[35].parse::<u32>().expect("bulk char b");
-    assert!(bulk_char_a <= 65535, "unexpected bulk nextChar(): {}", bulk_char_a);
-    assert!(bulk_char_b <= 65535, "unexpected bulk nextChar(): {}", bulk_char_b);
+    assert!(
+        bulk_char_a <= 65535,
+        "unexpected bulk nextChar(): {}",
+        bulk_char_a
+    );
+    assert!(
+        bulk_char_b <= 65535,
+        "unexpected bulk nextChar(): {}",
+        bulk_char_b
+    );
 
     let reset_bounded = lines[76].parse::<i32>().expect("reset bounded");
-    assert!((0..5).contains(&reset_bounded), "unexpected reset nextInt(bound): {}", reset_bounded);
+    assert!(
+        (0..5).contains(&reset_bounded),
+        "unexpected reset nextInt(bound): {}",
+        reset_bounded
+    );
 
     let long_seed_value = lines[82].parse::<i32>().expect("long seed value");
-    assert!((0..10).contains(&long_seed_value), "unexpected long-seed nextInt(bound): {}", long_seed_value);
+    assert!(
+        (0..10).contains(&long_seed_value),
+        "unexpected long-seed nextInt(bound): {}",
+        long_seed_value
+    );
 
     let reset_default_value = lines[84].parse::<i32>().expect("reset default value");
-    assert!((0..10).contains(&reset_default_value), "unexpected reset/default nextInt(bound): {}", reset_default_value);
+    assert!(
+        (0..10).contains(&reset_default_value),
+        "unexpected reset/default nextInt(bound): {}",
+        reset_default_value
+    );
 
     let _ = fs::remove_dir_all(root);
 }
@@ -10218,7 +10376,11 @@ false
 ";
     let actual_lines = out.split('\n').collect::<Vec<_>>();
     let expected_lines = expected.split('\n').collect::<Vec<_>>();
-    assert_eq!(actual_lines.len(), expected_lines.len(), "line count mismatch");
+    assert_eq!(
+        actual_lines.len(),
+        expected_lines.len(),
+        "line count mismatch"
+    );
     for (idx, (actual, expected)) in actual_lines.iter().zip(expected_lines.iter()).enumerate() {
         if *expected == "<scratch-dir>" {
             assert!(
@@ -10861,7 +11023,10 @@ fn cli_build_executes_objects_utility_baseline() {
     let run = Command::new(exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "true\ntrue\ntrue\nfalse\n0\ntrue\nnull\nfallback\ntrue\n");
+    assert_eq!(
+        out,
+        "true\ntrue\ntrue\nfalse\n0\ntrue\nnull\nfallback\ntrue\n"
+    );
 
     let _ = fs::remove_dir_all(root);
 }
@@ -10919,7 +11084,10 @@ fn cli_build_executes_string_tokenizer_utility_baseline() {
     let run = Command::new(exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "true\n3\nalpha\nbeta\ngamma\ngamma\nfalse\nx\ny\nz\nfalse\n");
+    assert_eq!(
+        out,
+        "true\n3\nalpha\nbeta\ngamma\ngamma\nfalse\nx\ny\nz\nfalse\n"
+    );
 
     let _ = fs::remove_dir_all(root);
 }
@@ -10991,7 +11159,7 @@ fn cli_build_executes_scanner_utility_baseline() {
     let run = Command::new(exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-      assert_eq!(out, "true\n42\ntrue\n3.5\n4.25\n9000000000\n\ntrue\nalpha\n beta\nbeta\nline-fallback\n42\nred\ngreen\nblue\nfalse\n");
+    assert_eq!(out, "true\n42\ntrue\n3.5\n4.25\n9000000000\n\ntrue\nalpha\n beta\nbeta\nline-fallback\n42\nred\ngreen\nblue\nfalse\n");
 
     let _ = fs::remove_dir_all(root);
 }
@@ -11163,10 +11331,7 @@ fn cli_build_executes_properties_utility_baseline() {
     let run = Command::new(exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(
-        out,
-        "true\n\ndev\nfallback\ntrue\ndev\ntrue\ntrue\ntrue\n"
-    );
+    assert_eq!(out, "true\n\ndev\nfallback\ntrue\ndev\ntrue\ntrue\ntrue\n");
 
     let _ = fs::remove_dir_all(root);
 }
@@ -11437,7 +11602,11 @@ enabled = true
         return;
     }
 
-    let exe = root.join("build").join("distro").join("release").join("author-discovery-0.1.0.exe");
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("author-discovery-0.1.0.exe");
     let run = Command::new(exe).output().expect("run exe");
     assert!(run.status.success(), "exe failed");
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
@@ -11519,7 +11688,11 @@ fn cli_build_executes_uuid_utility_baseline() {
     assert_eq!(lines[3], "true");
     assert_eq!(lines[4], "true");
     let order = lines[6].parse::<i32>().expect("uuid ordering");
-    assert!(order < 0, "expected nil UUID to compare before parsed UUID: {}", order);
+    assert!(
+        order < 0,
+        "expected nil UUID to compare before parsed UUID: {}",
+        order
+    );
     assert_eq!(lines[7], lines[8], "deterministic UUID mismatch");
     assert_eq!(lines[9], "4");
     assert_eq!(lines[10], "2");
@@ -11648,7 +11821,7 @@ fn cli_build_executes_clock_time_closure_slice() {
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-        assert_eq!(
+    assert_eq!(
             out,
             "false\ntrue\ntrue\ntrue\n1775812530125\n1775812560125\n1775812530000\n2026-04-10T09:15:30.125Z\n2026-04-10T09:16:00.125Z\n2026-04-10T09:15:30.000Z\n2026-04-10\n09:15:30.125\n2026-04-10T09:15:30.125\nPT30S\nPT1S\n2026-04-10T09:15:30.125Z\n2026-04-10\n09:15:30.125\n2026-04-10T09:15:30.125\ntrue\ntrue\ntrue\n2026-04-10T09:15:30.375Z\n2026-04-10T09:15:00.000Z\nClock[fixed=2026-04-10T09:15:30.125Z]\nClock[offset=PT30S,fixed=2026-04-10T09:16:00.125Z]\nClock[tick=PT1S,fixed=2026-04-10T09:15:30.125Z]\nfalse\ntrue\ntrue\ntrue\n2000000000\n2000\nPT2.2S\nPT250MS\nPT100MS\ntrue\ntrue\nTimeSource[offset=PT100MS,fixed=2100000000ns]\nTimeSource[tick=PT250MS,fixed=2000000000ns]\nTimeSource[tick=PT100MS,offset=PT250MS,fixed=2200000000ns]\n500000\n250000\n2000500000\nTimeSource[tick=PT250MS,fixed=2000000000ns]\n"
         );
@@ -12495,7 +12668,10 @@ fn cli_build_executes_system_in_console_reader_baseline() {
         String::from_utf8_lossy(&run.stderr)
     );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
-    assert_eq!(out, "name> pulse\nfalse\n0\nfallback\ntrue\ntrue\nfalse\ntrue\nafter-close\nfalse\n");
+    assert_eq!(
+        out,
+        "name> pulse\nfalse\n0\nfallback\ntrue\ntrue\nfalse\ntrue\nafter-close\nfalse\n"
+    );
 
     let _ = fs::remove_dir_all(root);
 }
@@ -13362,4 +13538,3 @@ fn cli_build_outputstream_use_after_close_panics_deterministically() {
 
     let _ = fs::remove_dir_all(root);
 }
-

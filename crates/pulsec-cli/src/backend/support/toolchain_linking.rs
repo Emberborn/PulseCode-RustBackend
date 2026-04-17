@@ -75,7 +75,11 @@ fn emit_toolchain_probe_custom_bridge_request(
     append_bridge_request_value(
         &mut out,
         "visualStudioRoots",
-        if vs_roots.is_empty() { None } else { Some(vs_roots.as_str()) },
+        if vs_roots.is_empty() {
+            None
+        } else {
+            Some(vs_roots.as_str())
+        },
     );
     append_bridge_request_value(
         &mut out,
@@ -90,7 +94,11 @@ fn emit_toolchain_probe_custom_bridge_request(
     append_bridge_request_value(
         &mut out,
         "windowsSdkLibRoots",
-        if sdk_roots.is_empty() { None } else { Some(sdk_roots.as_str()) },
+        if sdk_roots.is_empty() {
+            None
+        } else {
+            Some(sdk_roots.as_str())
+        },
     );
     append_bridge_request_value(
         &mut out,
@@ -244,7 +252,9 @@ fn parse_bridge_lines(values: &HashMap<String, String>, key: &str) -> Result<Vec
         .collect())
 }
 
-fn parse_toolchain_discovery_bridge_output(text: &str) -> Result<AuthorToolchainDiscoveryPlan, String> {
+fn parse_toolchain_discovery_bridge_output(
+    text: &str,
+) -> Result<AuthorToolchainDiscoveryPlan, String> {
     let values = parse_bridge_values(text)?;
     Ok(AuthorToolchainDiscoveryPlan {
         visual_studio_roots: parse_bridge_lines(&values, "visualStudioRoots")?,
@@ -264,7 +274,9 @@ fn parse_toolchain_discovery_bridge_output(text: &str) -> Result<AuthorToolchain
     })
 }
 
-fn parse_toolchain_candidate_bridge_output(text: &str) -> Result<(Vec<PathBuf>, Vec<PathBuf>), String> {
+fn parse_toolchain_candidate_bridge_output(
+    text: &str,
+) -> Result<(Vec<PathBuf>, Vec<PathBuf>), String> {
     let values = parse_bridge_values(text)?;
     Ok((
         parse_bridge_lines(&values, "linkerCandidates")?,
@@ -272,14 +284,13 @@ fn parse_toolchain_candidate_bridge_output(text: &str) -> Result<(Vec<PathBuf>, 
     ))
 }
 
-fn parse_optional_bridge_path(
-    values: &HashMap<String, String>,
-    key: &str,
-) -> Option<PathBuf> {
+fn parse_optional_bridge_path(values: &HashMap<String, String>, key: &str) -> Option<PathBuf> {
     values.get(key).map(PathBuf::from)
 }
 
-fn parse_toolchain_probe_bridge_output(text: &str) -> Result<AuthorToolchainDiscoveryResult, String> {
+fn parse_toolchain_probe_bridge_output(
+    text: &str,
+) -> Result<AuthorToolchainDiscoveryResult, String> {
     let values = parse_bridge_values(text)?;
     Ok(AuthorToolchainDiscoveryResult {
         visual_studio_linkers: parse_bridge_lines(&values, "visualStudioLinkers")?,
@@ -287,7 +298,9 @@ fn parse_toolchain_probe_bridge_output(text: &str) -> Result<AuthorToolchainDisc
     })
 }
 
-fn parse_toolchain_process_bridge_output(text: &str) -> Result<AuthorToolchainProcessResult, String> {
+fn parse_toolchain_process_bridge_output(
+    text: &str,
+) -> Result<AuthorToolchainProcessResult, String> {
     let values = parse_bridge_values(text)?;
     let exit_code = required_bridge_value(&values, "exitCode")?
         .parse::<i32>()
@@ -357,10 +370,9 @@ fn author_toolchain_write_response_file(
     response_file_path: &Path,
     args: &[String],
 ) -> Result<PathBuf, String> {
-    let output = run_author_build_bridge_request(&emit_toolchain_write_response_file_bridge_request(
-        response_file_path,
-        args,
-    ))?;
+    let output = run_author_build_bridge_request(
+        &emit_toolchain_write_response_file_bridge_request(response_file_path, args),
+    )?;
     let written_path = output.trim();
     if written_path.is_empty() {
         return Err("author bridge returned empty response-file path".to_string());
@@ -379,9 +391,7 @@ fn unique_toolchain_process_capture_root() -> PathBuf {
     ))
 }
 
-fn author_toolchain_execute_process(
-    plan: &ToolchainProcessPlan,
-) -> Result<Output, String> {
+fn author_toolchain_execute_process(plan: &ToolchainProcessPlan) -> Result<Output, String> {
     if !plan.environment.inherit_parent_environment {
         return Err(
             "author toolchain process bridge does not yet support inheritParentEnvironment=false"
@@ -943,9 +953,11 @@ fn ordered_linker_candidates(
     env_linker: Option<&str>,
     discovered_visual_studio_linkers: &[PathBuf],
 ) -> Vec<PathBuf> {
-    if let Ok((linkers, _)) =
-        author_toolchain_candidate_plan(linker_override, env_linker, discovered_visual_studio_linkers)
-    {
+    if let Ok((linkers, _)) = author_toolchain_candidate_plan(
+        linker_override,
+        env_linker,
+        discovered_visual_studio_linkers,
+    ) {
         return linkers;
     }
     if let Some(path) = linker_override {
@@ -967,9 +979,11 @@ fn ordered_ml64_candidates(
     env_linker: Option<&str>,
     discovered_visual_studio_linkers: &[PathBuf],
 ) -> Vec<PathBuf> {
-    if let Ok((_, assemblers)) =
-        author_toolchain_candidate_plan(linker_override, env_linker, discovered_visual_studio_linkers)
-    {
+    if let Ok((_, assemblers)) = author_toolchain_candidate_plan(
+        linker_override,
+        env_linker,
+        discovered_visual_studio_linkers,
+    ) {
         return assemblers;
     }
     let mut candidates = Vec::new();
@@ -1106,7 +1120,8 @@ mod tests {
     fn ensure_author_build_bridge_ready_for_toolchain_tests() {
         static READY: OnceLock<()> = OnceLock::new();
         READY.get_or_init(|| {
-            prewarm_author_build_bridge_runner().expect("prewarm author build bridge for toolchain tests");
+            prewarm_author_build_bridge_runner()
+                .expect("prewarm author build bridge for toolchain tests");
         });
     }
 
@@ -1170,7 +1185,8 @@ mod tests {
     #[test]
     fn toolchain_discovery_bridge_locks_windows_probe_graph() {
         ensure_author_build_bridge_ready_for_toolchain_tests();
-        let plan = author_toolchain_discovery_plan().expect("resolve bridged toolchain discovery plan");
+        let plan =
+            author_toolchain_discovery_plan().expect("resolve bridged toolchain discovery plan");
         assert_eq!(
             plan,
             AuthorToolchainDiscoveryPlan {
@@ -1180,7 +1196,9 @@ mod tests {
                 ],
                 visual_studio_tool_root_relative_path: PathBuf::from("VC/Tools/MSVC"),
                 visual_studio_linker_relative_path: PathBuf::from("bin/Hostx64/x64/link.exe"),
-                windows_sdk_lib_roots: vec![PathBuf::from("C:/Program Files (x86)/Windows Kits/10/Lib")],
+                windows_sdk_lib_roots: vec![PathBuf::from(
+                    "C:/Program Files (x86)/Windows Kits/10/Lib"
+                )],
                 windows_sdk_kernel32_relative_path: PathBuf::from("um/x64/kernel32.lib"),
             }
         );
@@ -1280,8 +1298,14 @@ mod tests {
             windows_sdk_lib_roots: vec![kits_root.clone()],
             windows_sdk_kernel32_relative_path: PathBuf::from("um/x64/kernel32.lib"),
         };
-        assert_eq!(discover_visual_studio_linkers_with_plan(&plan), vec![link_path.clone()]);
-        assert_eq!(discover_kernel32_lib_with_plan(&plan), Some(kernel32.clone()));
+        assert_eq!(
+            discover_visual_studio_linkers_with_plan(&plan),
+            vec![link_path.clone()]
+        );
+        assert_eq!(
+            discover_kernel32_lib_with_plan(&plan),
+            Some(kernel32.clone())
+        );
 
         let _ = fs::remove_dir_all(root);
     }
@@ -1330,7 +1354,10 @@ mod tests {
         let runtime_args = plan_windows_shared_runtime_link_args(
             Path::new("build/pulsecore.dll"),
             Path::new("build/pulsecore.lib"),
-            &["pulsec_rt_init".to_string(), "pulsec_rt_shutdown".to_string()],
+            &[
+                "pulsec_rt_init".to_string(),
+                "pulsec_rt_shutdown".to_string(),
+            ],
             &[PathBuf::from("obj/runtime/StdlibRuntime.obj")],
             &[PathBuf::from("obj/pulse/lang/IO.obj")],
             &[PathBuf::from("kernel32.lib")],
@@ -1477,12 +1504,12 @@ mod tests {
                 index
             ));
         }
-        let written = author_toolchain_write_response_file(
-            &rsp_path,
-            &args,
-        )
-        .expect("write response file through author bridge");
-        assert_eq!(written, PathBuf::from(normalize_bridge_path(&rsp_path.display().to_string())));
+        let written = author_toolchain_write_response_file(&rsp_path, &args)
+            .expect("write response file through author bridge");
+        assert_eq!(
+            written,
+            PathBuf::from(normalize_bridge_path(&rsp_path.display().to_string()))
+        );
         let body = fs::read_to_string(&rsp_path).expect("read bridged response file");
         let expected = args
             .iter()
@@ -1509,7 +1536,11 @@ mod tests {
         };
         let output =
             author_toolchain_execute_process(&process).expect("execute toolchain process bridge");
-        assert!(output.status.success(), "bridge process failed: {:?}", output.status);
+        assert!(
+            output.status.success(),
+            "bridge process failed: {:?}",
+            output.status
+        );
         let stdout = String::from_utf8_lossy(&output.stdout);
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert!(

@@ -106,7 +106,11 @@ impl IrBuilder {
         tail.push(right);
         loop {
             match current {
-                Expr::Binary { left, op: current_op, right } if current_op == op => {
+                Expr::Binary {
+                    left,
+                    op: current_op,
+                    right,
+                } if current_op == op => {
                     tail.push(right.as_ref());
                     current = left.as_ref();
                 }
@@ -159,47 +163,45 @@ impl IrBuilder {
             }
             Expr::Cast { ty, .. } => Some(erase_type_for_runtime(ty, &self.visible_type_params)),
             Expr::InstanceOf { .. } => Some("boolean".to_string()),
-            Expr::Binary { left, op, right } => {
-                match op {
-                    BinaryOp::LogicalAnd
-                    | BinaryOp::LogicalOr
-                    | BinaryOp::Eq
-                    | BinaryOp::NotEq
-                    | BinaryOp::Less
-                    | BinaryOp::LessEq
-                    | BinaryOp::Greater
-                    | BinaryOp::GreaterEq => Some("boolean".to_string()),
-                    _ => {
-                        let left_ty = self.infer_expr_type_from_ast(left)?;
-                        let right_ty = self.infer_expr_type_from_ast(right)?;
-                        match op {
-                            BinaryOp::Add if left_ty == "String" || right_ty == "String" => {
-                                Some("String".to_string())
-                            }
-                            BinaryOp::Add
-                            | BinaryOp::Sub
-                            | BinaryOp::Mul
-                            | BinaryOp::Div
-                            | BinaryOp::Mod => {
-                                Some(Self::lowered_numeric_binary_ty(&left_ty, &right_ty))
-                            }
-                            BinaryOp::BitAnd | BinaryOp::BitOr | BinaryOp::BitXor => {
-                                if left_ty == "boolean" && right_ty == "boolean" {
-                                    Some("boolean".to_string())
-                                } else {
-                                    Self::lowered_integral_binary_ty(&left_ty, &right_ty)
-                                }
-                            }
-                            BinaryOp::ShiftLeft
-                            | BinaryOp::ShiftRight
-                            | BinaryOp::UnsignedShiftRight => {
-                                Self::lowered_shift_ty(&left_ty).or_else(|| Some(left_ty))
-                            }
-                            _ => None,
+            Expr::Binary { left, op, right } => match op {
+                BinaryOp::LogicalAnd
+                | BinaryOp::LogicalOr
+                | BinaryOp::Eq
+                | BinaryOp::NotEq
+                | BinaryOp::Less
+                | BinaryOp::LessEq
+                | BinaryOp::Greater
+                | BinaryOp::GreaterEq => Some("boolean".to_string()),
+                _ => {
+                    let left_ty = self.infer_expr_type_from_ast(left)?;
+                    let right_ty = self.infer_expr_type_from_ast(right)?;
+                    match op {
+                        BinaryOp::Add if left_ty == "String" || right_ty == "String" => {
+                            Some("String".to_string())
                         }
+                        BinaryOp::Add
+                        | BinaryOp::Sub
+                        | BinaryOp::Mul
+                        | BinaryOp::Div
+                        | BinaryOp::Mod => {
+                            Some(Self::lowered_numeric_binary_ty(&left_ty, &right_ty))
+                        }
+                        BinaryOp::BitAnd | BinaryOp::BitOr | BinaryOp::BitXor => {
+                            if left_ty == "boolean" && right_ty == "boolean" {
+                                Some("boolean".to_string())
+                            } else {
+                                Self::lowered_integral_binary_ty(&left_ty, &right_ty)
+                            }
+                        }
+                        BinaryOp::ShiftLeft
+                        | BinaryOp::ShiftRight
+                        | BinaryOp::UnsignedShiftRight => {
+                            Self::lowered_shift_ty(&left_ty).or_else(|| Some(left_ty))
+                        }
+                        _ => None,
                     }
                 }
-            }
+            },
             Expr::Conditional {
                 then_expr,
                 else_expr,
@@ -254,7 +256,8 @@ impl IrBuilder {
                     .map(|(_, return_ty, _)| return_ty)
             }
             Expr::MemberAccess { object, member } => {
-                if let Some((enum_ty, _)) = resolve_enum_constant(expr, member, &self.enum_constants)
+                if let Some((enum_ty, _)) =
+                    resolve_enum_constant(expr, member, &self.enum_constants)
                 {
                     return Some(enum_ty);
                 }
@@ -319,11 +322,7 @@ impl IrBuilder {
         self.coerce_numeric_value(value_id, target_ty, statement_index)
     }
 
-    fn lower_string_value_of(
-        &mut self,
-        value_id: IrValueId,
-        statement_index: usize,
-    ) -> IrValueId {
+    fn lower_string_value_of(&mut self, value_id: IrValueId, statement_index: usize) -> IrValueId {
         let value_ty = self.value_ty(value_id);
         if value_ty == "String" {
             return value_id;
