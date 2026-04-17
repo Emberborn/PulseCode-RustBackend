@@ -83,6 +83,25 @@ public final class ProjectDiscovery {
     }
 
     /**
+     * Resolves one workspace context rooted at the nearest manifest above the supplied start path.
+     */
+    public static WorkspaceContext resolveWorkspaceContext(String startPath) {
+        String manifestPath = ProjectDiscovery.findManifestPath(startPath);
+        if (manifestPath == null) {
+            return null;
+        }
+        String rootPath = Path.parent(manifestPath);
+        ProjectManifest manifest = ProjectDiscovery.loadManifest(manifestPath);
+        if (manifest.workspace() == null) {
+            return null;
+        }
+        return new WorkspaceContext(
+            rootPath,
+            ProjectDiscovery.resolveWorkspaceMemberProjectRoots(rootPath, manifest.workspace())
+        );
+    }
+
+    /**
      * Resolves workspace member project roots against the filesystem-backed manifest contract.
      */
     public static List<String> resolveWorkspaceMemberProjectRoots(

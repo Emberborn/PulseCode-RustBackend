@@ -71,8 +71,14 @@ The current target taxonomy is:
     - `author.project.CheckInvocationBridge`
     - `author.project.TestInvocationBridge`
     - `author.project.ProjectDiscoveryBridge`
+    - `author.project.WorkspaceContext`
+    - `author.project.WorkspaceContextBridge`
 - `author.build.*`
   - artifact layout, publication, packaging-adjacent build metadata
+  - workspace-build execution/result contracts now also live here through:
+    - `author.build.WorkspaceBuildResult`
+    - `author.build.WorkspaceBuildMemberResult`
+    - `author.build.BuildSummaryWriter.renderWorkspaceBuild*`
 - `author.toolchain.*`
   - assembler/linker/process/env invocation and related toolchain facades
   - `author.compiler.*`

@@ -7,6 +7,34 @@ import pulse.lang.StringBuilder;
  * Renders the user-visible build summary contract for CLI build output.
  */
 public final class BuildSummaryWriter {
+    public static String renderWorkspaceBuildStart(WorkspaceBuildResult result) {
+        return "Workspace build: root="
+            .concat(result.rootPath())
+            .concat(" members=")
+            .concat(String.valueOf(result.memberCount()));
+    }
+
+    public static String renderWorkspaceBuildMemberResult(WorkspaceBuildMemberResult result) {
+        if (result.success()) {
+            return "[PASS] ".concat(result.memberRoot());
+        }
+        return "[FAIL] "
+            .concat(result.memberRoot())
+            .concat(" :: ")
+            .concat(result.detail());
+    }
+
+    public static String renderWorkspaceBuildSummary(WorkspaceBuildResult result) {
+        return "Workspace build summary: failed="
+            .concat(String.valueOf(result.failed()))
+            .concat(" total=")
+            .concat(String.valueOf(result.memberCount()));
+    }
+
+    public static String renderWorkspaceBuildFailure(WorkspaceBuildResult result) {
+        return "one or more workspace members failed build";
+    }
+
     public static String renderBuildSummary(
         int classes,
         int methods,

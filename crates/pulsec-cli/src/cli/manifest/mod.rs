@@ -28,6 +28,28 @@ pub(super) fn resolve_workspace_context(
     entry_arg: Option<&str>,
     flags: &CliFlags,
 ) -> Result<Option<WorkspaceContext>, String> {
+    if let Ok(workspace) = resolve_workspace_context_via_authorlib(entry_arg, flags) {
+        return Ok(workspace);
+    }
+    resolve_workspace_context_fallback(entry_arg, flags)
+}
+
+fn resolve_workspace_context_via_authorlib(
+    entry_arg: Option<&str>,
+    flags: &CliFlags,
+) -> Result<Option<WorkspaceContext>, String> {
+    let start_path = manifest_bridge_start_path(entry_arg, flags)?;
+    let mut request = String::new();
+    request.push_str("project-resolve-workspace-context\n");
+    append_bridge_request_raw_value(&mut request, Some(start_path.as_str()));
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_workspace_context_bridge_output(&stdout)
+}
+
+fn resolve_workspace_context_fallback(
+    entry_arg: Option<&str>,
+    flags: &CliFlags,
+) -> Result<Option<WorkspaceContext>, String> {
     if entry_arg.is_some() || flags.source_root.is_some() {
         return Ok(None);
     }
@@ -45,6 +67,51 @@ pub(super) fn resolve_workspace_context(
         .to_path_buf();
     let member_roots = resolve_workspace_member_roots(&root, &workspace.members)?;
     Ok(Some(WorkspaceContext { root, member_roots }))
+}
+
+fn parse_workspace_context_bridge_output(text: &str) -> Result<Option<WorkspaceContext>, String> {
+    if text.trim().is_empty() {
+        return Ok(None);
+    }
+    let values = parse_bridge_keyed_values(text)?;
+    let root = manifest_required_bridge_value(&values, "rootPath")?;
+    let count = manifest_required_bridge_value(&values, "count")?
+        .parse::<usize>()
+        .map_err(|e| format!("author bridge workspace count parse failed: {e}"))?;
+    let mut member_roots = Vec::with_capacity(count);
+    for index in 0..count {
+        member_roots.push(PathBuf::from(manifest_required_bridge_value(
+            &values,
+            &format!("item{index}"),
+        )?));
+    }
+    Ok(Some(WorkspaceContext {
+        root: PathBuf::from(root),
+        member_roots,
+    }))
+}
+
+fn manifest_bridge_start_path(entry_arg: Option<&str>, flags: &CliFlags) -> Result<String, String> {
+    if let Some(root) = &flags.project_root {
+        return Ok(root.clone());
+    }
+    if let Some(entry) = entry_arg {
+        return Ok(entry.to_string());
+    }
+    env::current_dir()
+        .map(|path| path.display().to_string())
+        .map_err(|e| format!("Failed to resolve current directory for author bridge: {e}"))
+}
+
+fn manifest_required_bridge_value(
+    values: &std::collections::HashMap<String, Option<String>>,
+    key: &str,
+) -> Result<String, String> {
+    values
+        .get(key)
+        .ok_or_else(|| format!("author bridge missing key '{}'", key))?
+        .clone()
+        .ok_or_else(|| format!("author bridge key '{}' must not be null", key))
 }
 
 pub(super) fn resolve_workspace_member_roots(

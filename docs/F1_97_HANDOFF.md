@@ -102,7 +102,16 @@ The current `author.project.*` seed now covers:
 - manifest/layout/path resolution through `ProjectLayoutResolver`
 - filesystem-backed manifest lookup/loading, workspace-member validation, entry discovery, and test-file discovery through `ProjectDiscovery`
 - Pulse-owned check/test invocation models and resolution through `CheckInvocation`, `TestInvocation`, and `ProjectInvocationResolver`
+- Pulse-owned workspace context modeling and bridge formatting through:
+  - `author.project.WorkspaceContext`
+  - `author.project.WorkspaceContextBridge`
+- Rust `check` / `build` / `test` workspace detection now prefers authored `ProjectDiscovery.resolveWorkspaceContext(...)` instead of keeping workspace-member resolution as a Rust-owned hot path
 - build-side invocation/config models now live under `author.build.*` through `BuildConfig`, `BuildInvocation`, and `BuildInvocationResolver`
+- `author.build.*` now also owns workspace-build execution/result contracts through:
+  - `author.build.WorkspaceBuildResult`
+  - `author.build.WorkspaceBuildMemberResult`
+  - `author.build.BuildSummaryWriter.renderWorkspaceBuild*`
+- Rust `build` workspace output now prefers authored start/member/summary/failure rendering instead of raw inline workspace-build strings
 - backend wrapper/reference truth now also matters here:
   - wrapper-typed calls are not all the same at runtime
   - pseudo-wrapper helpers like `Integer.valueOf(...)` still travel on primitive lanes

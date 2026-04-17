@@ -114,6 +114,8 @@ enabled = true
         import author.build.BuildPublicationPlanBridge;
         import author.build.BuildSummaryWriter;
         import author.build.BuildPublicationWriter;
+        import author.build.WorkspaceBuildMemberResult;
+        import author.build.WorkspaceBuildResult;
         import author.compiler.CheckResult;
         import author.compiler.CheckSummaryWriter;
         import author.compiler.TestDiscoveryResult;
@@ -139,6 +141,8 @@ enabled = true
         import author.project.ProjectSources;
         import author.project.TestInvocation;
         import author.project.TestInvocationBridge;
+        import author.project.WorkspaceContext;
+        import author.project.WorkspaceContextBridge;
         import author.project.WorkspaceManifest;
         import author.toolchain.ToolchainCandidateBridge;
         import author.toolchain.ToolchainCandidatePlan;
@@ -405,6 +409,26 @@ enabled = true
                     "masm-split-stdlib",
                     "workspace/demo/build/distro/debug/bin/demo.exe"
                 );
+                String workspaceBuildStartText =
+                    BuildSummaryWriter.renderWorkspaceBuildStart(
+                        new WorkspaceBuildResult("workspace", 2, 0)
+                    );
+                String workspaceBuildMemberPassText =
+                    BuildSummaryWriter.renderWorkspaceBuildMemberResult(
+                        WorkspaceBuildMemberResult.success("workspace/demo")
+                    );
+                String workspaceBuildMemberFailText =
+                    BuildSummaryWriter.renderWorkspaceBuildMemberResult(
+                        WorkspaceBuildMemberResult.failure("workspace/shared", "link failed")
+                    );
+                String workspaceBuildSummaryText =
+                    BuildSummaryWriter.renderWorkspaceBuildSummary(
+                        new WorkspaceBuildResult("workspace", 2, 1)
+                    );
+                String workspaceBuildFailureText =
+                    BuildSummaryWriter.renderWorkspaceBuildFailure(
+                        new WorkspaceBuildResult("workspace", 2, 1)
+                    );
                 String checkOkText = CheckSummaryWriter.renderCheckResult(
                     CheckResult.success(
                         "demo",
@@ -618,6 +642,16 @@ enabled = true
                     ProcessEnvironment.defaults()
                 );
                 String processCaptureRoot = Path.resolve(probeRoot, "capture");
+                String workspaceRoot = Path.resolve(probeRoot, "workspace/root");
+                String workspaceManifestPath = Path.resolve(workspaceRoot, "pulsec.toml");
+                String workspaceDemoManifestPath = Path.resolve(
+                    workspaceRoot,
+                    "apps/demo/pulsec.toml"
+                );
+                String workspaceSharedManifestPath = Path.resolve(
+                    workspaceRoot,
+                    "libs/shared/pulsec.toml"
+                );
                 ArrayList<String> processArgs = new ArrayList<String>();
                 processArgs.add("/d");
                 processArgs.add("/c");
@@ -631,6 +665,25 @@ enabled = true
                     ),
                     processCaptureRoot,
                     "tool"
+                );
+                Files.createDirectories(Path.parent(workspaceDemoManifestPath));
+                Files.createDirectories(Path.parent(workspaceSharedManifestPath));
+                HostFiles.writeAllText(
+                    workspaceManifestPath,
+                    "[workspace]\n"
+                    + "members = \"apps/demo, libs/shared\"\n"
+                );
+                HostFiles.writeAllText(
+                    workspaceDemoManifestPath,
+                    "[package]\n"
+                    + "name = \"demo\"\n"
+                    + "version = \"1.0.0\"\n"
+                );
+                HostFiles.writeAllText(
+                    workspaceSharedManifestPath,
+                    "[package]\n"
+                    + "name = \"shared\"\n"
+                    + "version = \"1.0.0\"\n"
                 );
                 ProjectManifest parsedManifest = parser.parse(
                     "[package]\n"
@@ -661,6 +714,9 @@ enabled = true
                     "workspace",
                     parsedWorkspace
                 );
+                WorkspaceContext workspaceContext = ProjectDiscovery.resolveWorkspaceContext(
+                    workspaceRoot
+                );
                 String noManifest = ProjectDiscovery.findManifestPath("workspace/unknown");
                 CheckInvocation checkInvocation = ProjectInvocationResolver.resolveCheckInvocation(
                     "workspace/demo/src/main/pulse/app/core",
@@ -676,6 +732,7 @@ enabled = true
                 String discoveredTestsText = ProjectDiscoveryBridge.toBridgeText(
                     ProjectDiscovery.discoverTestFiles("workspace/demo/src/test/pulse")
                 );
+                String workspaceContextText = WorkspaceContextBridge.toBridgeText(workspaceContext);
                 BuildInvocation buildInvocation = BuildInvocationResolver.resolveBuildInvocation(
                     "workspace/demo/src/main/pulse/app/core",
                     null,
@@ -795,6 +852,19 @@ enabled = true
                     && summaryText.contains("Artifact stamp: demo-1.2.3-debug")
                     && summaryText.contains("Entry codegen: masm-split-stdlib")
                     && summaryText.contains("Executable: workspace/demo/build/distro/debug/bin/demo.exe")
+                    && workspaceBuildStartText.equals(
+                        "Workspace build: root=workspace members=2"
+                    )
+                    && workspaceBuildMemberPassText.equals("[PASS] workspace/demo")
+                    && workspaceBuildMemberFailText.equals(
+                        "[FAIL] workspace/shared :: link failed"
+                    )
+                    && workspaceBuildSummaryText.equals(
+                        "Workspace build summary: failed=1 total=2"
+                    )
+                    && workspaceBuildFailureText.equals(
+                        "one or more workspace members failed build"
+                    )
                     && checkOkText.contains("OK: package=demo imports=2 classes=3 files=4")
                     && checkOkText.contains("Check summary: mode=friendly project_mode=manifest")
                     && checkFailText.equals(
@@ -923,6 +993,12 @@ enabled = true
                         .contains("exitCode=1:0")
                     && parsedWorkspace.contains("libs/shared")
                     && resolvedMembers.size() == 2
+                    && workspaceContext.rootPath().endsWith("workspace/root")
+                    && workspaceContext.memberCount() == 2
+                    && workspaceContext.memberRoots().getString(0).endsWith("workspace/root/apps/demo")
+                    && workspaceContext.memberRoots().getString(1).endsWith("workspace/root/libs/shared")
+                    && workspaceContextText.contains("rootPath=1:")
+                    && workspaceContextText.contains("count=1:2")
                     && resolvedMembers.getString(0).equals("workspace/apps/demo")
                     && resolvedMembers.getString(1).equals("workspace/libs/shared")
                     && noManifest == null

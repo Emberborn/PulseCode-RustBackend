@@ -276,6 +276,8 @@ fn emit_build_invocation_bridge_source() -> String {
         import author.build.BuildPublicationPlan;
         import author.build.BuildPublicationPlanBridge;
         import author.build.BuildSummaryWriter;
+        import author.build.WorkspaceBuildMemberResult;
+        import author.build.WorkspaceBuildResult;
         import author.build.BuildPublicationWriter;
         import author.build.BuildInvocationResolver;
         import author.project.CheckInvocationBridge;
@@ -283,6 +285,8 @@ fn emit_build_invocation_bridge_source() -> String {
         import author.project.ProjectDiscoveryBridge;
         import author.project.ProjectInvocationResolver;
         import author.project.TestInvocationBridge;
+        import author.project.WorkspaceContext;
+        import author.project.WorkspaceContextBridge;
                 import author.compiler.CheckResult;
                 import author.compiler.CheckSummaryWriter;
                 import author.compiler.TestDiagnosticWriter;
@@ -355,6 +359,15 @@ fn emit_build_invocation_bridge_source() -> String {
                     IO.print(ProjectDiscoveryBridge.toBridgeText(
                         ProjectDiscovery.discoverTestFiles(Main.readValue(Main.readLines(1), 0))
                     ));
+                    return;
+                }}
+                if (mode.equals("project-resolve-workspace-context")) {{
+                    WorkspaceContext context = ProjectDiscovery.resolveWorkspaceContext(
+                        Main.readValue(Main.readLines(1), 0)
+                    );
+                    if (context != null) {{
+                        IO.print(WorkspaceContextBridge.toBridgeText(context));
+                    }}
                     return;
                 }}
                 if (mode.equals("toolchain-discovery")) {{
@@ -729,6 +742,22 @@ fn emit_build_invocation_bridge_source() -> String {
                     IO.print(text);
                     return;
                 }}
+                if (mode.equals("build-render-workspace-start")) {{
+                    IO.print(Main.renderBuildWorkspaceStart(Main.readLines(2)));
+                    return;
+                }}
+                if (mode.equals("build-render-workspace-member")) {{
+                    IO.print(Main.renderBuildWorkspaceMember(Main.readLines(3)));
+                    return;
+                }}
+                if (mode.equals("build-render-workspace-summary")) {{
+                    IO.print(Main.renderBuildWorkspaceSummary(Main.readLines(2)));
+                    return;
+                }}
+                if (mode.equals("build-render-workspace-failed")) {{
+                    IO.print(Main.renderBuildWorkspaceFailure(Main.readLines(3)));
+                    return;
+                }}
                 if (mode.equals("compiler-render-workspace-check-start")) {{
                     IO.print(Main.renderCompilerWorkspaceCheckStart(Main.readLines(3)));
                     return;
@@ -824,6 +853,49 @@ fn emit_build_invocation_bridge_source() -> String {
                     );
                 }}
                 return CheckSummaryWriter.renderCheckResult(result);
+            }}
+
+            private static String renderBuildWorkspaceStart(String request) {{
+                return BuildSummaryWriter.renderWorkspaceBuildStart(
+                    new WorkspaceBuildResult(
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        0
+                    )
+                );
+            }}
+
+            private static String renderBuildWorkspaceMember(String request) {{
+                WorkspaceBuildMemberResult result;
+                if ("true".equals(Main.readValue(request, 0))) {{
+                    result = WorkspaceBuildMemberResult.success(Main.readValue(request, 1));
+                }} else {{
+                    result = WorkspaceBuildMemberResult.failure(
+                        Main.readValue(request, 1),
+                        Main.readValue(request, 2)
+                    );
+                }}
+                return BuildSummaryWriter.renderWorkspaceBuildMemberResult(result);
+            }}
+
+            private static String renderBuildWorkspaceSummary(String request) {{
+                return BuildSummaryWriter.renderWorkspaceBuildSummary(
+                    new WorkspaceBuildResult(
+                        "<workspace>",
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.parseCount(Main.readValue(request, 0))
+                    )
+                );
+            }}
+
+            private static String renderBuildWorkspaceFailure(String request) {{
+                return BuildSummaryWriter.renderWorkspaceBuildFailure(
+                    new WorkspaceBuildResult(
+                        Main.readValue(request, 0),
+                        Main.parseCount(Main.readValue(request, 1)),
+                        Main.parseCount(Main.readValue(request, 2))
+                    )
+                );
             }}
 
             private static String renderCompilerWorkspaceCheckStart(String request) {{

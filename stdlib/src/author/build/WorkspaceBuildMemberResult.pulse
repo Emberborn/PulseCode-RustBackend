@@ -1,0 +1,34 @@
+package author.build;
+
+import pulse.util.Objects;
+
+/**
+ * Structured authored workspace-build member outcome contract.
+ */
+public final class WorkspaceBuildMemberResult {
+    private final boolean success;
+    private final String memberRoot;
+    private final String detail;
+
+    private WorkspaceBuildMemberResult(boolean success, String memberRoot, String detail) {
+        this.success = success;
+        this.memberRoot = (String) Objects.requireNonNull(memberRoot, "memberRoot must not be null");
+        this.detail = detail;
+    }
+
+    public static WorkspaceBuildMemberResult success(String memberRoot) {
+        return new WorkspaceBuildMemberResult(true, memberRoot, null);
+    }
+
+    public static WorkspaceBuildMemberResult failure(String memberRoot, String detail) {
+        return new WorkspaceBuildMemberResult(
+            false,
+            memberRoot,
+            (String) Objects.requireNonNull(detail, "detail must not be null")
+        );
+    }
+
+    public boolean success() { return this.success; }
+    public String memberRoot() { return this.memberRoot; }
+    public String detail() { return this.detail; }
+}

@@ -348,9 +348,8 @@ pub(crate) fn run() {
             if let Some(workspace) = workspace {
                 let mut failed = 0usize;
                 println!(
-                    "Workspace build: root={} members={}",
-                    workspace.root.display(),
-                    workspace.member_roots.len()
+                    "{}",
+                    render_workspace_build_start(&workspace.root, workspace.member_roots.len())
                 );
                 for member_root in &workspace.member_roots {
                     let mut member_flags = cli_flags.clone();
@@ -360,7 +359,10 @@ pub(crate) fn run() {
                         Ok(config) => config,
                         Err(err) => {
                             failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), err);
+                            eprintln!(
+                                "{}",
+                                render_workspace_build_member_result(member_root, Some(&err))
+                            );
                             continue;
                         }
                     };
@@ -368,20 +370,32 @@ pub(crate) fn run() {
                         Ok(build) => build,
                         Err(err) => {
                             failed += 1;
-                            eprintln!("[FAIL] {} :: {}", member_root.display(), err);
+                            eprintln!(
+                                "{}",
+                                render_workspace_build_member_result(member_root, Some(&err))
+                            );
                             continue;
                         }
                     };
-                    println!("[PASS] {}", member_root.display());
+                    println!(
+                        "{}",
+                        render_workspace_build_member_result(member_root, None)
+                    );
                     print_build_summary(&build);
                 }
                 println!(
-                    "Workspace build summary: failed={} total={}",
-                    failed,
-                    workspace.member_roots.len()
+                    "{}",
+                    render_workspace_build_summary(failed, workspace.member_roots.len())
                 );
                 if failed > 0 {
-                    emit_error(DIAG_BUILD, "one or more workspace members failed build");
+                    emit_error(
+                        DIAG_BUILD,
+                        &render_workspace_build_failed(
+                            &workspace.root,
+                            workspace.member_roots.len(),
+                            failed,
+                        ),
+                    );
                     emit_hint(
                         "inspect [FAIL] lines and re-run on the failing member with --project-root",
                     );
@@ -656,6 +670,65 @@ fn render_workspace_check_start(root: &Path, member_count: usize, mode: &str) ->
             mode
         )
     })
+}
+
+fn render_workspace_build_start(root: &Path, member_count: usize) -> String {
+    let count = member_count.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "build-render-workspace-start",
+        &[root.to_str(), Some(count.as_str())],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        format!(
+            "Workspace build: root={} members={}",
+            root.display(),
+            member_count
+        )
+    })
+}
+
+fn render_workspace_build_member_result(member_root: &Path, detail: Option<&str>) -> String {
+    let request = emit_compiler_bridge_summary_request(
+        "build-render-workspace-member",
+        &[
+            Some(if detail.is_none() { "true" } else { "false" }),
+            member_root.to_str(),
+            detail,
+        ],
+    );
+    run_author_build_bridge_request(&request).unwrap_or_else(|_| {
+        if let Some(detail) = detail {
+            format!("[FAIL] {} :: {}", member_root.display(), detail)
+        } else {
+            format!("[PASS] {}", member_root.display())
+        }
+    })
+}
+
+fn render_workspace_build_summary(failed: usize, total: usize) -> String {
+    let failed_value = failed.to_string();
+    let total_value = total.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "build-render-workspace-summary",
+        &[Some(failed_value.as_str()), Some(total_value.as_str())],
+    );
+    run_author_build_bridge_request(&request)
+        .unwrap_or_else(|_| format!("Workspace build summary: failed={} total={}", failed, total))
+}
+
+fn render_workspace_build_failed(root: &Path, member_count: usize, failed: usize) -> String {
+    let member_value = member_count.to_string();
+    let failed_value = failed.to_string();
+    let request = emit_compiler_bridge_summary_request(
+        "build-render-workspace-failed",
+        &[
+            root.to_str(),
+            Some(member_value.as_str()),
+            Some(failed_value.as_str()),
+        ],
+    );
+    run_author_build_bridge_request(&request)
+        .unwrap_or_else(|_| "one or more workspace members failed build".to_string())
 }
 
 fn render_workspace_check_pass(

@@ -75,7 +75,16 @@ Practical consequence:
 - do not behave as if the language or project model is still an empty bootstrap shell
 - prefer extending or routing through existing `pulse.*` / `author.*` surface over parallel rewrites
 - the current `author.project.*` seed now includes manifest parsing/validation, layout resolution, manifest lookup/loading, workspace-member validation, entry discovery, test-file discovery, and the first Pulse-owned check/test invocation-shaping slice instead of stopping at passive model types
+- that same `author.project.*` seed now also includes bridge-first workspace context ownership through:
+  - `author.project.WorkspaceContext`
+  - `author.project.WorkspaceContextBridge`
+- Rust `check` / `build` / `test` workspace detection now prefers authored `ProjectDiscovery.resolveWorkspaceContext(...)` instead of keeping workspace-member resolution as the hot Rust path
 - the first Pulse-owned build invocation/config slice now also exists under `author.build.*` (`BuildConfig`, `BuildInvocation`, `BuildInvocationResolver`)
+- `author.build.*` now also owns workspace-build execution/result contracts through:
+  - `author.build.WorkspaceBuildResult`
+  - `author.build.WorkspaceBuildMemberResult`
+  - `author.build.BuildSummaryWriter.renderWorkspaceBuild*`
+- Rust `build` workspace output now prefers authored start/member/summary/failure rendering instead of raw inline workspace-build strings
 - the first Pulse-owned toolchain precedence/config slice now also exists under `author.toolchain.*` (`ToolchainConfig`, `ToolchainResolver`)
 - the first Pulse-owned toolchain candidate-planning slice now also exists there (`ToolchainCandidatePlan`, `ToolchainResolver.planCandidates(...)`)
 - the first Pulse-owned toolchain command-shaping slice now also exists there (`ToolchainCommandPlan`, Windows link-plan helpers, response-file rendering helpers)
