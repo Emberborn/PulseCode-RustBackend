@@ -3410,6 +3410,179 @@ pub(crate) fn emit_host_copy_file_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("{} endp\n", symbol));
 }
 
+pub(crate) fn emit_host_load_dynamic_library_proc(out: &mut String, symbol: &str) {
+    const RESULT_OFFSET: i32 = 56;
+    const SOURCE_PTR_OFFSET: i32 = 64;
+    let cleanup = format!("{}_cleanup", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 88\n");
+    out.push_str(&format!("    mov qword ptr [rsp+{}], 0\n", RESULT_OFFSET));
+    out.push_str(&format!("    mov qword ptr [rsp+{}], 0\n", SOURCE_PTR_OFFSET));
+    out.push_str("    call pulsec_rt_hostPathAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", cleanup));
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", SOURCE_PTR_OFFSET));
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call LoadLibraryA\n");
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", RESULT_OFFSET));
+    out.push_str(&format!("{}:\n", cleanup));
+    out.push_str(&format!("    mov r8, qword ptr [rsp+{}]\n", SOURCE_PTR_OFFSET));
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str(&format!("    mov r8, qword ptr [rsp+{}]\n", SOURCE_PTR_OFFSET));
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", RESULT_OFFSET));
+    out.push_str("    add rsp, 88\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_free_dynamic_library_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call FreeLibrary\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_resolve_dynamic_symbol_proc(out: &mut String, symbol: &str) {
+    const LIBRARY_OFFSET: i32 = 56;
+    const NAME_PTR_OFFSET: i32 = 64;
+    const RESULT_OFFSET: i32 = 72;
+    let cleanup = format!("{}_cleanup", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 96\n");
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rcx\n", LIBRARY_OFFSET));
+    out.push_str(&format!("    mov qword ptr [rsp+{}], 0\n", NAME_PTR_OFFSET));
+    out.push_str(&format!("    mov qword ptr [rsp+{}], 0\n", RESULT_OFFSET));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", cleanup));
+    out.push_str("    mov ecx, edx\n");
+    out.push_str("    call pulsec_rt_hostPathAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", cleanup));
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", NAME_PTR_OFFSET));
+    out.push_str(&format!("    mov rcx, qword ptr [rsp+{}]\n", LIBRARY_OFFSET));
+    out.push_str("    mov rdx, rax\n");
+    out.push_str("    call GetProcAddress\n");
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", RESULT_OFFSET));
+    out.push_str(&format!("{}:\n", cleanup));
+    out.push_str(&format!("    mov r8, qword ptr [rsp+{}]\n", NAME_PTR_OFFSET));
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str(&format!("    mov r8, qword ptr [rsp+{}]\n", NAME_PTR_OFFSET));
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", RESULT_OFFSET));
+    out.push_str("    add rsp, 96\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_call_native0_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call rcx\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_call_native1_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    mov r10, rcx\n");
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call r10\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_call_native2_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    mov r10, rcx\n");
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    mov rdx, r8\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call r10\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_call_native3_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    mov r10, rcx\n");
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    mov rdx, r8\n");
+    out.push_str("    mov r8, r9\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call r10\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_call_native4_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    mov r10, rcx\n");
+    out.push_str("    mov r11, qword ptr [rsp+40]\n");
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    mov rdx, r8\n");
+    out.push_str("    mov r8, r9\n");
+    out.push_str("    mov r9, r11\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call r10\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
 pub(crate) fn emit_host_run_shell_process_proc(out: &mut String, symbol: &str) {
     const HEAP_OFFSET: i32 = 88;
     const CWD_PTR_OFFSET: i32 = 96;

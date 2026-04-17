@@ -327,6 +327,76 @@ final class Intrinsics {
     }
 
     /**
+     * Opens one dynamic library through the current host loader and returns the raw native handle.
+     * Returns `0` when the host loader cannot open the requested library.
+     */
+    public static long hostLoadDynamicLibrary(String source) {
+        return 0;
+    }
+
+    /**
+     * Releases one raw dynamic library handle through the current host loader.
+     * Returns `true` when the host loader reports success.
+     */
+    public static boolean hostFreeDynamicLibrary(long handle) {
+        return false;
+    }
+
+    /**
+     * Resolves one exported symbol from the supplied dynamic library handle.
+     * Returns `0` when the handle is invalid or the symbol is absent.
+     */
+    public static long hostResolveDynamicSymbol(long libraryHandle, String symbolName) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with zero host-ABI long/pointer arguments.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative0(long functionAddress) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with one host-ABI long/pointer argument.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative1(long functionAddress, long arg0) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with two host-ABI long/pointer arguments.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative2(long functionAddress, long arg0, long arg1) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with three host-ABI long/pointer arguments.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative3(long functionAddress, long arg0, long arg1, long arg2) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with four host-ABI long/pointer arguments.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative4(
+        long functionAddress,
+        long arg0,
+        long arg1,
+        long arg2,
+        long arg3
+    ) {
+        return 0;
+    }
+
+    /**
      * Executes one Windows shell command line under the supplied working directory.
      * Returns the process exit code, or `-1` when launch fails before an exit code is available.
      */

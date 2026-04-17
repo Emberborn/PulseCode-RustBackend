@@ -350,4 +350,12 @@ class pulse.rt.Intrinsics
   method boolean hostCreateDirectory(String path) blocks=1 values=1
   method boolean hostWriteAllText(String path, String value) blocks=1 values=1
   method boolean hostCopyFile(String sourcePath, String destinationPath) blocks=1 values=1
+  method long hostLoadDynamicLibrary(String source) blocks=1 values=2
+  method boolean hostFreeDynamicLibrary(long handle) blocks=1 values=1
+  method long hostResolveDynamicSymbol(long libraryHandle, String symbolName) blocks=1 values=2
+  method long hostCallNative0(long functionAddress) blocks=1 values=2
+  method long hostCallNative1(long functionAddress, long arg0) blocks=1 values=2
+  method long hostCallNative2(long functionAddress, long arg0, long arg1) blocks=1 values=2
+  method long hostCallNative3(long functionAddress, long arg0, long arg1, long arg2) blocks=1 values=2
+  method long hostCallNative4(long functionAddress, long arg0, long arg1, long arg2, long arg3) blocks=1 values=2
   method int hostRunShellProcess(String workingDirectory, String commandLine) blocks=1 values=2

@@ -96,6 +96,17 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
 - `Intrinsics.hostIsDirectory(String) -> boolean`
 - `Intrinsics.hostReadAllText(String) -> String`
 - `Intrinsics.hostListChildren(String) -> long`
+- `Intrinsics.hostCreateDirectory(String) -> boolean`
+- `Intrinsics.hostWriteAllText(String, String) -> boolean`
+- `Intrinsics.hostCopyFile(String, String) -> boolean`
+- `Intrinsics.hostLoadDynamicLibrary(String) -> long`
+- `Intrinsics.hostFreeDynamicLibrary(long) -> boolean`
+- `Intrinsics.hostResolveDynamicSymbol(long, String) -> long`
+- `Intrinsics.hostCallNative0(long) -> long`
+- `Intrinsics.hostCallNative1(long, long) -> long`
+- `Intrinsics.hostCallNative2(long, long, long) -> long`
+- `Intrinsics.hostCallNative3(long, long, long, long) -> long`
+- `Intrinsics.hostCallNative4(long, long, long, long, long) -> long`
 - `String.runtimeConcat(String, String) -> String`
 - `String.runtimeLength(String) -> int`
 - `String.runtimeCharAt(String, int) -> char`
@@ -170,6 +181,17 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
   - `pulsec_rt_hostIsDirectory`
   - `pulsec_rt_hostReadAllText`
   - `pulsec_rt_hostListChildren`
+  - `pulsec_rt_hostCreateDirectory`
+  - `pulsec_rt_hostWriteAllText`
+  - `pulsec_rt_hostCopyFile`
+  - `pulsec_rt_hostLoadDynamicLibrary`
+  - `pulsec_rt_hostFreeDynamicLibrary`
+  - `pulsec_rt_hostResolveDynamicSymbol`
+  - `pulsec_rt_hostCallNative0`
+  - `pulsec_rt_hostCallNative1`
+  - `pulsec_rt_hostCallNative2`
+  - `pulsec_rt_hostCallNative3`
+  - `pulsec_rt_hostCallNative4`
   - `pulsec_rt_hostPathAlloc`
   - `pulsec_rt_classSimpleName`
   - `pulsec_rt_classPackageName`

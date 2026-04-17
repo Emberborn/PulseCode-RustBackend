@@ -13,6 +13,9 @@ extrn GetFileAttributesA:proc
 extrn CreateDirectoryA:proc
 extrn CopyFileA:proc
 extrn CreateFileA:proc
+extrn LoadLibraryA:proc
+extrn FreeLibrary:proc
+extrn GetProcAddress:proc
 extrn CreateProcessA:proc
 extrn GetFileSize:proc
 extrn GetExitCodeProcess:proc
@@ -3969,6 +3972,81 @@ pulsec_rt_dispatchNullReceiverPanic proc
     ret
 pulsec_rt_dispatchNullReceiverPanic endp
 
+pulsec_rt_hostCallNative0 proc
+    test rcx, rcx
+    jz pulsec_rt_hostCallNative0_done
+    sub rsp, 40
+    call rcx
+    add rsp, 40
+    ret
+pulsec_rt_hostCallNative0_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostCallNative0 endp
+
+pulsec_rt_hostCallNative1 proc
+    test rcx, rcx
+    jz pulsec_rt_hostCallNative1_done
+    mov r10, rcx
+    mov rcx, rdx
+    sub rsp, 40
+    call r10
+    add rsp, 40
+    ret
+pulsec_rt_hostCallNative1_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostCallNative1 endp
+
+pulsec_rt_hostCallNative2 proc
+    test rcx, rcx
+    jz pulsec_rt_hostCallNative2_done
+    mov r10, rcx
+    mov rcx, rdx
+    mov rdx, r8
+    sub rsp, 40
+    call r10
+    add rsp, 40
+    ret
+pulsec_rt_hostCallNative2_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostCallNative2 endp
+
+pulsec_rt_hostCallNative3 proc
+    test rcx, rcx
+    jz pulsec_rt_hostCallNative3_done
+    mov r10, rcx
+    mov rcx, rdx
+    mov rdx, r8
+    mov r8, r9
+    sub rsp, 40
+    call r10
+    add rsp, 40
+    ret
+pulsec_rt_hostCallNative3_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostCallNative3 endp
+
+pulsec_rt_hostCallNative4 proc
+    test rcx, rcx
+    jz pulsec_rt_hostCallNative4_done
+    mov r10, rcx
+    mov r11, qword ptr [rsp+40]
+    mov rcx, rdx
+    mov rdx, r8
+    mov r8, r9
+    mov r9, r11
+    sub rsp, 40
+    call r10
+    add rsp, 40
+    ret
+pulsec_rt_hostCallNative4_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostCallNative4 endp
+
 pulsec_rt_hostCopyFile proc
     sub rsp, 104
     mov dword ptr [rsp+56], 0
@@ -4086,6 +4164,18 @@ pulsec_rt_hostExists_done:
     add rsp, 56
     ret
 pulsec_rt_hostExists endp
+
+pulsec_rt_hostFreeDynamicLibrary proc
+    test rcx, rcx
+    jz pulsec_rt_hostFreeDynamicLibrary_done
+    sub rsp, 40
+    call FreeLibrary
+    add rsp, 40
+    ret
+pulsec_rt_hostFreeDynamicLibrary_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostFreeDynamicLibrary endp
 
 pulsec_rt_hostIsDirectory proc
     sub rsp, 56
@@ -4323,6 +4413,32 @@ pulsec_rt_hostListChildren_fail:
     ret
 pulsec_rt_hostListChildren endp
 
+pulsec_rt_hostLoadDynamicLibrary proc
+    sub rsp, 88
+    mov qword ptr [rsp+56], 0
+    mov qword ptr [rsp+64], 0
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostLoadDynamicLibrary_cleanup
+    mov qword ptr [rsp+64], rax
+    mov rcx, rax
+    call LoadLibraryA
+    mov qword ptr [rsp+56], rax
+pulsec_rt_hostLoadDynamicLibrary_cleanup:
+    mov r8, qword ptr [rsp+64]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+64]
+    call HeapFree
+@@:
+    mov rax, qword ptr [rsp+56]
+    add rsp, 88
+    ret
+pulsec_rt_hostLoadDynamicLibrary endp
+
 pulsec_rt_hostReadAllText proc
     sub rsp, 120
     mov qword ptr [rsp+56], 0
@@ -4427,6 +4543,37 @@ pulsec_rt_hostReadAllText_done:
     add rsp, 120
     ret
 pulsec_rt_hostReadAllText endp
+
+pulsec_rt_hostResolveDynamicSymbol proc
+    sub rsp, 96
+    mov qword ptr [rsp+56], rcx
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+72], 0
+    test rcx, rcx
+    jz pulsec_rt_hostResolveDynamicSymbol_cleanup
+    mov ecx, edx
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostResolveDynamicSymbol_cleanup
+    mov qword ptr [rsp+64], rax
+    mov rcx, qword ptr [rsp+56]
+    mov rdx, rax
+    call GetProcAddress
+    mov qword ptr [rsp+72], rax
+pulsec_rt_hostResolveDynamicSymbol_cleanup:
+    mov r8, qword ptr [rsp+64]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+64]
+    call HeapFree
+@@:
+    mov rax, qword ptr [rsp+72]
+    add rsp, 96
+    ret
+pulsec_rt_hostResolveDynamicSymbol endp
 
 pulsec_rt_hostRunShellProcess proc
     sub rsp, 280

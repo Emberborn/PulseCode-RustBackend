@@ -1,0 +1,73 @@
+﻿# pulse.interop.NativeCalls
+
+Kind: ``class``
+
+Source: ``stdlib/src/pulse/interop/NativeCalls.pulse``
+
+## Summary
+
+Raw native call helpers for the public interop surface.
+Use these only at the boundary where Pulse is hosting a foreign implementation behind a Pulse-owned contract.
+
+## Declaration
+
+```pulse
+public final class NativeCalls
+```
+
+## Members
+
+### ``public static long callLong0(NativeSymbol symbol)``
+
+Invokes one native symbol with zero raw long/pointer arguments and returns the raw 64-bit result.
+Use this for low-level foreign entrypoints before converting the result into Pulse-native semantics.
+
+### ``public static long callLong1(NativeSymbol symbol, long arg0)``
+
+Invokes one native symbol with one raw long/pointer argument and returns the raw 64-bit result.
+Use this for low-level foreign entrypoints before converting the result into Pulse-native semantics.
+
+### ``public static long callLong2(NativeSymbol symbol, long arg0, long arg1)``
+
+Invokes one native symbol with two raw long/pointer arguments and returns the raw 64-bit result.
+Use this for low-level foreign entrypoints before converting the result into Pulse-native semantics.
+
+### ``public static long callLong3(NativeSymbol symbol, long arg0, long arg1, long arg2)``
+
+Invokes one native symbol with three raw long/pointer arguments and returns the raw 64-bit result.
+Use this for low-level foreign entrypoints before converting the result into Pulse-native semantics.
+
+### ``public static long callLong4(NativeSymbol symbol, long arg0, long arg1, long arg2, long arg3)``
+
+Invokes one native symbol with four raw long/pointer arguments and returns the raw 64-bit result.
+Use this for low-level foreign entrypoints before converting the result into Pulse-native semantics.
+
+### ``public static int callInt0(NativeSymbol symbol)``
+
+Invokes one native symbol with zero raw arguments and truncates the result to `int`.
+Use this for common Win32/C/Rust APIs that report 32-bit integer status or identifiers.
+
+### ``public static int callInt1(NativeSymbol symbol, long arg0)``
+
+Invokes one native symbol with one raw argument and truncates the result to `int`.
+Use this for common Win32/C/Rust APIs that report 32-bit integer status or identifiers.
+
+### ``public static int callInt2(NativeSymbol symbol, long arg0, long arg1)``
+
+Invokes one native symbol with two raw arguments and truncates the result to `int`.
+Use this for common Win32/C/Rust APIs that report 32-bit integer status or identifiers.
+
+### ``public static boolean callBoolean0(NativeSymbol symbol)``
+
+Invokes one native symbol with zero raw arguments and interprets a non-zero result as `true`.
+Use this for common BOOL-style foreign APIs.
+
+### ``public static boolean callBoolean1(NativeSymbol symbol, long arg0)``
+
+Invokes one native symbol with one raw argument and interprets a non-zero result as `true`.
+Use this for common BOOL-style foreign APIs.
+
+### ``public static boolean callBoolean2(NativeSymbol symbol, long arg0, long arg1)``
+
+Invokes one native symbol with two raw arguments and interprets a non-zero result as `true`.
+Use this for common BOOL-style foreign APIs.

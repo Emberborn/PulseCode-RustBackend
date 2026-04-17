@@ -32,6 +32,10 @@ Loads one manifest file into the current author.project model surface.
 
 Finds and loads the nearest manifest at or above the supplied start path, or null when none exists.
 
+### ``public static WorkspaceContext resolveWorkspaceContext(String startPath)``
+
+Resolves one workspace context rooted at the nearest manifest above the supplied start path.
+
 ### ``public static List<String> resolveWorkspaceMemberProjectRoots(``
 
 Resolves workspace member project roots against the filesystem-backed manifest contract.

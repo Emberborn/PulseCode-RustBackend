@@ -221,6 +221,51 @@ Returns `true` when the path already exists as a directory or was created succes
 Writes one full text payload to the supplied host file path on the real filesystem.
 Returns `true` when the file write succeeds.
 
+### ``public static boolean hostCopyFile(String sourcePath, String destinationPath)``
+
+Copies one host file from the source path to the destination path on the real filesystem.
+Returns `true` when the file copy succeeds.
+
+### ``public static long hostLoadDynamicLibrary(String source)``
+
+Opens one dynamic library through the current host loader and returns the raw native handle.
+Returns `0` when the host loader cannot open the requested library.
+
+### ``public static boolean hostFreeDynamicLibrary(long handle)``
+
+Releases one raw dynamic library handle through the current host loader.
+Returns `true` when the host loader reports success.
+
+### ``public static long hostResolveDynamicSymbol(long libraryHandle, String symbolName)``
+
+Resolves one exported symbol from the supplied dynamic library handle.
+Returns `0` when the handle is invalid or the symbol is absent.
+
+### ``public static long hostCallNative0(long functionAddress)``
+
+Calls one raw native function pointer with zero host-ABI long/pointer arguments.
+Returns the raw 64-bit result value from the foreign implementation.
+
+### ``public static long hostCallNative1(long functionAddress, long arg0)``
+
+Calls one raw native function pointer with one host-ABI long/pointer argument.
+Returns the raw 64-bit result value from the foreign implementation.
+
+### ``public static long hostCallNative2(long functionAddress, long arg0, long arg1)``
+
+Calls one raw native function pointer with two host-ABI long/pointer arguments.
+Returns the raw 64-bit result value from the foreign implementation.
+
+### ``public static long hostCallNative3(long functionAddress, long arg0, long arg1, long arg2)``
+
+Calls one raw native function pointer with three host-ABI long/pointer arguments.
+Returns the raw 64-bit result value from the foreign implementation.
+
+### ``public static long hostCallNative4(``
+
+Calls one raw native function pointer with four host-ABI long/pointer arguments.
+Returns the raw 64-bit result value from the foreign implementation.
+
 ### ``public static int hostRunShellProcess(String workingDirectory, String commandLine)``
 
 Executes one Windows shell command line under the supplied working directory.

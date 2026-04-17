@@ -239,8 +239,28 @@ Current audit result:
   - next return point is the remaining `author.build.*` publication/materialization lift
   - expand the host-facing public filesystem substrate where needed so later self-sustained growth does not need Rust pulled back in for ordinary host file work
 
+## Public Interop Rule
+
+Raw interop now begins in the public stdlib under `pulse.interop.*`, not under
+`author.*`.
+
+Current first executable slice:
+
+- `pulse.interop.NativeLibrary`
+- `pulse.interop.NativeSymbol`
+- `pulse.interop.NativeCalls`
+
+That surface is intentionally low-level. It exists so:
+
+- ordinary users have a standard interop path
+- Pulse-owned absorbed foreign-backed features can wrap a public raw boundary instead of inventing a second private interop stack
+
+`author.*` should consume or extend that public raw interop surface where
+appropriate, not become the first home of general foreign-call capability.
+
 ## Planning References
 
 - [STANDALONE_ROADMAP.md](/D:/Programming/codex/PulseCode/docs/STANDALONE_ROADMAP.md)
 - [FB_TASK_BOARD.md](/G:/Programming/Rust/PulseCode/docs/FB_TASK_BOARD.md)
 - [CODEX_HANDOFF_PHASE_F.md](/D:/Programming/codex/PulseCode/docs/CODEX_HANDOFF_PHASE_F.md)
+- [INTEROP_STRATEGY.md](/G:/Programming/Rust/PulseCode/docs/INTEROP_STRATEGY.md)

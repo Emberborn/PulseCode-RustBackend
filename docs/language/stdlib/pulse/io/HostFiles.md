@@ -32,6 +32,11 @@ Use this for optional host reads that should not require a separate existence ch
 Writes the supplied text payload onto the real host filesystem.
 Parent directories are created when needed. Returns `true` when the native backend reports success.
 
+### ``public static boolean copy(String sourcePath, String destinationPath)``
+
+Copies one host file to the destination path.
+Parent directories are created when needed. Returns `true` when the native backend reports success.
+
 ### ``public static boolean exists(String path)``
 
 Reports whether the supplied host path currently exists.
@@ -66,3 +71,8 @@ Returns `true` when any parent directory changed.
 
 Returns the direct child paths currently visible under the supplied host directory.
 Use this for real host directory enumeration outside the runtime-backed `Files` overlay.
+
+### ``public static boolean copyRecursive(String sourcePath, String destinationPath)``
+
+Copies one host file or directory subtree into the destination path.
+Returns `true` when the source existed and every copied file succeeded.

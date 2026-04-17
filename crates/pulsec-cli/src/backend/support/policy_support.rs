@@ -85,6 +85,14 @@ pub(crate) fn windows_x64_backend_contract() -> BackendContract {
             "pulse.rt.Intrinsics.hostCreateDirectory",
             "pulse.rt.Intrinsics.hostWriteAllText",
             "pulse.rt.Intrinsics.hostCopyFile",
+            "pulse.rt.Intrinsics.hostLoadDynamicLibrary",
+            "pulse.rt.Intrinsics.hostFreeDynamicLibrary",
+            "pulse.rt.Intrinsics.hostResolveDynamicSymbol",
+            "pulse.rt.Intrinsics.hostCallNative0",
+            "pulse.rt.Intrinsics.hostCallNative1",
+            "pulse.rt.Intrinsics.hostCallNative2",
+            "pulse.rt.Intrinsics.hostCallNative3",
+            "pulse.rt.Intrinsics.hostCallNative4",
             "pulse.rt.Intrinsics.hostRunShellProcess",
             "pulse.memory.Memory.retain",
             "pulse.memory.Memory.release",
@@ -321,6 +329,38 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("Intrinsics".to_string(), "hostCopyFile".to_string()),
         "pulsec_rt_hostCopyFile".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostLoadDynamicLibrary".to_string()),
+        "pulsec_rt_hostLoadDynamicLibrary".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostFreeDynamicLibrary".to_string()),
+        "pulsec_rt_hostFreeDynamicLibrary".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostResolveDynamicSymbol".to_string()),
+        "pulsec_rt_hostResolveDynamicSymbol".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCallNative0".to_string()),
+        "pulsec_rt_hostCallNative0".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCallNative1".to_string()),
+        "pulsec_rt_hostCallNative1".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCallNative2".to_string()),
+        "pulsec_rt_hostCallNative2".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCallNative3".to_string()),
+        "pulsec_rt_hostCallNative3".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCallNative4".to_string()),
+        "pulsec_rt_hostCallNative4".to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "hostRunShellProcess".to_string()),

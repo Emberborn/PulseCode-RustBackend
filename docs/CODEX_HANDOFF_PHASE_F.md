@@ -1317,3 +1317,21 @@ Recommended immediate continuation:
   - `Map` now has an explicit non-fail-fast `keyIterator()` baseline instead of leaving map iteration implicit
   - manual `iterator()` use plus `foreach` over collection objects and `Array` values with `Object` / `var` loop variables are now executable and fixture-validated
   - this task is now locked; richer map/set views return in `F1-52` and the later typed/generic iterator story returns in `F1-68`
+
+## Current Interop Direction
+
+Interop is now an active `F1-97` seam.
+
+Selected direction:
+
+- public raw interop lives in `pulse.interop.*`
+- the first executable slice covers:
+  - dynamic library load/unload
+  - symbol lookup
+  - raw 0-4 argument native calls
+- absorbed foreign-backed features should wrap that raw surface behind
+  Pulse-native contracts instead of making Rust a privileged reachback path
+
+Reference:
+
+- [INTEROP_STRATEGY.md](/G:/Programming/Rust/PulseCode/docs/INTEROP_STRATEGY.md)

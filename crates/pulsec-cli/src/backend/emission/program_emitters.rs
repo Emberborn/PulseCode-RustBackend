@@ -1072,6 +1072,9 @@ pub(crate) fn emit_masm_split_program_objects(
     std_src.push_str("extrn CreateDirectoryA:proc\n");
     std_src.push_str("extrn CopyFileA:proc\n");
     std_src.push_str("extrn CreateFileA:proc\n");
+    std_src.push_str("extrn LoadLibraryA:proc\n");
+    std_src.push_str("extrn FreeLibrary:proc\n");
+    std_src.push_str("extrn GetProcAddress:proc\n");
     std_src.push_str("extrn CreateProcessA:proc\n");
     std_src.push_str("extrn GetFileSize:proc\n");
     std_src.push_str("extrn GetExitCodeProcess:proc\n");
@@ -1230,6 +1233,20 @@ pub(crate) fn emit_masm_split_program_objects(
             "pulsec_rt_hostCreateDirectory" => emit_host_create_directory_proc(&mut std_src, &sym),
             "pulsec_rt_hostWriteAllText" => emit_host_write_all_text_proc(&mut std_src, &sym),
             "pulsec_rt_hostCopyFile" => emit_host_copy_file_proc(&mut std_src, &sym),
+            "pulsec_rt_hostLoadDynamicLibrary" => {
+                emit_host_load_dynamic_library_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostFreeDynamicLibrary" => {
+                emit_host_free_dynamic_library_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostResolveDynamicSymbol" => {
+                emit_host_resolve_dynamic_symbol_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostCallNative0" => emit_host_call_native0_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCallNative1" => emit_host_call_native1_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCallNative2" => emit_host_call_native2_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCallNative3" => emit_host_call_native3_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCallNative4" => emit_host_call_native4_proc(&mut std_src, &sym),
             "pulsec_rt_hostRunShellProcess" => emit_host_run_shell_process_proc(&mut std_src, &sym),
             "pulsec_rt_arcRetain" => emit_arc_retain_proc(&mut std_src, &sym),
             "pulsec_rt_arcRelease" => emit_arc_release_proc(&mut std_src, &sym),
@@ -1471,6 +1488,9 @@ pub(crate) fn emit_masm_full_program_object(
     source.push_str("extrn CreateDirectoryA:proc\n");
     source.push_str("extrn CopyFileA:proc\n");
     source.push_str("extrn CreateFileA:proc\n");
+    source.push_str("extrn LoadLibraryA:proc\n");
+    source.push_str("extrn FreeLibrary:proc\n");
+    source.push_str("extrn GetProcAddress:proc\n");
     source.push_str("extrn CreateProcessA:proc\n");
     source.push_str("extrn GetFileSize:proc\n");
     source.push_str("extrn GetExitCodeProcess:proc\n");
@@ -1792,6 +1812,20 @@ pub(crate) fn emit_masm_full_program_object(
             "pulsec_rt_hostCreateDirectory" => emit_host_create_directory_proc(&mut source, &sym),
             "pulsec_rt_hostWriteAllText" => emit_host_write_all_text_proc(&mut source, &sym),
             "pulsec_rt_hostCopyFile" => emit_host_copy_file_proc(&mut source, &sym),
+            "pulsec_rt_hostLoadDynamicLibrary" => {
+                emit_host_load_dynamic_library_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostFreeDynamicLibrary" => {
+                emit_host_free_dynamic_library_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostResolveDynamicSymbol" => {
+                emit_host_resolve_dynamic_symbol_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostCallNative0" => emit_host_call_native0_proc(&mut source, &sym),
+            "pulsec_rt_hostCallNative1" => emit_host_call_native1_proc(&mut source, &sym),
+            "pulsec_rt_hostCallNative2" => emit_host_call_native2_proc(&mut source, &sym),
+            "pulsec_rt_hostCallNative3" => emit_host_call_native3_proc(&mut source, &sym),
+            "pulsec_rt_hostCallNative4" => emit_host_call_native4_proc(&mut source, &sym),
             "pulsec_rt_hostRunShellProcess" => emit_host_run_shell_process_proc(&mut source, &sym),
             "pulsec_rt_arcRetain" => emit_arc_retain_proc(&mut source, &sym),
             "pulsec_rt_arcRelease" => emit_arc_release_proc(&mut source, &sym),

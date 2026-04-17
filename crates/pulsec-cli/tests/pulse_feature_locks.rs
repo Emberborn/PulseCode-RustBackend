@@ -1272,3 +1272,85 @@ entry = "app/core/Main.pulse"
         stderr
     );
 }
+
+#[test]
+fn lock_pulse_feature_07_public_interop_api_executes_without_authorlib_opt_in() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "public-interop"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.interop.NativeCalls;
+        import pulse.interop.NativeLibrary;
+        import pulse.interop.NativeSymbol;
+
+        class Main {
+            public static void main() {
+                NativeLibrary kernel = NativeLibrary.openRequired("kernel32.dll");
+                NativeSymbol getCurrentProcessId = kernel.resolveRequired("GetCurrentProcessId");
+                NativeSymbol getTickCount64 = kernel.resolveRequired("GetTickCount64");
+
+                int pid = NativeCalls.callInt0(getCurrentProcessId);
+                long ticks = NativeCalls.callLong0(getTickCount64);
+                boolean closed = kernel.close();
+
+                if (pid > 0 && ticks > 0L && closed) {
+                    pulse.lang.IO.println("interop_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("interop_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected public interop build success without authorlib opt-in\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("public-interop-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected public interop exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("interop_ok"),
+        "expected interop success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}

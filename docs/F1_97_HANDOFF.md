@@ -638,3 +638,29 @@ Then inspect the code:
 - [prelude.rs](/G:/Programming/Rust/PulseCode/crates/pulsec-core/src/prelude.rs)
 - [semantics/mod.rs](/G:/Programming/Rust/PulseCode/crates/pulsec-core/src/semantics/mod.rs)
 - [type_resolution.rs](/G:/Programming/Rust/PulseCode/crates/pulsec-core/src/semantics/types/type_resolution.rs)
+
+## Current Interop Direction
+
+Interop is now an active `F1-97` seam, not later clean-up.
+
+The first executable public raw interop slice now exists under `pulse.interop.*`:
+
+- `pulse.interop.NativeLibrary`
+- `pulse.interop.NativeSymbol`
+- `pulse.interop.NativeCalls`
+
+Current executable boundary:
+
+- dynamic library load/unload
+- symbol lookup
+- raw 0-4 argument native calls
+
+Direction rule:
+
+- `pulse.interop.*` is the first-home raw interop surface for ordinary users
+- higher-level absorbed foreign-backed features should wrap that raw surface behind Pulse-native contracts
+- interop exists so Pulse can borrow foreign implementation without borrowing authority or keeping Rust as a privileged reachback path
+
+Reference:
+
+- [INTEROP_STRATEGY.md](/G:/Programming/Rust/PulseCode/docs/INTEROP_STRATEGY.md)
