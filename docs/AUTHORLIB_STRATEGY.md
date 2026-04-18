@@ -164,16 +164,17 @@ Any future decision about component-level managed-vs-manual memory policy for th
 
 ## Current Program-Scaffold Direction
 
-The first real Pulse-side compiler/runtime project workspace now lives under
-[selfhost](/G:/Programming/Rust/PulseCode/selfhost):
+The first real Pulse-side compiler/runtime project roots now live directly at
+the top level of the repo through:
 
-- [selfhost/compiler0](/G:/Programming/Rust/PulseCode/selfhost/compiler0)
-- [selfhost/runtime0](/G:/Programming/Rust/PulseCode/selfhost/runtime0)
+- [compiler](/G:/Programming/Rust/PulseCode/compiler)
+- [runtime](/G:/Programming/Rust/PulseCode/runtime)
 
-These are intentionally small scaffolds right now, but they are real Pulse
+These are intentionally still small right now, but they are real Pulse
 projects with manifests, entrypoints, authorlib enabled, and smoke tests. The
-goal is to keep the compiler/runtime program lift happening inside real Pulse
-projects that the Rust-built `pulsec` can already `check`, `build`, and `test`.
+goal is to keep the compiler/runtime program lift happening inside the living
+system layout that the Rust-built `pulsec` can already `check`, `build`, and
+`test`.
 
 Operational rule for the current transition:
 

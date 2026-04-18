@@ -1,0 +1,27 @@
+package runtime.entry;
+
+import author.project.ProjectLayout;
+
+public final class RuntimeIdentity {
+    private RuntimeIdentity() {}
+
+    public static String projectName() {
+        return "pulsec-runtime";
+    }
+
+    public static String stageName() {
+        return "runtime";
+    }
+
+    public static ProjectLayout layout() {
+        return ProjectLayout.defaults(".");
+    }
+
+    public static String banner() {
+        return projectName()
+            .concat(" :: ")
+            .concat(stageName())
+            .concat(" :: ")
+            .concat(layout().mainPulseRoot());
+    }
+}

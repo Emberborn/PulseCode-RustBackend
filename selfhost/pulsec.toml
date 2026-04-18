@@ -1,3 +1,0 @@
-[workspace]
-members = "compiler0, runtime0"
-

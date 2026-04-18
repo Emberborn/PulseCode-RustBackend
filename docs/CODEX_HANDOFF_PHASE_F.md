@@ -1303,20 +1303,24 @@ Bridge / tooling truths added during the current `F1-97` push:
     - `author.build.BuildPipelineExecutionBridge`
     - `author.build.BuildPipelineExecutionProvider`
   - workspace `check` / `build` / `test` and the normal single-project build pipeline now run authored/provider-backed first and only fall back to the older inline Rust loops when the bridge/provider path is unavailable
-  - operational correction after that aggressive lift:
-    - provider-backed compiler/build/test execution is now intentionally scoped to explicit selfhost bring-up flows selected by the hidden Rust-bootstrap flag `--selfhost-provider`
-    - ordinary fixture/parity/regression CLI traffic now goes back to the direct Rust compiler loop
-    - this removes the nested `pulsec` provider-process tax from the general suite while keeping the selfhost ownership seam alive without hard-coding that seam to a permanent directory name
-- the first real Pulse-side compiler/runtime workspace now exists under [selfhost](/G:/Programming/Rust/PulseCode/selfhost):
-  - [selfhost/compiler0](/G:/Programming/Rust/PulseCode/selfhost/compiler0)
-  - [selfhost/runtime0](/G:/Programming/Rust/PulseCode/selfhost/runtime0)
-- those members are intentionally still scaffolds, but they are real Pulse projects with manifests, entrypoints, and smoke tests that the Rust-built `pulsec` can already compile and exercise
+- operational correction after that aggressive lift:
+  - provider-backed compiler/build/test execution is now intentionally scoped to explicit selfhost bring-up flows selected by the hidden Rust-bootstrap flag `--selfhost-provider`
+  - ordinary fixture/parity/regression CLI traffic now goes back to the direct Rust compiler loop
+  - this removes the nested `pulsec` provider-process tax from the general suite while keeping the compiler/runtime ownership seam alive without hard-coding that seam to a staging directory name
+- the first real Pulse-side compiler/runtime project roots now live directly at the repository top level:
+  - [compiler](/G:/Programming/Rust/PulseCode/compiler)
+  - [runtime](/G:/Programming/Rust/PulseCode/runtime)
+- those members are intentionally still small, but they are real Pulse projects with manifests, entrypoints, and smoke tests that the Rust-built `pulsec` can already compile and exercise
 - compiler/runtime port structure is now explicitly governed by [SELFHOST_PORTING_RULES.md](/G:/Programming/Rust/PulseCode/docs/SELFHOST_PORTING_RULES.md):
   - keep packages nested and intentional
   - prefer small focused classes
   - no mega-files or Pulse equivalents of giant Rust blobs
   - keep runtime structures just as readable as compiler structures
   - if the clean/simple port shape is blocked, fix the bootstrap/stdlib/backend first instead of forcing an ugly port
+- the first explicit compiler/runtime package map now also exists in [SELFHOST_PACKAGE_MAP.md](/G:/Programming/Rust/PulseCode/docs/SELFHOST_PACKAGE_MAP.md):
+  - `compiler.*` and `runtime.*` are the real roots
+  - `*.entry` is only for entrypoints and top-level stage identity
+  - real subsystem slices should land in domain packages such as frontend/semantics/lowering/backend and startup/memory/handles/strings/interop/io as they come online
   - the later authored compiler discovery lift also exposed a bridge-structure truth:
     - the generated cached bridge dispatcher had become too large to trust as one giant `bridge.internal.Main.main()` body
     - compiler render branches now dispatch through helper methods inside the generated bridge source instead of keeping all compiler render paths inline

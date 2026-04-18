@@ -4,7 +4,7 @@ This document records the required code-shape rules for the Pulse-authored
 compiler and runtime projects during `F1-97` and the later Phase G transition.
 
 These are not style suggestions. They are the operating rules for how
-`compiler0`, `runtime0`, and later Pulse-owned compiler/runtime code should be
+`compiler`, `runtime`, and later Pulse-owned compiler/runtime code should be
 structured.
 
 ## Purpose
