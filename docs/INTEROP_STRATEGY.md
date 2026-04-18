@@ -2,15 +2,15 @@
 
 ## Purpose
 
-Define the Pulse-owned interop boundary that allows Pulse to borrow foreign
+Define the Aden-owned interop boundary that allows Aden to borrow foreign
 implementation without borrowing authority.
 
 This is not just ordinary FFI. The intended use is:
 
-- define a Pulse-native public contract first
+- define a Aden-native public contract first
 - satisfy missing implementation temporarily through a foreign backend
-- keep Pulse semantics, ownership, lifecycle, and error behavior at the public surface
-- later replace the foreign implementation with Pulse-native implementation without changing the public contract
+- keep Aden semantics, ownership, lifecycle, and error behavior at the public surface
+- later replace the foreign implementation with Aden-native implementation without changing the public contract
 
 ## Ownership Rule
 
@@ -18,23 +18,23 @@ Interop provides implementation reach, not truth.
 
 That means:
 
-- Pulse owns the public contract
-- Pulse owns the wrapper semantics
-- Pulse owns orchestration and lifecycle
+- Aden owns the public contract
+- Aden owns the wrapper semantics
+- Aden owns orchestration and lifecycle
 - foreign code is an implementation detail behind that contract
 
 Interop must not become bootstrap in disguise.
 
 ## Leakage Rule
 
-Do not let foreign semantics leak upward into the Pulse-facing surface.
+Do not let foreign semantics leak upward into the Aden-facing surface.
 
 Examples of leakage that should be resisted:
 
-- Rust `Result` semantics becoming the public Pulse error model
-- C pointer ownership becoming ambient Pulse ownership rules
-- JVM/CLR object identity becoming the Pulse object model
-- foreign naming/type conventions becoming the native Pulse API shape
+- Rust `Result` semantics becoming the public Aden error model
+- C pointer ownership becoming ambient Aden ownership rules
+- JVM/CLR object identity becoming the Aden object model
+- foreign naming/type conventions becoming the native Aden API shape
 
 The wrapper/adaptor layer exists specifically to stop that leakage.
 
@@ -42,7 +42,7 @@ The wrapper/adaptor layer exists specifically to stop that leakage.
 
 ### Public raw interop
 
-The public stdlib now owns the raw interop surface under `pulse.interop.*`.
+The public stdlib now owns the raw interop surface under `aden.interop.*`.
 
 This surface is intentionally low-level:
 
@@ -58,15 +58,15 @@ This surface is intentionally low-level:
 - explicit borrowed/adopted/manual ownership modes for interop-backed resources
 
 This gives ordinary users a standard interop path without forcing them into
-`author.*`.
+`adk.*`.
 
-### Pulse-owned feature wrappers
+### Aden-owned feature wrappers
 
 Higher-level absorbed features should sit above the raw interop surface:
 
-- define a Pulse-native type/API first
+- define a Aden-native type/API first
 - call into foreign code only underneath that wrapper
-- preserve Pulse behavior at the public face
+- preserve Aden behavior at the public face
 
 That is the mechanism for raising foreign capability into the language as if it
 were native from the start.
@@ -75,19 +75,19 @@ were native from the start.
 
 The first executable interop slice is intentionally narrow:
 
-- public `pulse.interop.NativeLibrary`
-- public `pulse.interop.NativeSymbol`
-- public `pulse.interop.NativeFunction`
-- public `pulse.interop.NativeCalls`
-- public `pulse.interop.NativeCallback0..4`
-- public `pulse.interop.NativeCallbackHandle`
-- public `pulse.interop.NativePointer`
-- public `pulse.interop.NativeArgument`
-- public `pulse.interop.NativeBuffer`
-- public `pulse.interop.NativeByteSpan`
-- public `pulse.interop.NativeUtf8String`
-- public `pulse.interop.NativeOwnership`
-- public `pulse.interop.NativeManagedResource`
+- public `aden.interop.NativeLibrary`
+- public `aden.interop.NativeSymbol`
+- public `aden.interop.NativeFunction`
+- public `aden.interop.NativeCalls`
+- public `aden.interop.NativeCallback0..4`
+- public `aden.interop.NativeCallbackHandle`
+- public `aden.interop.NativePointer`
+- public `aden.interop.NativeArgument`
+- public `aden.interop.NativeBuffer`
+- public `aden.interop.NativeByteSpan`
+- public `aden.interop.NativeUtf8String`
+- public `aden.interop.NativeOwnership`
+- public `aden.interop.NativeManagedResource`
 - backend/runtime support for:
   - dynamic library load/unload
   - exported symbol resolution
@@ -96,16 +96,16 @@ The first executable interop slice is intentionally narrow:
 - owned native byte allocation/free
 - byte reads/writes/copies
 - pointer-sized reads/writes
-- Pulse string -> owned UTF-8+NUL backing storage
+- Aden string -> owned UTF-8+NUL backing storage
 - explicit-length and NUL-terminated UTF-8 decode
 - loaded-module lookup without taking loader ownership
 - current-process-image lookup without taking loader ownership
 - symbol-to-function lifting and direct function-pointer invocation
 - function-pointer arguments passed back into foreign APIs through `NativeArgument`
 - registered native callback handles with ARC-backed teardown
-- native-to-Pulse callback re-entry through generated trampoline slots
+- native-to-Aden callback re-entry through generated trampoline slots
 - adopted interop resources now release through ARC-backed object teardown by default
-- borrowed and manual wrappers keep structured Pulse ownership without taking over the foreign release path
+- borrowed and manual wrappers keep structured Aden ownership without taking over the foreign release path
 
 This is enough to start wrapping:
 
@@ -125,13 +125,13 @@ ownership-safe marshalling:
 - `NativeArgument` keeps mixed foreign call shapes structured without inventing a second native call ABI
 - `NativeBuffer` owns mutable native storage and closes deterministically
 - `NativeByteSpan` borrows subranges without taking ownership
-- `NativeUtf8String` owns temporary UTF-8+NUL call backing storage and decodes foreign UTF-8 back into Pulse strings
+- `NativeUtf8String` owns temporary UTF-8+NUL call backing storage and decodes foreign UTF-8 back into Aden strings
 - `NativeOwnership` makes borrowed/adopted/manual release policy explicit at the public API boundary
 - `NativeManagedResource` marks the narrow interop-owned classes that participate in ARC-triggered native cleanup
 
 This is the minimum substrate needed so absorbed foreign-backed features can
 borrow implementation without forcing raw pointer/heap semantics onto the rest
-of Pulse.
+of Aden.
 
 ## Planned Expansion
 
@@ -147,13 +147,13 @@ needs backend/runtime/host support, bring that substrate up during `F1-97`.
 
 ## Relationship To Self-Hosting
 
-A real Pulse-owned interop boundary allows earlier self-hosting because missing
+A real Aden-owned interop boundary allows earlier self-hosting because missing
 capabilities no longer require broad Rust bootstrap ownership.
 
 Instead:
 
-- Pulse owns the compiler/runtime/build/tooling programs
-- narrow missing capabilities can temporarily live behind Pulse-owned interop adapters
+- Aden owns the compiler/runtime/build/tooling programs
+- narrow missing capabilities can temporarily live behind Aden-owned interop adapters
 - Rust becomes one provider among many, not a second hidden authority
 
 That is the intended role of interop in the self-sustained transition.

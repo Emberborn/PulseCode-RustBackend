@@ -4,7 +4,7 @@
 
 | Job | Command | Purpose |
 |---|---|---|
-| C2 Locks | `cargo test -q -p pulsec --test stage_locks_c2` | Lock gates for ARC/cycle/container/ABI/threading/debug/runtime behavior |
+| C2 Locks | `cargo test -q -p adenc --test stage_locks_c2` | Lock gates for ARC/cycle/container/ABI/threading/debug/runtime behavior |
 | Full Workspace | `cargo test -q` | Regression coverage across all crates/tests |
 
 ## Soak/Trend Inputs
@@ -19,4 +19,4 @@
 ## Pass Criteria
 - C2 lock suite: all tests pass.
 - Full workspace suite: all tests pass.
-- C2 gate mapping in [C2_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/C2_TASK_BOARD.md) remains `Done (Locked)` for `C2-G1`..`C2-G12`.
+- C2 gate mapping in [C2_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/C2_TASK_BOARD.md) remains `Done (Locked)` for `C2-G1`..`C2-G12`.

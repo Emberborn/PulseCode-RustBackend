@@ -1,0 +1,425 @@
+package aden.time;
+import aden.collections.Array;
+import aden.lang.Integer;
+import aden.lang.Object;
+import aden.lang.String;
+import aden.math.Math;
+
+/**
+ * Package-local helpers for the current epoch-millisecond and UTC-style date/time model.
+ */
+final class TimeSupport {
+    static final long NANOS_PER_MILLI = 1000000L;
+    static final long MILLIS_PER_SECOND = 1000L;
+    static final long MILLIS_PER_MINUTE = 60L * MILLIS_PER_SECOND;
+    static final long MILLIS_PER_HOUR = 60L * MILLIS_PER_MINUTE;
+    static final long MILLIS_PER_DAY = 24L * MILLIS_PER_HOUR;
+
+    static boolean isLeapYear(int year) {
+        if (year % 4 != 0) {
+            return false;
+        }
+        if (year % 100 != 0) {
+            return true;
+        }
+        return year % 400 == 0;
+    }
+
+    static int lengthOfMonth(int year, int month) {
+        if (month < 1 || month > 12) {
+            aden.rt.Intrinsics.panic("Invalid month");
+        }
+        if (month == 2) {
+            if (isLeapYear(year)) {
+                return 29;
+            }
+            return 28;
+        }
+        if (month == 4 || month == 6 || month == 9 || month == 11) {
+            return 30;
+        }
+        return 31;
+    }
+
+    static int lengthOfYear(int year) {
+        if (isLeapYear(year)) {
+            return 366;
+        }
+        return 365;
+    }
+
+    static void validateDate(int year, int month, int day) {
+        if (month < 1 || month > 12) {
+            aden.rt.Intrinsics.panic("Invalid date month");
+        }
+        int maxDay = lengthOfMonth(year, month);
+        if (day < 1 || day > maxDay) {
+            aden.rt.Intrinsics.panic("Invalid date day");
+        }
+    }
+
+    static void validateTime(int hour, int minute, int second, int millis) {
+        if (hour < 0 || hour > 23) {
+            aden.rt.Intrinsics.panic("Invalid time hour");
+        }
+        if (minute < 0 || minute > 59) {
+            aden.rt.Intrinsics.panic("Invalid time minute");
+        }
+        if (second < 0 || second > 59) {
+            aden.rt.Intrinsics.panic("Invalid time second");
+        }
+        if (millis < 0 || millis > 999) {
+            aden.rt.Intrinsics.panic("Invalid time millis");
+        }
+    }
+
+    static void requireNonNull(Object value, String label) {
+        if (value == null) {
+            aden.rt.Intrinsics.panic(label.concat(" must not be null"));
+        }
+    }
+
+    static void requirePositiveLong(long value, String label) {
+        if (value <= 0L) {
+            aden.rt.Intrinsics.panic(label.concat(" must be positive"));
+        }
+    }
+
+    static void requirePositiveMillis(long value, String label) {
+        requirePositiveLong(value, label);
+    }
+
+    static void requirePositiveDuration(Duration value, String label) {
+        requireNonNull(value, label);
+        requirePositiveMillis(value.toMillis(), label);
+    }
+
+    static long safeAddLong(long left, long right, String label) {
+        if (right > 0L && left > aden.lang.Long.MAX_VALUE - right) {
+            aden.rt.Intrinsics.panic(label.concat(" overflow"));
+        }
+        if (right < 0L && left < aden.lang.Long.MIN_VALUE - right) {
+            aden.rt.Intrinsics.panic(label.concat(" overflow"));
+        }
+        return left + right;
+    }
+
+    static long safeSubtractLong(long left, long right, String label) {
+        if (right > 0L && left < aden.lang.Long.MIN_VALUE + right) {
+            aden.rt.Intrinsics.panic(label.concat(" overflow"));
+        }
+        if (right < 0L && left > aden.lang.Long.MAX_VALUE + right) {
+            aden.rt.Intrinsics.panic(label.concat(" overflow"));
+        }
+        return left - right;
+    }
+
+    static long safeMultiplyLong(long left, long right, String label) {
+        if (left == 0L || right == 0L) {
+            return 0L;
+        }
+        if ((left == aden.lang.Long.MIN_VALUE && right == -1L)
+            || (right == aden.lang.Long.MIN_VALUE && left == -1L)) {
+            aden.rt.Intrinsics.panic(label.concat(" overflow"));
+        }
+        long result = left * right;
+        if (result / right != left) {
+            aden.rt.Intrinsics.panic(label.concat(" overflow"));
+        }
+        return result;
+    }
+
+    static long safeNegateLong(long value, String label) {
+        if (value == aden.lang.Long.MIN_VALUE) {
+            aden.rt.Intrinsics.panic(label.concat(" overflow"));
+        }
+        return 0L - value;
+    }
+
+    static long safeDivideLong(long value, long divisor, String label) {
+        if (divisor == 0L) {
+            aden.rt.Intrinsics.panic(label.concat(" division by zero"));
+        }
+        if (value == aden.lang.Long.MIN_VALUE && divisor == -1L) {
+            aden.rt.Intrinsics.panic(label.concat(" overflow"));
+        }
+        return value / divisor;
+    }
+
+    static int floorDiv(int value, int divisor) {
+        return Math.floorDiv(value, divisor);
+    }
+
+    static long floorDiv(long value, long divisor) {
+        return Math.floorDiv(value, divisor);
+    }
+
+    static int floorMod(int value, int divisor) {
+        return Math.floorMod(value, divisor);
+    }
+
+    static long floorMod(long value, long divisor) {
+        return Math.floorMod(value, divisor);
+    }
+
+    static long truncateToTick(long value, long tickMillis) {
+        requirePositiveMillis(tickMillis, "tickMillis");
+        return value - floorMod(value, tickMillis);
+    }
+
+    static long epochDayFromMillis(long epochMillis) {
+        return floorDiv(epochMillis, MILLIS_PER_DAY);
+    }
+
+    static int millisOfDay(long epochMillis) {
+        return (int) floorMod(epochMillis, MILLIS_PER_DAY);
+    }
+
+    static Array datePartsFromEpochMillis(long epochMillis) {
+        return datePartsFromEpochDay(epochDayFromMillis(epochMillis));
+    }
+
+    static Array timePartsFromEpochMillis(long epochMillis) {
+        int millisOfDay = millisOfDay(epochMillis);
+        int hour = millisOfDay / 3600000;
+        millisOfDay = millisOfDay - (hour * 3600000);
+        int minute = millisOfDay / 60000;
+        millisOfDay = millisOfDay - (minute * 60000);
+        int second = millisOfDay / 1000;
+        int millis = millisOfDay - (second * 1000);
+        Array parts = new Array(4);
+        parts.setInt(0, hour);
+        parts.setInt(1, minute);
+        parts.setInt(2, second);
+        parts.setInt(3, millis);
+        return parts;
+    }
+
+    static Array dateTimePartsFromEpochMillis(long epochMillis) {
+        Array date = datePartsFromEpochMillis(epochMillis);
+        Array time = timePartsFromEpochMillis(epochMillis);
+        Array parts = new Array(7);
+        parts.setInt(0, date.getInt(0));
+        parts.setInt(1, date.getInt(1));
+        parts.setInt(2, date.getInt(2));
+        parts.setInt(3, time.getInt(0));
+        parts.setInt(4, time.getInt(1));
+        parts.setInt(5, time.getInt(2));
+        parts.setInt(6, time.getInt(3));
+        return parts;
+    }
+
+    static Array datePartsFromEpochDay(long epochDay) {
+        long z = epochDay + 719468L;
+        long era = floorDiv(z, 146097L);
+        long doe = z - (era * 146097L);
+        long yoe = (doe - (doe / 1460L) + (doe / 36524L) - (doe / 146096L)) / 365L;
+        long y = yoe + (era * 400L);
+        long doy = doe - ((365L * yoe) + (yoe / 4L) - (yoe / 100L));
+        long mp = ((5L * doy) + 2L) / 153L;
+        int day = (int) (doy - (((153L * mp) + 2L) / 5L) + 1L);
+        int month = (int) (mp + 3L);
+        if (month > 12) {
+            month = month - 12;
+        }
+        if (month <= 2) {
+            y = y + 1L;
+        }
+        Array parts = new Array(3);
+        parts.setInt(0, (int) y);
+        parts.setInt(1, month);
+        parts.setInt(2, day);
+        return parts;
+    }
+
+    static long epochDayFromDate(int year, int month, int day) {
+        validateDate(year, month, day);
+        long y = (long) year;
+        long m = (long) month;
+        long d = (long) day;
+        if (m <= 2L) {
+            y = y - 1L;
+        }
+        long era = floorDiv(y, 400L);
+        long yoe = y - (era * 400L);
+        long mp = m;
+        if (m > 2L) {
+            mp = m - 3L;
+        } else {
+            mp = m + 9L;
+        }
+        long doy = (((153L * mp) + 2L) / 5L) + d - 1L;
+        long doe = (yoe * 365L) + (yoe / 4L) - (yoe / 100L) + doy;
+        return (era * 146097L) + doe - 719468L;
+    }
+
+    static long epochMillisFromDateTime(int year, int month, int day, int hour, int minute, int second, int millis) {
+        validateDate(year, month, day);
+        validateTime(hour, minute, second, millis);
+        long epochDay = epochDayFromDate(year, month, day);
+        long millisOfDay = safeAddLong(
+            safeAddLong(
+                safeMultiplyLong((long) hour, MILLIS_PER_HOUR, "Date-time conversion"),
+                safeMultiplyLong((long) minute, MILLIS_PER_MINUTE, "Date-time conversion"),
+                "Date-time conversion"
+            ),
+            safeAddLong(
+                safeMultiplyLong((long) second, MILLIS_PER_SECOND, "Date-time conversion"),
+                (long) millis,
+                "Date-time conversion"
+            ),
+            "Date-time conversion"
+        );
+        return safeAddLong(
+            safeMultiplyLong(epochDay, MILLIS_PER_DAY, "Date-time conversion"),
+            millisOfDay,
+            "Date-time conversion"
+        );
+    }
+
+    static Array addMonthsToDate(int year, int month, int day, long deltaMonths) {
+        long monthIndex = safeAddLong(
+            safeAddLong(
+                safeMultiplyLong((long) year, 12L, "Date month arithmetic"),
+                (long) month - 1L,
+                "Date month arithmetic"
+            ),
+            deltaMonths,
+            "Date month arithmetic"
+        );
+        long targetYear = floorDiv(monthIndex, 12L);
+        int targetMonth = (int) floorMod(monthIndex, 12L) + 1;
+        int targetDay = day;
+        int maxDay = lengthOfMonth((int) targetYear, targetMonth);
+        if (targetDay > maxDay) {
+            targetDay = maxDay;
+        }
+        Array parts = new Array(3);
+        parts.setInt(0, (int) targetYear);
+        parts.setInt(1, targetMonth);
+        parts.setInt(2, targetDay);
+        return parts;
+    }
+
+    static int dayOfYear(int year, int month, int day) {
+        validateDate(year, month, day);
+        int total = 0;
+        int currentMonth = 1;
+        while (currentMonth < month) {
+            total = total + lengthOfMonth(year, currentMonth);
+            currentMonth = currentMonth + 1;
+        }
+        return total + day;
+    }
+
+    static Array datePartsFromYearDay(int year, int dayOfYear) {
+        int maxDay = lengthOfYear(year);
+        if (dayOfYear < 1 || dayOfYear > maxDay) {
+            aden.rt.Intrinsics.panic("Invalid day-of-year");
+        }
+        int month = 1;
+        int remaining = dayOfYear;
+        while (remaining > lengthOfMonth(year, month)) {
+            remaining = remaining - lengthOfMonth(year, month);
+            month = month + 1;
+        }
+        Array parts = new Array(3);
+        parts.setInt(0, year);
+        parts.setInt(1, month);
+        parts.setInt(2, remaining);
+        return parts;
+    }
+
+    static int dayOfWeekFromEpochDay(long epochDay) {
+        return (int) floorMod(epochDay + 3L, 7L) + 1;
+    }
+
+    static String padInt(int value, int width) {
+        String text = String.valueOf(value);
+        while (text.length() < width) {
+            text = "0".concat(text);
+        }
+        return text;
+    }
+
+    static String formatDate(int year, int month, int day) {
+        return padInt(year, 4).concat("-").concat(padInt(month, 2)).concat("-").concat(padInt(day, 2));
+    }
+
+    static String formatTime(int hour, int minute, int second, int millis) {
+        return padInt(hour, 2)
+            .concat(":")
+            .concat(padInt(minute, 2))
+            .concat(":")
+            .concat(padInt(second, 2))
+            .concat(".")
+            .concat(padInt(millis, 3));
+    }
+
+    static String formatDateTime(int year, int month, int day, int hour, int minute, int second, int millis) {
+        return formatDate(year, month, day).concat("T").concat(formatTime(hour, minute, second, millis));
+    }
+
+    static LocalDate parseLocalDate(String text) {
+        if (text.length() != 10) {
+            aden.rt.Intrinsics.panic("Invalid LocalDate text");
+        }
+        expectChar(text, 4, '-');
+        expectChar(text, 7, '-');
+        int year = parseFixedInt(text, 0, 4);
+        int month = parseFixedInt(text, 5, 7);
+        int day = parseFixedInt(text, 8, 10);
+        return new LocalDate(year, month, day);
+    }
+
+    static LocalTime parseLocalTime(String text) {
+        if (text.length() != 12) {
+            aden.rt.Intrinsics.panic("Invalid LocalTime text");
+        }
+        expectChar(text, 2, ':');
+        expectChar(text, 5, ':');
+        expectChar(text, 8, '.');
+        int hour = parseFixedInt(text, 0, 2);
+        int minute = parseFixedInt(text, 3, 5);
+        int second = parseFixedInt(text, 6, 8);
+        int millis = parseFixedInt(text, 9, 12);
+        return new LocalTime(hour, minute, second, millis);
+    }
+
+    static LocalDateTime parseLocalDateTime(String text) {
+        if (text.length() != 23) {
+            aden.rt.Intrinsics.panic("Invalid LocalDateTime text");
+        }
+        expectChar(text, 10, 'T');
+        LocalDate date = parseLocalDate(text.substring(0, 10));
+        LocalTime time = parseLocalTime(text.substring(11, 23));
+        return new LocalDateTime(
+            date.year(),
+            date.month(),
+            date.day(),
+            time.hour(),
+            time.minute(),
+            time.second(),
+            time.millis()
+        );
+    }
+
+    static Instant parseInstant(String text) {
+        if (text.length() != 24) {
+            aden.rt.Intrinsics.panic("Invalid Instant text");
+        }
+        expectChar(text, 23, 'Z');
+        LocalDateTime value = parseLocalDateTime(text.substring(0, 23));
+        return value.toInstant();
+    }
+
+    static int parseFixedInt(String text, int begin, int end) {
+        return Integer.intValue(Integer.parse(text.substring(begin, end)));
+    }
+
+    static void expectChar(String text, int index, char expected) {
+        if (text.charAt(index) != expected) {
+            aden.rt.Intrinsics.panic("Invalid date/time text");
+        }
+    }
+}

@@ -10,7 +10,7 @@ This page documents runtime-backed behavior around null checks, reference typing
 
 ## Runtime Type Identity
 
-Pulse currently supports reflection-lite type identity through `Class`.
+Aden currently supports reflection-lite type identity through `Class`.
 This is enough for fully qualified runtime class names and the current reflection-lite helper surface:
 
 - `Object.getClass().getName()` returns fully qualified runtime class names such as `app.core.Main`

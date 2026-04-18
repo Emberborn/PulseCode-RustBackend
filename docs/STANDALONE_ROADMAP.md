@@ -1,10 +1,10 @@
-# PulseCode Detailed Standalone Roadmap
+# Aden Lang Detailed Standalone Roadmap
 
 ## Goal
-Ship PulseCode as a standalone language ecosystem that can:
-1. act as a Rust-hosted bootstrap compiler for the Pulse language
+Ship Aden Lang as a standalone language ecosystem that can:
+1. act as a Rust-hosted bootstrap compiler for the Aden language
 2. finish the language/stdlib/runtime surface needed for self-sustained-hosting readiness
-3. define and support the current Windows x64 backend/runtime lane while preserving later PulseOS, Linux, and macOS target integration
+3. define and support the current Windows x64 backend/runtime lane while preserving later AdenOS, Linux, and macOS target integration
 4. reach self-sustained hosting by using self-hosting as the transition mechanism, with Windows x64 current and additional targets added through preserved adapter seams
 
 ## Strategic Pivot (2026-03-21)
@@ -14,12 +14,12 @@ This roadmap originally assumed a Windows-first standalone product. That is no l
 Effective immediately:
 
 - the Windows MASM/COFF/`link.exe` pipeline is the current Windows x64 target adapter and host/bootstrap lane, not the destination product model for the whole architecture
-- compiler-owned packaging/install/productization work is removed from `pulsec`; downstream tools own installers/packages if needed
+- compiler-owned packaging/install/productization work is removed from `adenc`; downstream tools own installers/packages if needed
 - frontend, semantics, IR, stdlib, docs, validation, and self-sustained-hosting readiness work remain live
 - backend/runtime work from the IR boundary downward should pivot toward:
   - a Rust-owned host bootstrap path
   - explicit target adapters instead of one Windows-shaped native path
-  - the current Windows x64 target contract plus preserved later PulseOS/Linux/macOS target contracts
+  - the current Windows x64 target contract plus preserved later AdenOS/Linux/macOS target contracts
   - target seams that fit the same adapter architecture when later lanes activate
 
 Interpret older Windows-specific milestones below as historical/bootstrap context unless a later section explicitly reactivates them.
@@ -28,34 +28,34 @@ Interpret older Windows-specific milestones below as historical/bootstrap contex
 
 - Lane 1: keep F1/F2/F-A moving toward a self-sustained-hosting-ready language and library surface
 - Lane 2: preserve and reframe the current Windows x64 backend as both an immediate target lane and the current host/bootstrap path
-- Lane 3: define the first PulseOS target adapter, runtime ABI boundary, and loader/startup contract
+- Lane 3: define the first AdenOS target adapter, runtime ABI boundary, and loader/startup contract
 - Lane 4: keep the architecture honest for later Linux and macOS expansion instead of hard-coding Windows-only assumptions back in
 - Lane 5: move self-hosting into a broader self-sustained-hosting roadmap rather than a Windows-product roadmap
 
 ## Active Execution Board (2026-04-09)
 
-- [F1 Task Board](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md) is the active execution board
-- [Rebase Scope and Return-to-F1 Policy](/D:/Programming/codex/PulseCode/docs/REBASE_SCOPE_AND_RETURN_POLICY.md) is the scope/policy source of truth for why the rebase exists and when `F1` may resume
-- [Target Taxonomy and Naming Policy](/D:/Programming/codex/PulseCode/docs/TARGET_TAXONOMY_AND_NAMING.md) is the source of truth for canonical target IDs during the target-model rebase
-- [Backend Layer Architecture](/D:/Programming/codex/PulseCode/docs/BACKEND_LAYER_ARCHITECTURE.md) is the source of truth for the `RB-07` code-ownership split
-- [Backend Adapter Registry](/D:/Programming/codex/PulseCode/docs/BACKEND_ADAPTER_REGISTRY.md) is the source of truth for the `RB-08` adapter selection seam
-- [Windows x64 Adapter Scope](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_ADAPTER_SCOPE.md) is the source of truth for the `RB-09` retained Windows lane boundary
-- [Target-Neutral Planning Boundary](/D:/Programming/codex/PulseCode/docs/TARGET_NEUTRAL_PLANNING_BOUNDARY.md) is the source of truth for the `RB-10` planning-structure boundary
-- [Runtime Intrinsics Partition](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_PARTITION.md) is the source of truth for the `RB-11` portable-vs-adapter runtime split
-- [Host Bootstrap Runtime Contract](/D:/Programming/codex/PulseCode/docs/HOST_BOOTSTRAP_RUNTIME_CONTRACT.md) is the source of truth for the `RB-12` minimum retained Rust-host bootstrap runtime seam
-- [PulseOS Runtime Service ABI Slice](/D:/Programming/codex/PulseCode/docs/PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md) is the source of truth for the `RB-13` requested-target PulseOS service boundary
-- [Runtime Ownership Rebase](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_REBASE.md) is the source of truth for the `RB-14` three-way ownership split
-- [Target Artifact Contract Split](/D:/Programming/codex/PulseCode/docs/TARGET_ARTIFACT_CONTRACT_SPLIT.md) is the source of truth for the `RB-15` artifact split between Windows x64 and PulseOS
-- [PulseOS Startup, Loader, and Publication Contract](/D:/Programming/codex/PulseCode/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md) is the source of truth for the `RB-16` startup/publication split between the retained Windows x64 lane and the requested-target PulseOS lane
-- [PulseOS Executable-Loading Proof Target](/D:/Programming/codex/PulseCode/docs/PULSEOS_EXECUTABLE_LOADING_PROOF_TARGET.md) is the source of truth for the `RB-17` contract-level PulseOS loading target
-- [PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md) records the current PulseOS target-direction policy
-- [Target Taxonomy and Naming Policy](/D:/Programming/codex/PulseCode/docs/TARGET_TAXONOMY_AND_NAMING.md) now also preserves `macos-arm64` as a later canonical target lane without changing the current adapter implementation truth
-- [Compiler Packaging Removal](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md) is the source of truth for `RB-17.1` and the removed packaging surface
-- [Rebase Validation Layering](/D:/Programming/codex/PulseCode/docs/REBASE_VALIDATION_LAYERING.md) is the source of truth for `RB-18` and the split between target-neutral, Windows x64 adapter, and requested-target contract validation homes
-- [Windows x64 Scope / Freeze Policy](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md) is the source of truth for `RB-19` and the retained-vs-frozen Windows x64 boundary
-- [Rebase Planning Spine Alignment](/D:/Programming/codex/PulseCode/docs/REBASE_PLANNING_SPINE_ALIGNMENT.md) is the source of truth for `RB-20` and the live planning-spine alignment
-- [Rebase Closure Checklist](/D:/Programming/codex/PulseCode/docs/REBASE_CLOSURE_CHECKLIST.md) and [Rebase Evidence Index](/D:/Programming/codex/PulseCode/docs/REBASE_EVIDENCE_INDEX.md) are the published `RB-21` closure package
-- [F1 Task Board](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md) is now reactivated as the active post-rebase execution board
+- [F1 Task Board](/D:/Programming/codex/Aden Lang/docs/F1_TASK_BOARD.md) is the active execution board
+- [Rebase Scope and Return-to-F1 Policy](/D:/Programming/codex/Aden Lang/docs/REBASE_SCOPE_AND_RETURN_POLICY.md) is the scope/policy source of truth for why the rebase exists and when `F1` may resume
+- [Target Taxonomy and Naming Policy](/D:/Programming/codex/Aden Lang/docs/TARGET_TAXONOMY_AND_NAMING.md) is the source of truth for canonical target IDs during the target-model rebase
+- [Backend Layer Architecture](/D:/Programming/codex/Aden Lang/docs/BACKEND_LAYER_ARCHITECTURE.md) is the source of truth for the `RB-07` code-ownership split
+- [Backend Adapter Registry](/D:/Programming/codex/Aden Lang/docs/BACKEND_ADAPTER_REGISTRY.md) is the source of truth for the `RB-08` adapter selection seam
+- [Windows x64 Adapter Scope](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_ADAPTER_SCOPE.md) is the source of truth for the `RB-09` retained Windows lane boundary
+- [Target-Neutral Planning Boundary](/D:/Programming/codex/Aden Lang/docs/TARGET_NEUTRAL_PLANNING_BOUNDARY.md) is the source of truth for the `RB-10` planning-structure boundary
+- [Runtime Intrinsics Partition](/D:/Programming/codex/Aden Lang/docs/RUNTIME_INTRINSICS_PARTITION.md) is the source of truth for the `RB-11` portable-vs-adapter runtime split
+- [Host Bootstrap Runtime Contract](/D:/Programming/codex/Aden Lang/docs/HOST_BOOTSTRAP_RUNTIME_CONTRACT.md) is the source of truth for the `RB-12` minimum retained Rust-host bootstrap runtime seam
+- [AdenOS Runtime Service ABI Slice](/D:/Programming/codex/Aden Lang/docs/PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md) is the source of truth for the `RB-13` requested-target AdenOS service boundary
+- [Runtime Ownership Rebase](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_REBASE.md) is the source of truth for the `RB-14` three-way ownership split
+- [Target Artifact Contract Split](/D:/Programming/codex/Aden Lang/docs/TARGET_ARTIFACT_CONTRACT_SPLIT.md) is the source of truth for the `RB-15` artifact split between Windows x64 and AdenOS
+- [AdenOS Startup, Loader, and Publication Contract](/D:/Programming/codex/Aden Lang/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md) is the source of truth for the `RB-16` startup/publication split between the retained Windows x64 lane and the requested-target AdenOS lane
+- [AdenOS Executable-Loading Proof Target](/D:/Programming/codex/Aden Lang/docs/PULSEOS_EXECUTABLE_LOADING_PROOF_TARGET.md) is the source of truth for the `RB-17` contract-level AdenOS loading target
+- [PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md](/D:/Programming/codex/Aden Lang/docs/PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md) records the current AdenOS target-direction policy
+- [Target Taxonomy and Naming Policy](/D:/Programming/codex/Aden Lang/docs/TARGET_TAXONOMY_AND_NAMING.md) now also preserves `macos-arm64` as a later canonical target lane without changing the current adapter implementation truth
+- [Compiler Packaging Removal](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md) is the source of truth for `RB-17.1` and the removed packaging surface
+- [Rebase Validation Layering](/D:/Programming/codex/Aden Lang/docs/REBASE_VALIDATION_LAYERING.md) is the source of truth for `RB-18` and the split between target-neutral, Windows x64 adapter, and requested-target contract validation homes
+- [Windows x64 Scope / Freeze Policy](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md) is the source of truth for `RB-19` and the retained-vs-frozen Windows x64 boundary
+- [Rebase Planning Spine Alignment](/D:/Programming/codex/Aden Lang/docs/REBASE_PLANNING_SPINE_ALIGNMENT.md) is the source of truth for `RB-20` and the live planning-spine alignment
+- [Rebase Closure Checklist](/D:/Programming/codex/Aden Lang/docs/REBASE_CLOSURE_CHECKLIST.md) and [Rebase Evidence Index](/D:/Programming/codex/Aden Lang/docs/REBASE_EVIDENCE_INDEX.md) are the published `RB-21` closure package
+- [F1 Task Board](/D:/Programming/codex/Aden Lang/docs/F1_TASK_BOARD.md) is now reactivated as the active post-rebase execution board
 - the rebase board is now closed through `RB-21`
 - the active `F1` resume point is `F1-51`
 
@@ -103,9 +103,9 @@ Completed (bootstrapped front-end foundation):
     - field/param/return/local class types resolve to package-qualified identity
     - ambiguous class type references now diagnosed in declaration contexts
   - stdlib import conventions baseline:
-    - `import com.pulse.lang.IO;` and `import com.pulse.lang.System;` supported
-    - invalid/unknown `com.pulse` wildcard/static imports rejected
-    - unknown `com.pulse.*` imports rejected
+    - `import com.aden.lang.IO;` and `import com.aden.lang.System;` supported
+    - invalid/unknown `com.aden` wildcard/static imports rejected
+    - unknown `com.aden.*` imports rejected
 
 Not started (remaining standalone milestones):
 - Packaging toolchain (remaining as a Windows x64 target-lane capability, not as the cross-project strategic destination)
@@ -113,7 +113,7 @@ Not started (remaining standalone milestones):
 
 Completed (Phase B spike freeze baseline):
 - Phase B completed as a native backend spike baseline:
-  - initial IR module added in `pulsec-core` (`IrProgram`, class/field/method/param nodes)
+  - initial IR module added in `adenc-core` (`IrProgram`, class/field/method/param nodes)
   - AST-to-IR lowering baseline wired (`lower_to_ir_with_contexts`)
   - block-based method IR added (`IrBlock`, `IrInstr`, `IrTerminator`) with lowering for:
     - local declarations/assignments/expr eval/returns
@@ -124,13 +124,13 @@ Completed (Phase B spike freeze baseline):
   - typed temporary/value graph added (`IrValueId`, `IrValue`, `IrValueKind`) for expression lowering
   - debug source mapping baseline added on IR instructions/terminators/values (`IrSourceLoc`)
   - backend adapter boundary added in CLI (`BackendAdapter`, `RustHostBootstrapBackend`) to decouple IR lowering from emit stage
-  - `pulsec build` now runs semantic check + IR lowering and reports IR summary
-  - `pulsec build` now emits deterministic IR artifact at `build/pulsec.ir.txt` (backend no-op emitter baseline)
+  - `adenc build` now runs semantic check + IR lowering and reports IR summary
+  - `adenc build` now emits deterministic IR artifact at `build/adenc.ir.txt` (backend no-op emitter baseline)
   - native backend contract baseline documented (`docs/NATIVE_BACKEND_CONTRACT.md`)
-  - `pulsec build` now emits deterministic native plan artifact at `build/native.plan.json`
-  - `pulsec build` now emits Windows COFF object scaffold artifact at `build/main.obj` (x86_64 machine header baseline)
-  - `pulsec build` now performs first link step attempt (`main.obj` -> `main.exe`) and emits deterministic link report (`build/native.link.txt`)
-  - `pulsec build` now guarantees executable artifact output at `build/main.exe`:
+  - `adenc build` now emits deterministic native plan artifact at `build/native.plan.json`
+  - `adenc build` now emits Windows COFF object scaffold artifact at `build/main.obj` (x86_64 machine header baseline)
+  - `adenc build` now performs first link step attempt (`main.obj` -> `main.exe`) and emits deterministic link report (`build/native.link.txt`)
+  - `adenc build` now guarantees executable artifact output at `build/main.exe`:
     - linked executable when linker is available
     - deterministic PE stub fallback when linker is unavailable
   - initial runtime bridge spike added:
@@ -174,7 +174,7 @@ Completed (Phase B spike freeze baseline):
 In progress:
 - Phase C runtime/memory implementation planning and expansion
   - runtime intrinsic ABI boundary baseline started:
-    - `com.pulse.rt.Intrinsics` semantic/import surface added
+    - `com.aden.rt.Intrinsics` semantic/import surface added
     - backend runtime symbol mapping includes intrinsic console write calls
     - ABI baseline documented in `docs/RUNTIME_INTRINSICS_ABI.md`
   - post-M1 language baseline expansion started:
@@ -184,15 +184,15 @@ In progress:
     - inherited member lookup and final/abstract enforcement baseline implemented
   - C3 object-model execution started:
     - C3-01 completed and locked (instance object header + field layout schema)
-    - runtime object-model metadata now emitted under `runtime.object_model` in `native.plan.json` (`pulsec.object.layout.v1`)
+    - runtime object-model metadata now emitted under `runtime.object_model` in `native.plan.json` (`adenc.object.layout.v1`)
     - C3-02 completed and locked (static-field storage model)
-    - static storage contract emitted under `runtime.object_model.static_storage` (`pulsec.static.storage.v1`)
+    - static storage contract emitted under `runtime.object_model.static_storage` (`adenc.static.storage.v1`)
     - C3-03 completed and locked (constructor invocation model)
-    - constructor contract emitted under `runtime.object_model.constructor_model` (`pulsec.constructor.model.v1`)
+    - constructor contract emitted under `runtime.object_model.constructor_model` (`adenc.constructor.model.v1`)
     - C3-04 completed and locked (class allocation metadata model)
-    - allocation contract emitted under `runtime.object_model.allocation` with deterministic `class_size_table` (`pulsec.class.alloc.v1`)
+    - allocation contract emitted under `runtime.object_model.allocation` with deterministic `class_size_table` (`adenc.class.alloc.v1`)
     - C3-05 completed and locked (object-model plan emission completeness)
-    - lock test added: `cargo test -q -p pulsec --test stage_locks_c3`
+    - lock test added: `cargo test -q -p adenc --test stage_locks_c3`
 
 ---
 
@@ -220,12 +220,12 @@ In progress:
 - Wildcard/static import loading (done baseline in `check`)
 - Same-package class discovery under source-root package directories (done baseline in `check`)
 - Duplicate class simple names across packages with package-aware resolution precedence (done baseline)
-- Standard library package/layout conventions (done: `com.pulse` baseline packages + explicit diagnostics for unsupported/unknown imports)
-- Real fixture project suites for multi-file `pulsec check` behavior (done)
+- Standard library package/layout conventions (done: `com.aden` baseline packages + explicit diagnostics for unsupported/unknown imports)
+- Real fixture project suites for multi-file `adenc check` behavior (done)
 - M1 semantics freeze document added (`docs/M1_SEMANTICS_FREEZE.md`) (done)
 
 Deliverable gate for Phase A:
-- `pulsec check` can validate realistic multi-file projects
+- `adenc check` can validate realistic multi-file projects
 
 ---
 
@@ -243,12 +243,12 @@ Deliverable gate for Phase A:
 3. Startup/runtime contract validated for current spike scope.
 
 ### B3. Build Command
-- Implement `pulsec build <entry-file>` (done)
+- Implement `adenc build <entry-file>` (done)
 - Output executable artifact (done; linked executable when toolchain available, deterministic stub fallback otherwise)
 - Add build config file support (future)
 
 Deliverable gate for Phase B:
-- Compile hello-world PulseCode to runnable `.exe` (achieved; Phase B spike frozen)
+- Compile hello-world Aden Lang to runnable `.exe` (achieved; Phase B spike frozen)
 
 ---
 
@@ -256,54 +256,54 @@ Deliverable gate for Phase B:
 
 ### C1. Runtime Library
 - Ordered implementation plan (current):
-1. `com.pulse.lang.System`/`com.pulse.lang.IO` console layering (Done)
+1. `com.aden.lang.System`/`com.aden.lang.IO` console layering (Done)
    - keep app-facing API as `System.out.println(...)` with `IO.println(...)` alias
-   - route low-level platform calls through `com.pulse.rt.Intrinsics`
+   - route low-level platform calls through `com.aden.rt.Intrinsics`
    - completed in-progress work:
      - stdlib source facades added under `stdlib/src` for:
-       - `com.pulse.lang.System`
-       - `com.pulse.lang.IO`
-       - `com.pulse.lang.ConsoleWriter`
-       - `com.pulse.lang.PrintStream`
-       - `com.pulse.rt.Intrinsics`
-     - stdlib-source resolution/loading wired so `com.pulse.*` imports can load from `stdlib/src`
+       - `com.aden.lang.System`
+       - `com.aden.lang.IO`
+       - `com.aden.lang.ConsoleWriter`
+       - `com.aden.lang.PrintStream`
+       - `com.aden.rt.Intrinsics`
+     - stdlib-source resolution/loading wired so `com.aden.*` imports can load from `stdlib/src`
      - `IO` and `PrintStream` facade methods now delegate to `Intrinsics.consoleWrite*`
      - `System.out` lowering is runtime-managed in backend (singleton handle model)
-     - `System.out` is typed to `com.pulse.lang.ConsoleWriter` contract; `PrintStream` implements that interface
+     - `System.out` is typed to `com.aden.lang.ConsoleWriter` contract; `PrintStream` implements that interface
      - `System.out` finalized as an immutable runtime-managed singleton surface (`public static final`)
    - completed:
-     - legacy `com.pulse.io.Io` compatibility alias removed; language/runtime docs and import surface now use `com.pulse.lang.IO`
+     - legacy `com.aden.io.Io` compatibility alias removed; language/runtime docs and import surface now use `com.aden.lang.IO`
 2. String implementation/interop (Done baseline for C1)
    - define minimal runtime representation + ABI hooks
    - keep `String` language treatment stable while runtime representation is introduced
    - completed baseline:
      - intrinsic surface expanded with `stringConcat`, `stringLength`, `intToString`, `booleanToString`
-     - stdlib `com.pulse.rt.Intrinsics` facade and semantic stubs updated for String bridge calls
+     - stdlib `com.aden.rt.Intrinsics` facade and semantic stubs updated for String bridge calls
      - backend routing baseline added for String intrinsics:
-       - static call mapping to `pulsec_rt_string*` symbols
+       - static call mapping to `adenc_rt_string*` symbols
        - split/full stdlib object generation emits runtime-backed native shim procs for these symbols
      - semantic String-class bridge completed for baseline:
-       - builtin class contract now includes `com.pulse.lang.String` with baseline instance API (`length`, `isEmpty`, `concat`)
+       - builtin class contract now includes `com.aden.lang.String` with baseline instance API (`length`, `isEmpty`, `concat`)
        - String-typed variable member access/calls now resolve through class metadata in semantic analysis
        - parser/lexer no longer treat `String` as primitive keyword type
-       - real stdlib class source added at `stdlib/src/com/pulse/lang/String.pulse`
+       - real stdlib class source added at `stdlib/src/com/aden/lang/String.aden`
        - `String` remains prelude-resolved (no import required), Java-style
      - String interop lock documented:
        - runtime intrinsic symbol names and String-handle bridge contract are now explicitly locked in `docs/RUNTIME_INTRINSICS_ABI.md`
        - executable fixture coverage added for String runtime path (`length`/`concat`/`valueOf`) in split native mode
 3. Arrays and core collections (Done for C1 scope)
-   - stdlib source wrappers under `stdlib/src/com/pulse/collections` now delegate to runtime intrinsics:
+   - stdlib source wrappers under `stdlib/src/com/aden/collections` now delegate to runtime intrinsics:
      - `Array`
      - `List`
      - `ArrayList`
      - `Map`
    - runtime intrinsic ABI expanded for array/list/map handle-backed operations
    - backend native runtime shims implemented for collection/array intrinsic symbols
-   - semantic/import surface updated for `ArrayList` (`com.pulse.collections.ArrayList`)
+   - semantic/import surface updated for `ArrayList` (`com.aden.collections.ArrayList`)
    - executable fixture coverage validates cross-collection runtime behavior (`Array` + `ArrayList` + `List` + `Map`)
 4. Panic/exception strategy (Done baseline for C1)
    - `Intrinsics.panic(String)` added as ABI boundary for fail-fast runtime termination
-   - backend runtime symbol `pulsec_rt_panic` emits message + exits process non-zero
+   - backend runtime symbol `adenc_rt_panic` emits message + exits process non-zero
    - higher-level exception model (`throw`/`try`) remains future work
 
 ### C1.5. Runtime Hardening + Pre-Self-Hosting Stdlib Completion (Required Gate)
@@ -312,7 +312,7 @@ This is a hard stabilization gate before self-hosting work advances.
 Current progress:
 - M2 Sprint 1 kickoff complete:
   - primitive-wrapper type map added in semantics (`byte->Byte`, ..., `void->Void`)
-  - wrapper class skeletons added under `stdlib/src/com/pulse/lang`:
+  - wrapper class skeletons added under `stdlib/src/com/aden/lang`:
     - signed: `Byte`, `Short`, `Integer`, `Long`, `Float`, `Double`, `Char`, `Boolean`
     - unsigned: `UByte`, `UShort`, `UInteger`, `ULong`
     - `Void`
@@ -323,7 +323,7 @@ Current progress:
   - ambiguous best-match overloads now report deterministic diagnostics instead of declaration-order selection
   - numeric conversion matrix documented in `docs/NUMERIC_CONVERSION_MATRIX.md`
   - semantic diagnostics now distinguish signed->unsigned, unsigned->signed, and widening/narrowing implicit primitive conversions
-  - wrapper API surface completed for `com.pulse.lang` wrappers:
+  - wrapper API surface completed for `com.aden.lang` wrappers:
     - `valueOf`, `parse`, primitive extractors, `equals`, and `compare` are implemented across wrapper classes
     - native runtime path added for `Intrinsics.parseInt` and `Intrinsics.parseBoolean`
     - executable fixtures validate happy-path wrapper calls and deterministic panic for unsupported parse paths
@@ -357,7 +357,7 @@ M3 progress:
   - semantic builtin class metadata and CLI import validation aligned for constructor + `toString` usage
   - semantic + executable fixture coverage now exercises subclass assignment and emitted native output
 - M3-03 completed:
-  - `com.pulse.collections.Collection` and `com.pulse.collections.List` contracts finalized as interface surfaces
+  - `com.aden.collections.Collection` and `com.aden.collections.List` contracts finalized as interface surfaces
   - `ArrayList` now provides the concrete runtime-backed implementation for both contracts
   - semantic + CLI check/build tests updated to validate contract-conformance usage paths
 - M3-04 completed:
@@ -366,10 +366,10 @@ M3 progress:
   - bounds violations now route through `Intrinsics.panic` with deterministic non-zero executable behavior
 - M3-05 completed:
   - `LinkedList` added as concrete stdlib implementation of `Collection`/`List`
-  - semantic/import surface aligned for `com.pulse.collections.LinkedList`
+  - semantic/import surface aligned for `com.aden.collections.LinkedList`
   - executable fixtures validate linked-list CRUD behavior and deterministic bounds panic path
 - M3-06 completed:
-  - `Set` and `HashSet` added to `com.pulse.collections` with intrinsic-backed set behavior
+  - `Set` and `HashSet` added to `com.aden.collections` with intrinsic-backed set behavior
   - semantic/import surface aligned for set operations (`size`, `clear`, `add`, `contains`)
   - executable fixture validates uniqueness + membership behavior
 - M3-07 completed:
@@ -381,15 +381,15 @@ M3 progress:
   - semantic/import surface aligned for queue/deque method contracts
   - executable fixture validates queue FIFO and deque front/back operations
 - M3-09 completed:
-  - stdlib `com.pulse.math.Math` source added with deterministic int API behavior (`abs`, `max`, `min`, `clamp`)
+  - stdlib `com.aden.math.Math` source added with deterministic int API behavior (`abs`, `max`, `min`, `clamp`)
   - semantic/import surface and tests aligned for expanded Math API usage
   - executable fixture validates deterministic edge-case math output
 - M3-10 completed:
-  - stdlib `com.pulse.math.Random` source added with deterministic seeded sequence behavior
+  - stdlib `com.aden.math.Random` source added with deterministic seeded sequence behavior
   - semantic/import surface aligned for `Random(int)` + `nextInt(int)` contracts
   - executable fixture validates reproducible sequences for identical seeds
 - M3-11 completed:
-  - stdlib `com.pulse.io` sources added for `File`, `Path`, and `Files`
+  - stdlib `com.aden.io` sources added for `File`, `Path`, and `Files`
   - deterministic in-memory file behavior implemented using existing runtime map intrinsics
   - executable fixture validates read/write/append/exists/path-combine flows
 - M3-12 completed:
@@ -397,7 +397,7 @@ M3 progress:
   - semantic/import surface aligned for stream constructors and read/write/append methods
   - executable fixture validates stream-based IO flow
 - M3-13 completed:
-  - stdlib `com.pulse.time.Instant` and `Duration` sources added for deterministic current-scope time behavior
+  - stdlib `com.aden.time.Instant` and `Duration` sources added for deterministic current-scope time behavior
   - semantic/import surface aligned for instant/duration constructors and arithmetic helpers
   - executable fixture validates deterministic time outputs
 - M3-14 completed:
@@ -405,13 +405,13 @@ M3 progress:
   - `RUNTIME_INTRINSICS_ABI.md` updated with explicit M3 mapping + native symbol inventory
   - fixture plan assertions validate runtime intrinsic symbol presence in emitted native plans
 - M3-15 completed:
-  - added real multi-file fixture suites under `crates/pulsec-cli/tests/fixtures` for runtime-mix and object/interface-mix scenarios
+  - added real multi-file fixture suites under `crates/adenc-cli/tests/fixtures` for runtime-mix and object/interface-mix scenarios
   - fixtures exercise collections/io/time/math/object-interface combinations in both check and build flows
   - executable fixture assertions validate deterministic runtime output
 - M3-16 completed:
   - added `stress_soak` multi-file fixture covering allocation churn, collection churn, bounded string churn, and loop-heavy workloads
   - added repeated build+run integration gate (`cli_build_executes_stress_soak_repeatedly`) with configurable iteration count via `PULSEC_SOAK_ITERS`
-  - stress/soak gate validated in `cargo test -p pulsec --test fixture_projects`
+  - stress/soak gate validated in `cargo test -p adenc --test fixture_projects`
 - M3-17 completed:
   - validated Windows toolchain path variants for linker selection (default discovery, explicit `--linker`, and `PULSEC_LINKER` override)
   - matrix results documented in `docs/WINDOWS_TOOLCHAIN_MATRIX.md` with pass/fail notes
@@ -426,22 +426,22 @@ M3 progress:
 
 Hardening closure criteria:
 - Runtime conformance suite passes for IO, String, collections, control flow, constructors, fields, and static/instance dispatch
-- ABI lock tests pass for all `com.pulse.rt.Intrinsics` symbols used by stdlib
+- ABI lock tests pass for all `com.aden.rt.Intrinsics` symbols used by stdlib
 - Deterministic failure behavior verified (`panic`, null access, bounds errors, invalid casts once added)
 - Long-run stress suite passes (allocation churn, loops, collection mutations, string concat workloads)
 - Toolchain matrix validated on Windows environments used by contributors (`ml64`/`link.exe` path variants)
 
 Pre-self-hosting required stdlib class inventory:
-- `com.pulse.lang`: `Object`, `String`, `StringBuilder`, `Strings`, `System`, `IO`, `ConsoleWriter`, `PrintStream`, `Class`, `Enum`, `Comparable`, `Iterable`, `Iterator`, `AutoCloseable`
-- `com.pulse.lang` errors/exceptions: `Throwable`, `Exception`, `RuntimeException`, `IllegalArgumentException`, `IllegalStateException`, `NullPointerException`, `IndexOutOfBoundsException`, `UnsupportedOperationException`, `NumberFormatException`
-- `com.pulse.collections`: `Array`, `Collection`, `List`, `ArrayList`, `LinkedList`, `Set`, `HashSet`, `Map`, `HashMap`, `Queue`, `Deque`
-- `com.pulse.math`: `Math`, `Random`
-- `com.pulse.io`: `File`, `Path`, `Files`, `InputStream`, `OutputStream`
-- `com.pulse.time`: `Instant`, `Duration`
+- `com.aden.lang`: `Object`, `String`, `StringBuilder`, `Strings`, `System`, `IO`, `ConsoleWriter`, `PrintStream`, `Class`, `Enum`, `Comparable`, `Iterable`, `Iterator`, `AutoCloseable`
+- `com.aden.lang` errors/exceptions: `Throwable`, `Exception`, `RuntimeException`, `IllegalArgumentException`, `IllegalStateException`, `NullPointerException`, `IndexOutOfBoundsException`, `UnsupportedOperationException`, `NumberFormatException`
+- `com.aden.collections`: `Array`, `Collection`, `List`, `ArrayList`, `LinkedList`, `Set`, `HashSet`, `Map`, `HashMap`, `Queue`, `Deque`
+- `com.aden.math`: `Math`, `Random`
+- `com.aden.io`: `File`, `Path`, `Files`, `InputStream`, `OutputStream`
+- `com.aden.time`: `Instant`, `Duration`
 
 Primitive and wrapper-class lock (Java-style boxing foundation):
 - Primitive keywords remain value types: `void`, `byte`, `short`, `int`, `long`, `float`, `double`, `char`, `boolean`, `ubyte`, `ushort`, `uint`, `ulong`
-- Required wrapper/reference classes in `com.pulse.lang`:
+- Required wrapper/reference classes in `com.aden.lang`:
   - signed: `Byte`, `Short`, `Integer`, `Long`, `Float`, `Double`, `Char`, `Boolean`
   - unsigned: `UByte`, `UShort`, `UInteger`, `ULong`
   - `Void` for reflective/generic return typing
@@ -457,7 +457,7 @@ C1.5 milestone execution plan (required order):
 M2. Runtime + Boxing Core Lock
 - Objective: lock Java-style primitive/wrapper behavior and core runtime contracts before broader stdlib growth.
 - Scope:
-  - implement wrapper classes in `com.pulse.lang`:
+  - implement wrapper classes in `com.aden.lang`:
     - signed: `Byte`, `Short`, `Integer`, `Long`, `Float`, `Double`, `Char`, `Boolean`
     - unsigned: `UByte`, `UShort`, `UInteger`, `ULong`
     - `Void`
@@ -481,11 +481,11 @@ M3. Stdlib Surface Completion + Runtime Hardening
 - Objective: complete pre-self-hosting stdlib surface and prove runtime stability under larger workloads.
 - Scope:
   - complete required pre-self-hosting inventory:
-    - `com.pulse.lang` exceptions/errors (`Throwable`, `Exception`, `RuntimeException`, `IllegalArgumentException`, `IllegalStateException`, `NullPointerException`, `IndexOutOfBoundsException`, `UnsupportedOperationException`, `NumberFormatException`)
-    - `com.pulse.collections`: `Collection`, `List`, `ArrayList`, `LinkedList`, `Set`, `HashSet`, `Map`, `HashMap`, `Queue`, `Deque`, `Array`
-    - `com.pulse.math`: `Math`, `Random`
-    - `com.pulse.io`: `File`, `Path`, `Files`, `InputStream`, `OutputStream`
-    - `com.pulse.time`: `Instant`, `Duration`
+    - `com.aden.lang` exceptions/errors (`Throwable`, `Exception`, `RuntimeException`, `IllegalArgumentException`, `IllegalStateException`, `NullPointerException`, `IndexOutOfBoundsException`, `UnsupportedOperationException`, `NumberFormatException`)
+    - `com.aden.collections`: `Collection`, `List`, `ArrayList`, `LinkedList`, `Set`, `HashSet`, `Map`, `HashMap`, `Queue`, `Deque`, `Array`
+    - `com.aden.math`: `Math`, `Random`
+    - `com.aden.io`: `File`, `Path`, `Files`, `InputStream`, `OutputStream`
+    - `com.aden.time`: `Instant`, `Duration`
   - lock intrinsic ABI coverage for each runtime-backed stdlib API included above
   - harden runtime for stress/soak behavior and deterministic failure semantics
 - M3 required test gates:
@@ -510,9 +510,9 @@ Locked path for current Phase C implementation:
 - Trackable board: `docs/C2_TASK_BOARD.md`
 - Current C2 progress:
   - C2-01 completed and locked:
-    - ARC header/handle contract documented in `docs/RUNTIME_INTRINSICS_ABI.md` (`pulsec.arc.header.v1`)
+    - ARC header/handle contract documented in `docs/RUNTIME_INTRINSICS_ABI.md` (`adenc.arc.header.v1`)
     - `build/native.plan.json` now emits locked `runtime.memory_model` ARC header metadata
-    - lock test added: `cargo test -p pulsec --test stage_locks_c2`
+    - lock test added: `cargo test -p adenc --test stage_locks_c2`
   - C2-02 completed and locked:
     - `Memory.retain(long) -> long` and `Memory.release(long) -> void` added to stdlib/semantic/backend surfaces
     - runtime shim fast-path behavior implemented: null (`0`) and out-of-range handles are deterministic no-ops
@@ -541,7 +541,7 @@ Locked path for current Phase C implementation:
   - C2-08 completed and locked:
     - fixed-capacity array tables were removed; arrays now use per-instance heap-backed int/string lanes with ARC teardown free
     - runtime handle-slot capacity now grows dynamically (`initial=63`, doubling) up to ABI v2 slot-mask max `4294967295`
-    - allocator policy/alignment contract is locked in docs and emitted in `native.plan.json` (`pulsec.alloc.policy.v1`)
+    - allocator policy/alignment contract is locked in docs and emitted in `native.plan.json` (`adenc.alloc.policy.v1`)
     - C2 stage-lock tests validate allocator policy fields and heap-backed runtime emission behavior
   - C2-09 completed and locked:
     - list/map runtime storage now uses dynamic per-instance heap lanes with locked growth policy (`init=16`, `growth=2x`, `max=2147483647`)
@@ -549,7 +549,7 @@ Locked path for current Phase C implementation:
     - C2 stage-lock tests validate >init-capacity list/map growth execution
   - C2-10 completed and locked:
     - list/map clear paths now implement shrink with anti-thrashing hysteresis (`hysteresis_trigger_multiplier=4`)
-    - runtime ABI surface extended with `Intrinsics.mapClear(long)` / `pulsec_rt_mapClear`
+    - runtime ABI surface extended with `Intrinsics.mapClear(long)` / `adenc_rt_mapClear`
     - C2 stage-lock tests validate repeated grow/clear cycles with stable post-clear size semantics
   - C2-11 completed and locked:
     - retain/release ownership hooks are now emitted for list/map String/key mutation paths (`add`, `replace`, `clear`, teardown)
@@ -589,11 +589,11 @@ Locked path for current Phase C implementation:
     - memory-trend gate enforces bounded post-warmup peak working-set spread/drift with CI-tunable thresholds
     - verification is green in `stage_locks_c2` and full `cargo test -q`
   - C2-23 completed and locked:
-    - threading contract is explicitly locked as single-threaded/non-atomic in `docs/RUNTIME_INTRINSICS_ABI.md` (`pulsec.runtime.threading.v1`)
+    - threading contract is explicitly locked as single-threaded/non-atomic in `docs/RUNTIME_INTRINSICS_ABI.md` (`adenc.runtime.threading.v1`)
     - native plan now emits `runtime.memory_model.threading` with fixed atomicity/thread-safety boundaries
     - lock tests validate docs + plan emission + non-atomic runtime asm surface and full suite remains green
   - C2-24 completed and locked:
-    - runtime ABI compatibility metadata is now emitted in `native.plan.json` under `runtime.abi_compatibility` (`pulsec.runtime.abi.v1`)
+    - runtime ABI compatibility metadata is now emitted in `native.plan.json` under `runtime.abi_compatibility` (`adenc.runtime.abi.v1`)
     - runtime init enforces compiler/runtime ABI match before runtime-table initialization
     - mismatch behavior is deterministic fail-fast (`Runtime ABI mismatch`, non-zero exit)
     - lock tests validate plan contract + executable mismatch detection; full suite remains green
@@ -699,18 +699,18 @@ Deliverable gate for Phase C:
 - Historical scope note:
   - the Phase D CLI/manifest/build/test work remains part of project history
   - compiler-owned packaging/install/signing work from the old Phase D plan is no longer live project scope
-  - the current source of truth for that removal is [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+  - the current source of truth for that removal is [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
   - any MSI/WiX/SignTool/package-flow material in the archived Phase D docs is retained as superseded history only, not active contract truth
 
 ### D1. CLI UX
-- `pulsec new`
-- `pulsec check`
-- `pulsec build`
-- `pulsec test` (future)
+- `adenc new`
+- `adenc check`
+- `adenc build`
+- `adenc test` (future)
 - Current progress: D1-01..D1-07 are `Done (Locked)` (see `docs/CLI_COMMAND_CONTRACT.md`).
 
 ### D2. Project Format
-- `pulsec.toml` project manifest
+- `adenc.toml` project manifest
 - dependency metadata (future)
 - package/version fields
 - Current progress: D2-01..D2-07 are `Done (Locked)` (see `docs/PULSEC_MANIFEST_V1.md`, `docs/PULSEC_MANIFEST_EXAMPLES.md`, and `docs/PROJECT_LAYOUT_CONVENTIONS.md`).
@@ -720,12 +720,12 @@ Deliverable gate for Phase C:
 - archived app metadata + installer template notes
 - archived signed-build pipeline notes
 - these are no longer live compiler scope after `RB-17.1`
-- any retained references in `docs/PACKAGING_PIPELINE_CONTRACT.md` or `docs/D_TASK_BOARD.md` are historical only and are superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- any retained references in `docs/PACKAGING_PIPELINE_CONTRACT.md` or `docs/D_TASK_BOARD.md` are historical only and are superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
 - Current progress: D3-01..D3-05, D4-01..D4-06, and D5-01..D5-05 remain archived closure history only.
 - Build-system replacement planning is captured in `docs/BUILD_SYSTEM_EVOLUTION.md` for future TOML -> script DSL migration.
 
 Deliverable gate for Phase D:
-- `pulsec build` publishes deterministic native artifacts and plan metadata; installer generation is downstream-tool territory
+- `adenc build` publishes deterministic native artifacts and plan metadata; installer generation is downstream-tool territory
 
 ---
 
@@ -751,10 +751,10 @@ Deliverable gate for Phase D:
 - lock behavioral parity between fat and shared output modes
 - cover debug/release publication rules for both modes
 - validate build/publication parity behavior when applications depend on shared libraries
-- Current progress: E3 is `Done (Locked)` (see `docs/E3_TASK_BOARD.md`, `docs/E3_PARITY_GUIDE.md`, `docs/E3_PARITY_SUPPORT_MATRIX.md`, `docs/E3_PARITY_EVIDENCE_STRATEGY.md`, `docs/E3_EVIDENCE_INDEX.md`, `docs/E3_CLOSURE_CHECKLIST.md`, `docs/WINDOWS_TOOLCHAIN_MATRIX.md`, `crates/pulsec-cli/tests/e3_parity.rs`, `crates/pulsec-cli/tests/fixture_projects.rs`, `crates/pulsec-cli/tests/stage_locks.rs`, and `crates/pulsec-cli/tests/stage_locks_d.rs`).
+- Current progress: E3 is `Done (Locked)` (see `docs/E3_TASK_BOARD.md`, `docs/E3_PARITY_GUIDE.md`, `docs/E3_PARITY_SUPPORT_MATRIX.md`, `docs/E3_PARITY_EVIDENCE_STRATEGY.md`, `docs/E3_EVIDENCE_INDEX.md`, `docs/E3_CLOSURE_CHECKLIST.md`, `docs/WINDOWS_TOOLCHAIN_MATRIX.md`, `crates/adenc-cli/tests/e3_parity.rs`, `crates/adenc-cli/tests/fixture_projects.rs`, `crates/adenc-cli/tests/stage_locks.rs`, and `crates/adenc-cli/tests/stage_locks_d.rs`).
 
 Deliverable gate for Phase E:
-- `pulsec build` supports both fat executable output and real shared-library/native split output
+- `adenc build` supports both fat executable output and real shared-library/native split output
 - shared-library builds publish runnable `.exe` + `.dll` outputs with locked parity against fat mode
 
 ---
@@ -763,11 +763,11 @@ Deliverable gate for Phase E:
 
 ### F1. Standard Library Expansion
 - Expanded execution board: `docs/F1_TASK_BOARD.md`
-- `com.pulse.lang.System` / `com.pulse.lang.IO`
-- `com.pulse.math`
-- `com.pulse.collections`
-- `com.pulse.time`
-- `com.pulse.util` baseline including `Scanner` and related high-value helpers
+- `com.aden.lang.System` / `com.aden.lang.IO`
+- `com.aden.math`
+- `com.aden.collections`
+- `com.aden.time`
+- `com.aden.util` baseline including `Scanner` and related high-value helpers
 - generics baseline is explicitly chosen and documented rather than implied
 - exception runtime model is explicitly chosen and documented rather than implied
 - threading/memory-model baseline including `Thread`, `Runnable`, monitor semantics, `volatile`, `final` publication policy, atomics, and selected concurrent collections
@@ -777,9 +777,9 @@ Deliverable gate for Phase E:
 - integrated conformance, backend/package validation, CI, and performance guardrails for the shipped F1 surface
 - F1 stdlib/language growth is for app/runtime completion and self-sustained-hosting readiness; external library/binding ecosystem work remains in Phase F-A
 - desktop UI families (`awt` / `swing`) are explicitly deferred until after the self-sustained-hosting transition
-- if a bootstrap implementation can live in Pulse stdlib instead of Rust, F1 should prefer the Pulse-owned version and leave Rust with only the compiler/runtime/backend pieces that genuinely cannot move yet
-- compiler-owned built-ins such as the current annotation semantics should be treated as temporary bootstrap ownership when a later Pulse-owned implementation path exists
-- `stdlib` is the public user-facing library surface, while compiler/runtime/toolchain-only elevated Pulse ownership should move into `authorlib` instead of being left in Rust by default or exposed as ordinary end-user API
+- if a bootstrap implementation can live in Aden stdlib instead of Rust, F1 should prefer the Aden-owned version and leave Rust with only the compiler/runtime/backend pieces that genuinely cannot move yet
+- compiler-owned built-ins such as the current annotation semantics should be treated as temporary bootstrap ownership when a later Aden-owned implementation path exists
+- `stdlib` is the public user-facing library surface, while compiler/runtime/toolchain-only elevated Aden ownership should move into `adklib` instead of being left in Rust by default or exposed as ordinary end-user API
 
 ### F2. Docs and Developer Experience
 - Expanded execution board: `docs/F2_TASK_BOARD.md`
@@ -806,11 +806,11 @@ Deliverable gate for Phase F:
 ### FA1. Native Library Project Output
 - compile library projects to native `.dll`
 - emit native import libraries as required by the toolchain
-- generate Pulse-facing binding/interface artifacts alongside the native library output
+- generate Aden-facing binding/interface artifacts alongside the native library output
 - publish library-project distro as a self-contained folder:
   - `<profile>/<library>.dll`
   - `<profile>/bindings/`
-  - binding artifacts are same-name `.pulse` files using an explicit `external` declaration modifier that can extend across supported declaration kinds
+  - binding artifacts are same-name `.aden` files using an explicit `external` declaration modifier that can extend across supported declaration kinds
 
 ### FA2. Compiler + Multi-Project Consumption
 - let compiler consume local DLL payloads from `libraries/`
@@ -821,24 +821,24 @@ Deliverable gate for Phase F:
 
 ### FA3. Native Binding Artifacts
 - add separate native DLL binding artifacts for C/C++/Rust interop
-- keep Pulse-generated/shared outputs native
+- keep Aden-generated/shared outputs native
 - let tooling/compiler consume explicit binding contracts for foreign DLLs
-- use the same binding model for Pulse-authored native libraries and external native libraries
+- use the same binding model for Aden-authored native libraries and external native libraries
 
-### FA4. Annotation Processor Runtime And Pulse-Owned Annotation Migration
+### FA4. Annotation Processor Runtime And Aden-Owned Annotation Migration
 - add a real annotation processor runtime/backend contract instead of keeping annotation execution permanently compiler-owned
-- allow Pulse-authored annotation processors and generated-source/code-shaping workflows where the backend contract permits them
+- allow Aden-authored annotation processors and generated-source/code-shaping workflows where the backend contract permits them
 - migrate current built-in annotations such as `@Override`, `@NotNull`, and `@Test` out of bootstrap compiler ownership when the processor/runtime model is strong enough
-- support annotation-heavy user workflows as a first-class target, including the long-term path toward Lombok-style annotations in Pulse
+- support annotation-heavy user workflows as a first-class target, including the long-term path toward Lombok-style annotations in Aden
 - keep the ownership split honest during the migration:
   - F1/F2 document bootstrap compiler-owned annotation behavior
-  - F-A completes the runtime/backend/processor side needed for Pulse-owned implementations
+  - F-A completes the runtime/backend/processor side needed for Aden-owned implementations
 
 Reference:
 - `docs/LIBRARY_ARTIFACT_STRATEGY.md`
 
 Deliverable gate for Phase F-A:
-- PulseCode supports native library project outputs plus generated Pulse binding artifacts, has a locked path for multi-project fat/shared builds and external native DLL bindings, and has an explicit annotation-processor execution/migration model for Pulse-owned annotation workflows
+- Aden Lang supports native library project outputs plus generated Aden binding artifacts, has a locked path for multi-project fat/shared builds and external native DLL bindings, and has an explicit annotation-processor execution/migration model for Aden-owned annotation workflows
 
 ---
 
@@ -846,42 +846,42 @@ Deliverable gate for Phase F-A:
 
 - Expanded execution board: `docs/FB_TASK_BOARD.md`
 - carry-forward input tracker: `docs/FB_CARRY_FORWARD_TRACKER.md`
-- inventory the whole compiler/runtime/tooling program and classify what is already Pulse-owned, what must remain below the host/bootstrap or adapter boundary, and what still needs to be elevated into Pulse for a truthful self-sustained transition
-- lock the `stdlib` vs `authorlib` split:
+- inventory the whole compiler/runtime/tooling program and classify what is already Aden-owned, what must remain below the host/bootstrap or adapter boundary, and what still needs to be elevated into Aden for a truthful self-sustained transition
+- lock the `stdlib` vs `adklib` split:
   - `stdlib` remains the public user-facing library
-  - `authorlib` becomes the privileged Pulse-owned extension library for compiler/runtime/toolchain authoring work
-- define the compiler/runtime access rule that `authorlib` must always be available to compiler/runtime builds even when it is not enabled as a normal user project dependency
+  - `adklib` becomes the privileged Aden-owned extension library for compiler/runtime/toolchain authoring work
+- define the compiler/runtime access rule that `adklib` must always be available to compiler/runtime builds even when it is not enabled as a normal user project dependency
 - publish the readiness checklist for what must move out of Rust before Phase G can honestly claim a self-sustained-hosting transition
 
 Deliverable gate for Phase F-B:
-- PulseCode has a truthful `F-B` inventory/elevation plan for the remaining Rust-to-Pulse ownership transition, including the locked `stdlib`/`authorlib` split and the Phase G readiness checklist
+- Aden Lang has a truthful `F-B` inventory/elevation plan for the remaining Rust-to-Aden ownership transition, including the locked `stdlib`/`adklib` split and the Phase G readiness checklist
 
 ---
 
 ## Phase G: Self-Sustained-Hosting Transition
 
-### G1. Compiler Chain Reimplementation in PulseCode
-- Rebuild the compiler chain in PulseCode, not just the frontend
+### G1. Compiler Chain Reimplementation in Aden Lang
+- Rebuild the compiler chain in Aden Lang, not just the frontend
 - Include parser, semantic analysis, lowering, backend/codegen, and the compiler-owned tooling/runtime pieces that belong in the self-sustained chain
-- Keep the Rust compiler/toolchain as the bootstrap/reference compiler until the PulseCode compiler chain is proven
+- Keep the Rust compiler/toolchain as the bootstrap/reference compiler until the Aden Lang compiler chain is proven
 
 ### G2. Dual-Compiler Validation
 - compile same test corpus with both compilers
 - AST/IR/backend-artifact equivalence checks where feasible
-- verify that the PulseCode-hosted backend/codegen path is part of the self-sustained chain rather than still being a hidden Rust-owned dependency
+- verify that the Aden Lang-hosted backend/codegen path is part of the self-sustained chain rather than still being a hidden Rust-owned dependency
 
 ### G3. Bootstrap Chain
-- Compiler0 (Rust) compiles Compiler1 (PulseCode)
+- Compiler0 (Rust) compiles Compiler1 (Aden Lang)
 - Compiler1 compiles itself to produce Compiler2
 - verify reproducibility and behavior consistency
 
 ### G4. Runtime/Ownership Transition
-- move runtime and bootstrap ownership into PulseCode wherever that ownership does not genuinely need to remain in a thin host/bootstrap shell
-- move Pulse-ownable compiler/runtime/tooling helpers into `stdlib` or `authorlib` rather than leaving them in Rust by inertia
-- leave non-Pulse host code only where it is still truly required by the launch/build boundary
+- move runtime and bootstrap ownership into Aden Lang wherever that ownership does not genuinely need to remain in a thin host/bootstrap shell
+- move Aden-ownable compiler/runtime/tooling helpers into `stdlib` or `adklib` rather than leaving them in Rust by inertia
+- leave non-Aden host code only where it is still truly required by the launch/build boundary
 
 Deliverable gate for Phase G:
-- PulseCode has a self-sustained compiler chain in PulseCode, including frontend, lowering, backend/codegen, `stdlib`, `authorlib`, and the owned runtime/tooling pieces required to build and run real programs reliably while Rust is reduced to the defended host/bootstrap and target-adapter boundary
+- Aden Lang has a self-sustained compiler chain in Aden Lang, including frontend, lowering, backend/codegen, `stdlib`, `adklib`, and the owned runtime/tooling pieces required to build and run real programs reliably while Rust is reduced to the defended host/bootstrap and target-adapter boundary
 
 ---
 
@@ -892,10 +892,10 @@ Deliverable gate for Phase G:
 - establish durable language conformance suites that are not tied to phase/task IDs
 - establish durable stdlib conformance suites that lock the public API and behavior of shipped classes
 - establish durable runtime conformance suites for allocation, ARC, weak handles, exceptions, traces, containers, IO, and platform boundaries
-- ensure the post-self-sustained transition test surface answers "does Pulse still behave correctly?" rather than only "did roadmap item X stay closed?"
+- ensure the post-self-sustained transition test surface answers "does Aden still behave correctly?" rather than only "did roadmap item X stay closed?"
 
 ### H2. Self-Sustained Compiler and Runtime Regression Harness
-- add self-sustained compiler regression suites that exercise parsing, checking, lowering, codegen, and artifact publication from inside the Pulse-owned compiler chain
+- add self-sustained compiler regression suites that exercise parsing, checking, lowering, codegen, and artifact publication from inside the Aden-owned compiler chain
 - add bootstrap equivalence tests between the bootstrap compiler and the self-sustained compiler where those comparisons remain useful
 - lock compiler/runtime behavior independently from roadmap-specific closure docs
 - keep black-box CLI, fixture-project, packaging, and install/uninstall tests as long-lived behavior contracts
@@ -906,7 +906,7 @@ Deliverable gate for Phase G:
 - define flaky-test policy and regression triage policy for the self-sustained era
 
 Deliverable gate for Phase H:
-- PulseCode has a permanent self-sustained conformance/regression architecture that locks compiler, runtime, `stdlib`, `authorlib`, CLI, packaging, and non-functional behavior independently of milestone-roadmap closures
+- Aden Lang has a permanent self-sustained conformance/regression architecture that locks compiler, runtime, `stdlib`, `adklib`, CLI, packaging, and non-functional behavior independently of milestone-roadmap closures
 
 ---
 
@@ -914,7 +914,7 @@ Deliverable gate for Phase H:
 
 ### I1. Dependency Reduction
 - Minimize or remove non-essential Rust dependencies
-- own core runtime and tooling in PulseCode where practical
+- own core runtime and tooling in Aden Lang where practical
 
 ### I2. Release Engineering
 - deterministic builds
@@ -927,7 +927,7 @@ Deliverable gate for Phase H:
 - deprecation policy
 
 Final gate:
-- Standalone release channel with PulseCode-native compiler/runtime toolchain
+- Standalone release channel with Aden Lang-native compiler/runtime toolchain
 
 ---
 

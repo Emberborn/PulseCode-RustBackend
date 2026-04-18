@@ -1,20 +1,20 @@
-# PulseCode Language Guide (Current Draft)
+# Aden Lang Language Guide (Current Draft)
 
 ## 1. Quick Start
 
 ### Check a file
 ```bash
-cargo run -p pulsec -- check examples/src/app/core/Main.pulse --strict-package --source-root examples/src
+cargo run -p adenc -- check examples/src/app/core/Main.aden --strict-package --source-root examples/src
 ```
 
 ### Check with strict package layout
 ```bash
-cargo run -p pulsec -- check path/to/Main.pulse --strict-package
+cargo run -p adenc -- check path/to/Main.aden --strict-package
 ```
 
 ### Check with explicit source root
 ```bash
-cargo run -p pulsec -- check examples/src/app/core/Main.pulse --strict-package --source-root examples/src
+cargo run -p adenc -- check examples/src/app/core/Main.aden --strict-package --source-root examples/src
 ```
 
 ### Run tests
@@ -24,14 +24,14 @@ cargo test
 
 ## 2. File Skeleton
 
-```pulse
+```aden
 package game.core;
 
-import pulse.lang.IO;
+import aden.lang.IO;
 
 class Main {
     public static void main(String[] args) {
-        IO.println("PulseCode online");
+        IO.println("Aden Lang online");
     }
 }
 ```
@@ -39,9 +39,9 @@ class Main {
 ## 3. Core Syntax
 
 ### Packages and imports
-```pulse
+```aden
 package game.core;
-import pulse.lang.IO;
+import aden.lang.IO;
 import game.util.MathUtil;
 import game.util.*;
 import static game.util.MathUtil.PI;
@@ -49,14 +49,14 @@ import static game.util.MathUtil.*;
 ```
 
 Current stdlib import convention:
-- Preferred console API: `import pulse.lang.System;` and call `System.out.println(...)`.
-- Convenience alias: `import pulse.lang.IO;` and call `IO.println(...)`.
-- `String` resolves implicitly from `pulse.lang.String` (import optional, Java-style).
-- `pulse` wildcard imports/static imports are validated against known baseline packages/classes.
-- Unknown `pulse.*` imports are rejected by `check`.
+- Preferred console API: `import aden.lang.System;` and call `System.out.println(...)`.
+- Convenience alias: `import aden.lang.IO;` and call `IO.println(...)`.
+- `String` resolves implicitly from `aden.lang.String` (import optional, Java-style).
+- `aden` wildcard imports/static imports are validated against known baseline packages/classes.
+- Unknown `aden.*` imports are rejected by `check`.
 
 Static imports allow unqualified static member usage in the current file:
-```pulse
+```aden
 IO.println(PI);
 IO.println(two());
 ```
@@ -66,10 +66,10 @@ Package-to-folder layout rule:
 - `check` allows mismatches by default (warning only) for quick iteration.
 - `check --strict-package` and `build` enforce the folder rule as an error.
 - `--source-root <dir>` switches to Java-style mapping relative to that root.
-  Example: with `--source-root examples/src`, `examples/src/app/core/Main.pulse` must be `package app.core;`.
+  Example: with `--source-root examples/src`, `examples/src/app/core/Main.aden` must be `package app.core;`.
 
 ### Class, fields, constructor, methods
-```pulse
+```aden
 class Player {
     private String name;
     private int health;
@@ -86,17 +86,17 @@ class Player {
 ```
 
 ### Construction
-```pulse
+```aden
 Player player = new Player("Nova");
 ```
 
 ### Entry point
 Allowed entry signatures:
-```pulse
+```aden
 public static void main() { }
 ```
 or
-```pulse
+```aden
 public static void main(String[] args) { }
 ```
 
@@ -107,7 +107,7 @@ Exactly one valid `main` is required.
 ### Built-ins
 - `byte`, `short`, `int`, `long`, `float`, `double`, `char`, `boolean`, `void`
 - Unsigned: `ubyte`, `ushort`, `uint`, `ulong`
-- `String` is class-based (`pulse.lang.String`) and implicitly available without import
+- `String` is class-based (`aden.lang.String`) and implicitly available without import
 
 ### User types
 - Any class declared in the same compilation unit can be used as a type.
@@ -118,13 +118,13 @@ Exactly one valid `main` is required.
 ## 5. Statements
 
 ### Locals and assignment
-```pulse
+```aden
 int score = 0;
 score = score + 1;
 ```
 
 ### Branching
-```pulse
+```aden
 if (score > 10) {
     IO.println("high");
 } else {
@@ -133,19 +133,19 @@ if (score > 10) {
 ```
 
 ### Loops
-```pulse
+```aden
 while (score < 100) {
     score = score + 1;
 }
 ```
 
-```pulse
+```aden
 do {
     score = score + 1;
 } while (score < 100);
 ```
 
-```pulse
+```aden
 for (int i = 0; i < 10; i = i + 1) {
     if (i == 3) {
         continue;
@@ -157,7 +157,7 @@ for (int i = 0; i < 10; i = i + 1) {
 ```
 
 ### Switch
-```pulse
+```aden
 switch (score) {
     case 0:
         IO.println("zero");
@@ -172,7 +172,7 @@ switch (score) {
 ```
 
 ### Returns
-```pulse
+```aden
 return;
 return score;
 ```
@@ -201,7 +201,7 @@ return score;
 ## 7. Calls
 
 ### Built-in currently recognized
-```pulse
+```aden
 IO.println("text");
 IO.println(score);
 ```
@@ -240,9 +240,9 @@ Numeric conversion source-of-truth:
 - No try-catch/finally/throw yet.
 
 ## 10. Minimal Example Program
-```pulse
+```aden
 package app.core;
-import com.pulse.lang.IO;
+import com.aden.lang.IO;
 
 class Main {
     private static int total;

@@ -2,20 +2,20 @@
 
 Date: 2026-03-11
 
-This document is the truthful starting-point audit for Phase F1. It records what PulseCode already supports end-to-end, what is frontend/semantic-only, what is still explicitly fenced, and what remains shallow enough that F1 should not over-claim it.
+This document is the truthful starting-point audit for Phase F1. It records what Aden Lang already supports end-to-end, what is frontend/semantic-only, what is still explicitly fenced, and what remains shallow enough that F1 should not over-claim it.
 
 ## Audit Scope
 
 Reviewed sources:
 
-- `crates/pulsec-core/src/lib.rs`
-- `crates/pulsec-core/src/parser.rs`
-- `crates/pulsec-core/src/semantics.rs`
-- `crates/pulsec-core/src/tests.rs`
-- `crates/pulsec-cli/src/main.rs`
-- `crates/pulsec-cli/src/backend.rs`
-- `stdlib/src/com/pulse/**`
-- executable/fixture evidence under `crates/pulsec-cli/tests/**`
+- `crates/adenc-core/src/lib.rs`
+- `crates/adenc-core/src/parser.rs`
+- `crates/adenc-core/src/semantics.rs`
+- `crates/adenc-core/src/tests.rs`
+- `crates/adenc-cli/src/main.rs`
+- `crates/adenc-cli/src/backend.rs`
+- `stdlib/src/com/aden/**`
+- executable/fixture evidence under `crates/adenc-cli/tests/**`
 
 ## End-To-End Supported Baseline
 
@@ -31,11 +31,11 @@ These areas are already materially real across parser, semantics, lowering/backe
 
 Evidence:
 
-- `crates/pulsec-cli/src/main.rs`
-- `crates/pulsec-cli/src/backend.rs`
-- `crates/pulsec-cli/tests/fixture_projects.rs`
-- `crates/pulsec-cli/tests/phase_d_cli.rs`
-- `crates/pulsec-cli/tests/e3_parity.rs`
+- `crates/adenc-cli/src/main.rs`
+- `crates/adenc-cli/src/backend.rs`
+- `crates/adenc-cli/tests/fixture_projects.rs`
+- `crates/adenc-cli/tests/phase_d_cli.rs`
+- `crates/adenc-cli/tests/e3_parity.rs`
 
 ### Core Declaration And OOP Surface
 
@@ -59,10 +59,10 @@ Important current truth:
 
 Evidence:
 
-- `crates/pulsec-core/src/parser.rs`
-- `crates/pulsec-core/src/semantics.rs`
-- tests around abstract/interface/override support in `crates/pulsec-core/src/tests.rs`
-- dispatch/runtime executable evidence in `crates/pulsec-cli/tests/fixture_projects.rs`
+- `crates/adenc-core/src/parser.rs`
+- `crates/adenc-core/src/semantics.rs`
+- tests around abstract/interface/override support in `crates/adenc-core/src/tests.rs`
+- dispatch/runtime executable evidence in `crates/adenc-cli/tests/fixture_projects.rs`
 
 ### Statements And Control Flow
 
@@ -79,9 +79,9 @@ Evidence:
 
 Evidence:
 
-- statement parsing in `crates/pulsec-core/src/parser.rs`
-- condition and flow checks in `crates/pulsec-core/src/semantics.rs`
-- statement conformance tests in `crates/pulsec-core/src/tests.rs`
+- statement parsing in `crates/adenc-core/src/parser.rs`
+- condition and flow checks in `crates/adenc-core/src/semantics.rs`
+- statement conformance tests in `crates/adenc-core/src/tests.rs`
 
 ### Expressions And Type Basics
 
@@ -108,10 +108,10 @@ Important current truth:
 
 Evidence:
 
-- `crates/pulsec-core/src/lib.rs`
-- `crates/pulsec-core/src/parser.rs`
-- `crates/pulsec-core/src/semantics.rs`
-- cast/`instanceof` tests in `crates/pulsec-core/src/tests.rs`
+- `crates/adenc-core/src/lib.rs`
+- `crates/adenc-core/src/parser.rs`
+- `crates/adenc-core/src/semantics.rs`
+- cast/`instanceof` tests in `crates/adenc-core/src/tests.rs`
 
 ### Runtime And Execution Baseline
 
@@ -124,29 +124,29 @@ Evidence:
 
 Evidence:
 
-- `crates/pulsec-cli/src/backend.rs`
+- `crates/adenc-cli/src/backend.rs`
 - `docs/SHARED_RUNTIME_ABI.md`
 - `docs/RUNTIME_OWNERSHIP_POLICY.md`
-- `crates/pulsec-cli/tests/stage_locks_c2.rs`
-- `crates/pulsec-cli/tests/stage_locks_c3.rs`
-- `crates/pulsec-cli/tests/fixture_projects.rs`
+- `crates/adenc-cli/tests/stage_locks_c2.rs`
+- `crates/adenc-cli/tests/stage_locks_c3.rs`
+- `crates/adenc-cli/tests/fixture_projects.rs`
 
 ### Current Shipped Stdlib Baseline
 
-Already shipped and documented under `stdlib/src/com/pulse/**`:
+Already shipped and documented under `stdlib/src/com/aden/**`:
 
-- `com.pulse.lang`
-- `com.pulse.collections`
-- `com.pulse.io`
-- `com.pulse.math`
-- `com.pulse.time`
-- `com.pulse.rt`
+- `com.aden.lang`
+- `com.aden.collections`
+- `com.aden.io`
+- `com.aden.math`
+- `com.aden.time`
+- `com.aden.rt`
 
 Important current truth:
 
 - these packages are real source/runtime surfaces
 - many APIs are intentionally shallow and should not be described as Java-close-complete yet
-- source PulseDoc and generated reference docs now exist for the shipped surface
+- source AdenDoc and generated reference docs now exist for the shipped surface
 
 ## Present But Still Partial / Shallow
 
@@ -194,10 +194,10 @@ Current truth:
 
 Evidence:
 
-- `Modifier` enum in `crates/pulsec-core/src/lib.rs`
-- modifier parsing in `crates/pulsec-core/src/parser.rs`
-- supported-modifier enforcement in `crates/pulsec-core/src/semantics.rs`
-- `check_rejects_reserved_but_unsupported_modifier_usage` in `crates/pulsec-core/src/tests.rs`
+- `Modifier` enum in `crates/adenc-core/src/lib.rs`
+- modifier parsing in `crates/adenc-core/src/parser.rs`
+- supported-modifier enforcement in `crates/adenc-core/src/semantics.rs`
+- `check_rejects_reserved_but_unsupported_modifier_usage` in `crates/adenc-core/src/tests.rs`
 
 ### Exceptions As Language Flow
 
@@ -274,7 +274,7 @@ Reasons:
 
 F1 should proceed from these audit truths:
 
-1. PulseCode already has a real executable language/toolchain baseline.
+1. Aden Lang already has a real executable language/toolchain baseline.
 2. A meaningful Java-like OOP/core-control-flow surface is already real.
 3. Several Java-looking features are only reserved/fenced and must not be treated as “already partially done”.
 4. The stdlib exists, but much of it is still narrow and non-generic.
@@ -283,5 +283,5 @@ F1 should proceed from these audit truths:
 ## Immediate Follow-On Tasks Unblocked By This Audit
 
 - `F1-01` inventory full Java-close syntax target against current support
-- `F1-02` publish required/deferred/Pulse-specific support policy
+- `F1-02` publish required/deferred/Aden-specific support policy
 - `F1-03` build the staged dependency graph for frontend/backend/runtime/stdlib/validation work

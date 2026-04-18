@@ -1,0 +1,30 @@
+package aden.lang;
+
+/**
+ * Signals that an index fell outside the valid range.
+ */
+public class IndexOutOfBoundsException extends RuntimeException {
+    /**
+     * Creates an index-out-of-bounds exception with no message text.
+     * Use this for generic range-validation failures.
+     */
+    public IndexOutOfBoundsException() {
+        this.initThrowableState("IndexOutOfBoundsException", null, null);
+    }
+
+    /**
+     * Creates an index-out-of-bounds exception with the supplied message text.
+     * Use this when reporting which index rule failed.
+     */
+    public IndexOutOfBoundsException(String message) {
+        this.initThrowableState("IndexOutOfBoundsException", message, null);
+    }
+
+    /**
+     * Creates an index-out-of-bounds exception with both a message and a cause.
+     * Use this when surfacing range-validation context plus the original failure.
+     */
+    public IndexOutOfBoundsException(String message, Throwable cause) {
+        this.initThrowableState("IndexOutOfBoundsException", message, cause);
+    }
+}

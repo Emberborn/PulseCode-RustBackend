@@ -1,0 +1,724 @@
+package aden.math;
+import aden.collections.Array;
+import aden.lang.Integer;
+import aden.rt.Intrinsics;
+
+/**
+ * Deterministic pseudo-random generator facade.
+ */
+public class Random {
+    private static final int DEFAULT_SEED = 1;
+    private static final long STATE_MODULUS = 2147483648L;
+    private static final uint UINT_HIGH_BIT = (uint) 2147483648L;
+    private int state;
+    private boolean hasCachedGaussian;
+    private double cachedGaussian;
+
+    /**
+     * Creates a generator with the default deterministic seed.
+     * Use this when a caller wants repeatable behavior without managing the seed explicitly.
+     */
+    public Random() {
+        this.state = DEFAULT_SEED;
+        this.hasCachedGaussian = false;
+        this.cachedGaussian = 0.0d;
+    }
+
+    /**
+     * Creates a generator with the supplied seed.
+     * Use this when repeatable pseudo-random sequences are desired.
+     */
+    public Random(int seed) {
+        this.state = normalizeSeed((long) seed);
+        this.hasCachedGaussian = false;
+        this.cachedGaussian = 0.0d;
+    }
+
+    /**
+     * Creates a generator with the supplied long seed.
+     * Use this when deterministic callers want a wider seed input without changing the current int-backed core.
+     */
+    public Random(long seed) {
+        this.state = normalizeSeed(seed);
+        this.hasCachedGaussian = false;
+        this.cachedGaussian = 0.0d;
+    }
+
+    /**
+     * Creates a generator with the supplied unsigned int seed.
+     * Use this when deterministic callers want unsigned seed ingress without changing the current int-backed core.
+     */
+    public Random(uint seed) {
+        this.state = normalizeSeed((long) seed);
+        this.hasCachedGaussian = false;
+        this.cachedGaussian = 0.0d;
+    }
+
+    /**
+     * Creates a generator with the supplied unsigned long seed.
+     * Use this when deterministic callers want the widest unsigned seed ingress on the current deterministic core.
+     */
+    public Random(ulong seed) {
+        this.state = normalizeUnsignedSeed(seed);
+        this.hasCachedGaussian = false;
+        this.cachedGaussian = 0.0d;
+    }
+
+    /**
+     * Replaces the current generator seed.
+     * Use this to restart deterministic generation from a known state.
+     */
+    public void setSeed(int seed) {
+        this.state = normalizeSeed((long) seed);
+        this.hasCachedGaussian = false;
+    }
+
+    /**
+     * Replaces the current generator seed from a long input.
+     * Use this when deterministic callers want wider seed ingress without changing the current state core.
+     */
+    public void setSeed(long seed) {
+        this.state = normalizeSeed(seed);
+        this.hasCachedGaussian = false;
+    }
+
+    /**
+     * Replaces the current generator seed from an unsigned int input.
+     * Use this when deterministic callers want unsigned seed ingress without changing the current state core.
+     */
+    public void setSeed(uint seed) {
+        this.state = normalizeSeed((long) seed);
+        this.hasCachedGaussian = false;
+    }
+
+    /**
+     * Replaces the current generator seed from an unsigned long input.
+     * Use this when deterministic callers want the widest unsigned seed ingress on the current state core.
+     */
+    public void setSeed(ulong seed) {
+        this.state = normalizeUnsignedSeed(seed);
+        this.hasCachedGaussian = false;
+    }
+
+    /**
+     * Returns the current generator seed/state.
+     * Use this when deterministic workflows need to snapshot or inspect the generator state.
+     */
+    public int getSeed() {
+        return this.state;
+    }
+
+    /**
+     * Returns a deterministic copy of this generator, including any cached Gaussian state.
+     * Use this when deterministic workflows need to branch or snapshot a stream without mutating the original.
+     */
+    public Random copy() {
+        Random clone = new Random(this.state);
+        clone.hasCachedGaussian = this.hasCachedGaussian;
+        clone.cachedGaussian = this.cachedGaussian;
+        return clone;
+    }
+
+    /**
+     * Restores the generator to the default deterministic seed.
+     * Use this when a caller wants to restart the default repeatable sequence.
+     */
+    public void reset() {
+        this.state = DEFAULT_SEED;
+        this.hasCachedGaussian = false;
+    }
+
+    /**
+     * Advances the generator by the supplied number of core samples.
+     * Use this when deterministic workflows need to fast-forward a stream without consuming each value directly.
+     */
+    public void skip(int count) {
+        if (count < 0) {
+            Intrinsics.panic("Random.skip count must be >= 0");
+            return;
+        }
+
+        this.hasCachedGaussian = false;
+        int index = 0;
+        while (index < count) {
+            this.advance();
+            index = index + 1;
+        }
+    }
+
+    /**
+     * Returns the next pseudo-random integer over the current deterministic state sequence.
+     * Use this when an unbounded non-negative integer sample is needed.
+     */
+    public int nextInt() {
+        return this.advance();
+    }
+
+    /**
+     * Returns the next pseudo-random integer in the range [0, bound).
+     * Use this when bounded integer sampling is needed.
+     */
+    public int nextInt(int bound) {
+        if (bound <= 0) {
+            Intrinsics.panic("Random bound must be > 0");
+            return 0;
+        }
+
+        return this.nextBoundedInt(bound);
+    }
+
+    /**
+     * Returns the next pseudo-random integer in the range [origin, bound).
+     * Use this when deterministic range sampling is needed.
+     */
+    public int nextInt(int origin, int bound) {
+        if (bound <= origin) {
+            Intrinsics.panic("Random range requires bound > origin");
+            return origin;
+        }
+
+        return origin + this.nextInt(bound - origin);
+    }
+
+    /**
+     * Returns the next pseudo-random boolean value.
+     * Use this when deterministic yes/no sampling is needed.
+     */
+    public boolean nextBoolean() {
+        return this.nextBit() == 0;
+    }
+
+    /**
+     * Returns the next pseudo-random long value.
+     * Use this when a wider deterministic integral sample is needed.
+     */
+    public long nextLong() {
+        return (long) this.nextULong();
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned int value.
+     * Use this when deterministic unsigned integral sampling is needed.
+     */
+    public uint nextUInt() {
+        return this.nextRawUInt();
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned int value in the range [0, bound).
+     * Use this when bounded unsigned integral sampling is needed.
+     */
+    public uint nextUInt(uint bound) {
+        if (bound == (uint) 0) {
+            Intrinsics.panic("Random uint bound must be > 0");
+            return (uint) 0;
+        }
+
+        return this.nextBoundedUInt(bound);
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned int value in the range [origin, bound).
+     * Use this when deterministic unsigned range sampling is needed.
+     */
+    public uint nextUInt(uint origin, uint bound) {
+        if (bound <= origin) {
+            Intrinsics.panic("Random uint range requires bound > origin");
+            return origin;
+        }
+
+        return origin + this.nextUInt(bound - origin);
+    }
+
+    /**
+     * Returns the next pseudo-random long value in the range [0, bound).
+     * Use this when bounded long sampling is needed.
+     */
+    public long nextLong(long bound) {
+        if (bound <= 0L) {
+            Intrinsics.panic("Random long bound must be > 0");
+            return 0L;
+        }
+
+        return this.nextBoundedLong(bound);
+    }
+
+    /**
+     * Returns the next pseudo-random long value in the range [origin, bound).
+     * Use this when deterministic long-range sampling is needed.
+     */
+    public long nextLong(long origin, long bound) {
+        if (bound <= origin) {
+            Intrinsics.panic("Random long range requires bound > origin");
+            return origin;
+        }
+
+        return origin + this.nextLong(bound - origin);
+    }
+
+    /**
+     * Returns the next pseudo-random byte value.
+     * Use this when deterministic small signed sampling is needed.
+     */
+    public byte nextByte() {
+        return (byte) this.nextInt();
+    }
+
+    /**
+     * Returns the next pseudo-random byte value in the range [0, bound).
+     * Use this when bounded small signed sampling is needed.
+     */
+    public byte nextByte(byte bound) {
+        return (byte) this.nextInt((int) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random byte value in the range [origin, bound).
+     * Use this when deterministic small signed range sampling is needed.
+     */
+    public byte nextByte(byte origin, byte bound) {
+        return (byte) this.nextInt((int) origin, (int) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random short value.
+     * Use this when deterministic medium signed sampling is needed.
+     */
+    public short nextShort() {
+        return (short) this.nextInt();
+    }
+
+    /**
+     * Returns the next pseudo-random short value in the range [0, bound).
+     * Use this when bounded medium signed sampling is needed.
+     */
+    public short nextShort(short bound) {
+        return (short) this.nextInt((int) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random short value in the range [origin, bound).
+     * Use this when deterministic medium signed range sampling is needed.
+     */
+    public short nextShort(short origin, short bound) {
+        return (short) this.nextInt((int) origin, (int) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random char value.
+     * Use this when deterministic code-unit sampling is needed.
+     */
+    public char nextChar() {
+        return (char) this.nextUInt();
+    }
+
+    /**
+     * Returns the next pseudo-random char value in the range [0, bound).
+     * Use this when bounded code-unit sampling is needed.
+     */
+    public char nextChar(char bound) {
+        return (char) this.nextUInt((uint) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random char value in the range [origin, bound).
+     * Use this when deterministic code-unit range sampling is needed.
+     */
+    public char nextChar(char origin, char bound) {
+        return (char) this.nextUInt((uint) origin, (uint) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned long value.
+     * Use this when the widest deterministic unsigned integral sample is needed.
+     */
+    public ulong nextULong() {
+        ulong upper = (ulong) this.nextRawUInt();
+        ulong lower = (ulong) this.nextRawUInt();
+        return (upper << 32) + lower;
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned long value in the range [0, bound).
+     * Use this when bounded unsigned long sampling is needed.
+     */
+    public ulong nextULong(ulong bound) {
+        if (bound == (ulong) 0) {
+            Intrinsics.panic("Random ulong bound must be > 0");
+            return (ulong) 0;
+        }
+
+        return this.nextBoundedULong(bound);
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned long value in the range [origin, bound).
+     * Use this when deterministic unsigned long-range sampling is needed.
+     */
+    public ulong nextULong(ulong origin, ulong bound) {
+        if (bound <= origin) {
+            Intrinsics.panic("Random ulong range requires bound > origin");
+            return origin;
+        }
+
+        return origin + this.nextULong(bound - origin);
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned byte value.
+     * Use this when deterministic small unsigned sampling is needed.
+     */
+    public ubyte nextUByte() {
+        return (ubyte) this.nextUInt();
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned byte value in the range [0, bound).
+     * Use this when bounded small unsigned sampling is needed.
+     */
+    public ubyte nextUByte(ubyte bound) {
+        return (ubyte) this.nextUInt((uint) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned byte value in the range [origin, bound).
+     * Use this when deterministic small unsigned range sampling is needed.
+     */
+    public ubyte nextUByte(ubyte origin, ubyte bound) {
+        return (ubyte) this.nextUInt((uint) origin, (uint) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned short value.
+     * Use this when deterministic medium unsigned sampling is needed.
+     */
+    public ushort nextUShort() {
+        return (ushort) this.nextUInt();
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned short value in the range [0, bound).
+     * Use this when bounded medium unsigned sampling is needed.
+     */
+    public ushort nextUShort(ushort bound) {
+        return (ushort) this.nextUInt((uint) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random unsigned short value in the range [origin, bound).
+     * Use this when deterministic medium unsigned range sampling is needed.
+     */
+    public ushort nextUShort(ushort origin, ushort bound) {
+        return (ushort) this.nextUInt((uint) origin, (uint) bound);
+    }
+
+    /**
+     * Returns the next pseudo-random float value in the range [0.0f, 1.0f).
+     * Use this when deterministic fractional sampling is needed.
+     */
+    public float nextFloat() {
+        return ((float) this.advance()) / ((float) STATE_MODULUS);
+    }
+
+    /**
+     * Returns the next pseudo-random float value in the range [0.0f, bound).
+     * Use this when deterministic bounded fractional sampling is needed.
+     */
+    public float nextFloat(float bound) {
+        if (bound <= 0.0f) {
+            Intrinsics.panic("Random float bound must be > 0");
+            return 0.0f;
+        }
+
+        return this.nextFloat() * bound;
+    }
+
+    /**
+     * Returns the next pseudo-random float value in the range [origin, bound).
+     * Use this when deterministic fractional range sampling is needed.
+     */
+    public float nextFloat(float origin, float bound) {
+        if (bound <= origin) {
+            Intrinsics.panic("Random float range requires bound > origin");
+            return origin;
+        }
+
+        return origin + this.nextFloat(bound - origin);
+    }
+
+    /**
+     * Returns the next pseudo-random double value in the range [0.0d, 1.0d).
+     * Use this when deterministic fractional sampling is needed.
+     */
+    public double nextDouble() {
+        return ((double) this.advance()) / ((double) STATE_MODULUS);
+    }
+
+    /**
+     * Returns the next pseudo-random double value in the range [0.0d, bound).
+     * Use this when deterministic bounded fractional sampling is needed.
+     */
+    public double nextDouble(double bound) {
+        if (bound <= 0.0d) {
+            Intrinsics.panic("Random double bound must be > 0");
+            return 0.0d;
+        }
+
+        return this.nextDouble() * bound;
+    }
+
+    /**
+     * Returns the next pseudo-random double value in the range [origin, bound).
+     * Use this when deterministic double range sampling is needed.
+     */
+    public double nextDouble(double origin, double bound) {
+        if (bound <= origin) {
+            Intrinsics.panic("Random double range requires bound > origin");
+            return origin;
+        }
+
+        return origin + this.nextDouble(bound - origin);
+    }
+
+    /**
+     * Returns the next pseudo-random Gaussian sample with mean 0 and standard deviation 1.
+     * Use this when deterministic normal-distribution sampling is needed.
+     */
+    public double nextGaussian() {
+        if (this.hasCachedGaussian) {
+            this.hasCachedGaussian = false;
+            return this.cachedGaussian;
+        }
+
+        double u1 = this.nextDouble();
+        while (u1 <= 0.0d) {
+            u1 = this.nextDouble();
+        }
+        double u2 = this.nextDouble();
+        double radius = Math.sqrt(-2.0d * Math.log(u1));
+        double angle = 2.0d * Math.PI * u2;
+        double z0 = radius * Math.cos(angle);
+        double z1 = radius * Math.sin(angle);
+        this.cachedGaussian = z1;
+        this.hasCachedGaussian = true;
+        return z0;
+    }
+
+    /**
+     * Returns the next pseudo-random Gaussian sample with the supplied mean and standard deviation.
+     * Use this when deterministic normal-distribution sampling should be centered and scaled directly.
+     */
+    public double nextGaussian(double mean, double standardDeviation) {
+        if (standardDeviation < 0.0d) {
+            Intrinsics.panic("Random Gaussian standard deviation must be >= 0");
+            return mean;
+        }
+        if (standardDeviation == 0.0d) {
+            return mean;
+        }
+        return mean + (this.nextGaussian() * standardDeviation);
+    }
+
+    /**
+     * Fills the supplied array with deterministic pseudo-random integers.
+     * Use this when a caller needs repeatable bulk sampling without open-coded loops.
+     */
+    public void nextInts(Array target) {
+        if (target == null) {
+            Intrinsics.panic("Random.nextInts target must not be null");
+            return;
+        }
+
+        int i = 0;
+        while (i < target.length()) {
+            target.setInt(i, this.nextInt());
+            i = i + 1;
+        }
+    }
+
+    /**
+     * Fills the supplied array with deterministic pseudo-random integers in the range [0, bound).
+     * Use this when a caller needs repeatable bounded bulk sampling.
+     */
+    public void nextInts(Array target, int limit) {
+        if (target == null) {
+            Intrinsics.panic("Random.nextInts target must not be null");
+            return;
+        }
+
+        int i = 0;
+        while (i < target.length()) {
+            target.setInt(i, this.nextInt(limit));
+            i = i + 1;
+        }
+    }
+
+    /**
+     * Fills the supplied int-lane array with deterministic pseudo-random byte values widened to `int`.
+     * Use this when callers need repeatable small signed sampling in the current runtime-backed array model.
+     */
+    public void nextBytes(Array target) {
+        if (target == null) {
+            Intrinsics.panic("Random.nextBytes target must not be null");
+            return;
+        }
+
+        int i = 0;
+        while (i < target.length()) {
+            target.setInt(i, (int) this.nextByte());
+            i = i + 1;
+        }
+    }
+
+    /**
+     * Fills the supplied int-lane array with deterministic pseudo-random short values widened to `int`.
+     * Use this when callers need repeatable medium signed sampling in the current runtime-backed array model.
+     */
+    public void nextShorts(Array target) {
+        if (target == null) {
+            Intrinsics.panic("Random.nextShorts target must not be null");
+            return;
+        }
+
+        int i = 0;
+        while (i < target.length()) {
+            target.setInt(i, (int) this.nextShort());
+            i = i + 1;
+        }
+    }
+
+    /**
+     * Fills the supplied int-lane array with deterministic pseudo-random char values widened to `int`.
+     * Use this when callers need repeatable code-unit sampling in the current runtime-backed array model.
+     */
+    public void nextChars(Array target) {
+        if (target == null) {
+            Intrinsics.panic("Random.nextChars target must not be null");
+            return;
+        }
+
+        int i = 0;
+        while (i < target.length()) {
+            target.setInt(i, (int) this.nextChar());
+            i = i + 1;
+        }
+    }
+
+    /**
+     * Fills the supplied int-lane array with deterministic pseudo-random unsigned int values reinterpreted as `int`.
+     * Use this when callers need repeatable unsigned sampling in the current runtime-backed array model.
+     */
+    public void nextUInts(Array target) {
+        if (target == null) {
+            Intrinsics.panic("Random.nextUInts target must not be null");
+            return;
+        }
+
+        int i = 0;
+        while (i < target.length()) {
+            target.setInt(i, (int) this.nextUInt());
+            i = i + 1;
+        }
+    }
+
+    /**
+     * Advances the deterministic generator state and returns a non-negative integer sample.
+     * This is the shared core used by the public helper methods.
+     */
+    private int advance() {
+        long next = (((long) this.state) * 1103515245L) + 12345L;
+        next = next % STATE_MODULUS;
+        if (next < 0L) {
+            next = next + STATE_MODULUS;
+        }
+        this.state = (int) next;
+        return this.state;
+    }
+
+    /**
+     * Returns a single deterministic bit from the shared generator core.
+     */
+    private int nextBit() {
+        return this.advance() % 2;
+    }
+
+    /**
+     * Returns a full-width unsigned 32-bit sample built on the current deterministic core.
+     */
+    private uint nextRawUInt() {
+        uint sample = (uint) this.advance();
+        if (this.nextBit() != 0) {
+            return sample + UINT_HIGH_BIT;
+        }
+        return sample;
+    }
+
+    /**
+     * Returns a bounded integer sample without modulo bias over the current 31-bit core lane.
+     */
+    private int nextBoundedInt(int bound) {
+        long unsignedBound = (long) bound;
+        long threshold = STATE_MODULUS - (STATE_MODULUS % unsignedBound);
+        long sample = (long) this.advance();
+        while (sample >= threshold) {
+            sample = (long) this.advance();
+        }
+        return (int) (sample % unsignedBound);
+    }
+
+    /**
+     * Returns a bounded unsigned integer sample without modulo bias.
+     */
+    private uint nextBoundedUInt(uint bound) {
+        uint threshold = (((uint) 0) - bound) % bound;
+        uint sample = this.nextRawUInt();
+        while (sample < threshold) {
+            sample = this.nextRawUInt();
+        }
+        return sample % bound;
+    }
+
+    /**
+     * Returns a bounded long sample without modulo bias.
+     */
+    private long nextBoundedLong(long bound) {
+        ulong unsignedBound = (ulong) bound;
+        ulong threshold = (((ulong) 0L) - unsignedBound) % unsignedBound;
+        ulong sample = this.nextULong();
+        while (sample < threshold) {
+            sample = this.nextULong();
+        }
+        return (long) (sample % unsignedBound);
+    }
+
+    /**
+     * Returns a bounded unsigned long sample without modulo bias.
+     */
+    private ulong nextBoundedULong(ulong bound) {
+        ulong threshold = (((ulong) 0L) - bound) % bound;
+        ulong sample = this.nextULong();
+        while (sample < threshold) {
+            sample = this.nextULong();
+        }
+        return sample % bound;
+    }
+
+    /**
+     * Folds a wider seed into the current int-backed deterministic state.
+     */
+    private static int normalizeSeed(long seed) {
+        long folded = seed % STATE_MODULUS;
+        if (folded < 0L) {
+            folded = folded + STATE_MODULUS;
+        }
+        return (int) folded;
+    }
+
+    /**
+     * Folds an unsigned wide seed into the current int-backed deterministic state.
+     */
+    private static int normalizeUnsignedSeed(ulong seed) {
+        ulong folded = seed % ((ulong) STATE_MODULUS);
+        return (int) folded;
+    }
+}

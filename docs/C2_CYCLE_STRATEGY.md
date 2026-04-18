@@ -6,7 +6,7 @@
 - Weak references supported as an escape hatch (`weakNew`/`weakGet`/`weakClear`).
 
 ## Cadence Contract
-- Schema: `pulsec.arc.cycle.v1`.
+- Schema: `adenc.arc.cycle.v1`.
 - Young pass window: `64`.
 - Full pass interval: every `8` ticks.
 - Entry intrinsic: `arcCycleTick`.

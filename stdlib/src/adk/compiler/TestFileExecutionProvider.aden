@@ -1,0 +1,58 @@
+package adk.compiler;
+
+import aden.collections.ArrayList;
+import aden.io.Files;
+import aden.process.ProcessEnvironment;
+import aden.process.ProcessPlan;
+import aden.process.ProcessResult;
+import aden.process.Processes;
+import aden.util.Objects;
+
+/**
+ * Provider-backed compiler test-file execution through the current host compiler binary.
+ */
+public final class TestFileExecutionProvider {
+    public static TestFileExecutionResult execute(
+        String compilerPath,
+        String entryPath,
+        String sourceRoot,
+        boolean strictPackage,
+        boolean adklibEnabled
+    ) {
+        Objects.requireNonNull(compilerPath, "compilerPath must not be null");
+        Objects.requireNonNull(entryPath, "entryPath must not be null");
+
+        ArrayList<String> arguments = new ArrayList<String>();
+        arguments.add("__provider-test-file");
+        arguments.add(entryPath);
+        arguments.add(sourceRoot == null ? "" : sourceRoot);
+        arguments.add(strictPackage ? "true" : "false");
+        arguments.add(adklibEnabled ? "true" : "false");
+
+        ProcessPlan plan = new ProcessPlan(
+            compilerPath,
+            null,
+            arguments,
+            ProcessEnvironment.defaults()
+        );
+        String captureRoot = Files.createTempDirectory("compiler_test_file_provider");
+        ProcessResult result = Processes.execute(plan, captureRoot, "provider");
+        String stdoutText = result.stdoutText();
+        if (stdoutText != null && !stdoutText.isEmpty()) {
+            TestFileExecutionResult parsed = TestFileExecutionBridge.fromBridgeText(stdoutText);
+            if (!parsed.success() && (parsed.detail() == null || parsed.detail().isEmpty())) {
+                if (result.stderrText() != null && !result.stderrText().isEmpty()) {
+                    return TestFileExecutionResult.failure(result.stderrText());
+                }
+            }
+            return parsed;
+        }
+        if (result.stderrText() != null && !result.stderrText().isEmpty()) {
+            return TestFileExecutionResult.failure(result.stderrText());
+        }
+        return TestFileExecutionResult.failure(
+            "compiler test-file provider exited with code "
+                .concat(String.valueOf(result.exitCode()))
+        );
+    }
+}

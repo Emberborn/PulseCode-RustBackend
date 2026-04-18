@@ -8,15 +8,15 @@ Purpose:
 
 Primary references:
 
-- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
-- [WINDOWS_X64_ADAPTER_SCOPE.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_ADAPTER_SCOPE.md)
-- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
-- [WINDOWS_X64_SCOPE_FREEZE_POLICY.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md)
+- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/CLI_COMMAND_CONTRACT.md)
+- [WINDOWS_X64_ADAPTER_SCOPE.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_ADAPTER_SCOPE.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
+- [WINDOWS_X64_SCOPE_FREEZE_POLICY.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md)
 
 Rebase note (`RB-09`):
 
 - this document is adapter support evidence
-- it is not the top-level project support matrix for PulseCode as a whole
+- it is not the top-level project support matrix for Aden Lang as a whole
 
 Rebase note (`RB-17.1`):
 
@@ -27,7 +27,7 @@ Rebase note (`RB-19`):
 
 - this matrix does not authorize new Windows-only compiler scope
 - the only retained Windows-only top-level CLI controls are `--linker` and `--assembler`
-- installer/signing/productization surface remains frozen out of `pulsec`
+- installer/signing/productization surface remains frozen out of `adenc`
 
 ## Retained Windows Adapter Support Baseline
 
@@ -78,7 +78,7 @@ Required for:
 
 | Capability | Required tools | Hard requirement | Output when missing |
 |---|---|---|---|
-| IR/object/native plan emission | none beyond `pulsec` toolchain itself | yes | build fails only on compiler/backend errors |
+| IR/object/native plan emission | none beyond `adenc` toolchain itself | yes | build fails only on compiler/backend errors |
 | Native fat `.exe` build | `ml64.exe` + `link.exe` | yes for real exe | build fails deterministically with backend/link diagnostics |
 | Native shared build (`.exe` + `.dll` + `.lib`) | `ml64.exe` + `link.exe` | yes | build fails deterministically with backend/link diagnostics |
 
@@ -93,9 +93,9 @@ Pass criteria:
 
 | Variant | Setup | Command shape | Validation status |
 |---|---|---|---|
-| Default linker discovery | Host discovery | `pulsec build ...` | Validated |
-| Explicit linker CLI override | Explicit `--linker` | `pulsec build ... --linker "<vs-linker>"` | Validated |
-| PULSEC_LINKER | Env override | `PULSEC_LINKER="<vs-linker>" pulsec build ...` | Validated |
+| Default linker discovery | Host discovery | `adenc build ...` | Validated |
+| Explicit linker CLI override | Explicit `--linker` | `adenc build ... --linker "<vs-linker>"` | Validated |
+| PULSEC_LINKER | Env override | `PULSEC_LINKER="<vs-linker>" adenc build ...` | Validated |
 
 ### Shared Native Build Matrix
 
@@ -107,9 +107,9 @@ Pass criteria:
 
 | Variant | Setup | Command shape | Validation status |
 |---|---|---|---|
-| Shared default discovery | Host linker/assembler discovery | `pulsec build ... --output-mode shared` | Validated |
-| Shared explicit linker override | Explicit `--linker` with adjacent `ml64.exe` | `pulsec build ... --output-mode shared --linker "<vs-linker>"` | Validated |
-| Shared PULSEC_LINKER | Env override with adjacent `ml64.exe` | `PULSEC_LINKER="<vs-linker>" pulsec build ... --output-mode shared` | Contract-validated |
+| Shared default discovery | Host linker/assembler discovery | `adenc build ... --output-mode shared` | Validated |
+| Shared explicit linker override | Explicit `--linker` with adjacent `ml64.exe` | `adenc build ... --output-mode shared --linker "<vs-linker>"` | Validated |
+| Shared PULSEC_LINKER | Env override with adjacent `ml64.exe` | `PULSEC_LINKER="<vs-linker>" adenc build ... --output-mode shared` | Contract-validated |
 
 ## E3 Fat/Shared Parity Validation Matrix
 
@@ -154,5 +154,5 @@ Shared-only expected additions:
 Minimum setup for native build work:
 
 - Rust toolchain with `cargo`
-- MSVC linker toolchain available to `pulsec`
-- `ml64.exe` available to `pulsec` for supported shared builds
+- MSVC linker toolchain available to `adenc`
+- `ml64.exe` available to `adenc` for supported shared builds

@@ -1,19 +1,19 @@
 # Program Entry And Execution
 
-This page documents the runtime-backed execution rules for Pulse programs.
+This page documents the runtime-backed execution rules for Aden programs.
 
 ## Main Entry
 
 Supported entry signatures:
 
-```pulse
+```aden
 public static void main() {
 }
 ```
 
 or
 
-```pulse
+```aden
 public static void main(String[] args) {
 }
 ```

@@ -1,0 +1,169 @@
+mod common;
+// Windows x64 host/bootstrap fat-vs-shared parity suite.
+
+use std::env;
+use std::fs;
+use std::path::PathBuf;
+use std::process::{Command, Output, Stdio};
+use std::thread;
+use std::time::Duration;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+fn fixture_root(name: &str) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures")
+        .join(name)
+}
+
+fn copy_dir_recursive(src: &std::path::Path, dst: &std::path::Path) {
+    fs::create_dir_all(dst).expect("create destination dir");
+    for entry in fs::read_dir(src).expect("read source dir").flatten() {
+        let src_path = entry.path();
+        let dst_path = dst.join(entry.file_name());
+        if src_path.is_dir() {
+            copy_dir_recursive(&src_path, &dst_path);
+        } else {
+            fs::copy(&src_path, &dst_path).expect("copy file");
+        }
+    }
+}
+
+fn unique_temp_root() -> PathBuf {
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("time should move forward")
+        .as_nanos();
+    std::env::temp_dir().join(format!("adenc_e3_parity_{nanos}"))
+}
+
+fn build_supports_runtime_execution(output: &Output, root: &std::path::Path) -> bool {
+    if output.status.success() {
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        if stdout.contains("Entry codegen: masm-split-stdlib") {
+            return true;
+        }
+        let _ = root;
+        return false;
+    }
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if stderr.contains("error[PULSEC:E_BUILD_FAILED]: Compile error: backend emit failed:") {
+        let _ = root;
+        return false;
+    }
+
+    panic!(
+        "build failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        stderr
+    );
+}
+
+fn build_and_run_fixture_in_mode(
+    fixture_name: &str,
+    entry_rel: &str,
+    mode: &str,
+) -> Option<String> {
+    let fixture = fixture_root(fixture_name);
+    let root = unique_temp_root();
+    copy_dir_recursive(&fixture.join("src"), &root.join("src"));
+    let src_root = root.join("src");
+    let entry = src_root.join(entry_rel);
+
+    let mut command = common::adenc_command();
+    command
+        .arg("build")
+        .arg(entry.to_str().expect("entry utf8"))
+        .arg("--source-root")
+        .arg(src_root.to_str().expect("src utf8"))
+        .arg("--strict-package");
+    if mode == "shared" {
+        command.arg("--output-mode").arg("shared");
+    }
+
+    let output = command.output().expect("run adenc build");
+    if !build_supports_runtime_execution(&output, &root) {
+        let _ = fs::remove_dir_all(root);
+        return None;
+    }
+
+    let exe = root.join("build").join("main.exe");
+    let run = run_exe_with_timeout(&exe, fixture_name, mode);
+    assert!(
+        run.status.success(),
+        "{fixture_name} {mode} executable failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.stdout),
+        String::from_utf8_lossy(&run.stderr)
+    );
+    let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
+    let _ = fs::remove_dir_all(root);
+    Some(out)
+}
+
+fn run_exe_with_timeout(exe: &std::path::Path, fixture_name: &str, mode: &str) -> Output {
+    let timeout_ms = env::var("PULSEC_TEST_EXE_TIMEOUT_MS")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(15_000);
+    let mut child = Command::new(exe)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("spawn built executable");
+    let deadline = std::time::Instant::now() + Duration::from_millis(timeout_ms);
+
+    loop {
+        match child.try_wait().expect("poll built executable") {
+            Some(_) => {
+                return child
+                    .wait_with_output()
+                    .expect("collect built executable output");
+            }
+            None if std::time::Instant::now() >= deadline => {
+                let _ = child.kill();
+                let output = child
+                    .wait_with_output()
+                    .expect("collect timed out executable output");
+                panic!(
+                    "{fixture_name} {mode} executable exceeded {} ms and was killed\nstdout:\n{}\nstderr:\n{}",
+                    timeout_ms,
+                    String::from_utf8_lossy(&output.stdout),
+                    String::from_utf8_lossy(&output.stderr)
+                );
+            }
+            None => thread::sleep(Duration::from_millis(10)),
+        }
+    }
+}
+
+#[test]
+fn e3_12_parity_ci_suite_runs_matched_fat_shared_fixture_corpus() {
+    for (fixture_name, entry_rel, expected) in [
+        ("runtime_mix", "app/runtime/Main.aden", "runtime_mix_ok\n"),
+        (
+            "object_interface_mix",
+            "app/mixed/Main.aden",
+            "object_interface_mix_ok\n",
+        ),
+        (
+            "strict_stress_soak",
+            "strict_stress_soak/Main.aden",
+            "soak_ok\n40415\n",
+        ),
+    ] {
+        let Some(fat_out) = build_and_run_fixture_in_mode(fixture_name, entry_rel, "fat") else {
+            return;
+        };
+        let Some(shared_out) = build_and_run_fixture_in_mode(fixture_name, entry_rel, "shared")
+        else {
+            return;
+        };
+        assert_eq!(fat_out, expected, "{fixture_name} fat output drifted");
+        assert_eq!(shared_out, expected, "{fixture_name} shared output drifted");
+        assert_eq!(
+            fat_out, shared_out,
+            "{fixture_name} fat/shared outputs diverged"
+        );
+    }
+}

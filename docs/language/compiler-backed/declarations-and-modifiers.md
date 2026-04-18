@@ -13,7 +13,7 @@ Current baseline:
 
 Declarations follow a Java-like shape:
 
-```pulse
+```aden
 public class Player() {
 }
 

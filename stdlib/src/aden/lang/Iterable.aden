@@ -1,0 +1,12 @@
+package aden.lang;
+
+/**
+ * Contract for values that can produce an iterator.
+ */
+public interface Iterable {
+    /**
+     * Returns an iterator over the values exposed by this object.
+     * Use this to drive sequential traversal of an iterable surface.
+     */
+    public Iterator iterator();
+}

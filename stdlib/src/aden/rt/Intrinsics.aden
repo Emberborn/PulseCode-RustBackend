@@ -1,0 +1,636 @@
+package aden.rt;
+
+import aden.interop.NativeCallback0;
+import aden.interop.NativeCallback1;
+import aden.interop.NativeCallback2;
+import aden.interop.NativeCallback3;
+import aden.interop.NativeCallback4;
+
+/**
+ * Compiler/runtime intrinsic surface implemented by the native backend.
+ */
+final class Intrinsics {
+    /**
+     * Reads the next console line from standard input.
+     * Returns `null` when end-of-input is reached before any bytes are read.
+     */
+    public static String consoleReadLine() {
+        return "";
+    }
+
+    /**
+     * Writes a string without a trailing newline.
+     * Use this for low-level console text output from runtime-backed code.
+     */
+    public static void consoleWrite(String value) {
+    }
+
+    /**
+     * Writes a string to the standard error stream without a trailing newline.
+     * Use this for low-level diagnostic text output from runtime-backed code.
+     */
+    public static void consoleErrorWrite(String value) {
+    }
+
+    /**
+     * Writes a string followed by a newline.
+     * Use this for low-level line-oriented console output.
+     */
+    public static void consoleWriteLine(String value) {
+    }
+
+    /**
+     * Writes a string followed by a newline to the standard error stream.
+     * Use this for low-level diagnostic line output.
+     */
+    public static void consoleErrorWriteLine(String value) {
+    }
+
+    /**
+     * Terminates execution with the supplied diagnostic message.
+     * Use this for unrecoverable runtime failures.
+     */
+    public static void panic(String message) {
+    }
+
+    /**
+     * Compatibility string concatenation entrypoint for older runtime-backed callers.
+     * Prefer `String.concat(...)` or normal string `+` in new code.
+     */
+    public static String stringConcat(String left, String right) {
+        return left.concat(right);
+    }
+
+    /**
+     * Compatibility string length entrypoint for older runtime-backed callers.
+     * Prefer `String.length()` in new code.
+     */
+    public static int stringLength(String value) {
+        return value.length();
+    }
+
+    /**
+     * Returns the runtime class name for the supplied object reference.
+     * Use this when stdlib code needs honest class identity without full reflection.
+     */
+    public static String objectClassName(Object value) {
+        return "";
+    }
+
+    /**
+     * Returns a stable identity-style hash for the supplied object reference.
+     * Use this for the default Object hash contract.
+     */
+    public static int objectHashCode(Object value) {
+        return 0;
+    }
+
+    /**
+     * Allocates a new array handle for the supplied length.
+     * Use this when creating runtime-backed arrays.
+     */
+    public static long arrayNew(int length) {
+        return 0;
+    }
+
+    /**
+     * Returns the length of the runtime-backed array handle.
+     * Use this before indexed reads or writes against array storage.
+     */
+    public static int arrayLength(long handle) {
+        return 0;
+    }
+
+    /**
+     * Reads an integer from the runtime-backed array handle.
+     * Use this for primitive array access through the backend.
+     */
+    public static int arrayGetInt(long handle, int index) {
+        return 0;
+    }
+
+    /**
+     * Writes an integer into the runtime-backed array handle.
+     * Use this for primitive array mutation through the backend.
+     */
+    public static void arraySetInt(long handle, int index, int value) {
+    }
+
+    /**
+     * Reads a long value from the runtime-backed array handle.
+     * Use this when array storage must preserve full 64-bit runtime handles or numeric payloads.
+     */
+    public static long arrayGetLong(long handle, int index) {
+        return 0;
+    }
+
+    /**
+     * Writes a long value into the runtime-backed array handle.
+     * Use this when array storage must preserve full 64-bit runtime handles or numeric payloads.
+     */
+    public static void arraySetLong(long handle, int index, long value) {
+    }
+
+    /**
+     * Reads a string from the runtime-backed array handle.
+     * Use this for text array access through the backend.
+     */
+    public static String arrayGetString(long handle, int index) {
+        return "";
+    }
+
+    /**
+     * Writes a string into the runtime-backed array handle.
+     * Use this for text array mutation through the backend.
+     */
+    public static void arraySetString(long handle, int index, String value) {
+    }
+
+    /**
+     * Allocates a new runtime-backed list handle.
+     * Use this when creating list-backed collection storage.
+     */
+    public static long listNew() {
+        return 0;
+    }
+
+    /**
+     * Returns the number of entries stored in the runtime-backed list handle.
+     * Use this for list sizing and bounds checks.
+     */
+    public static int listSize(long handle) {
+        return 0;
+    }
+
+    /**
+     * Returns the active lane kind for the runtime-backed list handle.
+     * Use this when stdlib code must distinguish the current int versus string list lane.
+     */
+    public static int listKind(long handle) {
+        return 0;
+    }
+
+    /**
+     * Removes all entries from the runtime-backed list handle.
+     * Use this when resetting list storage for reuse.
+     */
+    public static void listClear(long handle) {
+    }
+
+    /**
+     * Appends an integer to the runtime-backed list handle.
+     * Use this for primitive list writes through the backend.
+     */
+    public static void listAddInt(long handle, int value) {
+    }
+
+    /**
+     * Appends a string to the runtime-backed list handle.
+     * Use this for text list writes through the backend.
+     */
+    public static void listAddString(long handle, String value) {
+    }
+
+    /**
+     * Reads an integer from the runtime-backed list handle.
+     * Use this for primitive list access through the backend.
+     */
+    public static int listGetInt(long handle, int index) {
+        return 0;
+    }
+
+    /**
+     * Reads a string from the runtime-backed list handle.
+     * Use this for text list access through the backend.
+     */
+    public static String listGetString(long handle, int index) {
+        return "";
+    }
+
+    /**
+     * Allocates a new runtime-backed map handle.
+     * Use this when creating string-keyed map storage.
+     */
+    public static long mapNew() {
+        return 0;
+    }
+
+    /**
+     * Returns the number of entries stored in the runtime-backed map handle.
+     * Use this for map sizing and emptiness checks.
+     */
+    public static int mapSize(long handle) {
+        return 0;
+    }
+
+    /**
+     * Removes all entries from the runtime-backed map handle.
+     * Use this when resetting map storage for reuse.
+     */
+    public static void mapClear(long handle) {
+    }
+
+    /**
+     * Reports whether the supplied key exists in the runtime-backed map handle.
+     * Use this before optional map reads.
+     */
+    public static boolean mapContainsKey(long handle, String key) {
+        return false;
+    }
+
+    /**
+     * Stores a string value under the supplied key in the runtime-backed map handle.
+     * Use this for text-valued map writes.
+     */
+    public static void mapPut(long handle, String key, String value) {
+    }
+
+    /**
+     * Stores an integer value under the supplied key in the runtime-backed map handle.
+     * Use this for integer-valued map writes.
+     */
+    public static void mapPutInt(long handle, String key, int value) {
+    }
+
+    /**
+     * Reads a string value from the runtime-backed map handle.
+     * Use this for text-valued map reads.
+     */
+    public static String mapGet(long handle, String key) {
+        return "";
+    }
+
+    /**
+     * Reads an integer value from the runtime-backed map handle.
+     * Use this for integer-valued map reads.
+     */
+    public static int mapGetInt(long handle, String key) {
+        return 0;
+    }
+
+    /**
+     * Reports whether the supplied host path currently exists on the real filesystem.
+     * Use this when privileged authoring or host-backed IO must inspect files outside the in-memory store.
+     */
+    public static boolean hostExists(String path) {
+        return false;
+    }
+
+    /**
+     * Reports whether the supplied host path currently names a regular file on the real filesystem.
+     * Use this when privileged authoring or host-backed IO must distinguish files from directories.
+     */
+    public static boolean hostIsFile(String path) {
+        return false;
+    }
+
+    /**
+     * Reports whether the supplied host path currently names a directory on the real filesystem.
+     * Use this when privileged authoring or host-backed IO must distinguish directories from files.
+     */
+    public static boolean hostIsDirectory(String path) {
+        return false;
+    }
+
+    /**
+     * Reads the full text contents of one host file from the real filesystem.
+     * Returns `null` when the path does not currently resolve to a readable file.
+     */
+    public static String hostReadAllText(String path) {
+        return null;
+    }
+
+    /**
+     * Lists the direct child names under one host directory as newline-delimited text.
+     * Returns the empty string when the path is absent, unreadable, or not a directory.
+     */
+    public static String hostListChildren(String path) {
+        return "";
+    }
+
+    /**
+     * Creates one host directory on the real filesystem.
+     * Returns `true` when the path already exists as a directory or was created successfully.
+     */
+    public static boolean hostCreateDirectory(String path) {
+        return false;
+    }
+
+    /**
+     * Writes one full text payload to the supplied host file path on the real filesystem.
+     * Returns `true` when the file write succeeds.
+     */
+    public static boolean hostWriteAllText(String path, String value) {
+        return false;
+    }
+
+    /**
+     * Copies one host file from the source path to the destination path on the real filesystem.
+     * Returns `true` when the file copy succeeds.
+     */
+    public static boolean hostCopyFile(String sourcePath, String destinationPath) {
+        return false;
+    }
+
+    /**
+     * Allocates one native byte buffer on the host heap and returns the raw address.
+     * Returns `0` when allocation fails.
+     */
+    public static long hostAllocBytes(int byteLength) {
+        return 0;
+    }
+
+    /**
+     * Releases one native byte buffer previously allocated on the host heap.
+     * Returns `true` when the free succeeds.
+     */
+    public static boolean hostFreeBytes(long address) {
+        return false;
+    }
+
+    /**
+     * Reads one unsigned byte from the supplied native address and byte offset.
+     * Returns `0` when the address is null or the access is otherwise invalid.
+     */
+    public static int hostReadByte(long address, int byteOffset) {
+        return 0;
+    }
+
+    /**
+     * Writes one byte value to the supplied native address and byte offset.
+     * Invalid/null accesses are ignored.
+     */
+    public static void hostWriteByte(long address, int byteOffset, int value) {
+    }
+
+    /**
+     * Copies one byte range from the source native address into the destination native address.
+     * Returns `true` when the copy succeeds.
+     */
+    public static boolean hostCopyBytes(long sourceAddress, long destinationAddress, int byteLength) {
+        return false;
+    }
+
+    /**
+     * Reads one 64-bit value from the supplied native address and byte offset.
+     * Returns `0` when the address is null or the access is otherwise invalid.
+     */
+    public static long hostReadLong(long address, int byteOffset) {
+        return 0;
+    }
+
+    /**
+     * Writes one 64-bit value to the supplied native address and byte offset.
+     * Invalid/null accesses are ignored.
+     */
+    public static void hostWriteLong(long address, int byteOffset, long value) {
+    }
+
+    /**
+     * Returns the UTF-8 byte length of one Aden string payload.
+     * Use this before allocating temporary native backing storage for foreign calls.
+     */
+    public static int hostStringUtf8Length(String value) {
+        return 0;
+    }
+
+    /**
+     * Allocates one native UTF-8 buffer with a trailing NUL terminator for the supplied Aden string.
+     * Returns `0` when allocation fails.
+     */
+    public static long hostAllocUtf8Z(String value) {
+        return 0;
+    }
+
+    /**
+     * Decodes one explicit-length UTF-8 payload from a native address into a Aden string.
+     * Returns `null` when the native address is null.
+     */
+    public static String hostStringFromUtf8(long address, int byteLength) {
+        return null;
+    }
+
+    /**
+     * Decodes one NUL-terminated UTF-8 payload from a native address into a Aden string.
+     * Returns `null` when the native address is null.
+     */
+    public static String hostStringFromUtf8Z(long address) {
+        return null;
+    }
+
+    /**
+     * Opens one dynamic library through the current host loader and returns the raw native handle.
+     * Returns `0` when the host loader cannot open the requested library.
+     */
+    public static long hostLoadDynamicLibrary(String source) {
+        return 0;
+    }
+
+    /**
+     * Returns the handle for one already-loaded dynamic library in the current process without taking ownership of its lifetime.
+     * Returns `0` when the module is not currently loaded.
+     */
+    public static long hostLookupLoadedDynamicLibrary(String source) {
+        return 0;
+    }
+
+    /**
+     * Returns the module handle for the current process image without taking ownership of its lifetime.
+     * Returns `0` when the host loader cannot resolve the current image module.
+     */
+    public static long hostLookupSelfDynamicLibrary() {
+        return 0;
+    }
+
+    /**
+     * Releases one raw dynamic library handle through the current host loader.
+     * Returns `true` when the host loader reports success.
+     */
+    public static boolean hostFreeDynamicLibrary(long handle) {
+        return false;
+    }
+
+    /**
+     * Resolves one exported symbol from the supplied dynamic library handle.
+     * Returns `0` when the handle is invalid or the symbol is absent.
+     */
+    public static long hostResolveDynamicSymbol(long libraryHandle, String symbolName) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with zero host-ABI long/pointer arguments.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative0(long functionAddress) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with one host-ABI long/pointer argument.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative1(long functionAddress, long arg0) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with two host-ABI long/pointer arguments.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative2(long functionAddress, long arg0, long arg1) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with three host-ABI long/pointer arguments.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative3(long functionAddress, long arg0, long arg1, long arg2) {
+        return 0;
+    }
+
+    /**
+     * Calls one raw native function pointer with four host-ABI long/pointer arguments.
+     * Returns the raw 64-bit result value from the foreign implementation.
+     */
+    public static long hostCallNative4(
+        long functionAddress,
+        long arg0,
+        long arg1,
+        long arg2,
+        long arg3
+    ) {
+        return 0;
+    }
+
+    /**
+     * Registers one zero-argument Aden callback and returns one runtime callback slot id.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback0(NativeCallback0 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered zero-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress0(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one zero-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback0(int slot) {
+        return false;
+    }
+
+    /**
+     * Registers one one-argument Aden callback and returns one runtime callback slot id.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback1(NativeCallback1 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered one-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress1(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one one-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback1(int slot) {
+        return false;
+    }
+
+    /**
+     * Registers one two-argument Aden callback and returns one runtime callback slot id.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback2(NativeCallback2 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered two-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress2(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one two-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback2(int slot) {
+        return false;
+    }
+
+    /**
+     * Registers one three-argument Aden callback and returns one runtime callback slot id.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback3(NativeCallback3 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered three-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress3(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one three-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback3(int slot) {
+        return false;
+    }
+
+    /**
+     * Registers one four-argument Aden callback and returns one runtime callback slot id.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback4(NativeCallback4 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered four-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress4(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one four-argument callback slot.
+     * Use this only behind `aden.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback4(int slot) {
+        return false;
+    }
+
+    /**
+     * Executes one Windows shell command line under the supplied working directory.
+     * Returns the process exit code, or `-1` when launch fails before an exit code is available.
+     */
+    public static int hostRunShellProcess(String workingDirectory, String commandLine) {
+        return -1;
+    }
+
+}
+

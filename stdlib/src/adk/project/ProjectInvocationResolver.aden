@@ -1,0 +1,94 @@
+package adk.project;
+
+import aden.io.Path;
+import aden.lang.String;
+import aden.util.Objects;
+
+/**
+ * Resolves compiler-facing check and test invocations from the current project surface.
+ */
+public final class ProjectInvocationResolver {
+    /**
+     * Resolves one check invocation from the supplied start path and optional direct overrides.
+     */
+    public static CheckInvocation resolveCheckInvocation(
+        String startPath,
+        String sourceRootOverride,
+        String entryPathOverride
+    ) {
+        String start = Path.normalize((String) Objects.requireNonNull(startPath, "startPath must not be null"));
+        String sourceRoot = ProjectInvocationResolver.normalizeOptional(sourceRootOverride);
+        String entryPath = ProjectInvocationResolver.normalizeOptional(entryPathOverride);
+        String manifestPath = ProjectDiscovery.findManifestPath(start);
+        boolean usedManifest = manifestPath != null;
+        boolean adklibEnabled = false;
+
+        if (usedManifest) {
+            ProjectManifest manifest = ProjectDiscovery.loadManifest(manifestPath);
+            adklibEnabled = manifest.adklibEnabled();
+            if (sourceRoot == null) {
+                sourceRoot = manifest.sources().mainAdenRoot();
+            }
+            if (entryPath == null) {
+                entryPath = Path.resolve(manifest.sources().mainAdenRoot(), manifest.sources().entry());
+            }
+        }
+
+        if (entryPath == null && sourceRoot != null) {
+            entryPath = ProjectDiscovery.discoverEntryPath(sourceRoot);
+        }
+
+        if (entryPath == null) {
+            aden.rt.Intrinsics.panic(
+                "Missing entry file for 'check'. Provide <entry.aden> or set [sources].entry in adenc.toml"
+            );
+        }
+
+        return new CheckInvocation(entryPath, sourceRoot, usedManifest, adklibEnabled);
+    }
+
+    /**
+     * Resolves one test invocation from the supplied start path and optional source-root override.
+     */
+    public static TestInvocation resolveTestInvocation(
+        String startPath,
+        String sourceRootOverride
+    ) {
+        String start = Path.normalize((String) Objects.requireNonNull(startPath, "startPath must not be null"));
+        String sourceRoot = ProjectInvocationResolver.normalizeOptional(sourceRootOverride);
+        String manifestPath = ProjectDiscovery.findManifestPath(start);
+        boolean usedManifest = manifestPath != null;
+        boolean adklibEnabled = false;
+        String projectRoot;
+        String testsRoot;
+
+        if (usedManifest) {
+            ProjectManifest manifest = ProjectDiscovery.loadManifest(manifestPath);
+            adklibEnabled = manifest.adklibEnabled();
+            projectRoot = Path.parent(manifestPath);
+            if (sourceRoot == null) {
+                sourceRoot = manifest.sources().mainAdenRoot();
+            }
+            testsRoot = manifest.sources().testAdenRoot();
+        } else {
+            projectRoot = start;
+            if (sourceRoot == null) {
+                sourceRoot = Path.resolve(projectRoot, "src/main/aden");
+            }
+            testsRoot = Path.resolve(projectRoot, "tests");
+        }
+
+        return new TestInvocation(projectRoot, sourceRoot, testsRoot, usedManifest, adklibEnabled);
+    }
+
+    private static String normalizeOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = Path.normalize(value);
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        return normalized;
+    }
+}

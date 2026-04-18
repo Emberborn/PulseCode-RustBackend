@@ -1,0 +1,35 @@
+package aden.collections;
+
+import aden.lang.Iterator;
+import aden.lang.Object;
+
+/**
+ * Sequential iterator over the current values inside a raw-object hash map.
+ */
+final class HashMapValueIterator implements Iterator {
+    private HashMap map;
+    private Iterator keys;
+
+    /**
+     * Creates an iterator over the supplied map's current values.
+     */
+    public HashMapValueIterator(HashMap map) {
+        this.map = map;
+        this.keys = map.keyIterator();
+    }
+
+    /**
+     * Reports whether another value is available from the iterator.
+     */
+    public boolean hasNext() {
+        return this.keys.hasNext();
+    }
+
+    /**
+     * Returns the next value from the iterator.
+     */
+    public Object next() {
+        Object key = this.keys.next();
+        return this.map.get(key);
+    }
+}

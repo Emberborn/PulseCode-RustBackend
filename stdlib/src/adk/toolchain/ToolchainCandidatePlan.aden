@@ -1,0 +1,51 @@
+package adk.toolchain;
+
+import aden.collections.List;
+import aden.lang.Object;
+import aden.lang.String;
+import aden.util.Objects;
+
+/**
+ * Ordered toolchain candidate lists for host-side assembler/linker execution.
+ */
+public final class ToolchainCandidatePlan {
+    private final List<String> linkerCandidates;
+    private final List<String> assemblerCandidates;
+
+    public ToolchainCandidatePlan(List<String> linkerCandidates, List<String> assemblerCandidates) {
+        Objects.requireNonNull(linkerCandidates, "linkerCandidates must not be null");
+        Objects.requireNonNull(assemblerCandidates, "assemblerCandidates must not be null");
+        this.linkerCandidates = linkerCandidates;
+        this.assemblerCandidates = assemblerCandidates;
+    }
+
+    public List<String> linkerCandidates() { return this.linkerCandidates; }
+    public List<String> assemblerCandidates() { return this.assemblerCandidates; }
+
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof ToolchainCandidatePlan)) {
+            return false;
+        }
+        ToolchainCandidatePlan value = (ToolchainCandidatePlan) other;
+        return Objects.equals(this.linkerCandidates, value.linkerCandidates)
+            && Objects.equals(this.assemblerCandidates, value.assemblerCandidates);
+    }
+
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + Objects.hashCode(this.linkerCandidates);
+        hash = (31 * hash) + Objects.hashCode(this.assemblerCandidates);
+        return hash;
+    }
+
+    public String toString() {
+        return "ToolchainCandidatePlan[linkers="
+            .concat(String.valueOf((Object) this.linkerCandidates))
+            .concat(", assemblers=")
+            .concat(String.valueOf((Object) this.assemblerCandidates))
+            .concat("]");
+    }
+}

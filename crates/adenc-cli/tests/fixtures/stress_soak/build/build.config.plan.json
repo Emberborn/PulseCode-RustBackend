@@ -1,0 +1,43 @@
+{
+  "schema": "pulsec.build.config.v1",
+  "profile": "release",
+  "target": "windows-x64",
+  "target_adapter": {
+    "requested": {
+      "target_id": "windows-x64",
+      "os_family": "windows",
+      "arch": "x64",
+      "support_level": "immediate",
+      "lane_name": "windows-x64-host-bootstrap",
+      "lane_kind": "host-bootstrap",
+      "bootstrap_status": "current-host-bootstrap",
+      "strategic_status": "immediate-target",
+      "adapter_status": "implemented"
+    },
+    "active": {
+      "target_id": "windows-x64",
+      "os_family": "windows",
+      "arch": "x64",
+      "support_level": "immediate",
+      "lane_name": "windows-x64-host-bootstrap",
+      "lane_kind": "host-bootstrap",
+      "bootstrap_status": "current-host-bootstrap",
+      "strategic_status": "immediate-target",
+      "adapter_status": "implemented"
+    },
+    "resolution": "selected-target-active-adapter",
+    "artifact_family": {
+      "id": "windows-pe-coff-fat-executable",
+      "status": "implemented"
+    },
+    "runtime_abi_family": {
+      "id": "pulsec-runtime-abi-v2-embedded-windows-bootstrap",
+      "status": "implemented"
+    }
+  },
+  "output": { "mode": "fat", "entry": "main" },
+  "runtime": { "debug_allocator": "off", "cycle_collector": "on" },
+  "toolchain": { "linker": "", "assembler": "" },
+  "layout": { "asm": "crates/pulsec-cli/tests/fixtures/stress_soak/build/asm", "generated": "crates/pulsec-cli/tests/fixtures/stress_soak/build/generated", "assets": "crates/pulsec-cli/tests/fixtures/stress_soak/build/assets", "sanity": "crates/pulsec-cli/tests/fixtures/stress_soak/build/sanity", "tmp": "crates/pulsec-cli/tests/fixtures/stress_soak/build/tmp", "distro": "crates/pulsec-cli/tests/fixtures/stress_soak/build" },
+  "artifacts": { "native_plan": "crates/pulsec-cli/tests/fixtures/stress_soak/build\native.plan.json", "ir": "crates/pulsec-cli/tests/fixtures/stress_soak/build\pulsec.ir.txt", "object": "crates/pulsec-cli/tests/fixtures/stress_soak/build\obj\runtime\Startup.obj" }
+}

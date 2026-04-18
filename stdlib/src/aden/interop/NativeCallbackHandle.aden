@@ -1,0 +1,231 @@
+package aden.interop;
+
+import aden.lang.Object;
+import aden.lang.String;
+import aden.rt.Intrinsics;
+
+/**
+ * ARC-managed registration handle for one Aden callback exposed as one native function pointer.
+ * Use this when foreign code must call back into Aden through one raw function pointer without leaking callback-slot management into normal user code.
+ */
+public final class NativeCallbackHandle implements NativeManagedResource {
+    private int slot;
+    private final int arity;
+    private long address;
+    private boolean closed;
+
+    /**
+     * Registers one zero-argument callback and returns one native-callable handle wrapper.
+     * Returns `null` when the runtime cannot allocate one callback slot.
+     */
+    public static NativeCallbackHandle create(NativeCallback0 callback) {
+        if (callback == null) {
+            return null;
+        }
+        int slot = Intrinsics.hostRegisterNativeCallback0(callback);
+        if (slot <= 0) {
+            return null;
+        }
+        long address = Intrinsics.hostGetNativeCallbackAddress0(slot);
+        if (address == 0L) {
+            Intrinsics.hostUnregisterNativeCallback0(slot);
+            return null;
+        }
+        return new NativeCallbackHandle(slot, 0, address);
+    }
+
+    /**
+     * Registers one one-argument callback and returns one native-callable handle wrapper.
+     * Returns `null` when the runtime cannot allocate one callback slot.
+     */
+    public static NativeCallbackHandle create(NativeCallback1 callback) {
+        if (callback == null) {
+            return null;
+        }
+        int slot = Intrinsics.hostRegisterNativeCallback1(callback);
+        if (slot <= 0) {
+            return null;
+        }
+        long address = Intrinsics.hostGetNativeCallbackAddress1(slot);
+        if (address == 0L) {
+            Intrinsics.hostUnregisterNativeCallback1(slot);
+            return null;
+        }
+        return new NativeCallbackHandle(slot, 1, address);
+    }
+
+    /**
+     * Registers one two-argument callback and returns one native-callable handle wrapper.
+     * Returns `null` when the runtime cannot allocate one callback slot.
+     */
+    public static NativeCallbackHandle create(NativeCallback2 callback) {
+        if (callback == null) {
+            return null;
+        }
+        int slot = Intrinsics.hostRegisterNativeCallback2(callback);
+        if (slot <= 0) {
+            return null;
+        }
+        long address = Intrinsics.hostGetNativeCallbackAddress2(slot);
+        if (address == 0L) {
+            Intrinsics.hostUnregisterNativeCallback2(slot);
+            return null;
+        }
+        return new NativeCallbackHandle(slot, 2, address);
+    }
+
+    /**
+     * Registers one three-argument callback and returns one native-callable handle wrapper.
+     * Returns `null` when the runtime cannot allocate one callback slot.
+     */
+    public static NativeCallbackHandle create(NativeCallback3 callback) {
+        if (callback == null) {
+            return null;
+        }
+        int slot = Intrinsics.hostRegisterNativeCallback3(callback);
+        if (slot <= 0) {
+            return null;
+        }
+        long address = Intrinsics.hostGetNativeCallbackAddress3(slot);
+        if (address == 0L) {
+            Intrinsics.hostUnregisterNativeCallback3(slot);
+            return null;
+        }
+        return new NativeCallbackHandle(slot, 3, address);
+    }
+
+    /**
+     * Registers one four-argument callback and returns one native-callable handle wrapper.
+     * Returns `null` when the runtime cannot allocate one callback slot.
+     */
+    public static NativeCallbackHandle create(NativeCallback4 callback) {
+        if (callback == null) {
+            return null;
+        }
+        int slot = Intrinsics.hostRegisterNativeCallback4(callback);
+        if (slot <= 0) {
+            return null;
+        }
+        long address = Intrinsics.hostGetNativeCallbackAddress4(slot);
+        if (address == 0L) {
+            Intrinsics.hostUnregisterNativeCallback4(slot);
+            return null;
+        }
+        return new NativeCallbackHandle(slot, 4, address);
+    }
+
+    private NativeCallbackHandle(int slot, int arity, long address) {
+        this.slot = slot;
+        this.arity = arity;
+        this.address = address;
+        this.closed = false;
+    }
+
+    /**
+     * Returns the registered runtime slot id for this callback handle.
+     * Use this for diagnostics and low-level callback inventory only.
+     */
+    public int slot() { return this.slot; }
+
+    /**
+     * Returns the callback arity represented by this handle.
+     * Use this for diagnostics and wrapper-level callback validation.
+     */
+    public int arity() { return this.arity; }
+
+    /**
+     * Returns the raw callable address exposed to foreign code.
+     * Use this only at native-registration boundaries.
+     */
+    public long address() { return this.address; }
+
+    /**
+     * Returns this callback address as one structured pointer wrapper.
+     * Use this when one foreign API expects one pointer-shaped callback/function address.
+     */
+    public NativePointer pointer() { return NativePointer.fromRaw(this.address); }
+
+    /**
+     * Returns this callback address as one callable function wrapper.
+     * Use this when one foreign API wants to treat this callback as one callable function pointer value.
+     */
+    public NativeFunction function() {
+        return NativeFunction.fromPointer(this.pointer(), "adenCallback$arity".concat(String.valueOf(this.arity)));
+    }
+
+    /**
+     * Reports whether this callback registration is still live.
+     * Use this before passing the callback pointer into foreign code again.
+     */
+    public boolean isOpen() { return !this.closed && this.slot > 0 && this.address != 0L; }
+
+    /**
+     * Unregisters the callback slot and reports whether one live callback registration was actually released.
+     * Use this for explicit teardown when the callback should stop being callable before ARC reaches it.
+     */
+    public boolean close() {
+        if (!this.isOpen()) {
+            return false;
+        }
+        int currentSlot = this.slot;
+        this.slot = 0;
+        this.address = 0L;
+        this.closed = true;
+        if (this.arity == 0) {
+            return Intrinsics.hostUnregisterNativeCallback0(currentSlot);
+        }
+        if (this.arity == 1) {
+            return Intrinsics.hostUnregisterNativeCallback1(currentSlot);
+        }
+        if (this.arity == 2) {
+            return Intrinsics.hostUnregisterNativeCallback2(currentSlot);
+        }
+        if (this.arity == 3) {
+            return Intrinsics.hostUnregisterNativeCallback3(currentSlot);
+        }
+        return Intrinsics.hostUnregisterNativeCallback4(currentSlot);
+    }
+
+    /**
+     * Reports whether two callback-handle wrappers reference the same slot/arity/address triple.
+     * Use this for deterministic callback registration comparison in tests and caches.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof NativeCallbackHandle)) {
+            return false;
+        }
+        NativeCallbackHandle value = (NativeCallbackHandle) other;
+        return this.slot == value.slot && this.arity == value.arity && this.address == value.address;
+    }
+
+    /**
+     * Returns the stable value hash for this callback registration wrapper.
+     * Use this when callback handles participate in hash-based Aden caches.
+     */
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + this.slot;
+        hash = (31 * hash) + this.arity;
+        hash = (31 * hash) + (int) (this.address ^ (this.address >>> 32));
+        return hash;
+    }
+
+    /**
+     * Returns a readable debug representation of this callback registration wrapper.
+     * Use this for interop diagnostics and callback ownership tracing.
+     */
+    public String toString() {
+        return "NativeCallbackHandle[slot="
+            .concat(String.valueOf(this.slot))
+            .concat(", arity=")
+            .concat(String.valueOf(this.arity))
+            .concat(", address=")
+            .concat(String.valueOf(this.address))
+            .concat(", closed=")
+            .concat(String.valueOf(this.closed))
+            .concat("]");
+    }
+}

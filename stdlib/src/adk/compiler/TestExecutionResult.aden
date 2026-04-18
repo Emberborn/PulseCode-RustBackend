@@ -1,0 +1,68 @@
+package adk.compiler;
+
+import aden.util.Objects;
+
+/**
+ * Structured authored test execution outcome contract for pass/fail lines.
+ */
+public final class TestExecutionResult {
+    private final boolean workspace;
+    private final boolean success;
+    private final String owner;
+    private final String testName;
+    private final String detail;
+
+    private TestExecutionResult(
+        boolean workspace,
+        boolean success,
+        String owner,
+        String testName,
+        String detail
+    ) {
+        this.workspace = workspace;
+        this.success = success;
+        this.owner = owner;
+        this.testName = (String) Objects.requireNonNull(testName, "testName must not be null");
+        this.detail = detail;
+    }
+
+    public static TestExecutionResult pass(String testName) {
+        return new TestExecutionResult(false, true, null, testName, null);
+    }
+
+    public static TestExecutionResult fail(String testName, String detail) {
+        return new TestExecutionResult(
+            false,
+            false,
+            null,
+            testName,
+            (String) Objects.requireNonNull(detail, "detail must not be null")
+        );
+    }
+
+    public static TestExecutionResult workspacePass(String owner, String testName) {
+        return new TestExecutionResult(
+            true,
+            true,
+            (String) Objects.requireNonNull(owner, "owner must not be null"),
+            testName,
+            null
+        );
+    }
+
+    public static TestExecutionResult workspaceFail(String owner, String testName, String detail) {
+        return new TestExecutionResult(
+            true,
+            false,
+            (String) Objects.requireNonNull(owner, "owner must not be null"),
+            testName,
+            (String) Objects.requireNonNull(detail, "detail must not be null")
+        );
+    }
+
+    public boolean workspace() { return this.workspace; }
+    public boolean success() { return this.success; }
+    public String owner() { return this.owner; }
+    public String testName() { return this.testName; }
+    public String detail() { return this.detail; }
+}

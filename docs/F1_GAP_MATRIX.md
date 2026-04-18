@@ -1,6 +1,6 @@
 # F1 Gap Matrix
 
-This document inventories the Java-close language target against the current PulseCode baseline.
+This document inventories the Java-close language target against the current Aden Lang baseline.
 
 Status legend:
 
@@ -100,7 +100,7 @@ Status legend:
 
 | Family | Current Status | Notes |
 |---|---|---|
-| `com.pulse.lang` | Partial | Real but still shallow relative to Java |
+| `com.aden.lang` | Partial | Real but still shallow relative to Java |
 | collections | Partial | Real, non-generic, specialized |
 | io | Partial | Real, narrow text-centric baseline |
 | math | Partial | Real, small baseline |

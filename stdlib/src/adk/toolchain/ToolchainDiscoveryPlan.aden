@@ -1,0 +1,87 @@
+package adk.toolchain;
+
+import aden.collections.List;
+import aden.lang.Object;
+import aden.lang.String;
+import aden.util.Objects;
+
+/**
+ * Host-side discovery roots and relative probe paths for Windows linker/assembler lookup.
+ */
+public final class ToolchainDiscoveryPlan {
+    private final List<String> visualStudioRoots;
+    private final String visualStudioToolRootRelativePath;
+    private final String visualStudioLinkerRelativePath;
+    private final List<String> windowsSdkLibRoots;
+    private final String windowsSdkKernel32RelativePath;
+
+    public ToolchainDiscoveryPlan(
+        List<String> visualStudioRoots,
+        String visualStudioToolRootRelativePath,
+        String visualStudioLinkerRelativePath,
+        List<String> windowsSdkLibRoots,
+        String windowsSdkKernel32RelativePath
+    ) {
+        Objects.requireNonNull(visualStudioRoots, "visualStudioRoots must not be null");
+        this.visualStudioToolRootRelativePath = (String) Objects.requireNonNull(
+            visualStudioToolRootRelativePath,
+            "visualStudioToolRootRelativePath must not be null"
+        );
+        this.visualStudioLinkerRelativePath = (String) Objects.requireNonNull(
+            visualStudioLinkerRelativePath,
+            "visualStudioLinkerRelativePath must not be null"
+        );
+        Objects.requireNonNull(windowsSdkLibRoots, "windowsSdkLibRoots must not be null");
+        this.windowsSdkKernel32RelativePath = (String) Objects.requireNonNull(
+            windowsSdkKernel32RelativePath,
+            "windowsSdkKernel32RelativePath must not be null"
+        );
+        this.visualStudioRoots = visualStudioRoots;
+        this.windowsSdkLibRoots = windowsSdkLibRoots;
+    }
+
+    public List<String> visualStudioRoots() { return this.visualStudioRoots; }
+    public String visualStudioToolRootRelativePath() { return this.visualStudioToolRootRelativePath; }
+    public String visualStudioLinkerRelativePath() { return this.visualStudioLinkerRelativePath; }
+    public List<String> windowsSdkLibRoots() { return this.windowsSdkLibRoots; }
+    public String windowsSdkKernel32RelativePath() { return this.windowsSdkKernel32RelativePath; }
+
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof ToolchainDiscoveryPlan)) {
+            return false;
+        }
+        ToolchainDiscoveryPlan value = (ToolchainDiscoveryPlan) other;
+        return Objects.equals(this.visualStudioRoots, value.visualStudioRoots)
+            && Objects.equals(this.visualStudioToolRootRelativePath, value.visualStudioToolRootRelativePath)
+            && Objects.equals(this.visualStudioLinkerRelativePath, value.visualStudioLinkerRelativePath)
+            && Objects.equals(this.windowsSdkLibRoots, value.windowsSdkLibRoots)
+            && Objects.equals(this.windowsSdkKernel32RelativePath, value.windowsSdkKernel32RelativePath);
+    }
+
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + Objects.hashCode(this.visualStudioRoots);
+        hash = (31 * hash) + Objects.hashCode(this.visualStudioToolRootRelativePath);
+        hash = (31 * hash) + Objects.hashCode(this.visualStudioLinkerRelativePath);
+        hash = (31 * hash) + Objects.hashCode(this.windowsSdkLibRoots);
+        hash = (31 * hash) + Objects.hashCode(this.windowsSdkKernel32RelativePath);
+        return hash;
+    }
+
+    public String toString() {
+        return "ToolchainDiscoveryPlan[visualStudioRoots="
+            .concat(String.valueOf((Object) this.visualStudioRoots))
+            .concat(", visualStudioToolRootRelativePath=")
+            .concat(this.visualStudioToolRootRelativePath)
+            .concat(", visualStudioLinkerRelativePath=")
+            .concat(this.visualStudioLinkerRelativePath)
+            .concat(", windowsSdkLibRoots=")
+            .concat(String.valueOf((Object) this.windowsSdkLibRoots))
+            .concat(", windowsSdkKernel32RelativePath=")
+            .concat(this.windowsSdkKernel32RelativePath)
+            .concat("]");
+    }
+}

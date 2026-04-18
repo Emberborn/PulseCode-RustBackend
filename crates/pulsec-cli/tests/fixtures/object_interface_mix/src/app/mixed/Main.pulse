@@ -1,8 +1,0 @@
-package app.mixed;
-import pulse.lang.IO;
-
-class Main {
-    public static void main() {
-        IO.println("object_interface_mix_ok");
-    }
-}

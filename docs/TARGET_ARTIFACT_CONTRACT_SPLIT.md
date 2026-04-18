@@ -1,43 +1,43 @@
 # Target Artifact Contract Split (`RB-15`)
 
-This document is the source of truth for `RB-15` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-15` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
 
-It separates the retained Windows x64 adapter artifact contract from the requested-target PulseOS artifact contract.
+It separates the retained Windows x64 adapter artifact contract from the requested-target AdenOS artifact contract.
 
-PulseOS should now be read here as its own platform artifact lane.
+AdenOS should now be read here as its own platform artifact lane.
 
-The formerly deferred PulseOS startup entry, loader handoff, and publication layout are now published separately in [PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md).
+The formerly deferred AdenOS startup entry, loader handoff, and publication layout are now published separately in [PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md).
 
 ## Relationship To Earlier Rebase Contracts
 
 `RB-06` made the active artifact family explicit in plan metadata.
 
-`RB-13` published the requested-target PulseOS runtime-service slice.
+`RB-13` published the requested-target AdenOS runtime-service slice.
 
 `RB-14` published the three-way ownership split and locked artifact/publication shape as adapter-owned.
 
 `RB-15` now answers the narrower artifact question:
 
 - what is the current Windows x64 artifact contract?
-- what is the current requested-target PulseOS artifact contract?
+- what is the current requested-target AdenOS artifact contract?
 - how are they different in plan truth today?
 
 Source references:
 
-- [PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md)
-- [RUNTIME_OWNERSHIP_REBASE.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_REBASE.md)
+- [PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md](/D:/Programming/codex/Aden Lang/docs/PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md)
+- [RUNTIME_OWNERSHIP_REBASE.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_REBASE.md)
 
 ## Current Code Source
 
 The current code-owned artifact split is resolved through:
 
-- [adapters/mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/adapters/mod.rs)
-- [windows_x64/mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/adapters/windows_x64/mod.rs)
-- [pulseos_x64/mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/adapters/pulseos_x64/mod.rs)
+- [adapters/mod.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/adapters/mod.rs)
+- [windows_x64/mod.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/adapters/windows_x64/mod.rs)
+- [adenos_x64/mod.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/adapters/adenos_x64/mod.rs)
 
 and emitted into `native.plan.json` through:
 
-- [plan_rendering.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/analysis/plan_rendering.rs)
+- [plan_rendering.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/analysis/plan_rendering.rs)
 
 Current plan block:
 
@@ -47,7 +47,7 @@ Current plan block:
 
 Schema id:
 
-- `pulsec.windows_x64.artifact_contract.v1`
+- `adenc.windows_x64.artifact_contract.v1`
 
 Current truth:
 
@@ -80,26 +80,26 @@ Current Windows x64 shared contract is:
 
 Naming policy:
 
-- `<entry>.exe + pulsecore-<pulsec-semver>.dll/.lib + launch.txt`
+- `<entry>.exe + adencore-<adenc-semver>.dll/.lib + launch.txt`
 
 This is the retained active adapter contract and the current host/bootstrap publication truth.
 
-## PulseOS Requested-Target Artifact Contract
+## AdenOS Requested-Target Artifact Contract
 
 Schema id:
 
-- `pulsec.pulseos.artifact_contract.v1`
+- `adenc.adenos.artifact_contract.v1`
 
 Current truth:
 
 - status: `first-slice-artifact-contract`
 - implementation: `contract-defined-not-yet-implemented`
-- target: `pulseos-x64`
+- target: `adenos-x64`
 
 Current first-slice artifact contract is intentionally narrower:
 
-- artifact family: `pulseos-program-image-contract`
-- fat executable artifact kind: `pulseos-program-image`
+- artifact family: `adenos-program-image-contract`
+- fat executable artifact kind: `adenos-program-image`
 - fat runtime packaging: `single-image-runtime-bootstrap`
 - shared runtime packaging: `shared-request-collapses-to-single-image-runtime-bootstrap`
 - publication shape: `profile-bin-layout-with-launch-manifest`
@@ -117,9 +117,9 @@ Naming policy:
 
 - `bin/<entry> + bin/launch.json`
 
-This is still deliberate. `RB-15` keeps the artifact family split explicit, while [PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md) now carries the startup and loader/publication mechanics that were intentionally deferred here.
+This is still deliberate. `RB-15` keeps the artifact family split explicit, while [PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md) now carries the startup and loader/publication mechanics that were intentionally deferred here.
 
-This should now also be read as the PulseOS-visible platform artifact contract that may later share lower Linux ELF/publication machinery with `linux-x64` where honest.
+This should now also be read as the AdenOS-visible platform artifact contract that may later share lower Linux ELF/publication machinery with `linux-x64` where honest.
 
 ## What `artifact_contracts` Means In The Plan
 
@@ -131,7 +131,7 @@ This should now also be read as the PulseOS-visible platform artifact contract t
 Current truthful behavior:
 
 - when the requested target is `windows-x64`, both sides name the same Windows x64 artifact contract
-- when the requested target is `pulseos-x64`, the active adapter side still names the retained Windows x64 artifact contract, while the requested-target side names the PulseOS first-slice artifact contract
+- when the requested target is `adenos-x64`, the active adapter side still names the retained Windows x64 artifact contract, while the requested-target side names the AdenOS first-slice artifact contract
 - when the requested target has no published artifact contract yet, the requested-target side may emit `null`
 
 This is what prevents one native publication story from silently standing in for every target lane.
@@ -140,14 +140,14 @@ This is what prevents one native publication story from silently standing in for
 
 `RB-15` itself does not freeze:
 
-- PulseOS startup entry symbol
-- PulseOS loader handoff details
-- PulseOS final publication directory layout
-- PulseOS runtime lookup metadata format
+- AdenOS startup entry symbol
+- AdenOS loader handoff details
+- AdenOS final publication directory layout
+- AdenOS runtime lookup metadata format
 
-Those are now published separately in [PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md).
+Those are now published separately in [PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md).
 
 ## Consequences For `RB-16`
 
-- `RB-16` is now published at [PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md) and defines PulseOS startup, loader expectations, and publication layout on top of the requested-target artifact contract published here.
+- `RB-16` is now published at [PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/PULSEOS_STARTUP_LOADER_PUBLICATION_CONTRACT.md) and defines AdenOS startup, loader expectations, and publication layout on top of the requested-target artifact contract published here.
 - `RB-19` should keep Windows productization policy separate from this retained Windows x64 adapter artifact contract.

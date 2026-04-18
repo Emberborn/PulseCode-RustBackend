@@ -23,7 +23,7 @@ Desktop.ini
 /crates/pulsec-cli/tests/fixtures/**/build/
 
 # One-off local files
-/tmp_map_clear_main.pulse
+/tmp_map_clear_main.aden
 /crates/pulsec-cli/tests/fixtures/strict_stress_soak/build/
 /crates/pulsec-cli/tests/fixtures/stress_soak/build/
 /crates/pulsec-cli/tests/fixtures/runtime_mix/build/
@@ -53,13 +53,13 @@ Desktop.ini
 /scratch_timeonly_min/
 /tmp/
 /tmp_dbg_box_repro.ps1
-/tmp_dbg_box_test.pulse
+/tmp_dbg_box_test.aden
 /tmp_dbg_queue_repro.ps1
-/tmp_dbg_super_src.pulse
-/tmp_map_clear_main.pulse
-/tmp_member_access_test.pulse
+/tmp_dbg_super_src.aden
+/tmp_map_clear_main.aden
+/tmp_member_access_test.aden
 /tmp_test_catalog.json
-/scratch_console_repro.pulse
+/scratch_console_repro.aden
 /sysexit.err
 /sysexit.out
 /sysout.err

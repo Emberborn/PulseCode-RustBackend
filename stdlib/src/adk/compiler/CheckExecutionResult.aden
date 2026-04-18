@@ -1,0 +1,65 @@
+package adk.compiler;
+
+import aden.util.Objects;
+
+/**
+ * Structured authored compiler-check execution result for one provider-backed check run.
+ */
+public final class CheckExecutionResult {
+    private final boolean success;
+    private final String packageName;
+    private final int importCount;
+    private final int classCount;
+    private final int filesLoaded;
+    private final String detail;
+
+    private CheckExecutionResult(
+        boolean success,
+        String packageName,
+        int importCount,
+        int classCount,
+        int filesLoaded,
+        String detail
+    ) {
+        this.success = success;
+        this.packageName = packageName;
+        this.importCount = importCount;
+        this.classCount = classCount;
+        this.filesLoaded = filesLoaded;
+        this.detail = detail;
+    }
+
+    public static CheckExecutionResult success(
+        String packageName,
+        int importCount,
+        int classCount,
+        int filesLoaded
+    ) {
+        return new CheckExecutionResult(
+            true,
+            (String) Objects.requireNonNull(packageName, "packageName must not be null"),
+            importCount,
+            classCount,
+            filesLoaded,
+            null
+        );
+    }
+
+    public static CheckExecutionResult failure(String detail) {
+        return new CheckExecutionResult(
+            false,
+            null,
+            0,
+            0,
+            0,
+            detail == null ? "" : detail
+        );
+    }
+
+    public boolean success() { return this.success; }
+    public String packageName() { return this.packageName; }
+    public int importCount() { return this.importCount; }
+    public int classCount() { return this.classCount; }
+    public int filesLoaded() { return this.filesLoaded; }
+    public String detail() { return this.detail; }
+}

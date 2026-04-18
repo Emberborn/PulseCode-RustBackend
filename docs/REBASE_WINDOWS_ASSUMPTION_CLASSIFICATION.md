@@ -1,8 +1,8 @@
 # Windows-Coupled Assumption Classification Matrix
 
-This document is the source-of-truth classification matrix for `RB-02` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
+This document is the source-of-truth classification matrix for `RB-02` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
 
-It classifies every `WIN-*` entry from [REBASE_WINDOWS_ASSUMPTION_INVENTORY.md](/D:/Programming/codex/PulseCode/docs/REBASE_WINDOWS_ASSUMPTION_INVENTORY.md).
+It classifies every `WIN-*` entry from [REBASE_WINDOWS_ASSUMPTION_INVENTORY.md](/D:/Programming/codex/Aden Lang/docs/REBASE_WINDOWS_ASSUMPTION_INVENTORY.md).
 
 This matrix uses the published inventory as input. It does not start a fresh audit.
 
@@ -18,7 +18,7 @@ This matrix uses the published inventory as input. It does not start a fresh aud
   - the concern is target-specific and currently leaks into shared planning/runtime/validation surfaces
   - it must become explicit adapter-owned contract or implementation data
 - `freeze/defer`
-  - the concern is no longer strategic for the PulseOS pivot
+  - the concern is no longer strategic for the AdenOS pivot
   - it should be demoted, fenced, and prevented from continuing to expand by inertia
 
 ## Classification Summary
@@ -56,15 +56,15 @@ Total classified inventory entries: 31
 | WIN-TC-02 | `bootstrap adapter` | `link.exe`/`lld-link.exe` and Visual Studio discovery belong to the retained Windows bootstrap adapter, not the global backend design. | `RB-08`, `RB-09`, `RB-19` |
 | WIN-TC-03 | `bootstrap adapter` | `kernel32.lib` discovery remains valid as Windows bootstrap-adapter support logic once explicitly fenced there. | `RB-09`, `RB-15`, `RB-19` |
 | WIN-TC-04 | `bootstrap adapter` | MSVC/PE linker invocation details are still legitimate for the Windows bootstrap lane if they stop defining the whole backend. | `RB-08`, `RB-09`, `RB-15`, `RB-19` |
-| WIN-PKG-01 | `freeze/defer` | MSI should stop behaving like a first-class strategic packaging mode for the PulseOS pivot. | `RB-19`, `RB-20` |
+| WIN-PKG-01 | `freeze/defer` | MSI should stop behaving like a first-class strategic packaging mode for the AdenOS pivot. | `RB-19`, `RB-20` |
 | WIN-PKG-02 | `freeze/defer` | WiX is part of the Windows productization lane that should be demoted and frozen rather than expanded. | `RB-19`, `RB-20` |
 | WIN-PKG-03 | `freeze/defer` | SignTool-driven release signing belongs to the Windows productization lane and should not drive near-term architecture work. | `RB-19`, `RB-20` |
-| WIN-PKG-04 | `freeze/defer` | MSI template/install/registry semantics are Windows installer concerns, not the strategic PulseOS execution path. | `RB-19`, `RB-20` |
+| WIN-PKG-04 | `freeze/defer` | MSI template/install/registry semantics are Windows installer concerns, not the strategic AdenOS execution path. | `RB-19`, `RB-20` |
 | WIN-PKG-05 | `freeze/defer` | MSI payload rules for `.exe`/`.dll`/`.lib` publication should be fenced as Windows packaging specifics instead of shaping the general publication story. | `RB-19`, `RB-20` |
 | WIN-DOC-01 | `bootstrap adapter` | The Windows toolchain matrix remains useful as Windows bootstrap-adapter support documentation once demoted from "supported baseline" status. | `RB-09`, `RB-19`, `RB-20` |
 | WIN-DOC-02 | `freeze/defer` | Phase D/E Windows productization closure docs should remain as historical/bootstrap references, not as live strategic direction. | `RB-19`, `RB-20` |
 | WIN-DOC-03 | `target-neutral compiler layer` | Default onboarding examples should teach the rebased target model, with Windows-specific examples moved to explicit adapter-specific docs if retained. | `RB-03`, `RB-05`, `RB-20` |
-| WIN-TEST-01 | `must move behind target adapter` | Validation has to be split into target-neutral coverage, Windows bootstrap-adapter coverage, and future PulseOS-adapter coverage instead of one blended Windows-native lock surface. | `RB-18`, `RB-19`, `RB-20` |
+| WIN-TEST-01 | `must move behind target adapter` | Validation has to be split into target-neutral coverage, Windows bootstrap-adapter coverage, and future AdenOS-adapter coverage instead of one blended Windows-native lock surface. | `RB-18`, `RB-19`, `RB-20` |
 
 ## Consequences For The Next Tasks
 

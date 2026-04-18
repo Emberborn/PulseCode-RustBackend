@@ -1,4 +1,4 @@
-# PulseCode Stdlib API Index (C1.5)
+# Aden Lang Stdlib API Index (C1.5)
 
 Purpose:
 - Provide a single source-of-truth inventory of stdlib classes currently shipped from `stdlib/src`.
@@ -7,7 +7,7 @@ Purpose:
 Source root:
 - `stdlib/src`
 
-## com.pulse.lang
+## com.aden.lang
 
 Core/runtime surface:
 - `Boolean`
@@ -46,7 +46,7 @@ Exceptions/errors:
 - `NumberFormatException`
 - `UnsupportedOperationException`
 
-## com.pulse.collections
+## com.aden.collections
 
 - `Array`
 - `ArrayList`
@@ -60,7 +60,7 @@ Exceptions/errors:
 - `Queue`
 - `Set`
 
-## com.pulse.io
+## com.aden.io
 
 - `File`
 - `Files`
@@ -68,17 +68,17 @@ Exceptions/errors:
 - `OutputStream`
 - `Path`
 
-## com.pulse.math
+## com.aden.math
 
 - `Math`
 - `Random`
 
-## com.pulse.time
+## com.aden.time
 
 - `Duration`
 - `Instant`
 
-## com.pulse.rt
+## com.aden.rt
 
 - `Intrinsics`
 

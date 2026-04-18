@@ -1,0 +1,307 @@
+package aden.io;
+
+import aden.lang.AutoCloseable;
+import aden.collections.List;
+
+/**
+ * Sequential text input facade backed by the current file helpers.
+ */
+public class InputStream implements AutoCloseable, Closeable {
+    private String path;
+    private int cursor;
+    private int mark;
+    private boolean closed;
+
+    /**
+     * Creates an input stream bound to the supplied path.
+     * Use this when file reads should be expressed as a stream object.
+     */
+    public InputStream(String path) {
+        this.path = path;
+        this.cursor = 0;
+        this.mark = -1;
+        this.closed = false;
+    }
+
+    /**
+     * Creates an input stream bound to the supplied path and initial cursor position.
+     * Use this when sequential reads should begin from a known offset.
+     */
+    public InputStream(String path, int startPosition) {
+        this.path = path;
+        this.cursor = startPosition;
+        this.mark = -1;
+        this.closed = false;
+    }
+
+    /**
+     * Panics when the stream has already been closed.
+     * Use this to keep the current stream facade behavior explicit.
+     */
+    private void ensureOpen() {
+        if (this.closed) {
+            aden.rt.Intrinsics.panic("InputStream is closed");
+        }
+    }
+
+    /**
+     * Reads the full text payload for the bound path.
+     * Use this for simple stream-style all-at-once reads.
+     */
+    public String readAll() {
+        this.ensureOpen();
+        return Files.readString(this.path);
+    }
+
+    /**
+     * Reads the full text payload for the bound path, or the fallback when absent.
+     * Use this when stream-style reads should tolerate a missing file in the current baseline.
+     */
+    public String readAllOrDefault(String fallback) {
+        this.ensureOpen();
+        return Files.readStringOrDefault(this.path, fallback);
+    }
+
+    /**
+     * Reads the current text payload as newline-delimited lines for the bound path.
+     * Use this when stream-style reads should operate on logical text lines.
+     */
+    public List<String> readLines() {
+        this.ensureOpen();
+        return Files.readLines(this.path);
+    }
+
+    /**
+     * Reports whether unread text remains from the current cursor position.
+     * Use this for sequential stream-style reads over the current text payload.
+     */
+    public boolean hasRemaining() {
+        this.ensureOpen();
+        String text = Files.readStringOrDefault(this.path, "");
+        return this.cursor < text.length();
+    }
+
+    /**
+     * Returns how many characters remain unread from the current cursor position.
+     * Use this for parser-style sequential reads over the current text payload.
+     */
+    public int available() {
+        this.ensureOpen();
+        String text = Files.readStringOrDefault(this.path, "");
+        if (this.cursor >= text.length()) {
+            return 0;
+        }
+        return text.length() - this.cursor;
+    }
+
+    /**
+     * Returns the current sequential cursor position.
+     * Use this for parser-style bookkeeping over the current text payload.
+     */
+    public int position() {
+        this.ensureOpen();
+        return this.cursor;
+    }
+
+    /**
+     * Returns the next character without advancing, or `\0` when no text remains.
+     * Use this for parser-style lookahead over the current text payload.
+     */
+    public char peek() {
+        this.ensureOpen();
+        String text = Files.readStringOrDefault(this.path, "");
+        if (this.cursor >= text.length()) {
+            return '\0';
+        }
+        return text.charAt(this.cursor);
+    }
+
+    /**
+     * Reads one character and advances the cursor, or returns `\0` when no text remains.
+     * Use this for parser-style sequential character reads over the current text payload.
+     */
+    public char read() {
+        this.ensureOpen();
+        String text = Files.readStringOrDefault(this.path, "");
+        if (this.cursor >= text.length()) {
+            return '\0';
+        }
+        char current = text.charAt(this.cursor);
+        this.cursor = this.cursor + 1;
+        return current;
+    }
+
+    /**
+     * Reads the next newline-delimited line from the current cursor position.
+     * Use this for sequential line-oriented stream reads in the current text baseline.
+     */
+    public String readLine() {
+        this.ensureOpen();
+        String text = Files.readStringOrDefault(this.path, "");
+        if (this.cursor >= text.length()) {
+            return null;
+        }
+
+        int start = this.cursor;
+        int index = this.cursor;
+        while (index < text.length()) {
+            if (text.charAt(index) == '\n') {
+                int end = index;
+                if (end > start && text.charAt(end - 1) == '\r') {
+                    end = end - 1;
+                }
+                this.cursor = index + 1;
+                return text.substring(start, end);
+            }
+            index = index + 1;
+        }
+
+        this.cursor = text.length();
+        return text.substring(start);
+    }
+
+    /**
+     * Resets the sequential cursor back to the start of the current payload.
+     * Use this when one stream facade should re-read the same text payload.
+     */
+    public void reset() {
+        this.ensureOpen();
+        this.cursor = 0;
+    }
+
+    /**
+     * Reads the remaining text from the current cursor position and advances to the end.
+     * Use this when sequential stream reads need the unread tail as one string.
+     */
+    public String readRemaining() {
+        this.ensureOpen();
+        String text = Files.readStringOrDefault(this.path, "");
+        if (this.cursor >= text.length()) {
+            return "";
+        }
+        String out = text.substring(this.cursor);
+        this.cursor = text.length();
+        return out;
+    }
+
+    /**
+     * Advances the sequential cursor by up to the supplied count and returns how many characters were skipped.
+     * Use this for parser-style fast-forward behavior over the current text payload.
+     */
+    public int skip(int count) {
+        this.ensureOpen();
+        if (count <= 0) {
+            return 0;
+        }
+        int available = this.available();
+        int skipped = count;
+        if (skipped > available) {
+            skipped = available;
+        }
+        this.cursor = this.cursor + skipped;
+        return skipped;
+    }
+
+    /**
+     * Moves the sequential cursor backward by up to the supplied count and returns how many characters were rewound.
+     * Use this for parser-style rollback over the current text payload.
+     */
+    public int rewind(int count) {
+        this.ensureOpen();
+        if (count <= 0) {
+            return 0;
+        }
+        int rewound = count;
+        if (rewound > this.cursor) {
+            rewound = this.cursor;
+        }
+        this.cursor = this.cursor - rewound;
+        return rewound;
+    }
+
+    /**
+     * Moves the sequential cursor to the supplied position.
+     * Use this for parser-style repositioning over the current text payload.
+     */
+    public void seek(int position) {
+        this.ensureOpen();
+        if (position < 0) {
+            this.cursor = 0;
+            return;
+        }
+        String text = Files.readStringOrDefault(this.path, "");
+        if (position > text.length()) {
+            this.cursor = text.length();
+            return;
+        }
+        this.cursor = position;
+    }
+
+    /**
+     * Records the current cursor position as a later rollback point.
+     * Use this for parser-style speculative reads over the current text payload.
+     */
+    public void mark() {
+        this.ensureOpen();
+        this.mark = this.cursor;
+    }
+
+    /**
+     * Reports whether a mark position is currently stored.
+     * Use this to distinguish marked versus unmarked stream state.
+     */
+    public boolean hasMark() {
+        this.ensureOpen();
+        return this.mark >= 0;
+    }
+
+    /**
+     * Clears any stored mark position.
+     * Use this when speculative-read state should be discarded explicitly.
+     */
+    public void clearMark() {
+        this.ensureOpen();
+        this.mark = -1;
+    }
+
+    /**
+     * Restores the cursor to the last stored mark position when one exists.
+     * Use this for parser-style rollback after speculative reads.
+     */
+    public boolean resetToMark() {
+        this.ensureOpen();
+        if (this.mark < 0) {
+            return false;
+        }
+        this.cursor = this.mark;
+        return true;
+    }
+
+    /**
+     * Reports whether this stream facade has been closed.
+     * Use this for explicit stream-state checks in the current baseline.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Reports whether this stream facade is currently open.
+     * Use this for explicit lifecycle checks without negating `isClosed()` at each call site.
+     */
+    public boolean isOpen() {
+        return !this.closed;
+    }
+
+    /**
+     * Closes the stream facade.
+     * Use this for API compatibility; the current file-backed baseline does not hold a persistent native handle.
+     * Closing is idempotent and only releases this facade's lifecycle state.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        this.closed = true;
+    }
+}

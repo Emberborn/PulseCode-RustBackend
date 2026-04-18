@@ -100,7 +100,7 @@ Important sequencing truth:
 These tasks become meaningful once the feature families above are landing:
 
 - `F1-65` metadata/import/prelude wiring
-- `F1-107A` Pulse-side feature/behavior lock model
+- `F1-107A` Aden-side feature/behavior lock model
 - `F1-66` large multi-file fixtures
 - `F1-67` stress/performance guards
 - `F1-68` compatibility notes

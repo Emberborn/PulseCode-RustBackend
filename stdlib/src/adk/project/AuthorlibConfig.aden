@@ -1,0 +1,63 @@
+package adk.project;
+
+import aden.lang.Object;
+import aden.lang.String;
+
+/**
+ * Immutable adklib enablement model for privileged project manifests.
+ */
+public final class AdklibConfig {
+    private final boolean enabled;
+
+    /**
+     * Creates one adklib enablement value.
+     */
+    public AdklibConfig(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * Returns the disabled adklib default.
+     */
+    public static AdklibConfig defaults() {
+        return new AdklibConfig(false);
+    }
+
+    /**
+     * Reports whether adklib is enabled.
+     */
+    public boolean enabled() {
+        return this.enabled;
+    }
+
+    /**
+     * Compares adklib enablement values.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof AdklibConfig)) {
+            return false;
+        }
+        AdklibConfig value = (AdklibConfig) other;
+        return this.enabled == value.enabled;
+    }
+
+    /**
+     * Returns a stable enablement hash.
+     */
+    public int hashCode() {
+        if (this.enabled) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Returns a concise debug representation.
+     */
+    public String toString() {
+        return "AdklibConfig[enabled=".concat(String.valueOf(this.enabled)).concat("]");
+    }
+}

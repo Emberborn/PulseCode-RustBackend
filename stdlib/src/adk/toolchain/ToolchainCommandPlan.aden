@@ -1,0 +1,60 @@
+package adk.toolchain;
+
+import aden.collections.List;
+import aden.lang.Object;
+import aden.lang.String;
+import aden.util.Objects;
+
+/**
+ * One host-executed toolchain command shape with a stable response-file stem and ordered arguments.
+ */
+public final class ToolchainCommandPlan {
+    private final String executable;
+    private final String responseFileStem;
+    private final List<String> arguments;
+
+    public ToolchainCommandPlan(String executable, String responseFileStem, List<String> arguments) {
+        this.executable = (String) Objects.requireNonNull(executable, "executable must not be null");
+        this.responseFileStem = (String) Objects.requireNonNull(
+            responseFileStem,
+            "responseFileStem must not be null"
+        );
+        Objects.requireNonNull(arguments, "arguments must not be null");
+        this.arguments = arguments;
+    }
+
+    public String executable() { return this.executable; }
+    public String responseFileStem() { return this.responseFileStem; }
+    public List<String> arguments() { return this.arguments; }
+
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof ToolchainCommandPlan)) {
+            return false;
+        }
+        ToolchainCommandPlan value = (ToolchainCommandPlan) other;
+        return Objects.equals(this.executable, value.executable)
+            && Objects.equals(this.responseFileStem, value.responseFileStem)
+            && Objects.equals(this.arguments, value.arguments);
+    }
+
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + Objects.hashCode(this.executable);
+        hash = (31 * hash) + Objects.hashCode(this.responseFileStem);
+        hash = (31 * hash) + Objects.hashCode(this.arguments);
+        return hash;
+    }
+
+    public String toString() {
+        return "ToolchainCommandPlan[executable="
+            .concat(this.executable)
+            .concat(", responseFileStem=")
+            .concat(this.responseFileStem)
+            .concat(", arguments=")
+            .concat(String.valueOf((Object) this.arguments))
+            .concat("]");
+    }
+}

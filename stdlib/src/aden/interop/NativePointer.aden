@@ -1,0 +1,132 @@
+package aden.interop;
+
+import aden.lang.Object;
+import aden.lang.String;
+import aden.rt.Intrinsics;
+
+/**
+ * Structured wrapper over one raw native address.
+ * Use this instead of naked `long` values when Aden code needs pointer arithmetic, byte access, or pointer-sized field reads.
+ */
+public final class NativePointer {
+    /**
+     * Shared null-pointer wrapper for public interop code.
+     * Use this instead of creating ad hoc zero-address pointer instances.
+     */
+    public static final NativePointer NULL = new NativePointer(0L);
+
+    private final long address;
+
+    private NativePointer(long address) {
+        this.address = address;
+    }
+
+    /**
+     * Wraps one raw native address as a structured pointer helper.
+     * Use this when raw interop results need to cross into pointer-oriented Aden code.
+     */
+    public static NativePointer fromRaw(long address) {
+        if (address == 0L) {
+            return NativePointer.NULL;
+        }
+        return new NativePointer(address);
+    }
+
+    /**
+     * Returns the raw native address.
+     * Use this only at the final raw-call boundary when a foreign ABI still requires plain pointer integers.
+     */
+    public long rawAddress() {
+        return this.address;
+    }
+
+    /**
+     * Reports whether this pointer is the null pointer.
+     * Use this before dereference-style operations and optional foreign results.
+     */
+    public boolean isNull() {
+        return this.address == 0L;
+    }
+
+    /**
+     * Returns one pointer offset by the supplied byte count.
+     * Use this for struct field access, array stepping, and byte-span slicing.
+     */
+    public NativePointer offset(long byteOffset) {
+        return NativePointer.fromRaw(this.address + byteOffset);
+    }
+
+    /**
+     * Reads one unsigned byte from this pointer at the supplied byte offset.
+     * Use this for low-level foreign buffer inspection and struct field access.
+     */
+    public int readByte(int byteOffset) {
+        return Intrinsics.hostReadByte(this.address, byteOffset);
+    }
+
+    /**
+     * Writes one byte value at the supplied byte offset.
+     * Use this for low-level foreign buffer mutation and struct field access.
+     */
+    public void writeByte(int byteOffset, int value) {
+        Intrinsics.hostWriteByte(this.address, byteOffset, value);
+    }
+
+    /**
+     * Reads one 64-bit value at the supplied byte offset.
+     * Use this for pointer-sized fields, native handles, and manual struct interop.
+     */
+    public long readLong(int byteOffset) {
+        return Intrinsics.hostReadLong(this.address, byteOffset);
+    }
+
+    /**
+     * Writes one 64-bit value at the supplied byte offset.
+     * Use this for pointer-sized fields, native handles, and manual struct interop.
+     */
+    public void writeLong(int byteOffset, long value) {
+        Intrinsics.hostWriteLong(this.address, byteOffset, value);
+    }
+
+    /**
+     * Copies bytes from this pointer into the supplied destination pointer.
+     * Use this for raw native buffer movement once ownership has already been made explicit in Aden.
+     */
+    public boolean copyTo(NativePointer destination, int byteCount) {
+        if (destination == null) {
+            return false;
+        }
+        return Intrinsics.hostCopyBytes(this.address, destination.rawAddress(), byteCount);
+    }
+
+    /**
+     * Reports whether two pointer wrappers reference the same raw address.
+     * Use this for deterministic pointer comparison in wrapper caches and tests.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof NativePointer)) {
+            return false;
+        }
+        NativePointer value = (NativePointer) other;
+        return this.address == value.address;
+    }
+
+    /**
+     * Returns the stable value hash for this pointer wrapper.
+     * Use this when native pointers participate in hash-based Aden structures.
+     */
+    public int hashCode() {
+        return (int) (this.address ^ (this.address >>> 32));
+    }
+
+    /**
+     * Returns a readable debug representation of this pointer wrapper.
+     * Use this for interop diagnostics and ownership tracing.
+     */
+    public String toString() {
+        return "NativePointer[address=".concat(String.valueOf(this.address)).concat("]");
+    }
+}

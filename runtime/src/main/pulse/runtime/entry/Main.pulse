@@ -1,9 +1,0 @@
-package runtime.entry;
-
-import pulse.lang.IO;
-
-class Main {
-    public static void main() {
-        IO.println(RuntimeIdentity.banner());
-    }
-}

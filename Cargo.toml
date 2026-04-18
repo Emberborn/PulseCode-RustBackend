@@ -1,6 +1,6 @@
-﻿[workspace]
+[workspace]
 members = [
-    "crates/pulsec-core",
-    "crates/pulsec-cli"
+    "crates/adenc-core",
+    "crates/adenc-cli"
 ]
 resolver = "2"

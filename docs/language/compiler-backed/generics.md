@@ -4,7 +4,7 @@ This page documents the current F1 generics contract.
 
 ## Current F1 Contract
 
-Pulse currently ships compile-time instantiated generics with an erased runtime.
+Aden currently ships compile-time instantiated generics with an erased runtime.
 
 That means:
 
@@ -22,7 +22,7 @@ That means:
 
 ## Current Supported Forms
 
-```pulse
+```aden
 class Box<T> {
     private T value;
 
@@ -42,7 +42,7 @@ class Main {
 
     public static void main() {
         Box<String> box = new Box();
-        box.set("pulse");
+        box.set("aden");
         String text = box.get();
         String echoed = id(text);
     }

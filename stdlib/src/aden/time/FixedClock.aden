@@ -1,0 +1,58 @@
+package aden.time;
+import aden.lang.Object;
+
+/**
+ * Internal fixed clock implementation for deterministic time reads.
+ */
+final class FixedClock implements Clock {
+    private long epochMillis;
+
+    FixedClock(long epochMillis) {
+        this.epochMillis = epochMillis;
+    }
+
+    /**
+     * Reports that this clock is deterministic and fixed.
+     * Use this when callers need to branch on fixed versus runtime-backed behavior.
+     */
+    public boolean isFixed() {
+        return true;
+    }
+
+    /**
+     * Returns the fixed epoch millisecond value.
+     * Use this as the deterministic millisecond source for tests and simulations.
+     */
+    public long millis() {
+        return this.epochMillis;
+    }
+
+    /**
+     * Reports value equality for fixed clocks.
+     * Use this to compare deterministic clock instances by their pinned epoch millisecond value.
+     */
+    public boolean equals(Object other) {
+        if (!(other instanceof FixedClock)) {
+            return false;
+        }
+        FixedClock value = (FixedClock) other;
+        return this.epochMillis == value.epochMillis;
+    }
+
+    /**
+     * Returns a stable hash code derived from the fixed epoch millisecond value.
+     * Use this when fixed clocks participate in maps, sets, or diagnostics.
+     */
+    public int hashCode() {
+        long mixed = this.epochMillis ^ (this.epochMillis >>> 32);
+        return (int) mixed;
+    }
+
+    /**
+     * Formats this clock for diagnostics.
+     * Use this when code needs a readable description of a deterministic fixed clock.
+     */
+    public String toString() {
+        return "Clock[fixed=".concat(Instant.ofEpochMillis(this.epochMillis).toString()).concat("]");
+    }
+}

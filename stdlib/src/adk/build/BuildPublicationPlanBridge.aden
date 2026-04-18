@@ -1,0 +1,48 @@
+package adk.build;
+
+import aden.lang.StringBuilder;
+
+/**
+ * Machine-readable bridge formatting for BuildPublicationPlan handoff back to the Rust bootstrap host.
+ */
+public final class BuildPublicationPlanBridge {
+    public static String toBridgeText(BuildPublicationPlan plan) {
+        StringBuilder out = new StringBuilder();
+        BuildPublicationPlanBridge.append(out, "artifactBaseName", plan.artifactBaseName());
+        BuildPublicationPlanBridge.append(out, "artifactStamp", plan.artifactStamp());
+        BuildPublicationPlanBridge.append(out, "publishProfileLayout", String.valueOf(plan.publishProfileLayout()));
+        BuildPublicationPlanBridge.append(out, "publishDebugDiagnostics", String.valueOf(plan.publishDebugDiagnostics()));
+        BuildPublicationPlanBridge.append(out, "sharedProfileLayout", String.valueOf(plan.sharedProfileLayout()));
+        BuildPublicationPlanBridge.append(out, "publishedIrPath", plan.publishedIrPath());
+        BuildPublicationPlanBridge.append(out, "publishedNativePlanPath", plan.publishedNativePlanPath());
+        BuildPublicationPlanBridge.append(out, "publishedLinkReportPath", plan.publishedLinkReportPath());
+        BuildPublicationPlanBridge.append(out, "publishedObjectPath", plan.publishedObjectPath());
+        BuildPublicationPlanBridge.append(out, "publishedExecutablePath", plan.publishedExecutablePath());
+        BuildPublicationPlanBridge.append(out, "publishedRuntimeLibraryPath", plan.publishedRuntimeLibraryPath());
+        BuildPublicationPlanBridge.append(out, "publishedRuntimeImportLibraryPath", plan.publishedRuntimeImportLibraryPath());
+        BuildPublicationPlanBridge.append(out, "publishedAssetsRoot", plan.publishedAssetsRoot());
+        BuildPublicationPlanBridge.append(out, "sharedLaunchMetadataPath", plan.sharedLaunchMetadataPath());
+        BuildPublicationPlanBridge.append(out, "artifactStampPath", plan.artifactStampPath());
+        BuildPublicationPlanBridge.append(out, "buildConfigPlanPath", plan.buildConfigPlanPath());
+        return out.toString();
+    }
+
+    private static void append(StringBuilder out, String key, String value) {
+        out.append(key);
+        out.append("=");
+        if (value == null) {
+            out.append("0:");
+        } else {
+            out.append("1:");
+            out.append(BuildPublicationPlanBridge.escape(value));
+        }
+        out.append('\n');
+    }
+
+    private static String escape(String value) {
+        String escaped = value.replace("\\", "\\\\");
+        escaped = escaped.replace("\n", "\\n");
+        escaped = escaped.replace("\r", "\\r");
+        return escaped;
+    }
+}

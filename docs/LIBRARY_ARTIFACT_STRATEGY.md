@@ -5,25 +5,25 @@ Placement: after Phase F, before standalone/self-hosting hardening
 
 ## Goal
 
-Lock the long-term direction for PulseCode library distribution and native library consumption without blocking the current build/runtime transition work.
+Lock the long-term direction for Aden Lang library distribution and native library consumption without blocking the current build/runtime transition work.
 
-## Canonical Pulse Library Output
+## Canonical Aden Library Output
 
-The primary distributable output for a Pulse library project is:
+The primary distributable output for a Aden library project is:
 - native `.dll`
 
-When PulseCode builds a library project, it should emit:
+When Aden Lang builds a library project, it should emit:
 - native library binary (`.dll`)
 - native import library as needed by the toolchain (`.lib`)
-- a generated Pulse-facing binding/interface artifact that mirrors the exported library surface for compiler and IDE use
+- a generated Aden-facing binding/interface artifact that mirrors the exported library surface for compiler and IDE use
 
 The binding artifact is separate from the DLL itself.
 
 Planned library-project distro layout:
 - `build/distro/<profile>/<library>.dll`
 - `build/distro/<profile>/bindings/`
-  - generated Pulse binding/interface artifacts for that DLL
-  - binding file names match the exposed library-facing type names and use normal `.pulse` files
+  - generated Aden binding/interface artifacts for that DLL
+  - binding file names match the exposed library-facing type names and use normal `.aden` files
 
 Reason:
 - `distro` remains the ready-to-use deliverable folder
@@ -31,17 +31,17 @@ Reason:
 
 ## Binding Artifact Direction
 
-Pulse libraries should not rely on embedding all developer-facing metadata into the DLL.
+Aden libraries should not rely on embedding all developer-facing metadata into the DLL.
 
 Instead, library builds should emit:
 - runtime/native artifact
   - `.dll`
 - compiler/tooling artifact
-  - explicit Pulse binding/interface contract
+  - explicit Aden binding/interface contract
 
 This binding artifact should describe:
 - exported callable surface
-- package/class/method structure as seen from PulseCode
+- package/class/method structure as seen from Aden Lang
 - symbol/link mapping needed by the compiler/backend
 
 It can later grow IDE-facing metadata such as:
@@ -50,7 +50,7 @@ It can later grow IDE-facing metadata such as:
 - source references
 
 Planned binding source direction:
-- bindings are normal `.pulse` source files
+- bindings are normal `.aden` source files
 - the binding filename matches the declared type name
 - native-boundary declarations use an explicit external/native declaration form
 - `external` is treated as a general declaration modifier, not a class-only feature
@@ -71,7 +71,7 @@ The compiler should treat library dependencies as native-library + binding-artif
 
 High-level flow:
 - library project compiles to native `.dll`
-- compiler/tooling also gets the generated Pulse binding artifact
+- compiler/tooling also gets the generated Aden binding artifact
 - application builds compile against the binding artifact
 - compiler/build graph consumes local DLL payloads from `libraries/` and bindings from `bindings/`
 - publish/package steps copy required DLL payloads into final application distro output
@@ -83,9 +83,9 @@ Planned local project layout for consumption:
 - `libraries/`
   - native DLL payloads
 - `bindings/`
-  - Pulse binding artifacts as `.pulse` files
+  - Aden binding artifacts as `.aden` files
 
-For non-Pulse native DLLs:
+For non-Aden native DLLs:
 - end users can author or generate bindings themselves
 - those bindings may live in project-local source or the project `bindings/` folder
 
@@ -95,7 +95,7 @@ Even with native library outputs as the default release artifact, fat compilatio
 
 Required future support:
 - local multi-project builds where projects depend on each other
-- compiler/build graph support to compile dependent Pulse projects together into a fat executable when appropriate
+- compiler/build graph support to compile dependent Aden projects together into a fat executable when appropriate
 - corresponding shared-mode output where the dependency remains a native `.dll`
 
 So the build system still needs:
@@ -129,8 +129,8 @@ Planned model:
 - backend links/calls the foreign library through that contract
 
 Unified rule:
-- Pulse-authored native libraries and external native libraries use the same binding model
-- Pulse-authored libraries can auto-generate bindings
+- Aden-authored native libraries and external native libraries use the same binding model
+- Aden-authored libraries can auto-generate bindings
 - external libraries require user-provided or IDE-assisted bindings
 
 .NET DLLs are out of scope for the initial design.
@@ -138,7 +138,7 @@ Unified rule:
 ## Non-Goals for the First Cut
 
 - no compiler-managed remote dependency resolution
-- no `.pulselib` source-package-first release model
+- no `.adenlib` source-package-first release model
 - no requirement to support managed/.NET DLLs
 - no requirement to embed rich IDE metadata directly into PE binaries
 
@@ -149,8 +149,8 @@ Phase E is still foundational because:
 - shared runtime boundaries must be real before user-library/native-binding work scales
 
 Phase F remains focused on language and stdlib maturity.
-Compiler-owned bootstrap features that can later move into Pulse source should be treated as temporary ownership, not permanent Rust-only design.
-In particular, the post-F surface should leave room for Pulse-owned annotation processing and generated-code workflows once Phase F-A opens that contract.
+Compiler-owned bootstrap features that can later move into Aden source should be treated as temporary ownership, not permanent Rust-only design.
+In particular, the post-F surface should leave room for Aden-owned annotation processing and generated-code workflows once Phase F-A opens that contract.
 
 The library artifact/native-binding layer should land after F so it builds on:
 - a more complete language
@@ -160,7 +160,7 @@ The library artifact/native-binding layer should land after F so it builds on:
 ## Planned Follow-up Areas
 
 - library project native build output (`.dll` + `.lib`)
-- generated Pulse binding artifact emission for library projects
+- generated Aden binding artifact emission for library projects
 - compiler consumption of local DLL payloads from `libraries/` and binding artifacts from `bindings/`
 - local multi-project dependency compilation for fat/shared builds
 - external native DLL binding artifact design and compiler support

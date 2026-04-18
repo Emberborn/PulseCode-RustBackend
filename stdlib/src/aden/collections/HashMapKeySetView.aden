@@ -1,0 +1,158 @@
+package aden.collections;
+
+import aden.lang.Iterator;
+import aden.lang.Object;
+import aden.lang.UnsupportedOperationException;
+
+/**
+ * Live key-set view backed directly by the current hash map state.
+ */
+final class HashMapKeySetView<T> implements Set<T> {
+    private HashMap map;
+
+    /**
+     * Creates a live key-set view over the supplied map.
+     */
+    public HashMapKeySetView(HashMap map) {
+        this.map = map;
+    }
+
+    private void failUnsupportedAdd() {
+        UnsupportedOperationException ex = new UnsupportedOperationException("HashMap keySet view does not support add");
+        ex.panic();
+    }
+
+    /**
+     * Returns the current number of keys visible through this live view.
+     */
+    public int size() {
+        return this.map.size();
+    }
+
+    /**
+     * Reports whether this live key-set view is currently empty.
+     */
+    public boolean isEmpty() {
+        return this.map.isEmpty();
+    }
+
+    /**
+     * Clears the backing map through this live key-set view.
+     */
+    public void clear() {
+        this.map.clear();
+    }
+
+    /**
+     * Rejects direct key insertion through the live key-set view.
+     */
+    public boolean add(T value) {
+        this.failUnsupportedAdd();
+        return false;
+    }
+
+    /**
+     * Rejects direct string-key insertion through the live key-set view.
+     */
+    public boolean add(String value) {
+        this.failUnsupportedAdd();
+        return false;
+    }
+
+    /**
+     * Reports whether the supplied key is currently present.
+     */
+    public boolean contains(T value) {
+        return this.map.containsKey(value);
+    }
+
+    /**
+     * Reports whether the supplied string key is currently present.
+     */
+    public boolean contains(String value) {
+        return this.map.containsKey(value);
+    }
+
+    /**
+     * Removes the supplied key from the backing map when present.
+     */
+    public boolean remove(T value) {
+        boolean had = this.map.containsKey(value);
+        this.map.remove(value);
+        return had;
+    }
+
+    /**
+     * Removes the supplied string key from the backing map when present.
+     */
+    public boolean remove(String value) {
+        boolean had = this.map.containsKey(value);
+        this.map.remove(value);
+        return had;
+    }
+
+    /**
+     * Reports whether all supplied keys are currently present.
+     */
+    public boolean containsAll(Collection<T> values) {
+        Iterator items = values.iterator();
+        while (items.hasNext()) {
+            if (!this.contains(items.next())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Rejects bulk insertion through the live key-set view.
+     */
+    public boolean addAll(Collection<T> values) {
+        this.failUnsupportedAdd();
+        return false;
+    }
+
+    /**
+     * Removes each supplied key from the backing map when present.
+     */
+    public boolean removeAll(Collection<T> values) {
+        boolean changed = false;
+        Iterator items = values.iterator();
+        while (items.hasNext()) {
+            if (this.remove(items.next())) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Retains only the keys also present in the supplied collection.
+     */
+    public boolean retainAll(Collection<T> values) {
+        ArrayList<T> current = new ArrayList();
+        Iterator items = this.iterator();
+        while (items.hasNext()) {
+            current.add(items.next());
+        }
+
+        boolean changed = false;
+        items = current.iterator();
+        while (items.hasNext()) {
+            Object value = items.next();
+            if (!values.contains(value)) {
+                if (this.remove(value)) {
+                    changed = true;
+                }
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Returns a live iterator over the current backing-map keys.
+     */
+    public Iterator iterator() {
+        return this.map.keyIterator();
+    }
+}

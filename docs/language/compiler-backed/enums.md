@@ -4,9 +4,9 @@ This page documents the current compiler-backed enum baseline.
 
 ## Current F1 Baseline
 
-Pulse now supports Java-like enum declarations:
+Aden now supports Java-like enum declarations:
 
-```pulse
+```aden
 package app.types;
 
 public enum Mode {
@@ -34,11 +34,11 @@ Not part of the shipped enum baseline yet:
 - enum-specific interfaces or inheritance behavior
 - `values()` / `valueOf()` helper generation
 - switch-specific enum lowering guarantees
-- full `com.pulse.lang.Enum` object-model integration
+- full `com.aden.lang.Enum` object-model integration
 
 Current foundational stdlib state:
 
-- `com.pulse.lang.Enum` now exists as the declared enum base type in stdlib
+- `com.aden.lang.Enum` now exists as the declared enum base type in stdlib
 - it is still a bootstrap base contract, not the full later Java-style enum helper/object surface
 
 ## Runtime Shape

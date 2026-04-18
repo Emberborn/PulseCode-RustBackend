@@ -1,0 +1,37 @@
+package adk.compiler;
+
+public final class CompilerPackageMap {
+    private CompilerPackageMap() {}
+
+    public static String rootPackage() {
+        return "adk.compiler";
+    }
+
+    public static String entryPackage() {
+        return "adk.compiler.entry";
+    }
+
+    public static String frontendPackage() {
+        return "adk.compiler.frontend";
+    }
+
+    public static String semanticsPackage() {
+        return "adk.compiler.semantics";
+    }
+
+    public static String loweringPackage() {
+        return "adk.compiler.lowering";
+    }
+
+    public static String backendPackage() {
+        return "adk.compiler.backend";
+    }
+
+    public static String hostPackage() {
+        return "adk.compiler.host";
+    }
+
+    public static String testsPackage() {
+        return "adk.compiler.tests";
+    }
+}

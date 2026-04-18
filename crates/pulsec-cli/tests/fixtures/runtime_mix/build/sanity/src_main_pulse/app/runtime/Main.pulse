@@ -1,8 +1,0 @@
-package app.runtime;
-import pulse.lang.IO;
-
-class Main {
-    public static void main() {
-        IO.println("runtime_mix_ok");
-    }
-}

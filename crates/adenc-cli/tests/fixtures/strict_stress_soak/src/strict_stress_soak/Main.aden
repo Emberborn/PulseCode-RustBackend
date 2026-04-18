@@ -1,0 +1,17 @@
+package strict_stress_soak;
+
+import aden.lang.IO;
+
+class Main {
+    public static void main() {
+        SoakRunner runner = new SoakRunner();
+        int checksum = runner.run(200);
+        if (checksum == 40415) {
+            IO.println("soak_ok");
+            IO.println(checksum);
+        } else {
+            IO.println("soak_bad");
+            IO.println(checksum);
+        }
+    }
+}

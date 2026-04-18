@@ -1,0 +1,10714 @@
+option casemap:none
+extrn GetStdHandle:proc
+extrn ReadFile:proc
+extrn WriteFile:proc
+extrn ExitProcess:proc
+extrn GetSystemTimeAsFileTime:proc
+extrn GetTickCount64:proc
+extrn GetProcessHeap:proc
+extrn HeapAlloc:proc
+extrn HeapReAlloc:proc
+extrn HeapFree:proc
+extrn adenc_rt_stringFromBytes:proc
+extrn adenc_rt_consoleWrite:proc
+extrn adenc_rt_panic:proc
+extrn adenc_rt_dispatchNullReceiverPanic:proc
+extrn adenc_rt_dispatchInvalidTypePanic:proc
+extrn adenc_rt_objectNew:proc
+extrn adenc_rt_objectClassId:proc
+extrn adenc_rt_classIdInSet:proc
+extrn adenc_rt_arcRetain:proc
+extrn adenc_rt_arcRelease:proc
+extrn rt_slot_capacity:dword
+extrn rt_arc_refcounts_tbl:dword
+extrn rt_arc_kinds_tbl:dword
+extrn rt_arc_flags_tbl:dword
+extrn adenc_rt_tracePush:proc
+extrn adenc_rt_traceUpdateTop:proc
+extrn adenc_rt_tracePop:proc
+extrn adenc_aden_collections_ArrayList_ArrayList:proc
+extrn adenc_aden_collections_ArrayList_addAll__Collection:proc
+extrn adenc_aden_collections_ArrayList_contains__Object:proc
+extrn adenc_aden_collections_ArrayList_iterator:proc
+extrn adenc_aden_collections_Collection_contains__Object:proc
+extrn adenc_aden_collections_LinkedListIterator_LinkedListIterator__LinkedListNode:proc
+extrn adenc_aden_collections_LinkedListIterator_hasNext:proc
+extrn adenc_aden_collections_LinkedListIterator_next:proc
+extrn adenc_aden_collections_LinkedListNode_LinkedListNode__Object:proc
+extrn adenc_aden_collections_LinkedListNode_getIntValue:proc
+extrn adenc_aden_collections_LinkedListNode_getNext:proc
+extrn adenc_aden_collections_LinkedListNode_getPrevious:proc
+extrn adenc_aden_collections_LinkedListNode_getValue:proc
+extrn adenc_aden_collections_LinkedListNode_hasIntValue:proc
+extrn adenc_aden_collections_LinkedListNode_setIntValue__int:proc
+extrn adenc_aden_collections_LinkedListNode_setNext__LinkedListNode:proc
+extrn adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode:proc
+extrn adenc_aden_collections_LinkedListNode_setValue__Object:proc
+extrn adenc_aden_lang_Integer_unboxBoxed__Integer:proc
+extrn adenc_aden_lang_Iterable_iterator:proc
+extrn adenc_aden_lang_Iterator_hasNext:proc
+extrn adenc_aden_lang_Iterator_next:proc
+extrn adenc_aden_lang_String_equals__Object:proc
+extrn adenc_aden_lang_String_length:proc
+extrn adenc_aden_lang_String_substring__int_int:proc
+extrn adenc_rt_panic:proc
+extrn adenc_fget_aden_lang_Double_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_Double_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_Double_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_Double_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_Float_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_Float_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_Float_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_Float_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_Integer_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_Integer_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_Integer_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_Integer_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_Long_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_Long_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_Long_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_Long_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_UInteger_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_UInteger_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_UInteger_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_UInteger_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_ULong_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_ULong_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_ULong_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_ULong_MAX_VALUE:proc
+
+public adenc_fld_aden_collections_LinkedList_first
+public adenc_fld_aden_collections_LinkedList_first_heap_owned
+public adenc_fld_aden_collections_LinkedList_last
+public adenc_fld_aden_collections_LinkedList_last_heap_owned
+public adenc_fld_aden_collections_LinkedList_count
+public adenc_fld_aden_collections_LinkedList_count_heap_owned
+
+.data
+written dq 0
+adenc_objc_aden_collections_LinkedList dd 0
+adenc_fcap_aden_collections_LinkedList dd 63
+adenc_fld_aden_collections_LinkedList_first_tbl dq 64 dup(0)
+adenc_fld_aden_collections_LinkedList_first dq adenc_fld_aden_collections_LinkedList_first_tbl
+adenc_fld_aden_collections_LinkedList_first_heap_owned dd 0
+adenc_fld_aden_collections_LinkedList_last_tbl dq 64 dup(0)
+adenc_fld_aden_collections_LinkedList_last dq adenc_fld_aden_collections_LinkedList_last_tbl
+adenc_fld_aden_collections_LinkedList_last_heap_owned dd 0
+adenc_fld_aden_collections_LinkedList_count_tbl dd 64 dup(0)
+adenc_fld_aden_collections_LinkedList_count dq adenc_fld_aden_collections_LinkedList_count_tbl
+adenc_fld_aden_collections_LinkedList_count_heap_owned dd 0
+trace_m0 db "aden.collections.LinkedList.LinkedList"
+trace_m0_len equ 38
+adenc_aden_collections_LinkedList_LinkedList_trace_s0 db "aden.collections.LinkedList.LinkedList(LinkedList.aden:20)"
+adenc_aden_collections_LinkedList_LinkedList_trace_s0_len equ 58
+adenc_aden_collections_LinkedList_LinkedList_trace_s1 db "aden.collections.LinkedList.LinkedList(LinkedList.aden:21)"
+adenc_aden_collections_LinkedList_LinkedList_trace_s1_len equ 58
+adenc_aden_collections_LinkedList_LinkedList_trace_s2 db "aden.collections.LinkedList.LinkedList(LinkedList.aden:22)"
+adenc_aden_collections_LinkedList_LinkedList_trace_s2_len equ 58
+trace_m4 db "aden.collections.LinkedList.size"
+trace_m4_len equ 32
+adenc_aden_collections_LinkedList_size_trace_s0 db "aden.collections.LinkedList.size(LinkedList.aden:29)"
+adenc_aden_collections_LinkedList_size_trace_s0_len equ 52
+trace_m6 db "aden.collections.LinkedList.iterator"
+trace_m6_len equ 36
+adenc_aden_collections_LinkedList_iterator_trace_s0 db "aden.collections.LinkedList.iterator(LinkedList.aden:36)"
+adenc_aden_collections_LinkedList_iterator_trace_s0_len equ 56
+trace_m8 db "aden.collections.LinkedList.isEmpty"
+trace_m8_len equ 35
+adenc_aden_collections_LinkedList_isEmpty_trace_s0 db "aden.collections.LinkedList.isEmpty(LinkedList.aden:43)"
+adenc_aden_collections_LinkedList_isEmpty_trace_s0_len equ 55
+trace_m10 db "aden.collections.LinkedList.clear"
+trace_m10_len equ 33
+adenc_aden_collections_LinkedList_clear_trace_s0 db "aden.collections.LinkedList.clear(LinkedList.aden:50)"
+adenc_aden_collections_LinkedList_clear_trace_s0_len equ 53
+adenc_aden_collections_LinkedList_clear_trace_s1 db "aden.collections.LinkedList.clear(LinkedList.aden:51)"
+adenc_aden_collections_LinkedList_clear_trace_s1_len equ 53
+adenc_aden_collections_LinkedList_clear_trace_s2 db "aden.collections.LinkedList.clear(LinkedList.aden:52)"
+adenc_aden_collections_LinkedList_clear_trace_s2_len equ 53
+trace_m14 db "aden.collections.LinkedList.valuesEqual"
+trace_m14_len equ 39
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s0 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:59)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s0_len equ 59
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s1 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:60)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s1_len equ 59
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s2 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:62)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s2_len equ 59
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s3 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:63)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s3_len equ 59
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s4 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:65)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s4_len equ 59
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s5 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:66)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s5_len equ 59
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s6 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:67)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s6_len equ 59
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s7 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:68)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s7_len equ 59
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s8 db "aden.collections.LinkedList.valuesEqual(LinkedList.aden:70)"
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s8_len equ 59
+trace_m24 db "aden.collections.LinkedList.appendValue"
+trace_m24_len equ 39
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s0 db "aden.collections.LinkedList.appendValue(LinkedList.aden:77)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s0_len equ 59
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s1 db "aden.collections.LinkedList.appendValue(LinkedList.aden:78)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s1_len equ 59
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s2 db "aden.collections.LinkedList.appendValue(LinkedList.aden:79)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s2_len equ 59
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s3 db "aden.collections.LinkedList.appendValue(LinkedList.aden:80)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s3_len equ 59
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s4 db "aden.collections.LinkedList.appendValue(LinkedList.aden:82)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s4_len equ 59
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s5 db "aden.collections.LinkedList.appendValue(LinkedList.aden:83)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s5_len equ 59
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s6 db "aden.collections.LinkedList.appendValue(LinkedList.aden:84)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s6_len equ 59
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s7 db "aden.collections.LinkedList.appendValue(LinkedList.aden:86)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s7_len equ 59
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s8 db "aden.collections.LinkedList.appendValue(LinkedList.aden:87)"
+adenc_aden_collections_LinkedList_appendValue__Object_trace_s8_len equ 59
+trace_m34 db "aden.collections.LinkedList.appendIntValue"
+trace_m34_len equ 42
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s0 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:94)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s0_len equ 62
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s1 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:95)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s1_len equ 62
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s2 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:96)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s2_len equ 62
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s3 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:97)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s3_len equ 62
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s4 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:98)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s4_len equ 62
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s5 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:100)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s5_len equ 63
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s6 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:101)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s6_len equ 63
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s7 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:102)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s7_len equ 63
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s8 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:104)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s8_len equ 63
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s9 db "aden.collections.LinkedList.appendIntValue(LinkedList.aden:105)"
+adenc_aden_collections_LinkedList_appendIntValue__int_trace_s9_len equ 63
+trace_m45 db "aden.collections.LinkedList.insertValue"
+trace_m45_len equ 39
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s0 db "aden.collections.LinkedList.insertValue(LinkedList.aden:112)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s0_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s1 db "aden.collections.LinkedList.insertValue(LinkedList.aden:113)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s1_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s2 db "aden.collections.LinkedList.insertValue(LinkedList.aden:114)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s2_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s3 db "aden.collections.LinkedList.insertValue(LinkedList.aden:116)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s3_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s4 db "aden.collections.LinkedList.insertValue(LinkedList.aden:117)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s4_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s5 db "aden.collections.LinkedList.insertValue(LinkedList.aden:118)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s5_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s6 db "aden.collections.LinkedList.insertValue(LinkedList.aden:120)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s6_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s7 db "aden.collections.LinkedList.insertValue(LinkedList.aden:121)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s7_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s8 db "aden.collections.LinkedList.insertValue(LinkedList.aden:122)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s8_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s9 db "aden.collections.LinkedList.insertValue(LinkedList.aden:123)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s9_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s10 db "aden.collections.LinkedList.insertValue(LinkedList.aden:124)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s10_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s11 db "aden.collections.LinkedList.insertValue(LinkedList.aden:125)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s11_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s12 db "aden.collections.LinkedList.insertValue(LinkedList.aden:126)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s12_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s13 db "aden.collections.LinkedList.insertValue(LinkedList.aden:128)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s13_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s14 db "aden.collections.LinkedList.insertValue(LinkedList.aden:130)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s14_len equ 60
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s15 db "aden.collections.LinkedList.insertValue(LinkedList.aden:131)"
+adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s15_len equ 60
+trace_m62 db "aden.collections.LinkedList.insertIntValue"
+trace_m62_len equ 42
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s0 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:138)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s0_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s1 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:139)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s1_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s2 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:140)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s2_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s3 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:142)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s3_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s4 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:143)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s4_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s5 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:144)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s5_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s6 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:146)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s6_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s7 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:147)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s7_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s8 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:148)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s8_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s9 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:149)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s9_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s10 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:150)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s10_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s11 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:151)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s11_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s12 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:152)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s12_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s13 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:153)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s13_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s14 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:155)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s14_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s15 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:157)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s15_len equ 63
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s16 db "aden.collections.LinkedList.insertIntValue(LinkedList.aden:158)"
+adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s16_len equ 63
+trace_m80 db "aden.collections.LinkedList.replaceValue"
+trace_m80_len equ 40
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s0 db "aden.collections.LinkedList.replaceValue(LinkedList.aden:165)"
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s0_len equ 61
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s1 db "aden.collections.LinkedList.replaceValue(LinkedList.aden:166)"
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s1_len equ 61
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s2 db "aden.collections.LinkedList.replaceValue(LinkedList.aden:167)"
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s2_len equ 61
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s3 db "aden.collections.LinkedList.replaceValue(LinkedList.aden:169)"
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s3_len equ 61
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s4 db "aden.collections.LinkedList.replaceValue(LinkedList.aden:170)"
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s4_len equ 61
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s5 db "aden.collections.LinkedList.replaceValue(LinkedList.aden:171)"
+adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s5_len equ 61
+trace_m87 db "aden.collections.LinkedList.replaceIntValue"
+trace_m87_len equ 43
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s0 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:178)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s0_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s1 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:179)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s1_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s2 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:180)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s2_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s3 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:182)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s3_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s4 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:183)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s4_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s5 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:184)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s5_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s6 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:186)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s6_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s7 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:187)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s7_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s8 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:189)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s8_len equ 64
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s9 db "aden.collections.LinkedList.replaceIntValue(LinkedList.aden:190)"
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s9_len equ 64
+trace_m98 db "aden.collections.LinkedList.findIndex"
+trace_m98_len equ 37
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s0 db "aden.collections.LinkedList.findIndex(LinkedList.aden:197)"
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s0_len equ 58
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s1 db "aden.collections.LinkedList.findIndex(LinkedList.aden:198)"
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s1_len equ 58
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s2 db "aden.collections.LinkedList.findIndex(LinkedList.aden:199)"
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s2_len equ 58
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s3 db "aden.collections.LinkedList.findIndex(LinkedList.aden:200)"
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s3_len equ 58
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s4 db "aden.collections.LinkedList.findIndex(LinkedList.aden:201)"
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s4_len equ 58
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s5 db "aden.collections.LinkedList.findIndex(LinkedList.aden:203)"
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s5_len equ 58
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s6 db "aden.collections.LinkedList.findIndex(LinkedList.aden:204)"
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s6_len equ 58
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s7 db "aden.collections.LinkedList.findIndex(LinkedList.aden:206)"
+adenc_aden_collections_LinkedList_findIndex__Object_trace_s7_len equ 58
+trace_m107 db "aden.collections.LinkedList.findIntIndex"
+trace_m107_len equ 40
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s0 db "aden.collections.LinkedList.findIntIndex(LinkedList.aden:213)"
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s0_len equ 61
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s1 db "aden.collections.LinkedList.findIntIndex(LinkedList.aden:214)"
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s1_len equ 61
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s2 db "aden.collections.LinkedList.findIntIndex(LinkedList.aden:215)"
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s2_len equ 61
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s3 db "aden.collections.LinkedList.findIntIndex(LinkedList.aden:216)"
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s3_len equ 61
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s4 db "aden.collections.LinkedList.findIntIndex(LinkedList.aden:217)"
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s4_len equ 61
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s5 db "aden.collections.LinkedList.findIntIndex(LinkedList.aden:219)"
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s5_len equ 61
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s6 db "aden.collections.LinkedList.findIntIndex(LinkedList.aden:220)"
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s6_len equ 61
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s7 db "aden.collections.LinkedList.findIntIndex(LinkedList.aden:222)"
+adenc_aden_collections_LinkedList_findIntIndex__int_trace_s7_len equ 61
+trace_m116 db "aden.collections.LinkedList.findLastIndex"
+trace_m116_len equ 41
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s0 db "aden.collections.LinkedList.findLastIndex(LinkedList.aden:229)"
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s0_len equ 62
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s1 db "aden.collections.LinkedList.findLastIndex(LinkedList.aden:230)"
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s1_len equ 62
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s2 db "aden.collections.LinkedList.findLastIndex(LinkedList.aden:231)"
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s2_len equ 62
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s3 db "aden.collections.LinkedList.findLastIndex(LinkedList.aden:232)"
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s3_len equ 62
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s4 db "aden.collections.LinkedList.findLastIndex(LinkedList.aden:233)"
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s4_len equ 62
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s5 db "aden.collections.LinkedList.findLastIndex(LinkedList.aden:235)"
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s5_len equ 62
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s6 db "aden.collections.LinkedList.findLastIndex(LinkedList.aden:236)"
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s6_len equ 62
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s7 db "aden.collections.LinkedList.findLastIndex(LinkedList.aden:238)"
+adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s7_len equ 62
+trace_m125 db "aden.collections.LinkedList.findLastIntIndex"
+trace_m125_len equ 44
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s0 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 102, 105, 110, 100
+    db 76, 97, 115, 116, 73, 110, 116, 73, 110, 100, 101, 120, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110, 58, 50, 52, 53
+    db 41
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s0_len equ 65
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s1 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 102, 105, 110, 100
+    db 76, 97, 115, 116, 73, 110, 116, 73, 110, 100, 101, 120, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110, 58, 50, 52, 54
+    db 41
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s1_len equ 65
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s2 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 102, 105, 110, 100
+    db 76, 97, 115, 116, 73, 110, 116, 73, 110, 100, 101, 120, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110, 58, 50, 52, 55
+    db 41
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s2_len equ 65
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s3 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 102, 105, 110, 100
+    db 76, 97, 115, 116, 73, 110, 116, 73, 110, 100, 101, 120, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110, 58, 50, 52, 56
+    db 41
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s3_len equ 65
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s4 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 102, 105, 110, 100
+    db 76, 97, 115, 116, 73, 110, 116, 73, 110, 100, 101, 120, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110, 58, 50, 52, 57
+    db 41
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s4_len equ 65
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s5 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 102, 105, 110, 100
+    db 76, 97, 115, 116, 73, 110, 116, 73, 110, 100, 101, 120, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110, 58, 50, 53, 49
+    db 41
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s5_len equ 65
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s6 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 102, 105, 110, 100
+    db 76, 97, 115, 116, 73, 110, 116, 73, 110, 100, 101, 120, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110, 58, 50, 53, 50
+    db 41
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s6_len equ 65
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s7 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 102, 105, 110, 100
+    db 76, 97, 115, 116, 73, 110, 116, 73, 110, 100, 101, 120, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110, 58, 50, 53, 52
+    db 41
+adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s7_len equ 65
+trace_m134 db "aden.collections.LinkedList.unlinkNode"
+trace_m134_len equ 38
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s0 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:261)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s0_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s1 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:262)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s1_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s2 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:264)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s2_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s3 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:265)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s3_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s4 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:266)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s4_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s5 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:267)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s5_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s6 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:269)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s6_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s7 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:271)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s7_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s8 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:272)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s8_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s9 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:274)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s9_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s10 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:276)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s10_len equ 59
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s11 db "aden.collections.LinkedList.unlinkNode(LinkedList.aden:277)"
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s11_len equ 59
+trace_m147 db "aden.collections.LinkedList.prependValue"
+trace_m147_len equ 40
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s0 db "aden.collections.LinkedList.prependValue(LinkedList.aden:284)"
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s0_len equ 61
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s1 db "aden.collections.LinkedList.prependValue(LinkedList.aden:285)"
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s1_len equ 61
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s2 db "aden.collections.LinkedList.prependValue(LinkedList.aden:286)"
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s2_len equ 61
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s3 db "aden.collections.LinkedList.prependValue(LinkedList.aden:287)"
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s3_len equ 61
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s4 db "aden.collections.LinkedList.prependValue(LinkedList.aden:289)"
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s4_len equ 61
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s5 db "aden.collections.LinkedList.prependValue(LinkedList.aden:290)"
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s5_len equ 61
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s6 db "aden.collections.LinkedList.prependValue(LinkedList.aden:291)"
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s6_len equ 61
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s7 db "aden.collections.LinkedList.prependValue(LinkedList.aden:293)"
+adenc_aden_collections_LinkedList_prependValue__Object_trace_s7_len equ 61
+trace_m156 db "aden.collections.LinkedList.prependIntValue"
+trace_m156_len equ 43
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s0 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:300)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s0_len equ 64
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s1 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:301)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s1_len equ 64
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s2 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:302)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s2_len equ 64
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s3 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:303)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s3_len equ 64
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s4 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:304)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s4_len equ 64
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s5 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:306)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s5_len equ 64
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s6 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:307)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s6_len equ 64
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s7 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:308)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s7_len equ 64
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s8 db "aden.collections.LinkedList.prependIntValue(LinkedList.aden:310)"
+adenc_aden_collections_LinkedList_prependIntValue__int_trace_s8_len equ 64
+trace_m166 db "aden.collections.LinkedList.copyStringValue"
+trace_m166_len equ 43
+adenc_aden_collections_LinkedList_copyStringValue__String_trace_s0 db "aden.collections.LinkedList.copyStringValue(LinkedList.aden:317)"
+adenc_aden_collections_LinkedList_copyStringValue__String_trace_s0_len equ 64
+trace_m168 db "aden.collections.LinkedList.addCopiedValue"
+trace_m168_len equ 42
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s0 db "aden.collections.LinkedList.addCopiedValue(LinkedList.aden:324)"
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s0_len equ 63
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s1 db "aden.collections.LinkedList.addCopiedValue(LinkedList.aden:325)"
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s1_len equ 63
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s2 db "aden.collections.LinkedList.addCopiedValue(LinkedList.aden:327)"
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s2_len equ 63
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s3 db "aden.collections.LinkedList.addCopiedValue(LinkedList.aden:328)"
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s3_len equ 63
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s4 db "aden.collections.LinkedList.addCopiedValue(LinkedList.aden:330)"
+adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s4_len equ 63
+trace_m174 db "aden.collections.LinkedList.nodeAt"
+trace_m174_len equ 34
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s0 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:337)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s0_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s1 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:338)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s1_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s2 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:339)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s2_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s3 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:341)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s3_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s4 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:342)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s4_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s5 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:343)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s5_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s6 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:344)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s6_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s7 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:345)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s7_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s8 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:346)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s8_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s9 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:347)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s9_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s10 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:348)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s10_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s11 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:350)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s11_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s12 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:352)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s12_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s13 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:353)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s13_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s14 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:354)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s14_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s15 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:355)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s15_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s16 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:356)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s16_len equ 55
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s17 db "aden.collections.LinkedList.nodeAt(LinkedList.aden:358)"
+adenc_aden_collections_LinkedList_nodeAt__int_trace_s17_len equ 55
+trace_m193 db "aden.collections.LinkedList.add"
+trace_m193_len equ 31
+adenc_aden_collections_LinkedList_add__Object_trace_s0 db "aden.collections.LinkedList.add(LinkedList.aden:365)"
+adenc_aden_collections_LinkedList_add__Object_trace_s0_len equ 52
+trace_m195 db "aden.collections.LinkedList.add"
+trace_m195_len equ 31
+adenc_aden_collections_LinkedList_add__int_trace_s0 db "aden.collections.LinkedList.add(LinkedList.aden:372)"
+adenc_aden_collections_LinkedList_add__int_trace_s0_len equ 52
+trace_m197 db "aden.collections.LinkedList.add"
+trace_m197_len equ 31
+adenc_aden_collections_LinkedList_add__String_trace_s0 db "aden.collections.LinkedList.add(LinkedList.aden:379)"
+adenc_aden_collections_LinkedList_add__String_trace_s0_len equ 52
+trace_m199 db "aden.collections.LinkedList.addAll"
+trace_m199_len equ 34
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s0 db "aden.collections.LinkedList.addAll(LinkedList.aden:386)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s0_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s1 db "aden.collections.LinkedList.addAll(LinkedList.aden:387)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s1_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s2 db "aden.collections.LinkedList.addAll(LinkedList.aden:388)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s2_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s3 db "aden.collections.LinkedList.addAll(LinkedList.aden:389)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s3_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s4 db "aden.collections.LinkedList.addAll(LinkedList.aden:390)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s4_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s5 db "aden.collections.LinkedList.addAll(LinkedList.aden:391)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s5_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s6 db "aden.collections.LinkedList.addAll(LinkedList.aden:392)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s6_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s7 db "aden.collections.LinkedList.addAll(LinkedList.aden:394)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s7_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s8 db "aden.collections.LinkedList.addAll(LinkedList.aden:395)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s8_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s9 db "aden.collections.LinkedList.addAll(LinkedList.aden:396)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s9_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s10 db "aden.collections.LinkedList.addAll(LinkedList.aden:398)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s10_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s11 db "aden.collections.LinkedList.addAll(LinkedList.aden:401)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s11_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s12 db "aden.collections.LinkedList.addAll(LinkedList.aden:402)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s12_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s13 db "aden.collections.LinkedList.addAll(LinkedList.aden:404)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s13_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s14 db "aden.collections.LinkedList.addAll(LinkedList.aden:406)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s14_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s15 db "aden.collections.LinkedList.addAll(LinkedList.aden:407)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s15_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s16 db "aden.collections.LinkedList.addAll(LinkedList.aden:408)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s16_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s17 db "aden.collections.LinkedList.addAll(LinkedList.aden:409)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s17_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s18 db "aden.collections.LinkedList.addAll(LinkedList.aden:410)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s18_len equ 55
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s19 db "aden.collections.LinkedList.addAll(LinkedList.aden:413)"
+adenc_aden_collections_LinkedList_addAll__Collection_trace_s19_len equ 55
+trace_m220 db "aden.collections.LinkedList.containsAll"
+trace_m220_len equ 39
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s0 db "aden.collections.LinkedList.containsAll(LinkedList.aden:420)"
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s0_len equ 60
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s1 db "aden.collections.LinkedList.containsAll(LinkedList.aden:421)"
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s1_len equ 60
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s2 db "aden.collections.LinkedList.containsAll(LinkedList.aden:422)"
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s2_len equ 60
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s3 db "aden.collections.LinkedList.containsAll(LinkedList.aden:423)"
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s3_len equ 60
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s4 db "aden.collections.LinkedList.containsAll(LinkedList.aden:426)"
+adenc_aden_collections_LinkedList_containsAll__Collection_trace_s4_len equ 60
+trace_m226 db "aden.collections.LinkedList.removeAll"
+trace_m226_len equ 37
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s0 db "aden.collections.LinkedList.removeAll(LinkedList.aden:433)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s0_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s1 db "aden.collections.LinkedList.removeAll(LinkedList.aden:434)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s1_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s2 db "aden.collections.LinkedList.removeAll(LinkedList.aden:435)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s2_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s3 db "aden.collections.LinkedList.removeAll(LinkedList.aden:436)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s3_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s4 db "aden.collections.LinkedList.removeAll(LinkedList.aden:438)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s4_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s5 db "aden.collections.LinkedList.removeAll(LinkedList.aden:439)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s5_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s6 db "aden.collections.LinkedList.removeAll(LinkedList.aden:440)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s6_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s7 db "aden.collections.LinkedList.removeAll(LinkedList.aden:441)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s7_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s8 db "aden.collections.LinkedList.removeAll(LinkedList.aden:442)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s8_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s9 db "aden.collections.LinkedList.removeAll(LinkedList.aden:443)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s9_len equ 58
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s10 db "aden.collections.LinkedList.removeAll(LinkedList.aden:446)"
+adenc_aden_collections_LinkedList_removeAll__Collection_trace_s10_len equ 58
+trace_m238 db "aden.collections.LinkedList.retainAll"
+trace_m238_len equ 37
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s0 db "aden.collections.LinkedList.retainAll(LinkedList.aden:453)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s0_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s1 db "aden.collections.LinkedList.retainAll(LinkedList.aden:454)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s1_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s2 db "aden.collections.LinkedList.retainAll(LinkedList.aden:456)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s2_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s3 db "aden.collections.LinkedList.retainAll(LinkedList.aden:457)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s3_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s4 db "aden.collections.LinkedList.retainAll(LinkedList.aden:459)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s4_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s5 db "aden.collections.LinkedList.retainAll(LinkedList.aden:460)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s5_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s6 db "aden.collections.LinkedList.retainAll(LinkedList.aden:461)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s6_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s7 db "aden.collections.LinkedList.retainAll(LinkedList.aden:462)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s7_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s8 db "aden.collections.LinkedList.retainAll(LinkedList.aden:463)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s8_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s9 db "aden.collections.LinkedList.retainAll(LinkedList.aden:464)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s9_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s10 db "aden.collections.LinkedList.retainAll(LinkedList.aden:465)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s10_len equ 58
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s11 db "aden.collections.LinkedList.retainAll(LinkedList.aden:469)"
+adenc_aden_collections_LinkedList_retainAll__Collection_trace_s11_len equ 58
+trace_m251 db "aden.collections.LinkedList.add"
+trace_m251_len equ 31
+adenc_aden_collections_LinkedList_add__int_Object_trace_s0 db "aden.collections.LinkedList.add(LinkedList.aden:476)"
+adenc_aden_collections_LinkedList_add__int_Object_trace_s0_len equ 52
+trace_m253 db "aden.collections.LinkedList.add"
+trace_m253_len equ 31
+adenc_aden_collections_LinkedList_add__int_int_trace_s0 db "aden.collections.LinkedList.add(LinkedList.aden:483)"
+adenc_aden_collections_LinkedList_add__int_int_trace_s0_len equ 52
+trace_m255 db "aden.collections.LinkedList.add"
+trace_m255_len equ 31
+adenc_aden_collections_LinkedList_add__int_String_trace_s0 db "aden.collections.LinkedList.add(LinkedList.aden:490)"
+adenc_aden_collections_LinkedList_add__int_String_trace_s0_len equ 52
+trace_m257 db "aden.collections.LinkedList.get"
+trace_m257_len equ 31
+adenc_aden_collections_LinkedList_get__int_trace_s0 db "aden.collections.LinkedList.get(LinkedList.aden:497)"
+adenc_aden_collections_LinkedList_get__int_trace_s0_len equ 52
+adenc_aden_collections_LinkedList_get__int_trace_s1 db "aden.collections.LinkedList.get(LinkedList.aden:498)"
+adenc_aden_collections_LinkedList_get__int_trace_s1_len equ 52
+adenc_aden_collections_LinkedList_get__int_trace_s2 db "aden.collections.LinkedList.get(LinkedList.aden:499)"
+adenc_aden_collections_LinkedList_get__int_trace_s2_len equ 52
+adenc_aden_collections_LinkedList_get__int_trace_s3 db "aden.collections.LinkedList.get(LinkedList.aden:501)"
+adenc_aden_collections_LinkedList_get__int_trace_s3_len equ 52
+trace_m262 db "aden.collections.LinkedList.getInt"
+trace_m262_len equ 34
+adenc_aden_collections_LinkedList_getInt__int_trace_s0 db "aden.collections.LinkedList.getInt(LinkedList.aden:508)"
+adenc_aden_collections_LinkedList_getInt__int_trace_s0_len equ 55
+adenc_aden_collections_LinkedList_getInt__int_trace_s1 db "aden.collections.LinkedList.getInt(LinkedList.aden:509)"
+adenc_aden_collections_LinkedList_getInt__int_trace_s1_len equ 55
+adenc_aden_collections_LinkedList_getInt__int_trace_s2 db "aden.collections.LinkedList.getInt(LinkedList.aden:510)"
+adenc_aden_collections_LinkedList_getInt__int_trace_s2_len equ 55
+adenc_aden_collections_LinkedList_getInt__int_trace_s3 db "aden.collections.LinkedList.getInt(LinkedList.aden:512)"
+adenc_aden_collections_LinkedList_getInt__int_trace_s3_len equ 55
+adenc_aden_collections_LinkedList_getInt__int_trace_s4 db "aden.collections.LinkedList.getInt(LinkedList.aden:513)"
+adenc_aden_collections_LinkedList_getInt__int_trace_s4_len equ 55
+adenc_aden_collections_LinkedList_getInt__int_trace_s5 db "aden.collections.LinkedList.getInt(LinkedList.aden:515)"
+adenc_aden_collections_LinkedList_getInt__int_trace_s5_len equ 55
+adenc_aden_collections_LinkedList_getInt__int_trace_s6 db "aden.collections.LinkedList.getInt(LinkedList.aden:516)"
+adenc_aden_collections_LinkedList_getInt__int_trace_s6_len equ 55
+trace_m270 db "aden.collections.LinkedList.getString"
+trace_m270_len equ 37
+adenc_aden_collections_LinkedList_getString__int_trace_s0 db "aden.collections.LinkedList.getString(LinkedList.aden:523)"
+adenc_aden_collections_LinkedList_getString__int_trace_s0_len equ 58
+adenc_aden_collections_LinkedList_getString__int_trace_s1 db "aden.collections.LinkedList.getString(LinkedList.aden:524)"
+adenc_aden_collections_LinkedList_getString__int_trace_s1_len equ 58
+adenc_aden_collections_LinkedList_getString__int_trace_s2 db "aden.collections.LinkedList.getString(LinkedList.aden:525)"
+adenc_aden_collections_LinkedList_getString__int_trace_s2_len equ 58
+adenc_aden_collections_LinkedList_getString__int_trace_s3 db "aden.collections.LinkedList.getString(LinkedList.aden:527)"
+adenc_aden_collections_LinkedList_getString__int_trace_s3_len equ 58
+trace_m275 db "aden.collections.LinkedList.remove"
+trace_m275_len equ 34
+adenc_aden_collections_LinkedList_remove__int_trace_s0 db "aden.collections.LinkedList.remove(LinkedList.aden:534)"
+adenc_aden_collections_LinkedList_remove__int_trace_s0_len equ 55
+adenc_aden_collections_LinkedList_remove__int_trace_s1 db "aden.collections.LinkedList.remove(LinkedList.aden:535)"
+adenc_aden_collections_LinkedList_remove__int_trace_s1_len equ 55
+trace_m278 db "aden.collections.LinkedList.remove"
+trace_m278_len equ 34
+adenc_aden_collections_LinkedList_remove__Object_trace_s0 db "aden.collections.LinkedList.remove(LinkedList.aden:542)"
+adenc_aden_collections_LinkedList_remove__Object_trace_s0_len equ 55
+adenc_aden_collections_LinkedList_remove__Object_trace_s1 db "aden.collections.LinkedList.remove(LinkedList.aden:543)"
+adenc_aden_collections_LinkedList_remove__Object_trace_s1_len equ 55
+adenc_aden_collections_LinkedList_remove__Object_trace_s2 db "aden.collections.LinkedList.remove(LinkedList.aden:544)"
+adenc_aden_collections_LinkedList_remove__Object_trace_s2_len equ 55
+adenc_aden_collections_LinkedList_remove__Object_trace_s3 db "aden.collections.LinkedList.remove(LinkedList.aden:545)"
+adenc_aden_collections_LinkedList_remove__Object_trace_s3_len equ 55
+adenc_aden_collections_LinkedList_remove__Object_trace_s4 db "aden.collections.LinkedList.remove(LinkedList.aden:546)"
+adenc_aden_collections_LinkedList_remove__Object_trace_s4_len equ 55
+adenc_aden_collections_LinkedList_remove__Object_trace_s5 db "aden.collections.LinkedList.remove(LinkedList.aden:548)"
+adenc_aden_collections_LinkedList_remove__Object_trace_s5_len equ 55
+adenc_aden_collections_LinkedList_remove__Object_trace_s6 db "aden.collections.LinkedList.remove(LinkedList.aden:550)"
+adenc_aden_collections_LinkedList_remove__Object_trace_s6_len equ 55
+trace_m286 db "aden.collections.LinkedList.set"
+trace_m286_len equ 31
+adenc_aden_collections_LinkedList_set__int_Object_trace_s0 db "aden.collections.LinkedList.set(LinkedList.aden:557)"
+adenc_aden_collections_LinkedList_set__int_Object_trace_s0_len equ 52
+trace_m288 db "aden.collections.LinkedList.set"
+trace_m288_len equ 31
+adenc_aden_collections_LinkedList_set__int_int_trace_s0 db "aden.collections.LinkedList.set(LinkedList.aden:564)"
+adenc_aden_collections_LinkedList_set__int_int_trace_s0_len equ 52
+trace_m290 db "aden.collections.LinkedList.set"
+trace_m290_len equ 31
+adenc_aden_collections_LinkedList_set__int_String_trace_s0 db "aden.collections.LinkedList.set(LinkedList.aden:571)"
+adenc_aden_collections_LinkedList_set__int_String_trace_s0_len equ 52
+trace_m292 db "aden.collections.LinkedList.contains"
+trace_m292_len equ 36
+adenc_aden_collections_LinkedList_contains__Object_trace_s0 db "aden.collections.LinkedList.contains(LinkedList.aden:578)"
+adenc_aden_collections_LinkedList_contains__Object_trace_s0_len equ 57
+trace_m294 db "aden.collections.LinkedList.contains"
+trace_m294_len equ 36
+adenc_aden_collections_LinkedList_contains__int_trace_s0 db "aden.collections.LinkedList.contains(LinkedList.aden:585)"
+adenc_aden_collections_LinkedList_contains__int_trace_s0_len equ 57
+trace_m296 db "aden.collections.LinkedList.contains"
+trace_m296_len equ 36
+adenc_aden_collections_LinkedList_contains__String_trace_s0 db "aden.collections.LinkedList.contains(LinkedList.aden:592)"
+adenc_aden_collections_LinkedList_contains__String_trace_s0_len equ 57
+trace_m298 db "aden.collections.LinkedList.indexOf"
+trace_m298_len equ 35
+adenc_aden_collections_LinkedList_indexOf__Object_trace_s0 db "aden.collections.LinkedList.indexOf(LinkedList.aden:599)"
+adenc_aden_collections_LinkedList_indexOf__Object_trace_s0_len equ 56
+trace_m300 db "aden.collections.LinkedList.indexOf"
+trace_m300_len equ 35
+adenc_aden_collections_LinkedList_indexOf__int_trace_s0 db "aden.collections.LinkedList.indexOf(LinkedList.aden:606)"
+adenc_aden_collections_LinkedList_indexOf__int_trace_s0_len equ 56
+trace_m302 db "aden.collections.LinkedList.indexOf"
+trace_m302_len equ 35
+adenc_aden_collections_LinkedList_indexOf__String_trace_s0 db "aden.collections.LinkedList.indexOf(LinkedList.aden:613)"
+adenc_aden_collections_LinkedList_indexOf__String_trace_s0_len equ 56
+trace_m304 db "aden.collections.LinkedList.lastIndexOf"
+trace_m304_len equ 39
+adenc_aden_collections_LinkedList_lastIndexOf__Object_trace_s0 db "aden.collections.LinkedList.lastIndexOf(LinkedList.aden:620)"
+adenc_aden_collections_LinkedList_lastIndexOf__Object_trace_s0_len equ 60
+trace_m306 db "aden.collections.LinkedList.lastIndexOf"
+trace_m306_len equ 39
+adenc_aden_collections_LinkedList_lastIndexOf__int_trace_s0 db "aden.collections.LinkedList.lastIndexOf(LinkedList.aden:627)"
+adenc_aden_collections_LinkedList_lastIndexOf__int_trace_s0_len equ 60
+trace_m308 db "aden.collections.LinkedList.lastIndexOf"
+trace_m308_len equ 39
+adenc_aden_collections_LinkedList_lastIndexOf__String_trace_s0 db "aden.collections.LinkedList.lastIndexOf(LinkedList.aden:634)"
+adenc_aden_collections_LinkedList_lastIndexOf__String_trace_s0_len equ 60
+trace_m310 db "aden.collections.LinkedList.offer"
+trace_m310_len equ 33
+adenc_aden_collections_LinkedList_offer__Object_trace_s0 db "aden.collections.LinkedList.offer(LinkedList.aden:641)"
+adenc_aden_collections_LinkedList_offer__Object_trace_s0_len equ 54
+trace_m312 db "aden.collections.LinkedList.offer"
+trace_m312_len equ 33
+adenc_aden_collections_LinkedList_offer__int_trace_s0 db "aden.collections.LinkedList.offer(LinkedList.aden:648)"
+adenc_aden_collections_LinkedList_offer__int_trace_s0_len equ 54
+trace_m314 db "aden.collections.LinkedList.offer"
+trace_m314_len equ 33
+adenc_aden_collections_LinkedList_offer__String_trace_s0 db "aden.collections.LinkedList.offer(LinkedList.aden:654)"
+adenc_aden_collections_LinkedList_offer__String_trace_s0_len equ 54
+trace_m316 db "aden.collections.LinkedList.poll"
+trace_m316_len equ 32
+adenc_aden_collections_LinkedList_poll_trace_s0 db "aden.collections.LinkedList.poll(LinkedList.aden:661)"
+adenc_aden_collections_LinkedList_poll_trace_s0_len equ 53
+adenc_aden_collections_LinkedList_poll_trace_s1 db "aden.collections.LinkedList.poll(LinkedList.aden:662)"
+adenc_aden_collections_LinkedList_poll_trace_s1_len equ 53
+adenc_aden_collections_LinkedList_poll_trace_s2 db "aden.collections.LinkedList.poll(LinkedList.aden:664)"
+adenc_aden_collections_LinkedList_poll_trace_s2_len equ 53
+trace_m320 db "aden.collections.LinkedList.remove"
+trace_m320_len equ 34
+adenc_aden_collections_LinkedList_remove_trace_s0 db "aden.collections.LinkedList.remove(LinkedList.aden:671)"
+adenc_aden_collections_LinkedList_remove_trace_s0_len equ 55
+adenc_aden_collections_LinkedList_remove_trace_s1 db "aden.collections.LinkedList.remove(LinkedList.aden:672)"
+adenc_aden_collections_LinkedList_remove_trace_s1_len equ 55
+adenc_aden_collections_LinkedList_remove_trace_s2 db "aden.collections.LinkedList.remove(LinkedList.aden:673)"
+adenc_aden_collections_LinkedList_remove_trace_s2_len equ 55
+adenc_aden_collections_LinkedList_remove_trace_s3 db "aden.collections.LinkedList.remove(LinkedList.aden:675)"
+adenc_aden_collections_LinkedList_remove_trace_s3_len equ 55
+trace_m325 db "aden.collections.LinkedList.peek"
+trace_m325_len equ 32
+adenc_aden_collections_LinkedList_peek_trace_s0 db "aden.collections.LinkedList.peek(LinkedList.aden:682)"
+adenc_aden_collections_LinkedList_peek_trace_s0_len equ 53
+adenc_aden_collections_LinkedList_peek_trace_s1 db "aden.collections.LinkedList.peek(LinkedList.aden:683)"
+adenc_aden_collections_LinkedList_peek_trace_s1_len equ 53
+adenc_aden_collections_LinkedList_peek_trace_s2 db "aden.collections.LinkedList.peek(LinkedList.aden:685)"
+adenc_aden_collections_LinkedList_peek_trace_s2_len equ 53
+trace_m329 db "aden.collections.LinkedList.element"
+trace_m329_len equ 35
+adenc_aden_collections_LinkedList_element_trace_s0 db "aden.collections.LinkedList.element(LinkedList.aden:692)"
+adenc_aden_collections_LinkedList_element_trace_s0_len equ 56
+adenc_aden_collections_LinkedList_element_trace_s1 db "aden.collections.LinkedList.element(LinkedList.aden:693)"
+adenc_aden_collections_LinkedList_element_trace_s1_len equ 56
+adenc_aden_collections_LinkedList_element_trace_s2 db "aden.collections.LinkedList.element(LinkedList.aden:694)"
+adenc_aden_collections_LinkedList_element_trace_s2_len equ 56
+adenc_aden_collections_LinkedList_element_trace_s3 db "aden.collections.LinkedList.element(LinkedList.aden:696)"
+adenc_aden_collections_LinkedList_element_trace_s3_len equ 56
+trace_m334 db "aden.collections.LinkedList.addFirst"
+trace_m334_len equ 36
+adenc_aden_collections_LinkedList_addFirst__Object_trace_s0 db "aden.collections.LinkedList.addFirst(LinkedList.aden:703)"
+adenc_aden_collections_LinkedList_addFirst__Object_trace_s0_len equ 57
+trace_m336 db "aden.collections.LinkedList.offerFirst"
+trace_m336_len equ 38
+adenc_aden_collections_LinkedList_offerFirst__Object_trace_s0 db "aden.collections.LinkedList.offerFirst(LinkedList.aden:710)"
+adenc_aden_collections_LinkedList_offerFirst__Object_trace_s0_len equ 59
+adenc_aden_collections_LinkedList_offerFirst__Object_trace_s1 db "aden.collections.LinkedList.offerFirst(LinkedList.aden:711)"
+adenc_aden_collections_LinkedList_offerFirst__Object_trace_s1_len equ 59
+trace_m339 db "aden.collections.LinkedList.addFirst"
+trace_m339_len equ 36
+adenc_aden_collections_LinkedList_addFirst__int_trace_s0 db "aden.collections.LinkedList.addFirst(LinkedList.aden:718)"
+adenc_aden_collections_LinkedList_addFirst__int_trace_s0_len equ 57
+trace_m341 db "aden.collections.LinkedList.addFirst"
+trace_m341_len equ 36
+adenc_aden_collections_LinkedList_addFirst__String_trace_s0 db "aden.collections.LinkedList.addFirst(LinkedList.aden:724)"
+adenc_aden_collections_LinkedList_addFirst__String_trace_s0_len equ 57
+trace_m343 db "aden.collections.LinkedList.offerFirst"
+trace_m343_len equ 38
+adenc_aden_collections_LinkedList_offerFirst__int_trace_s0 db "aden.collections.LinkedList.offerFirst(LinkedList.aden:731)"
+adenc_aden_collections_LinkedList_offerFirst__int_trace_s0_len equ 59
+adenc_aden_collections_LinkedList_offerFirst__int_trace_s1 db "aden.collections.LinkedList.offerFirst(LinkedList.aden:732)"
+adenc_aden_collections_LinkedList_offerFirst__int_trace_s1_len equ 59
+trace_m346 db "aden.collections.LinkedList.offerFirst"
+trace_m346_len equ 38
+adenc_aden_collections_LinkedList_offerFirst__String_trace_s0 db "aden.collections.LinkedList.offerFirst(LinkedList.aden:738)"
+adenc_aden_collections_LinkedList_offerFirst__String_trace_s0_len equ 59
+adenc_aden_collections_LinkedList_offerFirst__String_trace_s1 db "aden.collections.LinkedList.offerFirst(LinkedList.aden:739)"
+adenc_aden_collections_LinkedList_offerFirst__String_trace_s1_len equ 59
+trace_m349 db "aden.collections.LinkedList.addLast"
+trace_m349_len equ 35
+adenc_aden_collections_LinkedList_addLast__Object_trace_s0 db "aden.collections.LinkedList.addLast(LinkedList.aden:746)"
+adenc_aden_collections_LinkedList_addLast__Object_trace_s0_len equ 56
+trace_m351 db "aden.collections.LinkedList.offerLast"
+trace_m351_len equ 37
+adenc_aden_collections_LinkedList_offerLast__Object_trace_s0 db "aden.collections.LinkedList.offerLast(LinkedList.aden:753)"
+adenc_aden_collections_LinkedList_offerLast__Object_trace_s0_len equ 58
+trace_m353 db "aden.collections.LinkedList.addLast"
+trace_m353_len equ 35
+adenc_aden_collections_LinkedList_addLast__int_trace_s0 db "aden.collections.LinkedList.addLast(LinkedList.aden:760)"
+adenc_aden_collections_LinkedList_addLast__int_trace_s0_len equ 56
+trace_m355 db "aden.collections.LinkedList.addLast"
+trace_m355_len equ 35
+adenc_aden_collections_LinkedList_addLast__String_trace_s0 db "aden.collections.LinkedList.addLast(LinkedList.aden:766)"
+adenc_aden_collections_LinkedList_addLast__String_trace_s0_len equ 56
+trace_m357 db "aden.collections.LinkedList.offerLast"
+trace_m357_len equ 37
+adenc_aden_collections_LinkedList_offerLast__int_trace_s0 db "aden.collections.LinkedList.offerLast(LinkedList.aden:773)"
+adenc_aden_collections_LinkedList_offerLast__int_trace_s0_len equ 58
+trace_m359 db "aden.collections.LinkedList.offerLast"
+trace_m359_len equ 37
+adenc_aden_collections_LinkedList_offerLast__String_trace_s0 db "aden.collections.LinkedList.offerLast(LinkedList.aden:779)"
+adenc_aden_collections_LinkedList_offerLast__String_trace_s0_len equ 58
+trace_m361 db "aden.collections.LinkedList.getFirst"
+trace_m361_len equ 36
+adenc_aden_collections_LinkedList_getFirst_trace_s0 db "aden.collections.LinkedList.getFirst(LinkedList.aden:786)"
+adenc_aden_collections_LinkedList_getFirst_trace_s0_len equ 57
+adenc_aden_collections_LinkedList_getFirst_trace_s1 db "aden.collections.LinkedList.getFirst(LinkedList.aden:787)"
+adenc_aden_collections_LinkedList_getFirst_trace_s1_len equ 57
+adenc_aden_collections_LinkedList_getFirst_trace_s2 db "aden.collections.LinkedList.getFirst(LinkedList.aden:788)"
+adenc_aden_collections_LinkedList_getFirst_trace_s2_len equ 57
+adenc_aden_collections_LinkedList_getFirst_trace_s3 db "aden.collections.LinkedList.getFirst(LinkedList.aden:790)"
+adenc_aden_collections_LinkedList_getFirst_trace_s3_len equ 57
+trace_m366 db "aden.collections.LinkedList.removeFirst"
+trace_m366_len equ 39
+adenc_aden_collections_LinkedList_removeFirst_trace_s0 db "aden.collections.LinkedList.removeFirst(LinkedList.aden:797)"
+adenc_aden_collections_LinkedList_removeFirst_trace_s0_len equ 60
+adenc_aden_collections_LinkedList_removeFirst_trace_s1 db "aden.collections.LinkedList.removeFirst(LinkedList.aden:798)"
+adenc_aden_collections_LinkedList_removeFirst_trace_s1_len equ 60
+adenc_aden_collections_LinkedList_removeFirst_trace_s2 db "aden.collections.LinkedList.removeFirst(LinkedList.aden:799)"
+adenc_aden_collections_LinkedList_removeFirst_trace_s2_len equ 60
+adenc_aden_collections_LinkedList_removeFirst_trace_s3 db "aden.collections.LinkedList.removeFirst(LinkedList.aden:801)"
+adenc_aden_collections_LinkedList_removeFirst_trace_s3_len equ 60
+trace_m371 db "aden.collections.LinkedList.peekFirst"
+trace_m371_len equ 37
+adenc_aden_collections_LinkedList_peekFirst_trace_s0 db "aden.collections.LinkedList.peekFirst(LinkedList.aden:808)"
+adenc_aden_collections_LinkedList_peekFirst_trace_s0_len equ 58
+trace_m373 db "aden.collections.LinkedList.pollFirst"
+trace_m373_len equ 37
+adenc_aden_collections_LinkedList_pollFirst_trace_s0 db "aden.collections.LinkedList.pollFirst(LinkedList.aden:815)"
+adenc_aden_collections_LinkedList_pollFirst_trace_s0_len equ 58
+trace_m375 db "aden.collections.LinkedList.removeLast"
+trace_m375_len equ 38
+adenc_aden_collections_LinkedList_removeLast_trace_s0 db "aden.collections.LinkedList.removeLast(LinkedList.aden:822)"
+adenc_aden_collections_LinkedList_removeLast_trace_s0_len equ 59
+adenc_aden_collections_LinkedList_removeLast_trace_s1 db "aden.collections.LinkedList.removeLast(LinkedList.aden:823)"
+adenc_aden_collections_LinkedList_removeLast_trace_s1_len equ 59
+adenc_aden_collections_LinkedList_removeLast_trace_s2 db "aden.collections.LinkedList.removeLast(LinkedList.aden:824)"
+adenc_aden_collections_LinkedList_removeLast_trace_s2_len equ 59
+adenc_aden_collections_LinkedList_removeLast_trace_s3 db "aden.collections.LinkedList.removeLast(LinkedList.aden:826)"
+adenc_aden_collections_LinkedList_removeLast_trace_s3_len equ 59
+trace_m380 db "aden.collections.LinkedList.getLast"
+trace_m380_len equ 35
+adenc_aden_collections_LinkedList_getLast_trace_s0 db "aden.collections.LinkedList.getLast(LinkedList.aden:833)"
+adenc_aden_collections_LinkedList_getLast_trace_s0_len equ 56
+adenc_aden_collections_LinkedList_getLast_trace_s1 db "aden.collections.LinkedList.getLast(LinkedList.aden:834)"
+adenc_aden_collections_LinkedList_getLast_trace_s1_len equ 56
+adenc_aden_collections_LinkedList_getLast_trace_s2 db "aden.collections.LinkedList.getLast(LinkedList.aden:835)"
+adenc_aden_collections_LinkedList_getLast_trace_s2_len equ 56
+adenc_aden_collections_LinkedList_getLast_trace_s3 db "aden.collections.LinkedList.getLast(LinkedList.aden:837)"
+adenc_aden_collections_LinkedList_getLast_trace_s3_len equ 56
+trace_m385 db "aden.collections.LinkedList.peekLast"
+trace_m385_len equ 36
+adenc_aden_collections_LinkedList_peekLast_trace_s0 db "aden.collections.LinkedList.peekLast(LinkedList.aden:844)"
+adenc_aden_collections_LinkedList_peekLast_trace_s0_len equ 57
+adenc_aden_collections_LinkedList_peekLast_trace_s1 db "aden.collections.LinkedList.peekLast(LinkedList.aden:845)"
+adenc_aden_collections_LinkedList_peekLast_trace_s1_len equ 57
+adenc_aden_collections_LinkedList_peekLast_trace_s2 db "aden.collections.LinkedList.peekLast(LinkedList.aden:847)"
+adenc_aden_collections_LinkedList_peekLast_trace_s2_len equ 57
+trace_m389 db "aden.collections.LinkedList.pollLast"
+trace_m389_len equ 36
+adenc_aden_collections_LinkedList_pollLast_trace_s0 db "aden.collections.LinkedList.pollLast(LinkedList.aden:854)"
+adenc_aden_collections_LinkedList_pollLast_trace_s0_len equ 57
+adenc_aden_collections_LinkedList_pollLast_trace_s1 db "aden.collections.LinkedList.pollLast(LinkedList.aden:855)"
+adenc_aden_collections_LinkedList_pollLast_trace_s1_len equ 57
+adenc_aden_collections_LinkedList_pollLast_trace_s2 db "aden.collections.LinkedList.pollLast(LinkedList.aden:857)"
+adenc_aden_collections_LinkedList_pollLast_trace_s2_len equ 57
+trace_m393 db "aden.collections.LinkedList.removeFirstOccurrence"
+trace_m393_len equ 49
+adenc_aden_collections_LinkedList_removeFirstOccurrence__Object_trace_s0 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 114, 101, 109, 111
+    db 118, 101, 70, 105, 114, 115, 116, 79, 99, 99, 117, 114, 114, 101, 110, 99, 101, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101
+    db 110, 58, 56, 54, 52, 41
+adenc_aden_collections_LinkedList_removeFirstOccurrence__Object_trace_s0_len equ 70
+trace_m395 db "aden.collections.LinkedList.removeLastOccurrence"
+trace_m395_len equ 48
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s0 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 114, 101, 109, 111
+    db 118, 101, 76, 97, 115, 116, 79, 99, 99, 117, 114, 114, 101, 110, 99, 101, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110
+    db 58, 56, 55, 49, 41
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s0_len equ 69
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s1 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 114, 101, 109, 111
+    db 118, 101, 76, 97, 115, 116, 79, 99, 99, 117, 114, 114, 101, 110, 99, 101, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110
+    db 58, 56, 55, 50, 41
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s1_len equ 69
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s2 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 114, 101, 109, 111
+    db 118, 101, 76, 97, 115, 116, 79, 99, 99, 117, 114, 114, 101, 110, 99, 101, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110
+    db 58, 56, 55, 51, 41
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s2_len equ 69
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s3 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 114, 101, 109, 111
+    db 118, 101, 76, 97, 115, 116, 79, 99, 99, 117, 114, 114, 101, 110, 99, 101, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110
+    db 58, 56, 55, 52, 41
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s3_len equ 69
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s4 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 114, 101, 109, 111
+    db 118, 101, 76, 97, 115, 116, 79, 99, 99, 117, 114, 114, 101, 110, 99, 101, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110
+    db 58, 56, 55, 53, 41
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s4_len equ 69
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s5 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 114, 101, 109, 111
+    db 118, 101, 76, 97, 115, 116, 79, 99, 99, 117, 114, 114, 101, 110, 99, 101, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110
+    db 58, 56, 55, 55, 41
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s5_len equ 69
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s6 db 97, 100, 101, 110, 46, 99, 111, 108, 108, 101, 99, 116, 105, 111, 110, 115, 46, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 114, 101, 109, 111
+    db 118, 101, 76, 97, 115, 116, 79, 99, 99, 117, 114, 114, 101, 110, 99, 101, 40, 76, 105, 110, 107, 101, 100, 76, 105, 115, 116, 46, 97, 100, 101, 110
+    db 58, 56, 55, 57, 41
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s6_len equ 69
+trace_m403 db "aden.collections.LinkedList.push"
+trace_m403_len equ 32
+adenc_aden_collections_LinkedList_push__Object_trace_s0 db "aden.collections.LinkedList.push(LinkedList.aden:886)"
+adenc_aden_collections_LinkedList_push__Object_trace_s0_len equ 53
+trace_m405 db "aden.collections.LinkedList.push"
+trace_m405_len equ 32
+adenc_aden_collections_LinkedList_push__int_trace_s0 db "aden.collections.LinkedList.push(LinkedList.aden:893)"
+adenc_aden_collections_LinkedList_push__int_trace_s0_len equ 53
+trace_m407 db "aden.collections.LinkedList.push"
+trace_m407_len equ 32
+adenc_aden_collections_LinkedList_push__String_trace_s0 db "aden.collections.LinkedList.push(LinkedList.aden:899)"
+adenc_aden_collections_LinkedList_push__String_trace_s0_len equ 53
+trace_m409 db "aden.collections.LinkedList.pop"
+trace_m409_len equ 31
+adenc_aden_collections_LinkedList_pop_trace_s0 db "aden.collections.LinkedList.pop(LinkedList.aden:906)"
+adenc_aden_collections_LinkedList_pop_trace_s0_len equ 52
+cidset_0 dd 30
+cidset_1 dd 23
+msg0 db "Invalid cast"
+msg0_len equ 12
+msg1 db "Invalid cast"
+msg1_len equ 12
+msg2 db "LinkedList index out of bounds"
+msg2_len equ 30
+msg3 db "LinkedList index out of bounds"
+msg3_len equ 30
+msg4 db "LinkedList value is not an int"
+msg4_len equ 30
+msg5 db "Invalid cast"
+msg5_len equ 12
+msg6 db "Invalid cast"
+msg6_len equ 12
+msg7 db "LinkedList index out of bounds"
+msg7_len equ 30
+msg8 db "Invalid cast"
+msg8_len equ 12
+msg9 db "LinkedList value is not an int"
+msg9_len equ 30
+msg10 db "Invalid cast"
+msg10_len equ 12
+msg11 db "Invalid cast"
+msg11_len equ 12
+msg12 db "Queue is empty"
+msg12_len equ 14
+msg13 db "Queue is empty"
+msg13_len equ 14
+msg14 db "Deque is empty"
+msg14_len equ 14
+msg15 db "Deque is empty"
+msg15_len equ 14
+msg16 db "Deque is empty"
+msg16_len equ 14
+msg17 db "Deque is empty"
+msg17_len equ 14
+
+.code
+adenc_fcap_aden_collections_LinkedList_ensure proc
+    cmp ecx, 1
+    jb adenc_fcap_aden_collections_LinkedList_ensure_done_ok
+    cmp ecx, dword ptr [adenc_fcap_aden_collections_LinkedList]
+    jbe adenc_fcap_aden_collections_LinkedList_ensure_done_ok
+    sub rsp, 88
+    mov qword ptr [rsp+40], rbx
+    mov qword ptr [rsp+48], rsi
+    mov qword ptr [rsp+56], rdi
+    mov qword ptr [rsp+64], r12
+    mov qword ptr [rsp+72], r13
+    mov dword ptr [rsp+80], ecx
+    mov eax, dword ptr [adenc_fcap_aden_collections_LinkedList]
+    mov dword ptr [rsp+84], eax
+    call GetProcessHeap
+    test rax, rax
+    jz adenc_fcap_aden_collections_LinkedList_ensure_fail
+    mov r13, rax
+    mov eax, dword ptr [rt_slot_capacity]
+    add eax, 1
+    shl eax, 3
+    mov edx, eax
+    mov rcx, r13
+    mov r8d, edx
+    mov edx, 8
+    call HeapAlloc
+    test rax, rax
+    jz adenc_fcap_aden_collections_LinkedList_ensure_alloc_fail
+    mov r12, rax
+    mov rbx, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    xor esi, esi
+adenc_fcap_aden_collections_LinkedList_ensure_field_0_done_copy_loop:
+    cmp esi, dword ptr [rsp+84]
+    ja adenc_fcap_aden_collections_LinkedList_ensure_field_0_done
+    test rbx, rbx
+    jz adenc_fcap_aden_collections_LinkedList_ensure_field_0_done_next
+    mov rax, qword ptr [rbx+rsi*8]
+    mov qword ptr [r12+rsi*8], rax
+adenc_fcap_aden_collections_LinkedList_ensure_field_0_done_next:
+    add esi, 1
+    jmp adenc_fcap_aden_collections_LinkedList_ensure_field_0_done_copy_loop
+adenc_fcap_aden_collections_LinkedList_ensure_field_0_done:
+    cmp dword ptr [adenc_fld_aden_collections_LinkedList_first_heap_owned], 0
+    je adenc_fcap_aden_collections_LinkedList_ensure_field_0_done_commit
+    test rbx, rbx
+    jz adenc_fcap_aden_collections_LinkedList_ensure_field_0_done_commit
+    mov rcx, r13
+    xor edx, edx
+    mov r8, rbx
+    call HeapFree
+adenc_fcap_aden_collections_LinkedList_ensure_field_0_done_commit:
+    mov qword ptr [adenc_fld_aden_collections_LinkedList_first], r12
+    mov dword ptr [adenc_fld_aden_collections_LinkedList_first_heap_owned], 1
+    mov eax, dword ptr [rt_slot_capacity]
+    add eax, 1
+    shl eax, 3
+    mov edx, eax
+    mov rcx, r13
+    mov r8d, edx
+    mov edx, 8
+    call HeapAlloc
+    test rax, rax
+    jz adenc_fcap_aden_collections_LinkedList_ensure_alloc_fail
+    mov r12, rax
+    mov rbx, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    xor esi, esi
+adenc_fcap_aden_collections_LinkedList_ensure_field_1_done_copy_loop:
+    cmp esi, dword ptr [rsp+84]
+    ja adenc_fcap_aden_collections_LinkedList_ensure_field_1_done
+    test rbx, rbx
+    jz adenc_fcap_aden_collections_LinkedList_ensure_field_1_done_next
+    mov rax, qword ptr [rbx+rsi*8]
+    mov qword ptr [r12+rsi*8], rax
+adenc_fcap_aden_collections_LinkedList_ensure_field_1_done_next:
+    add esi, 1
+    jmp adenc_fcap_aden_collections_LinkedList_ensure_field_1_done_copy_loop
+adenc_fcap_aden_collections_LinkedList_ensure_field_1_done:
+    cmp dword ptr [adenc_fld_aden_collections_LinkedList_last_heap_owned], 0
+    je adenc_fcap_aden_collections_LinkedList_ensure_field_1_done_commit
+    test rbx, rbx
+    jz adenc_fcap_aden_collections_LinkedList_ensure_field_1_done_commit
+    mov rcx, r13
+    xor edx, edx
+    mov r8, rbx
+    call HeapFree
+adenc_fcap_aden_collections_LinkedList_ensure_field_1_done_commit:
+    mov qword ptr [adenc_fld_aden_collections_LinkedList_last], r12
+    mov dword ptr [adenc_fld_aden_collections_LinkedList_last_heap_owned], 1
+    mov eax, dword ptr [rt_slot_capacity]
+    add eax, 1
+    shl eax, 2
+    mov edx, eax
+    mov rcx, r13
+    mov r8d, edx
+    mov edx, 8
+    call HeapAlloc
+    test rax, rax
+    jz adenc_fcap_aden_collections_LinkedList_ensure_alloc_fail
+    mov r12, rax
+    mov rbx, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    xor esi, esi
+adenc_fcap_aden_collections_LinkedList_ensure_field_2_done_copy_loop:
+    cmp esi, dword ptr [rsp+84]
+    ja adenc_fcap_aden_collections_LinkedList_ensure_field_2_done
+    test rbx, rbx
+    jz adenc_fcap_aden_collections_LinkedList_ensure_field_2_done_next
+    mov eax, dword ptr [rbx+rsi*4]
+    mov dword ptr [r12+rsi*4], eax
+adenc_fcap_aden_collections_LinkedList_ensure_field_2_done_next:
+    add esi, 1
+    jmp adenc_fcap_aden_collections_LinkedList_ensure_field_2_done_copy_loop
+adenc_fcap_aden_collections_LinkedList_ensure_field_2_done:
+    cmp dword ptr [adenc_fld_aden_collections_LinkedList_count_heap_owned], 0
+    je adenc_fcap_aden_collections_LinkedList_ensure_field_2_done_commit
+    test rbx, rbx
+    jz adenc_fcap_aden_collections_LinkedList_ensure_field_2_done_commit
+    mov rcx, r13
+    xor edx, edx
+    mov r8, rbx
+    call HeapFree
+adenc_fcap_aden_collections_LinkedList_ensure_field_2_done_commit:
+    mov qword ptr [adenc_fld_aden_collections_LinkedList_count], r12
+    mov dword ptr [adenc_fld_aden_collections_LinkedList_count_heap_owned], 1
+    mov eax, dword ptr [rt_slot_capacity]
+    mov dword ptr [adenc_fcap_aden_collections_LinkedList], eax
+    mov rbx, qword ptr [rsp+40]
+    mov rsi, qword ptr [rsp+48]
+    mov rdi, qword ptr [rsp+56]
+    mov r12, qword ptr [rsp+64]
+    mov r13, qword ptr [rsp+72]
+    add rsp, 88
+adenc_fcap_aden_collections_LinkedList_ensure_done_ok:
+    xor eax, eax
+    ret
+adenc_fcap_aden_collections_LinkedList_ensure_alloc_fail:
+adenc_fcap_aden_collections_LinkedList_ensure_fail:
+    mov ecx, 1
+    call ExitProcess
+    xor eax, eax
+    ret
+adenc_fcap_aden_collections_LinkedList_ensure endp
+
+adenc_fcap_aden_collections_LinkedList_arc_teardown proc
+    cmp ecx, 1
+    jb adenc_fcap_aden_collections_LinkedList_arc_teardown_done
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_collections_LinkedList_arc_teardown_done
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rcx*8]
+    mov qword ptr [r10+rcx*8], 0
+    test rax, rax
+    jz adenc_fcap_aden_collections_LinkedList_arc_teardown_field_0_skip
+    mov rcx, rax
+    call adenc_rt_arcRelease
+adenc_fcap_aden_collections_LinkedList_arc_teardown_field_0_skip:
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rcx*8]
+    mov qword ptr [r10+rcx*8], 0
+    test rax, rax
+    jz adenc_fcap_aden_collections_LinkedList_arc_teardown_field_1_skip
+    mov rcx, rax
+    call adenc_rt_arcRelease
+adenc_fcap_aden_collections_LinkedList_arc_teardown_field_1_skip:
+    add rsp, 40
+adenc_fcap_aden_collections_LinkedList_arc_teardown_done:
+    ret
+adenc_fcap_aden_collections_LinkedList_arc_teardown endp
+adenc_fcap_aden_collections_LinkedList_arc_scan_edges proc
+    cmp ecx, 1
+    jb adenc_fcap_aden_collections_LinkedList_arc_scan_edges_done
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_collections_LinkedList_arc_scan_edges_done
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rcx, qword ptr [r10+rcx*8]
+    test rcx, rcx
+    jz adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_0_skip
+    and ecx, 4294967295
+    cmp ecx, 1
+    jb adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_0_skip
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_0_skip
+    lea r11, rt_arc_refcounts_tbl
+    mov eax, dword ptr [r11+rcx*4]
+    cmp eax, 0
+    je adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_0_skip
+    lea r11, rt_arc_kinds_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_0_skip
+    lea r11, rt_arc_flags_tbl
+    mov eax, dword ptr [r11+rcx*4]
+    cmp eax, 4294967294
+    jae adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_0_skip
+    add eax, 1
+    mov dword ptr [r11+rcx*4], eax
+adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_0_skip:
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rcx, qword ptr [r10+rcx*8]
+    test rcx, rcx
+    jz adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_1_skip
+    and ecx, 4294967295
+    cmp ecx, 1
+    jb adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_1_skip
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_1_skip
+    lea r11, rt_arc_refcounts_tbl
+    mov eax, dword ptr [r11+rcx*4]
+    cmp eax, 0
+    je adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_1_skip
+    lea r11, rt_arc_kinds_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_1_skip
+    lea r11, rt_arc_flags_tbl
+    mov eax, dword ptr [r11+rcx*4]
+    cmp eax, 4294967294
+    jae adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_1_skip
+    add eax, 1
+    mov dword ptr [r11+rcx*4], eax
+adenc_fcap_aden_collections_LinkedList_arc_scan_edges_field_1_skip:
+    add rsp, 40
+adenc_fcap_aden_collections_LinkedList_arc_scan_edges_done:
+    ret
+adenc_fcap_aden_collections_LinkedList_arc_scan_edges endp
+adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges proc
+    cmp ecx, 1
+    jb adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_done
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_done
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rcx, qword ptr [r10+rcx*8]
+    test rcx, rcx
+    jz adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_0_skip
+    and ecx, 4294967295
+    cmp ecx, 1
+    jb adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_0_skip
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_0_skip
+    lea r11, rt_arc_kinds_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_0_skip
+    lea r11, rt_arc_refcounts_tbl
+    cmp dword ptr [r11+rcx*4], 0
+    je adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_0_skip
+    lea r11, rt_arc_flags_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_0_skip
+    mov dword ptr [r11+rcx*4], 0
+adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_0_skip:
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rcx, qword ptr [r10+rcx*8]
+    test rcx, rcx
+    jz adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_1_skip
+    and ecx, 4294967295
+    cmp ecx, 1
+    jb adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_1_skip
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_1_skip
+    lea r11, rt_arc_kinds_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_1_skip
+    lea r11, rt_arc_refcounts_tbl
+    cmp dword ptr [r11+rcx*4], 0
+    je adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_1_skip
+    lea r11, rt_arc_flags_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_1_skip
+    mov dword ptr [r11+rcx*4], 0
+adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_field_1_skip:
+    add rsp, 40
+adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges_done:
+    ret
+adenc_fcap_aden_collections_LinkedList_arc_invalidate_edges endp
+adenc_aden_collections_LinkedList_LinkedList proc
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m0
+    mov edx, trace_m0_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+    mov rax, qword ptr [rsp+64]
+    test rax, rax
+    jne adenc_aden_collections_LinkedList_LinkedList_ctor_reuse
+    mov ecx, 4
+    call adenc_rt_objectNew
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_fcap_aden_collections_LinkedList_ensure
+    mov rax, qword ptr [rsp+104]
+    jmp adenc_aden_collections_LinkedList_LinkedList_ctor_ready
+adenc_aden_collections_LinkedList_LinkedList_ctor_reuse:
+    mov rax, qword ptr [rsp+64]
+adenc_aden_collections_LinkedList_LinkedList_ctor_ready:
+    mov rcx, rax
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_LinkedList_b0:
+    lea rcx, adenc_aden_collections_LinkedList_LinkedList_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_LinkedList_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    lea rcx, adenc_aden_collections_LinkedList_LinkedList_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_LinkedList_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    lea rcx, adenc_aden_collections_LinkedList_LinkedList_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_LinkedList_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    mov rax, qword ptr [rsp+64]
+    jmp adenc_aden_collections_LinkedList_LinkedList_epilogue
+adenc_aden_collections_LinkedList_LinkedList_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_collections_LinkedList_LinkedList_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 200
+    ret
+adenc_aden_collections_LinkedList_LinkedList endp
+
+adenc_aden_collections_LinkedList_size proc
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m4
+    mov edx, trace_m4_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_size_b0:
+    lea rcx, adenc_aden_collections_LinkedList_size_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_size_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    jmp adenc_aden_collections_LinkedList_size_epilogue
+adenc_aden_collections_LinkedList_size_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_collections_LinkedList_size_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 200
+    ret
+adenc_aden_collections_LinkedList_size endp
+
+adenc_aden_collections_LinkedList_iterator proc
+    sub rsp, 232
+    mov qword ptr [rsp+200], rcx
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    lea rcx, trace_m6
+    mov edx, trace_m6_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+200]
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_iterator_b0:
+    lea rcx, adenc_aden_collections_LinkedList_iterator_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_iterator_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+72], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+72]
+    mov rax, qword ptr [rsp+72]
+    mov rdx, rax
+    xor ecx, ecx
+    call adenc_aden_collections_LinkedListIterator_LinkedListIterator__LinkedListNode
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    jmp adenc_aden_collections_LinkedList_iterator_epilogue
+adenc_aden_collections_LinkedList_iterator_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_collections_LinkedList_iterator_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 232
+    ret
+adenc_aden_collections_LinkedList_iterator endp
+
+adenc_aden_collections_LinkedList_isEmpty proc
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m8
+    mov edx, trace_m8_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_isEmpty_b0:
+    lea rcx, adenc_aden_collections_LinkedList_isEmpty_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_isEmpty_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+72], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+72]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp adenc_aden_collections_LinkedList_isEmpty_epilogue
+adenc_aden_collections_LinkedList_isEmpty_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_isEmpty_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 200
+    ret
+adenc_aden_collections_LinkedList_isEmpty endp
+
+adenc_aden_collections_LinkedList_clear proc
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m10
+    mov edx, trace_m10_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_clear_b0:
+    lea rcx, adenc_aden_collections_LinkedList_clear_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_clear_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    lea rcx, adenc_aden_collections_LinkedList_clear_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_clear_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    lea rcx, adenc_aden_collections_LinkedList_clear_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_clear_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_clear_epilogue
+adenc_aden_collections_LinkedList_clear_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_collections_LinkedList_clear_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 200
+    ret
+adenc_aden_collections_LinkedList_clear endp
+
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m14
+    mov edx, trace_m14_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+88], rdx
+    mov qword ptr [rsp+96], r8
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+72], 0
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+96]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b1
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b2
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b1:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_epilogue
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b3
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+112], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+112]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne LinkedList_valuesEqual_ternary_then_2_11
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+120], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+120]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    jmp LinkedList_valuesEqual_ternary_done_2_11
+LinkedList_valuesEqual_ternary_then_2_11:
+    mov eax, 1
+LinkedList_valuesEqual_ternary_done_2_11:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b4
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b5
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b4:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_epilogue
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b5:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b6
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b6:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    test rax, rax
+    je LinkedList_valuesEqual_instof_4_15_false
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_valuesEqual_instof_4_15_false
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_valuesEqual_instof_4_15_true
+LinkedList_valuesEqual_instof_4_15_false:
+    xor eax, eax
+    jmp LinkedList_valuesEqual_instof_4_15_done
+LinkedList_valuesEqual_instof_4_15_true:
+    mov eax, 1
+LinkedList_valuesEqual_instof_4_15_done:
+    test rax, rax
+    jne LinkedList_valuesEqual_ternary_then_4_18
+    mov eax, 0
+    jmp LinkedList_valuesEqual_ternary_done_4_18
+LinkedList_valuesEqual_ternary_then_4_18:
+    mov rax, qword ptr [rsp+96]
+    test rax, rax
+    je LinkedList_valuesEqual_instof_4_17_false
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_valuesEqual_instof_4_17_false
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_valuesEqual_instof_4_17_true
+LinkedList_valuesEqual_instof_4_17_false:
+    xor eax, eax
+    jmp LinkedList_valuesEqual_instof_4_17_done
+LinkedList_valuesEqual_instof_4_17_true:
+    mov eax, 1
+LinkedList_valuesEqual_instof_4_17_done:
+LinkedList_valuesEqual_ternary_done_4_18:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b7
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b8
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b7:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    test rax, rax
+    je LinkedList_valuesEqual_cast_5_20_null
+    mov qword ptr [rsp+40], rax
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_valuesEqual_cast_5_20_fail
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_valuesEqual_cast_5_20_ok
+LinkedList_valuesEqual_cast_5_20_fail:
+    lea rcx, msg0
+    mov edx, msg0_len
+    call adenc_rt_stringFromBytes
+    mov rcx, rax
+    call adenc_rt_panic
+    xor eax, eax
+    jmp LinkedList_valuesEqual_cast_5_20_done
+LinkedList_valuesEqual_cast_5_20_null:
+    xor eax, eax
+    jmp LinkedList_valuesEqual_cast_5_20_done
+LinkedList_valuesEqual_cast_5_20_ok:
+    mov rax, qword ptr [rsp+40]
+LinkedList_valuesEqual_cast_5_20_done:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    test rax, rax
+    je LinkedList_valuesEqual_cast_6_22_null
+    mov qword ptr [rsp+40], rax
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_valuesEqual_cast_6_22_fail
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_valuesEqual_cast_6_22_ok
+LinkedList_valuesEqual_cast_6_22_fail:
+    lea rcx, msg1
+    mov edx, msg1_len
+    call adenc_rt_stringFromBytes
+    mov rcx, rax
+    call adenc_rt_panic
+    xor eax, eax
+    jmp LinkedList_valuesEqual_cast_6_22_done
+LinkedList_valuesEqual_cast_6_22_null:
+    xor eax, eax
+    jmp LinkedList_valuesEqual_cast_6_22_done
+LinkedList_valuesEqual_cast_6_22_ok:
+    mov rax, qword ptr [rsp+40]
+LinkedList_valuesEqual_cast_6_22_done:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+128], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+128]
+    mov rax, qword ptr [rsp+128]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+176]
+    call adenc_aden_lang_String_equals__Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+168]
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_epilogue
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b8:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b9
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_b9:
+    lea rcx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_valuesEqual__Object_Object_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_valuesEqual__Object_Object_epilogue
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_epilogue:
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+168]
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object_epilogue_post:
+    mov qword ptr [rsp+168], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+168]
+    add rsp, 296
+    ret
+adenc_aden_collections_LinkedList_valuesEqual__Object_Object endp
+
+adenc_aden_collections_LinkedList_appendValue__Object proc
+    sub rsp, 264
+    mov qword ptr [rsp+232], rcx
+    mov qword ptr [rsp+240], rdx
+    mov qword ptr [rsp+248], r8
+    mov qword ptr [rsp+256], r9
+    lea rcx, trace_m24
+    mov edx, trace_m24_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+232]
+    mov rdx, qword ptr [rsp+240]
+    mov r8, qword ptr [rsp+248]
+    mov r9, qword ptr [rsp+256]
+    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+80], rdx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_appendValue__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    xor ecx, ecx
+    call adenc_aden_collections_LinkedListNode_LinkedListNode__Object
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_appendValue__Object_b1
+    jmp adenc_aden_collections_LinkedList_appendValue__Object_b2
+adenc_aden_collections_LinkedList_appendValue__Object_b1:
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_appendValue__Object_b3
+adenc_aden_collections_LinkedList_appendValue__Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_appendValue__Object_b3
+adenc_aden_collections_LinkedList_appendValue__Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    add eax, edx
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    lea rcx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_appendValue__Object_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_appendValue__Object_epilogue
+adenc_aden_collections_LinkedList_appendValue__Object_epilogue:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+adenc_aden_collections_LinkedList_appendValue__Object_epilogue_post:
+    mov qword ptr [rsp+144], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+144]
+    add rsp, 264
+    ret
+adenc_aden_collections_LinkedList_appendValue__Object endp
+
+adenc_aden_collections_LinkedList_appendIntValue__int proc
+    sub rsp, 264
+    mov qword ptr [rsp+232], rcx
+    mov qword ptr [rsp+240], rdx
+    mov qword ptr [rsp+248], r8
+    mov qword ptr [rsp+256], r9
+    lea rcx, trace_m34
+    mov edx, trace_m34_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+232]
+    mov rdx, qword ptr [rsp+240]
+    mov r8, qword ptr [rsp+248]
+    mov r9, qword ptr [rsp+256]
+    mov qword ptr [rsp+72], rcx
+    mov dword ptr [rsp+80], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_appendIntValue__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    xor ecx, ecx
+    call adenc_aden_collections_LinkedListNode_LinkedListNode__Object
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+104], rax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setIntValue__int
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_appendIntValue__int_b1
+    jmp adenc_aden_collections_LinkedList_appendIntValue__int_b2
+adenc_aden_collections_LinkedList_appendIntValue__int_b1:
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_appendIntValue__int_b3
+adenc_aden_collections_LinkedList_appendIntValue__int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_appendIntValue__int_b3
+adenc_aden_collections_LinkedList_appendIntValue__int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    add eax, edx
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    lea rcx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_appendIntValue__int_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_appendIntValue__int_epilogue
+adenc_aden_collections_LinkedList_appendIntValue__int_epilogue:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+adenc_aden_collections_LinkedList_appendIntValue__int_epilogue_post:
+    mov qword ptr [rsp+144], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+144]
+    add rsp, 264
+    ret
+adenc_aden_collections_LinkedList_appendIntValue__int endp
+
+adenc_aden_collections_LinkedList_insertValue__int_Object proc
+    sub rsp, 312
+    mov qword ptr [rsp+280], rcx
+    mov qword ptr [rsp+288], rdx
+    mov qword ptr [rsp+296], r8
+    mov qword ptr [rsp+304], r9
+    lea rcx, trace_m45
+    mov edx, trace_m45_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+280]
+    mov rdx, qword ptr [rsp+288]
+    mov r8, qword ptr [rsp+296]
+    mov r9, qword ptr [rsp+304]
+    mov qword ptr [rsp+88], rcx
+    mov dword ptr [rsp+96], edx
+    mov qword ptr [rsp+104], r8
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+80], 0
+    mov qword ptr [rsp+72], 0
+adenc_aden_collections_LinkedList_insertValue__int_Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+112], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test rax, rax
+    jne LinkedList_insertValue_ternary_then_0_8
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+120], eax
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    jmp LinkedList_insertValue_ternary_done_0_8
+LinkedList_insertValue_ternary_then_0_8:
+    mov eax, 1
+LinkedList_insertValue_ternary_done_0_8:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_insertValue__int_Object_b1
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_b2
+adenc_aden_collections_LinkedList_insertValue__int_Object_b1:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg2
+    mov edx, msg2_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_epilogue
+adenc_aden_collections_LinkedList_insertValue__int_Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_b3
+adenc_aden_collections_LinkedList_insertValue__int_Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+128], eax
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_insertValue__int_Object_b4
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_b5
+adenc_aden_collections_LinkedList_insertValue__int_Object_b4:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+88]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_epilogue
+adenc_aden_collections_LinkedList_insertValue__int_Object_b5:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_b6
+adenc_aden_collections_LinkedList_insertValue__int_Object_b6:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+152], rax
+    mov eax, dword ptr [rsp+152]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+88]
+    call adenc_aden_collections_LinkedList_nodeAt__int
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    xor ecx, ecx
+    call adenc_aden_collections_LinkedListNode_LinkedListNode__Object
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+200], rax
+    mov rcx, qword ptr [rsp+200]
+    call adenc_aden_collections_LinkedListNode_getPrevious
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+184]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+80], rax
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s10
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s11
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+136]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_insertValue__int_Object_b7
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_b8
+adenc_aden_collections_LinkedList_insertValue__int_Object_b7:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s12
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s12_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+184], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s11
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_b9
+adenc_aden_collections_LinkedList_insertValue__int_Object_b8:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s13
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s13_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s11
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_b9
+adenc_aden_collections_LinkedList_insertValue__int_Object_b9:
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s14
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s14_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s15
+    mov edx, adenc_aden_collections_LinkedList_insertValue__int_Object_trace_s15_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+144], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+144]
+    add eax, edx
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_insertValue__int_Object_epilogue
+adenc_aden_collections_LinkedList_insertValue__int_Object_epilogue:
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+adenc_aden_collections_LinkedList_insertValue__int_Object_epilogue_post:
+    mov qword ptr [rsp+192], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+192]
+    add rsp, 312
+    ret
+adenc_aden_collections_LinkedList_insertValue__int_Object endp
+
+adenc_aden_collections_LinkedList_insertIntValue__int_int proc
+    sub rsp, 312
+    mov qword ptr [rsp+280], rcx
+    mov qword ptr [rsp+288], rdx
+    mov qword ptr [rsp+296], r8
+    mov qword ptr [rsp+304], r9
+    lea rcx, trace_m62
+    mov edx, trace_m62_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+280]
+    mov rdx, qword ptr [rsp+288]
+    mov r8, qword ptr [rsp+296]
+    mov r9, qword ptr [rsp+304]
+    mov qword ptr [rsp+88], rcx
+    mov dword ptr [rsp+96], edx
+    mov dword ptr [rsp+104], r8d
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+80], 0
+    mov qword ptr [rsp+72], 0
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+112], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test rax, rax
+    jne LinkedList_insertIntValue_ternary_then_0_8
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+120], eax
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    jmp LinkedList_insertIntValue_ternary_done_0_8
+LinkedList_insertIntValue_ternary_then_0_8:
+    mov eax, 1
+LinkedList_insertIntValue_ternary_done_0_8:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_insertIntValue__int_int_b1
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_b2
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b1:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg3
+    mov edx, msg3_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_epilogue
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_b3
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+128], eax
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_insertIntValue__int_int_b4
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_b5
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b4:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+104]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+152], rax
+    mov eax, dword ptr [rsp+152]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+88]
+    call adenc_aden_collections_LinkedList_appendIntValue__int
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_epilogue
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b5:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_b6
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b6:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+152], rax
+    mov eax, dword ptr [rsp+152]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+88]
+    call adenc_aden_collections_LinkedList_nodeAt__int
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    xor ecx, ecx
+    call adenc_aden_collections_LinkedListNode_LinkedListNode__Object
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+104]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+152], rax
+    mov eax, dword ptr [rsp+152]
+    mov edx, eax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setIntValue__int
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+200], rax
+    mov rcx, qword ptr [rsp+200]
+    call adenc_aden_collections_LinkedListNode_getPrevious
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+184]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+80], rax
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s10
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s11
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s12
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s12_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+136]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_insertIntValue__int_int_b7
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_b8
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b7:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s13
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s13_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+184], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+184]
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s12
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s12_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_b9
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b8:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s14
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s14_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s12
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s12_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_b9
+adenc_aden_collections_LinkedList_insertIntValue__int_int_b9:
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s15
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s15_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+152], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+152]
+    mov rax, qword ptr [rsp+152]
+    mov rdx, rax
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    lea rcx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s16
+    mov edx, adenc_aden_collections_LinkedList_insertIntValue__int_int_trace_s16_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+144], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+144]
+    add eax, edx
+    mov edx, dword ptr [rsp+88]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_insertIntValue__int_int_epilogue
+adenc_aden_collections_LinkedList_insertIntValue__int_int_epilogue:
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+adenc_aden_collections_LinkedList_insertIntValue__int_int_epilogue_post:
+    mov qword ptr [rsp+192], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+192]
+    add rsp, 312
+    ret
+adenc_aden_collections_LinkedList_insertIntValue__int_int endp
+
+adenc_aden_collections_LinkedList_replaceValue__int_Object proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m80
+    mov edx, trace_m80_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov qword ptr [rsp+96], r8
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+72], 0
+adenc_aden_collections_LinkedList_replaceValue__int_Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+80]
+    call adenc_aden_collections_LinkedList_nodeAt__int
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+104], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_replaceValue__int_Object_b1
+    jmp adenc_aden_collections_LinkedList_replaceValue__int_Object_b2
+adenc_aden_collections_LinkedList_replaceValue__int_Object_b1:
+    lea rcx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_replaceValue__int_Object_epilogue
+adenc_aden_collections_LinkedList_replaceValue__int_Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_replaceValue__int_Object_b3
+adenc_aden_collections_LinkedList_replaceValue__int_Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_collections_LinkedListNode_getValue
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov qword ptr [rsp+168], rdx
+    mov qword ptr [rsp+176], r8
+    mov qword ptr [rsp+184], r9
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+208], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+168]
+    mov r8, qword ptr [rsp+176]
+    mov r9, qword ptr [rsp+184]
+    call adenc_aden_collections_LinkedListNode_setValue__Object
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    lea rcx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_replaceValue__int_Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_collections_LinkedList_replaceValue__int_Object_epilogue
+adenc_aden_collections_LinkedList_replaceValue__int_Object_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+adenc_aden_collections_LinkedList_replaceValue__int_Object_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 280
+    ret
+adenc_aden_collections_LinkedList_replaceValue__int_Object endp
+
+adenc_aden_collections_LinkedList_replaceIntValue__int_int proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m87
+    mov edx, trace_m87_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov dword ptr [rsp+96], r8d
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+80]
+    call adenc_aden_collections_LinkedList_nodeAt__int
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+104], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_replaceIntValue__int_int_b1
+    jmp adenc_aden_collections_LinkedList_replaceIntValue__int_int_b2
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_b1:
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_replaceIntValue__int_int_epilogue
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_replaceIntValue__int_int_b3
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_replaceIntValue__int_int_b4
+    jmp adenc_aden_collections_LinkedList_replaceIntValue__int_int_b5
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_b4:
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_collections_LinkedListNode_getIntValue
+    movsxd rax, eax
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_replaceIntValue__int_int_b6
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_b5:
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg4
+    mov edx, msg4_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_replaceIntValue__int_int_epilogue
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_b6:
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov qword ptr [rsp+168], rdx
+    mov qword ptr [rsp+176], r8
+    mov qword ptr [rsp+184], r9
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+208], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+168]
+    mov r8, qword ptr [rsp+176]
+    mov r9, qword ptr [rsp+184]
+    call adenc_aden_collections_LinkedListNode_setIntValue__int
+    lea rcx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_replaceIntValue__int_int_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    jmp adenc_aden_collections_LinkedList_replaceIntValue__int_int_epilogue
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+adenc_aden_collections_LinkedList_replaceIntValue__int_int_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 280
+    ret
+adenc_aden_collections_LinkedList_replaceIntValue__int_int endp
+
+adenc_aden_collections_LinkedList_findIndex__Object proc
+    sub rsp, 312
+    mov qword ptr [rsp+280], rcx
+    mov qword ptr [rsp+288], rdx
+    mov qword ptr [rsp+296], r8
+    mov qword ptr [rsp+304], r9
+    lea rcx, trace_m98
+    mov edx, trace_m98_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+280]
+    mov rdx, qword ptr [rsp+288]
+    mov r8, qword ptr [rsp+296]
+    mov r9, qword ptr [rsp+304]
+    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+88], rdx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_findIndex__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findIndex__Object_b1
+adenc_aden_collections_LinkedList_findIndex__Object_b1:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+96], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+96]
+    cmp rax, rdx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_findIndex__Object_b2
+    jmp adenc_aden_collections_LinkedList_findIndex__Object_b3
+adenc_aden_collections_LinkedList_findIndex__Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne LinkedList_findIndex_ternary_then_3_18
+    mov eax, 0
+    jmp LinkedList_findIndex_ternary_done_3_18
+LinkedList_findIndex_ternary_then_3_18:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+200], rax
+    mov rcx, qword ptr [rsp+200]
+    call adenc_aden_collections_LinkedListNode_getValue
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+208], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+120]
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+120]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+80]
+    call adenc_aden_collections_LinkedList_valuesEqual__Object_Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+LinkedList_findIndex_ternary_done_3_18:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_findIndex__Object_b4
+    jmp adenc_aden_collections_LinkedList_findIndex__Object_b5
+adenc_aden_collections_LinkedList_findIndex__Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    neg eax
+    jmp adenc_aden_collections_LinkedList_findIndex__Object_epilogue
+adenc_aden_collections_LinkedList_findIndex__Object_b4:
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    jmp adenc_aden_collections_LinkedList_findIndex__Object_epilogue
+adenc_aden_collections_LinkedList_findIndex__Object_b5:
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findIndex__Object_b6
+adenc_aden_collections_LinkedList_findIndex__Object_b6:
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_collections_LinkedListNode_getNext
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+104], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_findIndex__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findIndex__Object_b1
+adenc_aden_collections_LinkedList_findIndex__Object_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+adenc_aden_collections_LinkedList_findIndex__Object_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 312
+    ret
+adenc_aden_collections_LinkedList_findIndex__Object endp
+
+adenc_aden_collections_LinkedList_findIntIndex__int proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m107
+    mov edx, trace_m107_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_findIntIndex__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findIntIndex__int_b1
+adenc_aden_collections_LinkedList_findIntIndex__int_b1:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+96], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+96]
+    cmp rax, rdx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_findIntIndex__int_b2
+    jmp adenc_aden_collections_LinkedList_findIntIndex__int_b3
+adenc_aden_collections_LinkedList_findIntIndex__int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test rax, rax
+    jne LinkedList_findIntIndex_ternary_then_3_15
+    mov eax, 0
+    jmp LinkedList_findIntIndex_ternary_done_3_15
+LinkedList_findIntIndex_ternary_then_3_15:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    call adenc_aden_collections_LinkedListNode_getIntValue
+    movsxd rax, eax
+    mov dword ptr [rsp+104], eax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+LinkedList_findIntIndex_ternary_done_3_15:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_findIntIndex__int_b4
+    jmp adenc_aden_collections_LinkedList_findIntIndex__int_b5
+adenc_aden_collections_LinkedList_findIntIndex__int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    neg eax
+    jmp adenc_aden_collections_LinkedList_findIntIndex__int_epilogue
+adenc_aden_collections_LinkedList_findIntIndex__int_b4:
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    jmp adenc_aden_collections_LinkedList_findIntIndex__int_epilogue
+adenc_aden_collections_LinkedList_findIntIndex__int_b5:
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findIntIndex__int_b6
+adenc_aden_collections_LinkedList_findIntIndex__int_b6:
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    call adenc_aden_collections_LinkedListNode_getNext
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+112], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_findIntIndex__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findIntIndex__int_b1
+adenc_aden_collections_LinkedList_findIntIndex__int_epilogue:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+adenc_aden_collections_LinkedList_findIntIndex__int_epilogue_post:
+    mov qword ptr [rsp+160], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+160]
+    add rsp, 280
+    ret
+adenc_aden_collections_LinkedList_findIntIndex__int endp
+
+adenc_aden_collections_LinkedList_findLastIndex__Object proc
+    sub rsp, 328
+    mov qword ptr [rsp+296], rcx
+    mov qword ptr [rsp+304], rdx
+    mov qword ptr [rsp+312], r8
+    mov qword ptr [rsp+320], r9
+    lea rcx, trace_m116
+    mov edx, trace_m116_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+296]
+    mov rdx, qword ptr [rsp+304]
+    mov r8, qword ptr [rsp+312]
+    mov r9, qword ptr [rsp+320]
+    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+88], rdx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_findLastIndex__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findLastIndex__Object_b1
+adenc_aden_collections_LinkedList_findLastIndex__Object_b1:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+104], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_findLastIndex__Object_b2
+    jmp adenc_aden_collections_LinkedList_findLastIndex__Object_b3
+adenc_aden_collections_LinkedList_findLastIndex__Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne LinkedList_findLastIndex_ternary_then_3_21
+    mov eax, 0
+    jmp LinkedList_findLastIndex_ternary_done_3_21
+LinkedList_findLastIndex_ternary_then_3_21:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+208], rax
+    mov rcx, qword ptr [rsp+208]
+    call adenc_aden_collections_LinkedListNode_getValue
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+216], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+216]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+128], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+128]
+    mov rax, qword ptr [rsp+120]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+128]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+80]
+    call adenc_aden_collections_LinkedList_valuesEqual__Object_Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+LinkedList_findLastIndex_ternary_done_3_21:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_findLastIndex__Object_b4
+    jmp adenc_aden_collections_LinkedList_findLastIndex__Object_b5
+adenc_aden_collections_LinkedList_findLastIndex__Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    neg eax
+    jmp adenc_aden_collections_LinkedList_findLastIndex__Object_epilogue
+adenc_aden_collections_LinkedList_findLastIndex__Object_b4:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    jmp adenc_aden_collections_LinkedList_findLastIndex__Object_epilogue
+adenc_aden_collections_LinkedList_findLastIndex__Object_b5:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findLastIndex__Object_b6
+adenc_aden_collections_LinkedList_findLastIndex__Object_b6:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    call adenc_aden_collections_LinkedListNode_getPrevious
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+112], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_findLastIndex__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findLastIndex__Object_b1
+adenc_aden_collections_LinkedList_findLastIndex__Object_epilogue:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+adenc_aden_collections_LinkedList_findLastIndex__Object_epilogue_post:
+    mov qword ptr [rsp+160], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+160]
+    add rsp, 328
+    ret
+adenc_aden_collections_LinkedList_findLastIndex__Object endp
+
+adenc_aden_collections_LinkedList_findLastIntIndex__int proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m125
+    mov edx, trace_m125_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_findLastIntIndex__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findLastIntIndex__int_b1
+adenc_aden_collections_LinkedList_findLastIntIndex__int_b1:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+104], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_findLastIntIndex__int_b2
+    jmp adenc_aden_collections_LinkedList_findLastIntIndex__int_b3
+adenc_aden_collections_LinkedList_findLastIntIndex__int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+176], rax
+    mov rcx, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test rax, rax
+    jne LinkedList_findLastIntIndex_ternary_then_3_18
+    mov eax, 0
+    jmp LinkedList_findLastIntIndex_ternary_done_3_18
+LinkedList_findLastIntIndex_ternary_then_3_18:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+176], rax
+    mov rcx, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_getIntValue
+    movsxd rax, eax
+    mov dword ptr [rsp+112], eax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+LinkedList_findLastIntIndex_ternary_done_3_18:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_findLastIntIndex__int_b4
+    jmp adenc_aden_collections_LinkedList_findLastIntIndex__int_b5
+adenc_aden_collections_LinkedList_findLastIntIndex__int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    neg eax
+    jmp adenc_aden_collections_LinkedList_findLastIntIndex__int_epilogue
+adenc_aden_collections_LinkedList_findLastIntIndex__int_b4:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    jmp adenc_aden_collections_LinkedList_findLastIntIndex__int_epilogue
+adenc_aden_collections_LinkedList_findLastIntIndex__int_b5:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findLastIntIndex__int_b6
+adenc_aden_collections_LinkedList_findLastIntIndex__int_b6:
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+176], rax
+    mov rcx, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_getPrevious
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+120], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_findLastIntIndex__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_findLastIntIndex__int_b1
+adenc_aden_collections_LinkedList_findLastIntIndex__int_epilogue:
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+168]
+adenc_aden_collections_LinkedList_findLastIntIndex__int_epilogue_post:
+    mov qword ptr [rsp+168], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+168]
+    add rsp, 296
+    ret
+adenc_aden_collections_LinkedList_findLastIntIndex__int endp
+
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m134
+    mov edx, trace_m134_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+88], rdx
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b0:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+96], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+96]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b1
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b2
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b1:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_epilogue
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b2:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b3
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b3:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+176], rax
+    mov rcx, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_getPrevious
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+176], rax
+    mov rcx, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_getNext
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+104], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b4
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b5
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b4:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+160], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b6
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b5:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+128], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+128]
+    mov rax, qword ptr [rsp+128]
+    mov rdx, rax
+    mov qword ptr [rsp+184], rdx
+    mov qword ptr [rsp+192], r8
+    mov qword ptr [rsp+200], r9
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+224], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+224]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+168]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+184]
+    mov r8, qword ptr [rsp+192]
+    mov r9, qword ptr [rsp+200]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+168]
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b6
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b6:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+112], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+112]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b7
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b8
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b7:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b9
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b8:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+168]
+    mov qword ptr [rsp+128], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+128]
+    mov rax, qword ptr [rsp+128]
+    mov rdx, rax
+    mov qword ptr [rsp+184], rdx
+    mov qword ptr [rsp+192], r8
+    mov qword ptr [rsp+200], r9
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+224], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+224]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+168]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+184]
+    mov r8, qword ptr [rsp+192]
+    mov r9, qword ptr [rsp+200]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+168]
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b9
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_b9:
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s10
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+120], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    sub eax, edx
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    lea rcx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s11
+    mov edx, adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+176], rax
+    mov rcx, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_getValue
+    jmp adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_epilogue
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_epilogue:
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+168]
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode_epilogue_post:
+    mov qword ptr [rsp+168], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+168]
+    add rsp, 296
+    ret
+adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode endp
+
+adenc_aden_collections_LinkedList_prependValue__Object proc
+    sub rsp, 264
+    mov qword ptr [rsp+232], rcx
+    mov qword ptr [rsp+240], rdx
+    mov qword ptr [rsp+248], r8
+    mov qword ptr [rsp+256], r9
+    lea rcx, trace_m147
+    mov edx, trace_m147_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+232]
+    mov rdx, qword ptr [rsp+240]
+    mov r8, qword ptr [rsp+248]
+    mov r9, qword ptr [rsp+256]
+    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+80], rdx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_prependValue__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    xor ecx, ecx
+    call adenc_aden_collections_LinkedListNode_LinkedListNode__Object
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_prependValue__Object_b1
+    jmp adenc_aden_collections_LinkedList_prependValue__Object_b2
+adenc_aden_collections_LinkedList_prependValue__Object_b1:
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_prependValue__Object_b3
+adenc_aden_collections_LinkedList_prependValue__Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_prependValue__Object_b3
+adenc_aden_collections_LinkedList_prependValue__Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_prependValue__Object_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    add eax, edx
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_prependValue__Object_epilogue
+adenc_aden_collections_LinkedList_prependValue__Object_epilogue:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+adenc_aden_collections_LinkedList_prependValue__Object_epilogue_post:
+    mov qword ptr [rsp+144], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+144]
+    add rsp, 264
+    ret
+adenc_aden_collections_LinkedList_prependValue__Object endp
+
+adenc_aden_collections_LinkedList_prependIntValue__int proc
+    sub rsp, 264
+    mov qword ptr [rsp+232], rcx
+    mov qword ptr [rsp+240], rdx
+    mov qword ptr [rsp+248], r8
+    mov qword ptr [rsp+256], r9
+    lea rcx, trace_m156
+    mov edx, trace_m156_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+232]
+    mov rdx, qword ptr [rsp+240]
+    mov r8, qword ptr [rsp+248]
+    mov r9, qword ptr [rsp+256]
+    mov qword ptr [rsp+72], rcx
+    mov dword ptr [rsp+80], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_prependIntValue__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    xor ecx, ecx
+    call adenc_aden_collections_LinkedListNode_LinkedListNode__Object
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+104], rax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setIntValue__int
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_prependIntValue__int_b1
+    jmp adenc_aden_collections_LinkedList_prependIntValue__int_b2
+adenc_aden_collections_LinkedList_prependIntValue__int_b1:
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_prependIntValue__int_b3
+adenc_aden_collections_LinkedList_prependIntValue__int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setNext__LinkedListNode
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov qword ptr [rsp+160], rdx
+    mov qword ptr [rsp+168], r8
+    mov qword ptr [rsp+176], r9
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+160]
+    mov r8, qword ptr [rsp+168]
+    mov r9, qword ptr [rsp+176]
+    call adenc_aden_collections_LinkedListNode_setPrevious__LinkedListNode
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_prependIntValue__int_b3
+adenc_aden_collections_LinkedList_prependIntValue__int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_prependIntValue__int_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+96], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    add eax, edx
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov dword ptr [r10+rdx*4], eax
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_prependIntValue__int_epilogue
+adenc_aden_collections_LinkedList_prependIntValue__int_epilogue:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+adenc_aden_collections_LinkedList_prependIntValue__int_epilogue_post:
+    mov qword ptr [rsp+144], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+144]
+    add rsp, 264
+    ret
+adenc_aden_collections_LinkedList_prependIntValue__int endp
+
+adenc_aden_collections_LinkedList_copyStringValue__String proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m166
+    mov edx, trace_m166_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_copyStringValue__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_copyStringValue__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_copyStringValue__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov eax, 0
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    call adenc_aden_lang_String_length
+    movsxd rax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+176]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov eax, dword ptr [rsp+88]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_substring__int_int
+    jmp adenc_aden_collections_LinkedList_copyStringValue__String_epilogue
+adenc_aden_collections_LinkedList_copyStringValue__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_copyStringValue__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_collections_LinkedList_copyStringValue__String endp
+
+adenc_aden_collections_LinkedList_addCopiedValue__Object proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m168
+    mov edx, trace_m168_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_addCopiedValue__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    test rax, rax
+    je LinkedList_addCopiedValue_instof_0_1_false
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_addCopiedValue_instof_0_1_false
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_addCopiedValue_instof_0_1_true
+LinkedList_addCopiedValue_instof_0_1_false:
+    xor eax, eax
+    jmp LinkedList_addCopiedValue_instof_0_1_done
+LinkedList_addCopiedValue_instof_0_1_true:
+    mov eax, 1
+LinkedList_addCopiedValue_instof_0_1_done:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_addCopiedValue__Object_b1
+    jmp adenc_aden_collections_LinkedList_addCopiedValue__Object_b2
+adenc_aden_collections_LinkedList_addCopiedValue__Object_b1:
+    lea rcx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    test rax, rax
+    je LinkedList_addCopiedValue_cast_1_7_null
+    mov qword ptr [rsp+40], rax
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_addCopiedValue_cast_1_7_fail
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_addCopiedValue_cast_1_7_ok
+LinkedList_addCopiedValue_cast_1_7_fail:
+    lea rcx, msg5
+    mov edx, msg5_len
+    call adenc_rt_stringFromBytes
+    mov rcx, rax
+    call adenc_rt_panic
+    xor eax, eax
+    jmp LinkedList_addCopiedValue_cast_1_7_done
+LinkedList_addCopiedValue_cast_1_7_null:
+    xor eax, eax
+    jmp LinkedList_addCopiedValue_cast_1_7_done
+LinkedList_addCopiedValue_cast_1_7_ok:
+    mov rax, qword ptr [rsp+40]
+LinkedList_addCopiedValue_cast_1_7_done:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_copyStringValue__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_addCopiedValue_vd1_9_null
+    call adenc_aden_collections_LinkedList_add__String
+    jmp LinkedList_addCopiedValue_vd1_9_done
+LinkedList_addCopiedValue_vd1_9_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_addCopiedValue_vd1_9_done:
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_addCopiedValue__Object_epilogue
+adenc_aden_collections_LinkedList_addCopiedValue__Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addCopiedValue__Object_b3
+adenc_aden_collections_LinkedList_addCopiedValue__Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    test rax, rax
+    je LinkedList_addCopiedValue_instof_2_11_false
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_addCopiedValue_instof_2_11_false
+    mov ecx, edx
+    lea rdx, cidset_1
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_addCopiedValue_instof_2_11_true
+LinkedList_addCopiedValue_instof_2_11_false:
+    xor eax, eax
+    jmp LinkedList_addCopiedValue_instof_2_11_done
+LinkedList_addCopiedValue_instof_2_11_true:
+    mov eax, 1
+LinkedList_addCopiedValue_instof_2_11_done:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_addCopiedValue__Object_b4
+    jmp adenc_aden_collections_LinkedList_addCopiedValue__Object_b5
+adenc_aden_collections_LinkedList_addCopiedValue__Object_b4:
+    lea rcx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    test rax, rax
+    je LinkedList_addCopiedValue_cast_3_17_null
+    mov qword ptr [rsp+40], rax
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_addCopiedValue_cast_3_17_fail
+    mov ecx, edx
+    lea rdx, cidset_1
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_addCopiedValue_cast_3_17_ok
+LinkedList_addCopiedValue_cast_3_17_fail:
+    lea rcx, msg6
+    mov edx, msg6_len
+    call adenc_rt_stringFromBytes
+    mov rcx, rax
+    call adenc_rt_panic
+    xor eax, eax
+    jmp LinkedList_addCopiedValue_cast_3_17_done
+LinkedList_addCopiedValue_cast_3_17_null:
+    xor eax, eax
+    jmp LinkedList_addCopiedValue_cast_3_17_done
+LinkedList_addCopiedValue_cast_3_17_ok:
+    mov rax, qword ptr [rsp+40]
+LinkedList_addCopiedValue_cast_3_17_done:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_aden_lang_Integer_unboxBoxed__Integer
+    movsxd rax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_addCopiedValue_vd3_19_null
+    call adenc_aden_collections_LinkedList_add__int
+    jmp LinkedList_addCopiedValue_vd3_19_done
+LinkedList_addCopiedValue_vd3_19_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_addCopiedValue_vd3_19_done:
+    and rax, 0FFFFFFFFh
+    jmp adenc_aden_collections_LinkedList_addCopiedValue__Object_epilogue
+adenc_aden_collections_LinkedList_addCopiedValue__Object_b5:
+    lea rcx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addCopiedValue__Object_b6
+adenc_aden_collections_LinkedList_addCopiedValue__Object_b6:
+    lea rcx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_addCopiedValue__Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_addCopiedValue_vd4_23_null
+    call adenc_aden_collections_LinkedList_add__Object
+    jmp LinkedList_addCopiedValue_vd4_23_done
+LinkedList_addCopiedValue_vd4_23_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_addCopiedValue_vd4_23_done:
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_addCopiedValue__Object_epilogue
+adenc_aden_collections_LinkedList_addCopiedValue__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_addCopiedValue__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_collections_LinkedList_addCopiedValue__Object endp
+
+adenc_aden_collections_LinkedList_nodeAt__int proc
+    sub rsp, 328
+    mov qword ptr [rsp+296], rcx
+    mov qword ptr [rsp+304], rdx
+    mov qword ptr [rsp+312], r8
+    mov qword ptr [rsp+320], r9
+    lea rcx, trace_m174
+    mov edx, trace_m174_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+296]
+    mov rdx, qword ptr [rsp+304]
+    mov r8, qword ptr [rsp+312]
+    mov r9, qword ptr [rsp+320]
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_nodeAt__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+96], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test rax, rax
+    jne LinkedList_nodeAt_ternary_then_0_8
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+104], eax
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    cmp eax, edx
+    setge al
+    movzx eax, al
+    jmp LinkedList_nodeAt_ternary_done_0_8
+LinkedList_nodeAt_ternary_then_0_8:
+    mov eax, 1
+LinkedList_nodeAt_ternary_done_0_8:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_nodeAt__int_b1
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b2
+adenc_aden_collections_LinkedList_nodeAt__int_b1:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg7
+    mov edx, msg7_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+208], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+168], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+168]
+    mov rax, qword ptr [rsp+168]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+208], rax
+    mov rax, qword ptr [rsp+168]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+208]
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_epilogue
+adenc_aden_collections_LinkedList_nodeAt__int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b3
+adenc_aden_collections_LinkedList_nodeAt__int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+120], eax
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+112], eax
+    mov eax, 2
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    mov ecx, edx
+    cdq
+    idiv ecx
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_nodeAt__int_b4
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b5
+adenc_aden_collections_LinkedList_nodeAt__int_b4:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b7
+adenc_aden_collections_LinkedList_nodeAt__int_b5:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b6
+adenc_aden_collections_LinkedList_nodeAt__int_b6:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s12
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s12_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s13
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s13_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+144], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+144]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s14
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s14_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b10
+adenc_aden_collections_LinkedList_nodeAt__int_b7:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+128], eax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_nodeAt__int_b8
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b9
+adenc_aden_collections_LinkedList_nodeAt__int_b8:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+216], rax
+    mov rcx, qword ptr [rsp+216]
+    call adenc_aden_collections_LinkedListNode_getNext
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s10
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+136], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+136]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b7
+adenc_aden_collections_LinkedList_nodeAt__int_b9:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s11
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_epilogue
+adenc_aden_collections_LinkedList_nodeAt__int_b10:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s14
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s14_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+152], eax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+152]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_nodeAt__int_b11
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b12
+adenc_aden_collections_LinkedList_nodeAt__int_b11:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s15
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s15_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+216], rax
+    mov rcx, qword ptr [rsp+216]
+    call adenc_aden_collections_LinkedListNode_getPrevious
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s16
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s16_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+160], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+160]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s14
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s14_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_b10
+adenc_aden_collections_LinkedList_nodeAt__int_b12:
+    lea rcx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s17
+    mov edx, adenc_aden_collections_LinkedList_nodeAt__int_trace_s17_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_collections_LinkedList_nodeAt__int_epilogue
+adenc_aden_collections_LinkedList_nodeAt__int_epilogue:
+    mov qword ptr [rsp+208], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+208]
+adenc_aden_collections_LinkedList_nodeAt__int_epilogue_post:
+    mov qword ptr [rsp+208], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+208]
+    add rsp, 328
+    ret
+adenc_aden_collections_LinkedList_nodeAt__int endp
+
+adenc_aden_collections_LinkedList_add__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m193
+    mov edx, trace_m193_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_add__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_add__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_add__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_add__Object_epilogue
+adenc_aden_collections_LinkedList_add__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_add__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_add__Object endp
+
+adenc_aden_collections_LinkedList_add__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m195
+    mov edx, trace_m195_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_add__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_add__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_add__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendIntValue__int
+    and rax, 0FFFFFFFFh
+    jmp adenc_aden_collections_LinkedList_add__int_epilogue
+adenc_aden_collections_LinkedList_add__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_add__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_add__int endp
+
+adenc_aden_collections_LinkedList_add__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m197
+    mov edx, trace_m197_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_add__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_add__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_add__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_add__String_epilogue
+adenc_aden_collections_LinkedList_add__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_add__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_add__String endp
+
+adenc_aden_collections_LinkedList_addAll__Collection proc
+    sub rsp, 360
+    mov qword ptr [rsp+328], rcx
+    mov qword ptr [rsp+336], rdx
+    mov qword ptr [rsp+344], r8
+    mov qword ptr [rsp+352], r9
+    lea rcx, trace_m199
+    mov edx, trace_m199_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+328]
+    mov rdx, qword ptr [rsp+336]
+    mov r8, qword ptr [rsp+344]
+    mov r9, qword ptr [rsp+352]
+    mov qword ptr [rsp+112], rcx
+    mov qword ptr [rsp+120], rdx
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+96], 0
+    mov qword ptr [rsp+104], 0
+adenc_aden_collections_LinkedList_addAll__Collection_b0:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+128]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_addAll__Collection_b1
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b2
+adenc_aden_collections_LinkedList_addAll__Collection_b1:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+112]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_count]
+    mov eax, dword ptr [r10+rdx*4]
+    mov dword ptr [rsp+64], eax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+112]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+80], eax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b4
+adenc_aden_collections_LinkedList_addAll__Collection_b2:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b3
+adenc_aden_collections_LinkedList_addAll__Collection_b3:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s14
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s14_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+88], eax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s15
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s15_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+208], rax
+    mov rcx, qword ptr [rsp+208]
+    test rcx, rcx
+    je LinkedList_addAll_vd15_51_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_addAll_vd15_51_type
+    cmp eax, 1
+    je LinkedList_addAll_vd15_51_assign_ok
+    cmp eax, 3
+    je LinkedList_addAll_vd15_51_assign_ok
+    cmp eax, 4
+    je LinkedList_addAll_vd15_51_assign_ok
+    cmp eax, 7
+    je LinkedList_addAll_vd15_51_assign_ok
+    cmp eax, 8
+    je LinkedList_addAll_vd15_51_assign_ok
+    jmp LinkedList_addAll_vd15_51_type
+LinkedList_addAll_vd15_51_assign_ok:
+    cmp eax, 1
+    je LinkedList_addAll_vd15_51_ovr0
+    cmp eax, 4
+    je LinkedList_addAll_vd15_51_ovr1
+    jmp LinkedList_addAll_vd15_51_default
+LinkedList_addAll_vd15_51_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_ArrayList_iterator
+    jmp LinkedList_addAll_vd15_51_done
+LinkedList_addAll_vd15_51_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedList_iterator
+    jmp LinkedList_addAll_vd15_51_done
+LinkedList_addAll_vd15_51_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterable_iterator
+    jmp LinkedList_addAll_vd15_51_done
+LinkedList_addAll_vd15_51_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_addAll_vd15_51_done
+LinkedList_addAll_vd15_51_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_addAll_vd15_51_done:
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s16
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s16_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b13
+adenc_aden_collections_LinkedList_addAll__Collection_b4:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+64]
+    mov edx, eax
+    mov eax, dword ptr [rsp+136]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_addAll__Collection_b5
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b6
+adenc_aden_collections_LinkedList_addAll__Collection_b5:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+208], rax
+    mov rcx, qword ptr [rsp+208]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_addAll__Collection_b7
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b8
+adenc_aden_collections_LinkedList_addAll__Collection_b6:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s13
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s13_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+152], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+152]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_epilogue
+adenc_aden_collections_LinkedList_addAll__Collection_b7:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+248], rax
+    mov rcx, qword ptr [rsp+248]
+    call adenc_aden_collections_LinkedListNode_getIntValue
+    movsxd rax, eax
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+160], rax
+    mov eax, dword ptr [rsp+160]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+112]
+    test rcx, rcx
+    je adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_7_6_0_null
+    call adenc_aden_collections_LinkedList_add__int
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_7_6_0_done
+adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_7_6_0_null:
+    call adenc_rt_dispatchNullReceiverPanic
+adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_7_6_0_done:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b9
+adenc_aden_collections_LinkedList_addAll__Collection_b8:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+208], rax
+    mov rcx, qword ptr [rsp+208]
+    call adenc_aden_collections_LinkedListNode_getValue
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+104], rax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    test rax, rax
+    je LinkedList_addAll_instof_8_24_false
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_addAll_instof_8_24_false
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_addAll_instof_8_24_true
+LinkedList_addAll_instof_8_24_false:
+    xor eax, eax
+    jmp LinkedList_addAll_instof_8_24_done
+LinkedList_addAll_instof_8_24_true:
+    mov eax, 1
+LinkedList_addAll_instof_8_24_done:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_addAll__Collection_b10
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b11
+adenc_aden_collections_LinkedList_addAll__Collection_b9:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s11
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+208], rax
+    mov rcx, qword ptr [rsp+208]
+    call adenc_aden_collections_LinkedListNode_getNext
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+192]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s12
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s12_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+144], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+144]
+    add eax, edx
+    mov dword ptr [rsp+80], eax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b4
+adenc_aden_collections_LinkedList_addAll__Collection_b10:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    test rax, rax
+    je LinkedList_addAll_cast_9_30_null
+    mov qword ptr [rsp+40], rax
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_addAll_cast_9_30_fail
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_addAll_cast_9_30_ok
+LinkedList_addAll_cast_9_30_fail:
+    lea rcx, msg8
+    mov edx, msg8_len
+    call adenc_rt_stringFromBytes
+    mov rcx, rax
+    call adenc_rt_panic
+    xor eax, eax
+    jmp LinkedList_addAll_cast_9_30_done
+LinkedList_addAll_cast_9_30_null:
+    xor eax, eax
+    jmp LinkedList_addAll_cast_9_30_done
+LinkedList_addAll_cast_9_30_ok:
+    mov rax, qword ptr [rsp+40]
+LinkedList_addAll_cast_9_30_done:
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+160], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+160]
+    mov rax, qword ptr [rsp+160]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+112]
+    call adenc_aden_collections_LinkedList_copyStringValue__String
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+112]
+    test rcx, rcx
+    je adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_10_9_0_null
+    call adenc_aden_collections_LinkedList_add__String
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_10_9_0_done
+adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_10_9_0_null:
+    call adenc_rt_dispatchNullReceiverPanic
+adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_10_9_0_done:
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b12
+adenc_aden_collections_LinkedList_addAll__Collection_b11:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s10
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+160], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+160]
+    mov rax, qword ptr [rsp+160]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+112]
+    test rcx, rcx
+    je adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_11_10_0_null
+    call adenc_aden_collections_LinkedList_add__Object
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_11_10_0_done
+adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_11_10_0_null:
+    call adenc_rt_dispatchNullReceiverPanic
+adenc_aden_collections_LinkedList_addAll__Collection_vd_stmt_11_10_0_done:
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b12
+adenc_aden_collections_LinkedList_addAll__Collection_b12:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b9
+adenc_aden_collections_LinkedList_addAll__Collection_b13:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s16
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s16_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+208], rax
+    mov rcx, qword ptr [rsp+208]
+    test rcx, rcx
+    je LinkedList_addAll_vd16_54_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_addAll_vd16_54_type
+    cmp eax, 5
+    je LinkedList_addAll_vd16_54_assign_ok
+    jmp LinkedList_addAll_vd16_54_type
+LinkedList_addAll_vd16_54_assign_ok:
+    cmp eax, 5
+    je LinkedList_addAll_vd16_54_ovr0
+    jmp LinkedList_addAll_vd16_54_default
+LinkedList_addAll_vd16_54_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedListIterator_hasNext
+    jmp LinkedList_addAll_vd16_54_done
+LinkedList_addAll_vd16_54_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterator_hasNext
+    jmp LinkedList_addAll_vd16_54_done
+LinkedList_addAll_vd16_54_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_addAll_vd16_54_done
+LinkedList_addAll_vd16_54_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_addAll_vd16_54_done:
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_addAll__Collection_b14
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b15
+adenc_aden_collections_LinkedList_addAll__Collection_b14:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s17
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s17_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+248], rax
+    mov rcx, qword ptr [rsp+248]
+    test rcx, rcx
+    je LinkedList_addAll_vd17_59_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_addAll_vd17_59_type
+    cmp eax, 5
+    je LinkedList_addAll_vd17_59_assign_ok
+    jmp LinkedList_addAll_vd17_59_type
+LinkedList_addAll_vd17_59_assign_ok:
+    cmp eax, 5
+    je LinkedList_addAll_vd17_59_ovr0
+    jmp LinkedList_addAll_vd17_59_default
+LinkedList_addAll_vd17_59_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedListIterator_next
+    jmp LinkedList_addAll_vd17_59_done
+LinkedList_addAll_vd17_59_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterator_next
+    jmp LinkedList_addAll_vd17_59_done
+LinkedList_addAll_vd17_59_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_addAll_vd17_59_done
+LinkedList_addAll_vd17_59_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_addAll_vd17_59_done:
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+200]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+112]
+    call adenc_aden_collections_LinkedList_addCopiedValue__Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_addAll__Collection_b16
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b17
+adenc_aden_collections_LinkedList_addAll__Collection_b15:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s19
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s19_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_epilogue
+adenc_aden_collections_LinkedList_addAll__Collection_b16:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s18
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s18_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    mov dword ptr [rsp+88], eax
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s17
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s17_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b18
+adenc_aden_collections_LinkedList_addAll__Collection_b17:
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b18
+adenc_aden_collections_LinkedList_addAll__Collection_b18:
+    lea rcx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s16
+    mov edx, adenc_aden_collections_LinkedList_addAll__Collection_trace_s16_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_addAll__Collection_b13
+adenc_aden_collections_LinkedList_addAll__Collection_epilogue:
+    mov qword ptr [rsp+200], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+200]
+adenc_aden_collections_LinkedList_addAll__Collection_epilogue_post:
+    mov qword ptr [rsp+200], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+200]
+    add rsp, 360
+    ret
+adenc_aden_collections_LinkedList_addAll__Collection endp
+
+adenc_aden_collections_LinkedList_containsAll__Collection proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m220
+    mov edx, trace_m220_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+80], rdx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_containsAll__Collection_b0:
+    lea rcx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    mov rcx, qword ptr [rsp+136]
+    test rcx, rcx
+    je LinkedList_containsAll_vd0_2_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_containsAll_vd0_2_type
+    cmp eax, 1
+    je LinkedList_containsAll_vd0_2_assign_ok
+    cmp eax, 3
+    je LinkedList_containsAll_vd0_2_assign_ok
+    cmp eax, 4
+    je LinkedList_containsAll_vd0_2_assign_ok
+    cmp eax, 7
+    je LinkedList_containsAll_vd0_2_assign_ok
+    cmp eax, 8
+    je LinkedList_containsAll_vd0_2_assign_ok
+    jmp LinkedList_containsAll_vd0_2_type
+LinkedList_containsAll_vd0_2_assign_ok:
+    cmp eax, 1
+    je LinkedList_containsAll_vd0_2_ovr0
+    cmp eax, 4
+    je LinkedList_containsAll_vd0_2_ovr1
+    jmp LinkedList_containsAll_vd0_2_default
+LinkedList_containsAll_vd0_2_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_ArrayList_iterator
+    jmp LinkedList_containsAll_vd0_2_done
+LinkedList_containsAll_vd0_2_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedList_iterator
+    jmp LinkedList_containsAll_vd0_2_done
+LinkedList_containsAll_vd0_2_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterable_iterator
+    jmp LinkedList_containsAll_vd0_2_done
+LinkedList_containsAll_vd0_2_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_containsAll_vd0_2_done
+LinkedList_containsAll_vd0_2_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_containsAll_vd0_2_done:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_containsAll__Collection_b1
+adenc_aden_collections_LinkedList_containsAll__Collection_b1:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rcx, qword ptr [rsp+136]
+    test rcx, rcx
+    je LinkedList_containsAll_vd1_5_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_containsAll_vd1_5_type
+    cmp eax, 5
+    je LinkedList_containsAll_vd1_5_assign_ok
+    jmp LinkedList_containsAll_vd1_5_type
+LinkedList_containsAll_vd1_5_assign_ok:
+    cmp eax, 5
+    je LinkedList_containsAll_vd1_5_ovr0
+    jmp LinkedList_containsAll_vd1_5_default
+LinkedList_containsAll_vd1_5_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedListIterator_hasNext
+    jmp LinkedList_containsAll_vd1_5_done
+LinkedList_containsAll_vd1_5_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterator_hasNext
+    jmp LinkedList_containsAll_vd1_5_done
+LinkedList_containsAll_vd1_5_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_containsAll_vd1_5_done
+LinkedList_containsAll_vd1_5_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_containsAll_vd1_5_done:
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_containsAll__Collection_b2
+    jmp adenc_aden_collections_LinkedList_containsAll__Collection_b3
+adenc_aden_collections_LinkedList_containsAll__Collection_b2:
+    lea rcx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+176], rax
+    mov rcx, qword ptr [rsp+176]
+    test rcx, rcx
+    je LinkedList_containsAll_vd2_10_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_containsAll_vd2_10_type
+    cmp eax, 5
+    je LinkedList_containsAll_vd2_10_assign_ok
+    jmp LinkedList_containsAll_vd2_10_type
+LinkedList_containsAll_vd2_10_assign_ok:
+    cmp eax, 5
+    je LinkedList_containsAll_vd2_10_ovr0
+    jmp LinkedList_containsAll_vd2_10_default
+LinkedList_containsAll_vd2_10_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedListIterator_next
+    jmp LinkedList_containsAll_vd2_10_done
+LinkedList_containsAll_vd2_10_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterator_next
+    jmp LinkedList_containsAll_vd2_10_done
+LinkedList_containsAll_vd2_10_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_containsAll_vd2_10_done
+LinkedList_containsAll_vd2_10_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_containsAll_vd2_10_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+72]
+    test rcx, rcx
+    je LinkedList_containsAll_vd2_11_null
+    call adenc_aden_collections_LinkedList_contains__Object
+    jmp LinkedList_containsAll_vd2_11_done
+LinkedList_containsAll_vd2_11_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_containsAll_vd2_11_done:
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    test eax, eax
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_containsAll__Collection_b4
+    jmp adenc_aden_collections_LinkedList_containsAll__Collection_b5
+adenc_aden_collections_LinkedList_containsAll__Collection_b3:
+    lea rcx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_containsAll__Collection_epilogue
+adenc_aden_collections_LinkedList_containsAll__Collection_b4:
+    lea rcx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_containsAll__Collection_epilogue
+adenc_aden_collections_LinkedList_containsAll__Collection_b5:
+    lea rcx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_containsAll__Collection_b6
+adenc_aden_collections_LinkedList_containsAll__Collection_b6:
+    lea rcx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_containsAll__Collection_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_containsAll__Collection_b1
+adenc_aden_collections_LinkedList_containsAll__Collection_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_containsAll__Collection_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_collections_LinkedList_containsAll__Collection endp
+
+adenc_aden_collections_LinkedList_removeAll__Collection proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m226
+    mov edx, trace_m226_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+88], rcx
+    mov qword ptr [rsp+96], rdx
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+80], 0
+adenc_aden_collections_LinkedList_removeAll__Collection_b0:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_removeAll__Collection_b1
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_b2
+adenc_aden_collections_LinkedList_removeAll__Collection_b1:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+88]
+    test rcx, rcx
+    je LinkedList_removeAll_vd1_5_null
+    call adenc_aden_collections_LinkedList_isEmpty
+    jmp LinkedList_removeAll_vd1_5_done
+LinkedList_removeAll_vd1_5_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_removeAll_vd1_5_done:
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    sete al
+    movzx eax, al
+    mov dword ptr [rsp+64], eax
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+88]
+    test rcx, rcx
+    je adenc_aden_collections_LinkedList_removeAll__Collection_vd_stmt_1_2_2_null
+    call adenc_aden_collections_LinkedList_clear
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_vd_stmt_1_2_2_done
+adenc_aden_collections_LinkedList_removeAll__Collection_vd_stmt_1_2_2_null:
+    call adenc_rt_dispatchNullReceiverPanic
+adenc_aden_collections_LinkedList_removeAll__Collection_vd_stmt_1_2_2_done:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_epilogue
+adenc_aden_collections_LinkedList_removeAll__Collection_b2:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_b3
+adenc_aden_collections_LinkedList_removeAll__Collection_b3:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+64], eax
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    test rcx, rcx
+    je LinkedList_removeAll_vd5_14_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_removeAll_vd5_14_type
+    cmp eax, 1
+    je LinkedList_removeAll_vd5_14_assign_ok
+    cmp eax, 3
+    je LinkedList_removeAll_vd5_14_assign_ok
+    cmp eax, 4
+    je LinkedList_removeAll_vd5_14_assign_ok
+    cmp eax, 7
+    je LinkedList_removeAll_vd5_14_assign_ok
+    cmp eax, 8
+    je LinkedList_removeAll_vd5_14_assign_ok
+    jmp LinkedList_removeAll_vd5_14_type
+LinkedList_removeAll_vd5_14_assign_ok:
+    cmp eax, 1
+    je LinkedList_removeAll_vd5_14_ovr0
+    cmp eax, 4
+    je LinkedList_removeAll_vd5_14_ovr1
+    jmp LinkedList_removeAll_vd5_14_default
+LinkedList_removeAll_vd5_14_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_ArrayList_iterator
+    jmp LinkedList_removeAll_vd5_14_done
+LinkedList_removeAll_vd5_14_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedList_iterator
+    jmp LinkedList_removeAll_vd5_14_done
+LinkedList_removeAll_vd5_14_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterable_iterator
+    jmp LinkedList_removeAll_vd5_14_done
+LinkedList_removeAll_vd5_14_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_removeAll_vd5_14_done
+LinkedList_removeAll_vd5_14_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_removeAll_vd5_14_done:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_b4
+adenc_aden_collections_LinkedList_removeAll__Collection_b4:
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    test rcx, rcx
+    je LinkedList_removeAll_vd6_17_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_removeAll_vd6_17_type
+    cmp eax, 5
+    je LinkedList_removeAll_vd6_17_assign_ok
+    jmp LinkedList_removeAll_vd6_17_type
+LinkedList_removeAll_vd6_17_assign_ok:
+    cmp eax, 5
+    je LinkedList_removeAll_vd6_17_ovr0
+    jmp LinkedList_removeAll_vd6_17_default
+LinkedList_removeAll_vd6_17_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedListIterator_hasNext
+    jmp LinkedList_removeAll_vd6_17_done
+LinkedList_removeAll_vd6_17_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterator_hasNext
+    jmp LinkedList_removeAll_vd6_17_done
+LinkedList_removeAll_vd6_17_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_removeAll_vd6_17_done
+LinkedList_removeAll_vd6_17_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_removeAll_vd6_17_done:
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_removeAll__Collection_b5
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_b6
+adenc_aden_collections_LinkedList_removeAll__Collection_b5:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    test rcx, rcx
+    je LinkedList_removeAll_vd7_20_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_removeAll_vd7_20_type
+    cmp eax, 5
+    je LinkedList_removeAll_vd7_20_assign_ok
+    jmp LinkedList_removeAll_vd7_20_type
+LinkedList_removeAll_vd7_20_assign_ok:
+    cmp eax, 5
+    je LinkedList_removeAll_vd7_20_ovr0
+    jmp LinkedList_removeAll_vd7_20_default
+LinkedList_removeAll_vd7_20_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedListIterator_next
+    jmp LinkedList_removeAll_vd7_20_done
+LinkedList_removeAll_vd7_20_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterator_next
+    jmp LinkedList_removeAll_vd7_20_done
+LinkedList_removeAll_vd7_20_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_removeAll_vd7_20_done
+LinkedList_removeAll_vd7_20_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_removeAll_vd7_20_done:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+80], rax
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_b7
+adenc_aden_collections_LinkedList_removeAll__Collection_b6:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s10
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_epilogue
+adenc_aden_collections_LinkedList_removeAll__Collection_b7:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+88]
+    test rcx, rcx
+    je LinkedList_removeAll_vd8_24_null
+    call adenc_aden_collections_LinkedList_remove__Object
+    jmp LinkedList_removeAll_vd8_24_done
+LinkedList_removeAll_vd8_24_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_removeAll_vd8_24_done:
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_removeAll__Collection_b8
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_b9
+adenc_aden_collections_LinkedList_removeAll__Collection_b8:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    mov dword ptr [rsp+64], eax
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_b7
+adenc_aden_collections_LinkedList_removeAll__Collection_b9:
+    lea rcx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_removeAll__Collection_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeAll__Collection_b4
+adenc_aden_collections_LinkedList_removeAll__Collection_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+adenc_aden_collections_LinkedList_removeAll__Collection_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 280
+    ret
+adenc_aden_collections_LinkedList_removeAll__Collection endp
+
+adenc_aden_collections_LinkedList_retainAll__Collection proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m238
+    mov edx, trace_m238_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+96], rcx
+    mov qword ptr [rsp+104], rdx
+    mov qword ptr [rsp+80], 0
+    mov qword ptr [rsp+64], 0
+    mov qword ptr [rsp+88], 0
+adenc_aden_collections_LinkedList_retainAll__Collection_b0:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+96]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+112]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_retainAll__Collection_b1
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b2
+adenc_aden_collections_LinkedList_retainAll__Collection_b1:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_epilogue
+adenc_aden_collections_LinkedList_retainAll__Collection_b2:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b3
+adenc_aden_collections_LinkedList_retainAll__Collection_b3:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor ecx, ecx
+    call adenc_aden_collections_ArrayList_ArrayList
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+120]
+    mov rax, qword ptr [rsp+120]
+    mov rdx, rax
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+216], rax
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+216]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    test rcx, rcx
+    je adenc_aden_collections_LinkedList_retainAll__Collection_vd_stmt_3_3_2_null
+    call adenc_aden_collections_ArrayList_addAll__Collection
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_vd_stmt_3_3_2_done
+adenc_aden_collections_LinkedList_retainAll__Collection_vd_stmt_3_3_2_null:
+    call adenc_rt_dispatchNullReceiverPanic
+adenc_aden_collections_LinkedList_retainAll__Collection_vd_stmt_3_3_2_done:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    test rcx, rcx
+    je LinkedList_retainAll_vd5_12_null
+    call adenc_aden_collections_ArrayList_iterator
+    jmp LinkedList_retainAll_vd5_12_done
+LinkedList_retainAll_vd5_12_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_retainAll_vd5_12_done:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+80], rax
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b4
+adenc_aden_collections_LinkedList_retainAll__Collection_b4:
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    test rcx, rcx
+    je LinkedList_retainAll_vd6_15_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_retainAll_vd6_15_type
+    cmp eax, 5
+    je LinkedList_retainAll_vd6_15_assign_ok
+    jmp LinkedList_retainAll_vd6_15_type
+LinkedList_retainAll_vd6_15_assign_ok:
+    cmp eax, 5
+    je LinkedList_retainAll_vd6_15_ovr0
+    jmp LinkedList_retainAll_vd6_15_default
+LinkedList_retainAll_vd6_15_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedListIterator_hasNext
+    jmp LinkedList_retainAll_vd6_15_done
+LinkedList_retainAll_vd6_15_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterator_hasNext
+    jmp LinkedList_retainAll_vd6_15_done
+LinkedList_retainAll_vd6_15_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_retainAll_vd6_15_done
+LinkedList_retainAll_vd6_15_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_retainAll_vd6_15_done:
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_retainAll__Collection_b5
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b6
+adenc_aden_collections_LinkedList_retainAll__Collection_b5:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s7
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+168], rax
+    mov rcx, qword ptr [rsp+168]
+    test rcx, rcx
+    je LinkedList_retainAll_vd7_18_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_retainAll_vd7_18_type
+    cmp eax, 5
+    je LinkedList_retainAll_vd7_18_assign_ok
+    jmp LinkedList_retainAll_vd7_18_type
+LinkedList_retainAll_vd7_18_assign_ok:
+    cmp eax, 5
+    je LinkedList_retainAll_vd7_18_ovr0
+    jmp LinkedList_retainAll_vd7_18_default
+LinkedList_retainAll_vd7_18_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedListIterator_next
+    jmp LinkedList_retainAll_vd7_18_done
+LinkedList_retainAll_vd7_18_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_Iterator_next
+    jmp LinkedList_retainAll_vd7_18_done
+LinkedList_retainAll_vd7_18_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_retainAll_vd7_18_done
+LinkedList_retainAll_vd7_18_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_retainAll_vd7_18_done:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+88], rax
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+168], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+120]
+    mov rax, qword ptr [rsp+120]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+168]
+    test rcx, rcx
+    je LinkedList_retainAll_vd8_22_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz LinkedList_retainAll_vd8_22_type
+    cmp eax, 1
+    je LinkedList_retainAll_vd8_22_assign_ok
+    cmp eax, 3
+    je LinkedList_retainAll_vd8_22_assign_ok
+    cmp eax, 4
+    je LinkedList_retainAll_vd8_22_assign_ok
+    cmp eax, 7
+    je LinkedList_retainAll_vd8_22_assign_ok
+    cmp eax, 8
+    je LinkedList_retainAll_vd8_22_assign_ok
+    jmp LinkedList_retainAll_vd8_22_type
+LinkedList_retainAll_vd8_22_assign_ok:
+    cmp eax, 1
+    je LinkedList_retainAll_vd8_22_ovr0
+    cmp eax, 4
+    je LinkedList_retainAll_vd8_22_ovr1
+    jmp LinkedList_retainAll_vd8_22_default
+LinkedList_retainAll_vd8_22_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_ArrayList_contains__Object
+    jmp LinkedList_retainAll_vd8_22_done
+LinkedList_retainAll_vd8_22_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_LinkedList_contains__Object
+    jmp LinkedList_retainAll_vd8_22_done
+LinkedList_retainAll_vd8_22_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_collections_Collection_contains__Object
+    jmp LinkedList_retainAll_vd8_22_done
+LinkedList_retainAll_vd8_22_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp LinkedList_retainAll_vd8_22_done
+LinkedList_retainAll_vd8_22_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+LinkedList_retainAll_vd8_22_done:
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    test eax, eax
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_retainAll__Collection_b7
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b8
+adenc_aden_collections_LinkedList_retainAll__Collection_b6:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s11
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_epilogue
+adenc_aden_collections_LinkedList_retainAll__Collection_b7:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+120]
+    mov rax, qword ptr [rsp+120]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+96]
+    test rcx, rcx
+    je LinkedList_retainAll_vd9_27_null
+    call adenc_aden_collections_LinkedList_remove__Object
+    jmp LinkedList_retainAll_vd9_27_done
+LinkedList_retainAll_vd9_27_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_retainAll_vd9_27_done:
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_retainAll__Collection_b10
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b11
+adenc_aden_collections_LinkedList_retainAll__Collection_b8:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b9
+adenc_aden_collections_LinkedList_retainAll__Collection_b9:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b4
+adenc_aden_collections_LinkedList_retainAll__Collection_b10:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s10
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s9
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b12
+adenc_aden_collections_LinkedList_retainAll__Collection_b11:
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b12
+adenc_aden_collections_LinkedList_retainAll__Collection_b12:
+    lea rcx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s8
+    mov edx, adenc_aden_collections_LinkedList_retainAll__Collection_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_retainAll__Collection_b9
+adenc_aden_collections_LinkedList_retainAll__Collection_epilogue:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+adenc_aden_collections_LinkedList_retainAll__Collection_epilogue_post:
+    mov qword ptr [rsp+160], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+160]
+    add rsp, 280
+    ret
+adenc_aden_collections_LinkedList_retainAll__Collection endp
+
+adenc_aden_collections_LinkedList_add__int_Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m251
+    mov edx, trace_m251_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_collections_LinkedList_add__int_Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_add__int_Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_add__int_Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+96], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_insertValue__int_Object
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_add__int_Object_epilogue
+adenc_aden_collections_LinkedList_add__int_Object_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_add__int_Object_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_add__int_Object endp
+
+adenc_aden_collections_LinkedList_add__int_int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m253
+    mov edx, trace_m253_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_collections_LinkedList_add__int_int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_add__int_int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_add__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_insertIntValue__int_int
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_add__int_int_epilogue
+adenc_aden_collections_LinkedList_add__int_int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_add__int_int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_add__int_int endp
+
+adenc_aden_collections_LinkedList_add__int_String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m255
+    mov edx, trace_m255_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_collections_LinkedList_add__int_String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_add__int_String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_add__int_String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+96], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_insertValue__int_Object
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_add__int_String_epilogue
+adenc_aden_collections_LinkedList_add__int_String_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_add__int_String_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_add__int_String endp
+
+adenc_aden_collections_LinkedList_get__int proc
+    sub rsp, 264
+    mov qword ptr [rsp+232], rcx
+    mov qword ptr [rsp+240], rdx
+    mov qword ptr [rsp+248], r8
+    mov qword ptr [rsp+256], r9
+    lea rcx, trace_m257
+    mov edx, trace_m257_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+232]
+    mov rdx, qword ptr [rsp+240]
+    mov r8, qword ptr [rsp+248]
+    mov r9, qword ptr [rsp+256]
+    mov qword ptr [rsp+72], rcx
+    mov dword ptr [rsp+80], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_get__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_get__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_get__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_nodeAt__int
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_get__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_get__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_get__int_b1
+    jmp adenc_aden_collections_LinkedList_get__int_b2
+adenc_aden_collections_LinkedList_get__int_b1:
+    lea rcx, adenc_aden_collections_LinkedList_get__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_get__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_get__int_epilogue
+adenc_aden_collections_LinkedList_get__int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_get__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_get__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_get__int_b3
+adenc_aden_collections_LinkedList_get__int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_get__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_get__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, qword ptr [rsp+144]
+    call adenc_aden_collections_LinkedListNode_getValue
+    jmp adenc_aden_collections_LinkedList_get__int_epilogue
+adenc_aden_collections_LinkedList_get__int_epilogue:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+adenc_aden_collections_LinkedList_get__int_epilogue_post:
+    mov qword ptr [rsp+136], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+136]
+    add rsp, 264
+    ret
+adenc_aden_collections_LinkedList_get__int endp
+
+adenc_aden_collections_LinkedList_getInt__int proc
+    sub rsp, 264
+    mov qword ptr [rsp+232], rcx
+    mov qword ptr [rsp+240], rdx
+    mov qword ptr [rsp+248], r8
+    mov qword ptr [rsp+256], r9
+    lea rcx, trace_m262
+    mov edx, trace_m262_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+232]
+    mov rdx, qword ptr [rsp+240]
+    mov r8, qword ptr [rsp+248]
+    mov r9, qword ptr [rsp+256]
+    mov qword ptr [rsp+72], rcx
+    mov dword ptr [rsp+80], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_getInt__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_nodeAt__int
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_getInt__int_b1
+    jmp adenc_aden_collections_LinkedList_getInt__int_b2
+adenc_aden_collections_LinkedList_getInt__int_b1:
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_getInt__int_epilogue
+adenc_aden_collections_LinkedList_getInt__int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_getInt__int_b3
+adenc_aden_collections_LinkedList_getInt__int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, qword ptr [rsp+144]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_getInt__int_b4
+    jmp adenc_aden_collections_LinkedList_getInt__int_b5
+adenc_aden_collections_LinkedList_getInt__int_b4:
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, qword ptr [rsp+144]
+    call adenc_aden_collections_LinkedListNode_getIntValue
+    movsxd rax, eax
+    jmp adenc_aden_collections_LinkedList_getInt__int_epilogue
+adenc_aden_collections_LinkedList_getInt__int_b5:
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_getInt__int_b6
+adenc_aden_collections_LinkedList_getInt__int_b6:
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg9
+    mov edx, msg9_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+96], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    lea rcx, adenc_aden_collections_LinkedList_getInt__int_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_getInt__int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_getInt__int_epilogue
+adenc_aden_collections_LinkedList_getInt__int_epilogue:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+adenc_aden_collections_LinkedList_getInt__int_epilogue_post:
+    mov qword ptr [rsp+136], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+136]
+    add rsp, 264
+    ret
+adenc_aden_collections_LinkedList_getInt__int endp
+
+adenc_aden_collections_LinkedList_getString__int proc
+    sub rsp, 264
+    mov qword ptr [rsp+232], rcx
+    mov qword ptr [rsp+240], rdx
+    mov qword ptr [rsp+248], r8
+    mov qword ptr [rsp+256], r9
+    lea rcx, trace_m270
+    mov edx, trace_m270_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+232]
+    mov rdx, qword ptr [rsp+240]
+    mov r8, qword ptr [rsp+248]
+    mov r9, qword ptr [rsp+256]
+    mov qword ptr [rsp+72], rcx
+    mov dword ptr [rsp+80], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_getString__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_getString__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_getString__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_nodeAt__int
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_getString__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_getString__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_getString__int_b1
+    jmp adenc_aden_collections_LinkedList_getString__int_b2
+adenc_aden_collections_LinkedList_getString__int_b1:
+    lea rcx, adenc_aden_collections_LinkedList_getString__int_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_getString__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_getString__int_epilogue
+adenc_aden_collections_LinkedList_getString__int_b2:
+    lea rcx, adenc_aden_collections_LinkedList_getString__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_getString__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_getString__int_b3
+adenc_aden_collections_LinkedList_getString__int_b3:
+    lea rcx, adenc_aden_collections_LinkedList_getString__int_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_getString__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, qword ptr [rsp+144]
+    call adenc_aden_collections_LinkedListNode_getValue
+    test rax, rax
+    je LinkedList_getString_cast_3_11_null
+    mov qword ptr [rsp+40], rax
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_getString_cast_3_11_fail
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_getString_cast_3_11_ok
+LinkedList_getString_cast_3_11_fail:
+    lea rcx, msg10
+    mov edx, msg10_len
+    call adenc_rt_stringFromBytes
+    mov rcx, rax
+    call adenc_rt_panic
+    xor eax, eax
+    jmp LinkedList_getString_cast_3_11_done
+LinkedList_getString_cast_3_11_null:
+    xor eax, eax
+    jmp LinkedList_getString_cast_3_11_done
+LinkedList_getString_cast_3_11_ok:
+    mov rax, qword ptr [rsp+40]
+LinkedList_getString_cast_3_11_done:
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_collections_LinkedList_getString__int_epilogue
+adenc_aden_collections_LinkedList_getString__int_epilogue:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+adenc_aden_collections_LinkedList_getString__int_epilogue_post:
+    mov qword ptr [rsp+136], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+136]
+    add rsp, 264
+    ret
+adenc_aden_collections_LinkedList_getString__int endp
+
+adenc_aden_collections_LinkedList_remove__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m275
+    mov edx, trace_m275_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+72], rcx
+    mov dword ptr [rsp+80], edx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_remove__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_remove__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_remove__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_nodeAt__int
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_remove__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_remove__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_collections_LinkedList_remove__int_epilogue
+adenc_aden_collections_LinkedList_remove__int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_remove__int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_remove__int endp
+
+adenc_aden_collections_LinkedList_remove__Object proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m278
+    mov edx, trace_m278_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+80], rdx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_remove__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_remove__Object_b1
+adenc_aden_collections_LinkedList_remove__Object_b1:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_remove__Object_b2
+    jmp adenc_aden_collections_LinkedList_remove__Object_b3
+adenc_aden_collections_LinkedList_remove__Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, qword ptr [rsp+144]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne LinkedList_remove_ternary_then_2_17
+    mov eax, 0
+    jmp LinkedList_remove_ternary_done_2_17
+LinkedList_remove_ternary_then_2_17:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+184], rax
+    mov rcx, qword ptr [rsp+184]
+    call adenc_aden_collections_LinkedListNode_getValue
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+96]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_valuesEqual__Object_Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+LinkedList_remove_ternary_done_2_17:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_remove__Object_b4
+    jmp adenc_aden_collections_LinkedList_remove__Object_b5
+adenc_aden_collections_LinkedList_remove__Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_remove__Object_epilogue
+adenc_aden_collections_LinkedList_remove__Object_b4:
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+96], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov rax, qword ptr [rsp+96]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_remove__Object_epilogue
+adenc_aden_collections_LinkedList_remove__Object_b5:
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_remove__Object_b6
+adenc_aden_collections_LinkedList_remove__Object_b6:
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, qword ptr [rsp+144]
+    call adenc_aden_collections_LinkedListNode_getNext
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_remove__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_remove__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_remove__Object_b1
+adenc_aden_collections_LinkedList_remove__Object_epilogue:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+adenc_aden_collections_LinkedList_remove__Object_epilogue_post:
+    mov qword ptr [rsp+136], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+136]
+    add rsp, 296
+    ret
+adenc_aden_collections_LinkedList_remove__Object endp
+
+adenc_aden_collections_LinkedList_set__int_Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m286
+    mov edx, trace_m286_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_collections_LinkedList_set__int_Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_set__int_Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_set__int_Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+96], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_replaceValue__int_Object
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_collections_LinkedList_set__int_Object_epilogue
+adenc_aden_collections_LinkedList_set__int_Object_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_set__int_Object_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_set__int_Object endp
+
+adenc_aden_collections_LinkedList_set__int_int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m288
+    mov edx, trace_m288_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_collections_LinkedList_set__int_int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_set__int_int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_set__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_replaceIntValue__int_int
+    movsxd rax, eax
+    jmp adenc_aden_collections_LinkedList_set__int_int_epilogue
+adenc_aden_collections_LinkedList_set__int_int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_set__int_int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_set__int_int endp
+
+adenc_aden_collections_LinkedList_set__int_String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m290
+    mov edx, trace_m290_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_collections_LinkedList_set__int_String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_set__int_String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_set__int_String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+96], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_replaceValue__int_Object
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    test rax, rax
+    je LinkedList_set_cast_0_5_null
+    mov qword ptr [rsp+40], rax
+    mov rcx, rax
+    call adenc_rt_objectClassId
+    mov edx, eax
+    test edx, edx
+    jz LinkedList_set_cast_0_5_fail
+    mov ecx, edx
+    lea rdx, cidset_0
+    mov r8d, 1
+    call adenc_rt_classIdInSet
+    test eax, eax
+    jnz LinkedList_set_cast_0_5_ok
+LinkedList_set_cast_0_5_fail:
+    lea rcx, msg11
+    mov edx, msg11_len
+    call adenc_rt_stringFromBytes
+    mov rcx, rax
+    call adenc_rt_panic
+    xor eax, eax
+    jmp LinkedList_set_cast_0_5_done
+LinkedList_set_cast_0_5_null:
+    xor eax, eax
+    jmp LinkedList_set_cast_0_5_done
+LinkedList_set_cast_0_5_ok:
+    mov rax, qword ptr [rsp+40]
+LinkedList_set_cast_0_5_done:
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_collections_LinkedList_set__int_String_epilogue
+adenc_aden_collections_LinkedList_set__int_String_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_set__int_String_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_set__int_String endp
+
+adenc_aden_collections_LinkedList_contains__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m292
+    mov edx, trace_m292_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_contains__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_contains__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_contains__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findIndex__Object
+    movsxd rax, eax
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+80], rax
+    mov eax, 0
+    mov rdx, rax
+    mov rax, qword ptr [rsp+80]
+    cmp rax, rdx
+    setge al
+    movzx eax, al
+    jmp adenc_aden_collections_LinkedList_contains__Object_epilogue
+adenc_aden_collections_LinkedList_contains__Object_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_contains__Object_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_contains__Object endp
+
+adenc_aden_collections_LinkedList_contains__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m294
+    mov edx, trace_m294_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_contains__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_contains__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_contains__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findIntIndex__int
+    movsxd rax, eax
+    mov dword ptr [rsp+80], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    cmp eax, edx
+    setge al
+    movzx eax, al
+    jmp adenc_aden_collections_LinkedList_contains__int_epilogue
+adenc_aden_collections_LinkedList_contains__int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_contains__int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_contains__int endp
+
+adenc_aden_collections_LinkedList_contains__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m296
+    mov edx, trace_m296_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_contains__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_contains__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_contains__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findIndex__Object
+    movsxd rax, eax
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+80], rax
+    mov eax, 0
+    mov rdx, rax
+    mov rax, qword ptr [rsp+80]
+    cmp rax, rdx
+    setge al
+    movzx eax, al
+    jmp adenc_aden_collections_LinkedList_contains__String_epilogue
+adenc_aden_collections_LinkedList_contains__String_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_collections_LinkedList_contains__String_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_contains__String endp
+
+adenc_aden_collections_LinkedList_indexOf__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m298
+    mov edx, trace_m298_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_indexOf__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_indexOf__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_indexOf__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findIndex__Object
+    movsxd rax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_indexOf__Object_epilogue
+adenc_aden_collections_LinkedList_indexOf__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_indexOf__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_indexOf__Object endp
+
+adenc_aden_collections_LinkedList_indexOf__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m300
+    mov edx, trace_m300_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_indexOf__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_indexOf__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_indexOf__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findIntIndex__int
+    movsxd rax, eax
+    jmp adenc_aden_collections_LinkedList_indexOf__int_epilogue
+adenc_aden_collections_LinkedList_indexOf__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_indexOf__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_indexOf__int endp
+
+adenc_aden_collections_LinkedList_indexOf__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m302
+    mov edx, trace_m302_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_indexOf__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_indexOf__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_indexOf__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findIndex__Object
+    movsxd rax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_indexOf__String_epilogue
+adenc_aden_collections_LinkedList_indexOf__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_indexOf__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_indexOf__String endp
+
+adenc_aden_collections_LinkedList_lastIndexOf__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m304
+    mov edx, trace_m304_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_lastIndexOf__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_lastIndexOf__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_lastIndexOf__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findLastIndex__Object
+    movsxd rax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_lastIndexOf__Object_epilogue
+adenc_aden_collections_LinkedList_lastIndexOf__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_lastIndexOf__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_lastIndexOf__Object endp
+
+adenc_aden_collections_LinkedList_lastIndexOf__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m306
+    mov edx, trace_m306_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_lastIndexOf__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_lastIndexOf__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_lastIndexOf__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findLastIntIndex__int
+    movsxd rax, eax
+    jmp adenc_aden_collections_LinkedList_lastIndexOf__int_epilogue
+adenc_aden_collections_LinkedList_lastIndexOf__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_lastIndexOf__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_lastIndexOf__int endp
+
+adenc_aden_collections_LinkedList_lastIndexOf__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m308
+    mov edx, trace_m308_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_lastIndexOf__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_lastIndexOf__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_lastIndexOf__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_findLastIndex__Object
+    movsxd rax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_lastIndexOf__String_epilogue
+adenc_aden_collections_LinkedList_lastIndexOf__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_lastIndexOf__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_lastIndexOf__String endp
+
+adenc_aden_collections_LinkedList_offer__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m310
+    mov edx, trace_m310_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_offer__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offer__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offer__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_offer__Object_epilogue
+adenc_aden_collections_LinkedList_offer__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offer__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offer__Object endp
+
+adenc_aden_collections_LinkedList_offer__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m312
+    mov edx, trace_m312_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_offer__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offer__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offer__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendIntValue__int
+    and rax, 0FFFFFFFFh
+    jmp adenc_aden_collections_LinkedList_offer__int_epilogue
+adenc_aden_collections_LinkedList_offer__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offer__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offer__int endp
+
+adenc_aden_collections_LinkedList_offer__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m314
+    mov edx, trace_m314_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_offer__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offer__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offer__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_offer__String_epilogue
+adenc_aden_collections_LinkedList_offer__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offer__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offer__String endp
+
+adenc_aden_collections_LinkedList_poll proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m316
+    mov edx, trace_m316_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_poll_b0:
+    lea rcx, adenc_aden_collections_LinkedList_poll_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_poll_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_poll_b1
+    jmp adenc_aden_collections_LinkedList_poll_b2
+adenc_aden_collections_LinkedList_poll_b1:
+    lea rcx, adenc_aden_collections_LinkedList_poll_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_poll_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_poll_epilogue
+adenc_aden_collections_LinkedList_poll_b2:
+    lea rcx, adenc_aden_collections_LinkedList_poll_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_poll_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_poll_b3
+adenc_aden_collections_LinkedList_poll_b3:
+    lea rcx, adenc_aden_collections_LinkedList_poll_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_poll_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_poll_epilogue
+adenc_aden_collections_LinkedList_poll_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_poll_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_poll endp
+
+adenc_aden_collections_LinkedList_remove proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m320
+    mov edx, trace_m320_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_remove_b0:
+    lea rcx, adenc_aden_collections_LinkedList_remove_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_remove_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_remove_b1
+    jmp adenc_aden_collections_LinkedList_remove_b2
+adenc_aden_collections_LinkedList_remove_b1:
+    lea rcx, adenc_aden_collections_LinkedList_remove_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_remove_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg12
+    mov edx, msg12_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    lea rcx, adenc_aden_collections_LinkedList_remove_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_remove_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_remove_epilogue
+adenc_aden_collections_LinkedList_remove_b2:
+    lea rcx, adenc_aden_collections_LinkedList_remove_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_remove_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_remove_b3
+adenc_aden_collections_LinkedList_remove_b3:
+    lea rcx, adenc_aden_collections_LinkedList_remove_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_remove_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_remove_vd3_11_null
+    call adenc_aden_collections_LinkedList_poll
+    jmp LinkedList_remove_vd3_11_done
+LinkedList_remove_vd3_11_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_remove_vd3_11_done:
+    jmp adenc_aden_collections_LinkedList_remove_epilogue
+adenc_aden_collections_LinkedList_remove_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_remove_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_remove endp
+
+adenc_aden_collections_LinkedList_peek proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m325
+    mov edx, trace_m325_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_peek_b0:
+    lea rcx, adenc_aden_collections_LinkedList_peek_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_peek_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_peek_b1
+    jmp adenc_aden_collections_LinkedList_peek_b2
+adenc_aden_collections_LinkedList_peek_b1:
+    lea rcx, adenc_aden_collections_LinkedList_peek_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_peek_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_peek_epilogue
+adenc_aden_collections_LinkedList_peek_b2:
+    lea rcx, adenc_aden_collections_LinkedList_peek_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_peek_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_peek_b3
+adenc_aden_collections_LinkedList_peek_b3:
+    lea rcx, adenc_aden_collections_LinkedList_peek_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_peek_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_collections_LinkedListNode_getValue
+    jmp adenc_aden_collections_LinkedList_peek_epilogue
+adenc_aden_collections_LinkedList_peek_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_peek_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_peek endp
+
+adenc_aden_collections_LinkedList_element proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m329
+    mov edx, trace_m329_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_element_b0:
+    lea rcx, adenc_aden_collections_LinkedList_element_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_element_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_element_b1
+    jmp adenc_aden_collections_LinkedList_element_b2
+adenc_aden_collections_LinkedList_element_b1:
+    lea rcx, adenc_aden_collections_LinkedList_element_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_element_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg13
+    mov edx, msg13_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    lea rcx, adenc_aden_collections_LinkedList_element_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_element_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_element_epilogue
+adenc_aden_collections_LinkedList_element_b2:
+    lea rcx, adenc_aden_collections_LinkedList_element_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_element_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_element_b3
+adenc_aden_collections_LinkedList_element_b3:
+    lea rcx, adenc_aden_collections_LinkedList_element_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_element_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_collections_LinkedListNode_getValue
+    jmp adenc_aden_collections_LinkedList_element_epilogue
+adenc_aden_collections_LinkedList_element_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_element_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_element endp
+
+adenc_aden_collections_LinkedList_addFirst__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m334
+    mov edx, trace_m334_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_addFirst__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_addFirst__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addFirst__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_prependValue__Object
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_addFirst__Object_epilogue
+adenc_aden_collections_LinkedList_addFirst__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_addFirst__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_addFirst__Object endp
+
+adenc_aden_collections_LinkedList_offerFirst__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m336
+    mov edx, trace_m336_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_offerFirst__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offerFirst__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offerFirst__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_prependValue__Object
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    lea rcx, adenc_aden_collections_LinkedList_offerFirst__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_offerFirst__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_offerFirst__Object_epilogue
+adenc_aden_collections_LinkedList_offerFirst__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offerFirst__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offerFirst__Object endp
+
+adenc_aden_collections_LinkedList_addFirst__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m339
+    mov edx, trace_m339_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_addFirst__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_addFirst__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addFirst__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_prependIntValue__int
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_addFirst__int_epilogue
+adenc_aden_collections_LinkedList_addFirst__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_addFirst__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_addFirst__int endp
+
+adenc_aden_collections_LinkedList_addFirst__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m341
+    mov edx, trace_m341_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_addFirst__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_addFirst__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addFirst__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_prependValue__Object
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_addFirst__String_epilogue
+adenc_aden_collections_LinkedList_addFirst__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_addFirst__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_addFirst__String endp
+
+adenc_aden_collections_LinkedList_offerFirst__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m343
+    mov edx, trace_m343_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_offerFirst__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offerFirst__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offerFirst__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_prependIntValue__int
+    lea rcx, adenc_aden_collections_LinkedList_offerFirst__int_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_offerFirst__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_offerFirst__int_epilogue
+adenc_aden_collections_LinkedList_offerFirst__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offerFirst__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offerFirst__int endp
+
+adenc_aden_collections_LinkedList_offerFirst__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m346
+    mov edx, trace_m346_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_offerFirst__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offerFirst__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offerFirst__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_prependValue__Object
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    lea rcx, adenc_aden_collections_LinkedList_offerFirst__String_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_offerFirst__String_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_offerFirst__String_epilogue
+adenc_aden_collections_LinkedList_offerFirst__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offerFirst__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offerFirst__String endp
+
+adenc_aden_collections_LinkedList_addLast__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m349
+    mov edx, trace_m349_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_addLast__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_addLast__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addLast__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_addLast__Object_epilogue
+adenc_aden_collections_LinkedList_addLast__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_addLast__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_addLast__Object endp
+
+adenc_aden_collections_LinkedList_offerLast__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m351
+    mov edx, trace_m351_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_offerLast__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offerLast__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offerLast__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_offerLast__Object_epilogue
+adenc_aden_collections_LinkedList_offerLast__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offerLast__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offerLast__Object endp
+
+adenc_aden_collections_LinkedList_addLast__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m353
+    mov edx, trace_m353_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_addLast__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_addLast__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addLast__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendIntValue__int
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_addLast__int_epilogue
+adenc_aden_collections_LinkedList_addLast__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_addLast__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_addLast__int endp
+
+adenc_aden_collections_LinkedList_addLast__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m355
+    mov edx, trace_m355_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_addLast__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_addLast__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_addLast__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_addLast__String_epilogue
+adenc_aden_collections_LinkedList_addLast__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_addLast__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_addLast__String endp
+
+adenc_aden_collections_LinkedList_offerLast__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m357
+    mov edx, trace_m357_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_offerLast__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offerLast__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offerLast__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendIntValue__int
+    and rax, 0FFFFFFFFh
+    jmp adenc_aden_collections_LinkedList_offerLast__int_epilogue
+adenc_aden_collections_LinkedList_offerLast__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offerLast__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offerLast__int endp
+
+adenc_aden_collections_LinkedList_offerLast__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m359
+    mov edx, trace_m359_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_offerLast__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_offerLast__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_offerLast__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_appendValue__Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_offerLast__String_epilogue
+adenc_aden_collections_LinkedList_offerLast__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_offerLast__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_offerLast__String endp
+
+adenc_aden_collections_LinkedList_getFirst proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m361
+    mov edx, trace_m361_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_getFirst_b0:
+    lea rcx, adenc_aden_collections_LinkedList_getFirst_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_getFirst_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_getFirst_b1
+    jmp adenc_aden_collections_LinkedList_getFirst_b2
+adenc_aden_collections_LinkedList_getFirst_b1:
+    lea rcx, adenc_aden_collections_LinkedList_getFirst_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_getFirst_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg14
+    mov edx, msg14_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    lea rcx, adenc_aden_collections_LinkedList_getFirst_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_getFirst_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_getFirst_epilogue
+adenc_aden_collections_LinkedList_getFirst_b2:
+    lea rcx, adenc_aden_collections_LinkedList_getFirst_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_getFirst_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_getFirst_b3
+adenc_aden_collections_LinkedList_getFirst_b3:
+    lea rcx, adenc_aden_collections_LinkedList_getFirst_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_getFirst_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_collections_LinkedListNode_getValue
+    jmp adenc_aden_collections_LinkedList_getFirst_epilogue
+adenc_aden_collections_LinkedList_getFirst_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_getFirst_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_getFirst endp
+
+adenc_aden_collections_LinkedList_removeFirst proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m366
+    mov edx, trace_m366_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_removeFirst_b0:
+    lea rcx, adenc_aden_collections_LinkedList_removeFirst_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_removeFirst_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_first]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_removeFirst_b1
+    jmp adenc_aden_collections_LinkedList_removeFirst_b2
+adenc_aden_collections_LinkedList_removeFirst_b1:
+    lea rcx, adenc_aden_collections_LinkedList_removeFirst_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_removeFirst_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg15
+    mov edx, msg15_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    lea rcx, adenc_aden_collections_LinkedList_removeFirst_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_removeFirst_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_removeFirst_epilogue
+adenc_aden_collections_LinkedList_removeFirst_b2:
+    lea rcx, adenc_aden_collections_LinkedList_removeFirst_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_removeFirst_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeFirst_b3
+adenc_aden_collections_LinkedList_removeFirst_b3:
+    lea rcx, adenc_aden_collections_LinkedList_removeFirst_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_removeFirst_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_removeFirst_vd3_11_null
+    call adenc_aden_collections_LinkedList_poll
+    jmp LinkedList_removeFirst_vd3_11_done
+LinkedList_removeFirst_vd3_11_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_removeFirst_vd3_11_done:
+    jmp adenc_aden_collections_LinkedList_removeFirst_epilogue
+adenc_aden_collections_LinkedList_removeFirst_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_removeFirst_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_removeFirst endp
+
+adenc_aden_collections_LinkedList_peekFirst proc
+    sub rsp, 232
+    mov qword ptr [rsp+200], rcx
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    lea rcx, trace_m371
+    mov edx, trace_m371_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+200]
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_peekFirst_b0:
+    lea rcx, adenc_aden_collections_LinkedList_peekFirst_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_peekFirst_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_peekFirst_vd0_2_null
+    call adenc_aden_collections_LinkedList_peek
+    jmp LinkedList_peekFirst_vd0_2_done
+LinkedList_peekFirst_vd0_2_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_peekFirst_vd0_2_done:
+    jmp adenc_aden_collections_LinkedList_peekFirst_epilogue
+adenc_aden_collections_LinkedList_peekFirst_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_collections_LinkedList_peekFirst_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 232
+    ret
+adenc_aden_collections_LinkedList_peekFirst endp
+
+adenc_aden_collections_LinkedList_pollFirst proc
+    sub rsp, 232
+    mov qword ptr [rsp+200], rcx
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    lea rcx, trace_m373
+    mov edx, trace_m373_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+200]
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_pollFirst_b0:
+    lea rcx, adenc_aden_collections_LinkedList_pollFirst_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_pollFirst_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_pollFirst_vd0_2_null
+    call adenc_aden_collections_LinkedList_poll
+    jmp LinkedList_pollFirst_vd0_2_done
+LinkedList_pollFirst_vd0_2_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_pollFirst_vd0_2_done:
+    jmp adenc_aden_collections_LinkedList_pollFirst_epilogue
+adenc_aden_collections_LinkedList_pollFirst_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_collections_LinkedList_pollFirst_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 232
+    ret
+adenc_aden_collections_LinkedList_pollFirst endp
+
+adenc_aden_collections_LinkedList_removeLast proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m375
+    mov edx, trace_m375_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_removeLast_b0:
+    lea rcx, adenc_aden_collections_LinkedList_removeLast_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_removeLast_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_removeLast_b1
+    jmp adenc_aden_collections_LinkedList_removeLast_b2
+adenc_aden_collections_LinkedList_removeLast_b1:
+    lea rcx, adenc_aden_collections_LinkedList_removeLast_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_removeLast_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg16
+    mov edx, msg16_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    lea rcx, adenc_aden_collections_LinkedList_removeLast_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_removeLast_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_removeLast_epilogue
+adenc_aden_collections_LinkedList_removeLast_b2:
+    lea rcx, adenc_aden_collections_LinkedList_removeLast_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_removeLast_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeLast_b3
+adenc_aden_collections_LinkedList_removeLast_b3:
+    lea rcx, adenc_aden_collections_LinkedList_removeLast_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_removeLast_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_removeLast_epilogue
+adenc_aden_collections_LinkedList_removeLast_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_removeLast_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_removeLast endp
+
+adenc_aden_collections_LinkedList_getLast proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m380
+    mov edx, trace_m380_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_getLast_b0:
+    lea rcx, adenc_aden_collections_LinkedList_getLast_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_getLast_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_getLast_b1
+    jmp adenc_aden_collections_LinkedList_getLast_b2
+adenc_aden_collections_LinkedList_getLast_b1:
+    lea rcx, adenc_aden_collections_LinkedList_getLast_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_getLast_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg17
+    mov edx, msg17_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_panic
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    lea rcx, adenc_aden_collections_LinkedList_getLast_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_getLast_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_getLast_epilogue
+adenc_aden_collections_LinkedList_getLast_b2:
+    lea rcx, adenc_aden_collections_LinkedList_getLast_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_getLast_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_getLast_b3
+adenc_aden_collections_LinkedList_getLast_b3:
+    lea rcx, adenc_aden_collections_LinkedList_getLast_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_getLast_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_collections_LinkedListNode_getValue
+    jmp adenc_aden_collections_LinkedList_getLast_epilogue
+adenc_aden_collections_LinkedList_getLast_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_getLast_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_getLast endp
+
+adenc_aden_collections_LinkedList_peekLast proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m385
+    mov edx, trace_m385_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_peekLast_b0:
+    lea rcx, adenc_aden_collections_LinkedList_peekLast_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_peekLast_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_peekLast_b1
+    jmp adenc_aden_collections_LinkedList_peekLast_b2
+adenc_aden_collections_LinkedList_peekLast_b1:
+    lea rcx, adenc_aden_collections_LinkedList_peekLast_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_peekLast_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_peekLast_epilogue
+adenc_aden_collections_LinkedList_peekLast_b2:
+    lea rcx, adenc_aden_collections_LinkedList_peekLast_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_peekLast_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_peekLast_b3
+adenc_aden_collections_LinkedList_peekLast_b3:
+    lea rcx, adenc_aden_collections_LinkedList_peekLast_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_peekLast_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_collections_LinkedListNode_getValue
+    jmp adenc_aden_collections_LinkedList_peekLast_epilogue
+adenc_aden_collections_LinkedList_peekLast_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_peekLast_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_peekLast endp
+
+adenc_aden_collections_LinkedList_pollLast proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m389
+    mov edx, trace_m389_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_pollLast_b0:
+    lea rcx, adenc_aden_collections_LinkedList_pollLast_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_pollLast_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+72], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+72]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_pollLast_b1
+    jmp adenc_aden_collections_LinkedList_pollLast_b2
+adenc_aden_collections_LinkedList_pollLast_b1:
+    lea rcx, adenc_aden_collections_LinkedList_pollLast_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_pollLast_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_pollLast_epilogue
+adenc_aden_collections_LinkedList_pollLast_b2:
+    lea rcx, adenc_aden_collections_LinkedList_pollLast_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_pollLast_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_pollLast_b3
+adenc_aden_collections_LinkedList_pollLast_b3:
+    lea rcx, adenc_aden_collections_LinkedList_pollLast_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_pollLast_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_pollLast_epilogue
+adenc_aden_collections_LinkedList_pollLast_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_pollLast_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_pollLast endp
+
+adenc_aden_collections_LinkedList_removeFirstOccurrence__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m393
+    mov edx, trace_m393_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_removeFirstOccurrence__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_removeFirstOccurrence__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_removeFirstOccurrence__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_removeFirstOccurrence_vd0_3_null
+    call adenc_aden_collections_LinkedList_remove__Object
+    jmp LinkedList_removeFirstOccurrence_vd0_3_done
+LinkedList_removeFirstOccurrence_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_removeFirstOccurrence_vd0_3_done:
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_collections_LinkedList_removeFirstOccurrence__Object_epilogue
+adenc_aden_collections_LinkedList_removeFirstOccurrence__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_removeFirstOccurrence__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_removeFirstOccurrence__Object endp
+
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m395
+    mov edx, trace_m395_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+72], rcx
+    mov qword ptr [rsp+80], rdx
+    mov qword ptr [rsp+64], 0
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_collections_LinkedList_last]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b1
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b1:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b2
+    jmp adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b3
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b2:
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, qword ptr [rsp+144]
+    call adenc_aden_collections_LinkedListNode_hasIntValue
+    and rax, 0FFFFFFFFh
+    test eax, eax
+    sete al
+    movzx eax, al
+    test rax, rax
+    jne LinkedList_removeLastOccurrence_ternary_then_2_17
+    mov eax, 0
+    jmp LinkedList_removeLastOccurrence_ternary_done_2_17
+LinkedList_removeLastOccurrence_ternary_then_2_17:
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+184], rax
+    mov rcx, qword ptr [rsp+184]
+    call adenc_aden_collections_LinkedListNode_getValue
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+96]
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_valuesEqual__Object_Object
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+LinkedList_removeLastOccurrence_ternary_done_2_17:
+    test eax, eax
+    jne adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b4
+    jmp adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b5
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b3:
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s6
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_collections_LinkedList_removeLastOccurrence__Object_epilogue
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b4:
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s3
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+96], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov rax, qword ptr [rsp+96]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+72]
+    call adenc_aden_collections_LinkedList_unlinkNode__LinkedListNode
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s4
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_collections_LinkedList_removeLastOccurrence__Object_epilogue
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b5:
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s2
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b6
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b6:
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s5
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, qword ptr [rsp+144]
+    call adenc_aden_collections_LinkedListNode_getPrevious
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s1
+    mov edx, adenc_aden_collections_LinkedList_removeLastOccurrence__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_collections_LinkedList_removeLastOccurrence__Object_b1
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_epilogue:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object_epilogue_post:
+    mov qword ptr [rsp+136], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+136]
+    add rsp, 296
+    ret
+adenc_aden_collections_LinkedList_removeLastOccurrence__Object endp
+
+adenc_aden_collections_LinkedList_push__Object proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m403
+    mov edx, trace_m403_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_push__Object_b0:
+    lea rcx, adenc_aden_collections_LinkedList_push__Object_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_push__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je adenc_aden_collections_LinkedList_push__Object_vd_stmt_0_0_0_null
+    call adenc_aden_collections_LinkedList_addFirst__Object
+    jmp adenc_aden_collections_LinkedList_push__Object_vd_stmt_0_0_0_done
+adenc_aden_collections_LinkedList_push__Object_vd_stmt_0_0_0_null:
+    call adenc_rt_dispatchNullReceiverPanic
+adenc_aden_collections_LinkedList_push__Object_vd_stmt_0_0_0_done:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_push__Object_epilogue
+adenc_aden_collections_LinkedList_push__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_push__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_push__Object endp
+
+adenc_aden_collections_LinkedList_push__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m405
+    mov edx, trace_m405_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_collections_LinkedList_push__int_b0:
+    lea rcx, adenc_aden_collections_LinkedList_push__int_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_push__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je adenc_aden_collections_LinkedList_push__int_vd_stmt_0_0_0_null
+    call adenc_aden_collections_LinkedList_addFirst__int
+    jmp adenc_aden_collections_LinkedList_push__int_vd_stmt_0_0_0_done
+adenc_aden_collections_LinkedList_push__int_vd_stmt_0_0_0_null:
+    call adenc_rt_dispatchNullReceiverPanic
+adenc_aden_collections_LinkedList_push__int_vd_stmt_0_0_0_done:
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_push__int_epilogue
+adenc_aden_collections_LinkedList_push__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_push__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_push__int endp
+
+adenc_aden_collections_LinkedList_push__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m407
+    mov edx, trace_m407_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_collections_LinkedList_push__String_b0:
+    lea rcx, adenc_aden_collections_LinkedList_push__String_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_push__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    call adenc_aden_collections_LinkedList_prependValue__Object
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    xor eax, eax
+    jmp adenc_aden_collections_LinkedList_push__String_epilogue
+adenc_aden_collections_LinkedList_push__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_collections_LinkedList_push__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_collections_LinkedList_push__String endp
+
+adenc_aden_collections_LinkedList_pop proc
+    sub rsp, 232
+    mov qword ptr [rsp+200], rcx
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    lea rcx, trace_m409
+    mov edx, trace_m409_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+200]
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_collections_LinkedList_pop_b0:
+    lea rcx, adenc_aden_collections_LinkedList_pop_trace_s0
+    mov edx, adenc_aden_collections_LinkedList_pop_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je LinkedList_pop_vd0_2_null
+    call adenc_aden_collections_LinkedList_removeFirst
+    jmp LinkedList_pop_vd0_2_done
+LinkedList_pop_vd0_2_null:
+    call adenc_rt_dispatchNullReceiverPanic
+LinkedList_pop_vd0_2_done:
+    jmp adenc_aden_collections_LinkedList_pop_epilogue
+adenc_aden_collections_LinkedList_pop_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_collections_LinkedList_pop_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 232
+    ret
+adenc_aden_collections_LinkedList_pop endp
+
+end

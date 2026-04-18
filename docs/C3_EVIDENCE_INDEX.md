@@ -1,17 +1,17 @@
 # C3 Evidence Index
 
 ## Primary Board
-- [C3_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/C3_TASK_BOARD.md)
+- [C3_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/C3_TASK_BOARD.md)
 
 ## ABI/Object Model Contracts
-- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_ABI.md)
+- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_INTRINSICS_ABI.md)
 
 ## Closure/Execution
-- [C3_CLOSURE_CHECKLIST.md](/D:/Programming/codex/PulseCode/docs/C3_CLOSURE_CHECKLIST.md)
-- [MILESTONE-ROADMAP.md](/D:/Programming/codex/PulseCode/docs/MILESTONE-ROADMAP.md)
+- [C3_CLOSURE_CHECKLIST.md](/D:/Programming/codex/Aden Lang/docs/C3_CLOSURE_CHECKLIST.md)
+- [MILESTONE-ROADMAP.md](/D:/Programming/codex/Aden Lang/docs/MILESTONE-ROADMAP.md)
 
 ## Lock Suites
-- `cargo test -q -p pulsec --test stage_locks_c3`
+- `cargo test -q -p adenc --test stage_locks_c3`
 - `cargo test -q`
 
 ## Key C3 Lock Tests (non-exhaustive)

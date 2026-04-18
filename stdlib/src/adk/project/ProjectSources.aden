@@ -1,0 +1,191 @@
+package adk.project;
+
+import aden.io.Path;
+import aden.lang.Object;
+import aden.lang.String;
+import aden.util.Objects;
+
+/**
+ * Immutable source and resource layout contract for one Aden project.
+ */
+public final class ProjectSources {
+    private final String mainAdenRoot;
+    private final String mainResourcesRoot;
+    private final String testAdenRoot;
+    private final String testResourcesRoot;
+    private final String apiAdenRoot;
+    private final String apiResourcesRoot;
+    private final String docsRoot;
+    private final String librariesRoot;
+    private final String entry;
+
+    /**
+     * Creates one explicit project source layout.
+     */
+    public ProjectSources(
+        String mainAdenRoot,
+        String mainResourcesRoot,
+        String testAdenRoot,
+        String testResourcesRoot,
+        String apiAdenRoot,
+        String apiResourcesRoot,
+        String docsRoot,
+        String librariesRoot,
+        String entry
+    ) {
+        this.mainAdenRoot = (String) Objects.requireNonNull(mainAdenRoot, "mainAdenRoot must not be null");
+        this.mainResourcesRoot = (String) Objects.requireNonNull(mainResourcesRoot, "mainResourcesRoot must not be null");
+        this.testAdenRoot = (String) Objects.requireNonNull(testAdenRoot, "testAdenRoot must not be null");
+        this.testResourcesRoot = (String) Objects.requireNonNull(testResourcesRoot, "testResourcesRoot must not be null");
+        this.apiAdenRoot = (String) Objects.requireNonNull(apiAdenRoot, "apiAdenRoot must not be null");
+        this.apiResourcesRoot = (String) Objects.requireNonNull(apiResourcesRoot, "apiResourcesRoot must not be null");
+        this.docsRoot = (String) Objects.requireNonNull(docsRoot, "docsRoot must not be null");
+        this.librariesRoot = (String) Objects.requireNonNull(librariesRoot, "librariesRoot must not be null");
+        this.entry = (String) Objects.requireNonNull(entry, "entry must not be null");
+    }
+
+    /**
+     * Returns the scaffold-style default source layout for one project root.
+     */
+    public static ProjectSources defaults(String projectRoot) {
+        Objects.requireNonNull(projectRoot, "projectRoot must not be null");
+        return new ProjectSources(
+            Path.resolve(projectRoot, "src/main/aden"),
+            Path.resolve(projectRoot, "src/main/resources"),
+            Path.resolve(projectRoot, "src/test/aden"),
+            Path.resolve(projectRoot, "src/test/resources"),
+            Path.resolve(projectRoot, "src/api/aden"),
+            Path.resolve(projectRoot, "src/api/resources"),
+            Path.resolve(projectRoot, "docs"),
+            Path.resolve(projectRoot, "libraries"),
+            "app/main/Main.aden"
+        );
+    }
+
+    /**
+     * Returns the main Aden source root.
+     */
+    public String mainAdenRoot() {
+        return this.mainAdenRoot;
+    }
+
+    /**
+     * Returns the main resources root.
+     */
+    public String mainResourcesRoot() {
+        return this.mainResourcesRoot;
+    }
+
+    /**
+     * Returns the test Aden source root.
+     */
+    public String testAdenRoot() {
+        return this.testAdenRoot;
+    }
+
+    /**
+     * Returns the test resources root.
+     */
+    public String testResourcesRoot() {
+        return this.testResourcesRoot;
+    }
+
+    /**
+     * Returns the API Aden source root.
+     */
+    public String apiAdenRoot() {
+        return this.apiAdenRoot;
+    }
+
+    /**
+     * Returns the API resources root.
+     */
+    public String apiResourcesRoot() {
+        return this.apiResourcesRoot;
+    }
+
+    /**
+     * Returns the docs root.
+     */
+    public String docsRoot() {
+        return this.docsRoot;
+    }
+
+    /**
+     * Returns the libraries root.
+     */
+    public String librariesRoot() {
+        return this.librariesRoot;
+    }
+
+    /**
+     * Returns the source-root-relative entry path.
+     */
+    public String entry() {
+        return this.entry;
+    }
+
+    /**
+     * Compares two project source layouts.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof ProjectSources)) {
+            return false;
+        }
+        ProjectSources value = (ProjectSources) other;
+        return Objects.equals(this.mainAdenRoot, value.mainAdenRoot)
+            && Objects.equals(this.mainResourcesRoot, value.mainResourcesRoot)
+            && Objects.equals(this.testAdenRoot, value.testAdenRoot)
+            && Objects.equals(this.testResourcesRoot, value.testResourcesRoot)
+            && Objects.equals(this.apiAdenRoot, value.apiAdenRoot)
+            && Objects.equals(this.apiResourcesRoot, value.apiResourcesRoot)
+            && Objects.equals(this.docsRoot, value.docsRoot)
+            && Objects.equals(this.librariesRoot, value.librariesRoot)
+            && Objects.equals(this.entry, value.entry);
+    }
+
+    /**
+     * Returns a stable source-layout hash.
+     */
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + Objects.hashCode(this.mainAdenRoot);
+        hash = (31 * hash) + Objects.hashCode(this.mainResourcesRoot);
+        hash = (31 * hash) + Objects.hashCode(this.testAdenRoot);
+        hash = (31 * hash) + Objects.hashCode(this.testResourcesRoot);
+        hash = (31 * hash) + Objects.hashCode(this.apiAdenRoot);
+        hash = (31 * hash) + Objects.hashCode(this.apiResourcesRoot);
+        hash = (31 * hash) + Objects.hashCode(this.docsRoot);
+        hash = (31 * hash) + Objects.hashCode(this.librariesRoot);
+        hash = (31 * hash) + Objects.hashCode(this.entry);
+        return hash;
+    }
+
+    /**
+     * Returns a concise debug representation.
+     */
+    public String toString() {
+        return "ProjectSources[mainAden="
+            .concat(this.mainAdenRoot)
+            .concat(", mainResources=")
+            .concat(this.mainResourcesRoot)
+            .concat(", testAden=")
+            .concat(this.testAdenRoot)
+            .concat(", testResources=")
+            .concat(this.testResourcesRoot)
+            .concat(", apiAden=")
+            .concat(this.apiAdenRoot)
+            .concat(", apiResources=")
+            .concat(this.apiResourcesRoot)
+            .concat(", docs=")
+            .concat(this.docsRoot)
+            .concat(", libraries=")
+            .concat(this.librariesRoot)
+            .concat(", entry=")
+            .concat(this.entry)
+            .concat("]");
+    }
+}

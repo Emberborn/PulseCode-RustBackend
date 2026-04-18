@@ -1,0 +1,33 @@
+package adk.compiler;
+
+/**
+ * Renders compiler-facing test diagnostics while leaving CLI envelopes outside adklib.
+ */
+public final class TestDiagnosticWriter {
+    public static String renderTestDiscoveryResult(TestDiscoveryResult result) {
+        if (result.noTestsFound()) {
+            if (result.workspaceMember()) {
+                return "[FAIL] "
+                    .concat(result.memberRoot())
+                    .concat(" :: no .aden tests found under '")
+                    .concat(result.testsRoot())
+                    .concat("'");
+            }
+            return "Test discovery failed: no .aden tests found under '"
+                .concat(result.testsRoot())
+                .concat("'");
+        }
+        return "Test discovery failed: ".concat(result.detail());
+    }
+
+    public static String renderTestsFailed(TestResult result) {
+        if (result.workspace()) {
+            return "one or more workspace tests failed";
+        }
+        return "one or more tests failed";
+    }
+
+    public static String renderWorkspaceTestsFailed(WorkspaceTestResult result) {
+        return "one or more workspace tests failed";
+    }
+}

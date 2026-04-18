@@ -1,0 +1,104 @@
+package adk.compiler;
+
+/**
+ * Bridge codec for provider-backed compiler-check execution results.
+ */
+public final class CheckExecutionBridge {
+    public static String toBridgeText(CheckExecutionResult result) {
+        return CheckExecutionBridge.writeValue(String.valueOf(result.success()))
+            .concat(CheckExecutionBridge.writeValue(result.packageName()))
+            .concat(CheckExecutionBridge.writeValue(String.valueOf(result.importCount())))
+            .concat(CheckExecutionBridge.writeValue(String.valueOf(result.classCount())))
+            .concat(CheckExecutionBridge.writeValue(String.valueOf(result.filesLoaded())))
+            .concat(CheckExecutionBridge.writeValue(result.detail()));
+    }
+
+    public static CheckExecutionResult fromBridgeText(String text) {
+        boolean success = "true".equals(CheckExecutionBridge.readValue(text, 0));
+        if (success) {
+            return CheckExecutionResult.success(
+                CheckExecutionBridge.readValue(text, 1),
+                CheckExecutionBridge.parseCount(CheckExecutionBridge.readValue(text, 2)),
+                CheckExecutionBridge.parseCount(CheckExecutionBridge.readValue(text, 3)),
+                CheckExecutionBridge.parseCount(CheckExecutionBridge.readValue(text, 4))
+            );
+        }
+        return CheckExecutionResult.failure(CheckExecutionBridge.readValue(text, 5));
+    }
+
+    private static String writeValue(String value) {
+        if (value == null) {
+            return "0:\n";
+        }
+        return "1:"
+            .concat(CheckExecutionBridge.escape(value))
+            .concat("\n");
+    }
+
+    private static String readValue(String text, int index) {
+        int lineIndex = 0;
+        int start = 0;
+        while (lineIndex < index) {
+            int next = text.indexOf('\n', start);
+            if (next < 0) {
+                return null;
+            }
+            start = next + 1;
+            lineIndex = lineIndex + 1;
+        }
+        int end = text.indexOf('\n', start);
+        String line;
+        if (end < 0) {
+            line = text.substring(start);
+        } else {
+            line = text.substring(start, end);
+        }
+        int separator = line.indexOf(':');
+        if (separator < 0) {
+            return null;
+        }
+        if (line.substring(0, separator).equals("0")) {
+            return null;
+        }
+        return CheckExecutionBridge.unescape(line.substring(separator + 1));
+    }
+
+    private static int parseCount(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0;
+        }
+        return Integer.parse(value);
+    }
+
+    private static String escape(String value) {
+        return value
+            .replace("\\", "\\\\")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r");
+    }
+
+    private static String unescape(String value) {
+        String out = "";
+        int index = 0;
+        while (index < value.length()) {
+            char ch = value.charAt(index);
+            if (ch != '\\' || index + 1 >= value.length()) {
+                out = out.concat(String.valueOf(ch));
+                index = index + 1;
+                continue;
+            }
+            char escaped = value.charAt(index + 1);
+            if (escaped == 'n') {
+                out = out.concat("\n");
+            } else if (escaped == 'r') {
+                out = out.concat("\r");
+            } else if (escaped == '\\') {
+                out = out.concat("\\");
+            } else {
+                out = out.concat("\\").concat(String.valueOf(escaped));
+            }
+            index = index + 2;
+        }
+        return out;
+    }
+}

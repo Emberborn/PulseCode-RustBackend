@@ -1,0 +1,24 @@
+package aden.lang;
+
+/**
+ * Read-only sequential character contract for text-owning values.
+ */
+public interface CharSequence {
+    /**
+     * Returns the number of characters in the sequence.
+     * Use this for sizing, bounds checks, and empty-sequence tests.
+     */
+    public int length();
+
+    /**
+     * Returns the character at the supplied index.
+     * Use this for indexing and text traversal.
+     */
+    public char charAt(int index);
+
+    /**
+     * Returns a subsequence over the supplied half-open range.
+     * Use this for Java-like text slicing through the abstract sequence contract.
+     */
+    public String subSequence(int beginIndex, int endIndex);
+}

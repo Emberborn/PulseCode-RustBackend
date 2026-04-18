@@ -1,0 +1,233 @@
+package aden.lang;
+
+/**
+ * Wrapper facade for single-precision floating-point values.
+ */
+public final class Float {
+    /**
+     * Smallest positive non-zero float value in the current baseline.
+     */
+    public static final float MIN_VALUE = Float.buildMinValue();
+
+    /**
+     * Largest finite float value in the current baseline.
+     */
+    public static final float MAX_VALUE = Float.buildMaxValue();
+
+    /**
+     * Boxes a primitive float into the wrapper form.
+     * Use this when a reference-shaped float value is required.
+     */
+    public static Float valueOf(float value) {
+        return value;
+    }
+
+    /**
+     * Parses text into a float wrapper.
+     * Use this for textual float conversion at API boundaries.
+     */
+    public static Float parse(String text) {
+        return valueOf((float) Double.doubleValue(Double.parse(text)));
+    }
+
+    /**
+     * Unboxes a wrapper value into a primitive float.
+     * Use this when numeric operations require a float.
+     */
+    public static float floatValue(Float value) {
+        return value;
+    }
+
+    /**
+     * Compares two primitive floats for equality.
+     * Use this for helper-style primitive equality checks.
+     */
+    public static boolean equals(float left, float right) {
+        return left == right;
+    }
+
+    /**
+     * Orders two primitive floats.
+     * Use this when float values need deterministic comparison results.
+     */
+    public static int compare(float left, float right) {
+        if (left < right) {
+            return -1;
+        }
+        if (left > right) {
+            return 1;
+        }
+        if (left == right) {
+            return 0;
+        }
+        boolean leftNaN = left != left;
+        boolean rightNaN = right != right;
+        if (leftNaN && rightNaN) {
+            return 0;
+        }
+        if (leftNaN) {
+            return 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Converts a primitive float into Java-close text.
+     * Use this for wrapper-owned decimal formatting with float-appropriate precision.
+     */
+    public static String toString(float value) {
+        double promoted = (double) value;
+        if (promoted != promoted) {
+            return "NaN";
+        }
+        if (promoted == 0.0d) {
+            if ((1.0d / promoted) < 0.0d) {
+                return "-0.0";
+            }
+            return "0.0";
+        }
+        boolean negative = promoted < 0.0d;
+        if (negative) {
+            promoted = 0.0d - promoted;
+        }
+
+        int exponent = 0;
+        while (promoted >= 10.0d) {
+            promoted = promoted / 10.0d;
+            exponent = exponent + 1;
+        }
+        while (promoted < 1.0d) {
+            promoted = promoted * 10.0d;
+            exponent = exponent - 1;
+        }
+
+        long whole = (long) ((double) value < 0.0d ? (0.0d - (double) value) : (double) value);
+        if (((double) whole) == ((double) value < 0.0d ? (0.0d - (double) value) : (double) value)
+            && exponent >= -3
+            && exponent < 7) {
+            String text = Long.toString(whole);
+            if (negative) {
+                String prefix = "-";
+                String signed = prefix.concat(text);
+                return signed.concat(".0");
+            }
+            return text.concat(".0");
+        }
+
+        int precision = 7;
+        double rounding = 0.5d;
+        int r = 0;
+        while (r < precision) {
+            rounding = rounding / 10.0d;
+            r = r + 1;
+        }
+        promoted = promoted + rounding;
+        if (promoted >= 10.0d) {
+            promoted = promoted / 10.0d;
+            exponent = exponent + 1;
+        }
+
+        StringBuilder digits = new StringBuilder();
+        int i = 0;
+        while (i < precision) {
+            int digit = (int) promoted;
+            digits.append((char) ('0' + digit));
+            promoted = (promoted - (double) digit) * 10.0d;
+            i = i + 1;
+        }
+
+        String digitText = digits.toString();
+        StringBuilder out = new StringBuilder();
+        if (negative) {
+            out.append('-');
+        }
+        if (exponent >= -3 && exponent < 7) {
+            int integerDigits = exponent + 1;
+            i = 0;
+            if (integerDigits > 0) {
+                while (i < integerDigits) {
+                    char digit = '0';
+                    if (i < precision) {
+                        digit = digitText.charAt(i);
+                    }
+                    out.append(digit);
+                    i = i + 1;
+                }
+                out.append('.');
+                int end = precision;
+                while (end > integerDigits && digitText.charAt(end - 1) == '0') {
+                    end = end - 1;
+                }
+                if (end == integerDigits) {
+                    out.append('0');
+                } else {
+                    i = integerDigits;
+                    while (i < end) {
+                        out.append(digitText.charAt(i));
+                        i = i + 1;
+                    }
+                }
+                return out.toString();
+            }
+
+            out.append('0');
+            out.append('.');
+            i = 0;
+            while (i < (0 - integerDigits)) {
+                out.append('0');
+                i = i + 1;
+            }
+            int end = precision;
+            while (end > 1 && digitText.charAt(end - 1) == '0') {
+                end = end - 1;
+            }
+            i = 0;
+            while (i < end) {
+                out.append(digitText.charAt(i));
+                i = i + 1;
+            }
+            return out.toString();
+        }
+
+        out.append(digitText.charAt(0));
+        out.append('.');
+        int end = precision;
+        while (end > 1 && digitText.charAt(end - 1) == '0') {
+            end = end - 1;
+        }
+        if (end == 1) {
+            out.append('0');
+        } else {
+            i = 1;
+            while (i < end) {
+                out.append(digitText.charAt(i));
+                i = i + 1;
+            }
+        }
+        out.append('E');
+        out.append(Integer.toString(exponent));
+        return out.toString();
+    }
+
+    private static float buildMinValue() {
+        float value = 1.4012985f;
+        int i = 0;
+        while (i < 45) {
+            value = value / 10.0f;
+            i = i + 1;
+        }
+        return value;
+    }
+
+    private static float buildMaxValue() {
+        float value = 3.4028235f;
+        int i = 0;
+        while (i < 38) {
+            value = value * 10.0f;
+            i = i + 1;
+        }
+        return value;
+    }
+
+}
+

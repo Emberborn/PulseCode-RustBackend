@@ -1,0 +1,91 @@
+package aden.process;
+
+import aden.lang.Object;
+import aden.lang.String;
+import aden.util.Objects;
+
+/**
+ * Captured execution result for one host process invocation.
+ */
+public final class ProcessResult {
+    private final int exitCode;
+    private final String stdoutText;
+    private final String stderrText;
+
+    /**
+     * Captures one completed host process result.
+     * Use this when code needs the exit code plus captured standard output/error text.
+     */
+    public ProcessResult(int exitCode, String stdoutText, String stderrText) {
+        this.exitCode = exitCode;
+        this.stdoutText = stdoutText == null ? "" : stdoutText;
+        this.stderrText = stderrText == null ? "" : stderrText;
+    }
+
+    /**
+     * Returns the process exit code.
+     * Use this when checking whether host execution succeeded.
+     */
+    public int exitCode() { return this.exitCode; }
+
+    /**
+     * Returns the captured standard output text.
+     * Use this when code needs line or text output from the host process.
+     */
+    public String stdoutText() { return this.stdoutText; }
+
+    /**
+     * Returns the captured standard error text.
+     * Use this when code needs diagnostic output from the host process.
+     */
+    public String stderrText() { return this.stderrText; }
+
+    /**
+     * Reports whether the host process exited with status code `0`.
+     * Use this for the common success check on completed process execution.
+     */
+    public boolean success() { return this.exitCode == 0; }
+
+    /**
+     * Reports whether two process results carry the same exit/stdout/stderr payload.
+     * Use this for deterministic process contract checks.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof ProcessResult)) {
+            return false;
+        }
+        ProcessResult value = (ProcessResult) other;
+        return this.exitCode == value.exitCode
+            && Objects.equals(this.stdoutText, value.stdoutText)
+            && Objects.equals(this.stderrText, value.stderrText);
+    }
+
+    /**
+     * Returns the stable value hash for this process result.
+     * Use this when process results participate in hash-based collections.
+     */
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + this.exitCode;
+        hash = (31 * hash) + Objects.hashCode(this.stdoutText);
+        hash = (31 * hash) + Objects.hashCode(this.stderrText);
+        return hash;
+    }
+
+    /**
+     * Returns a readable debug representation of this process result.
+     * Use this for diagnostics and process contract locks.
+     */
+    public String toString() {
+        return "ProcessResult[exitCode="
+            .concat(String.valueOf(this.exitCode))
+            .concat(", stdoutText=")
+            .concat(this.stdoutText)
+            .concat(", stderrText=")
+            .concat(this.stderrText)
+            .concat("]");
+    }
+}

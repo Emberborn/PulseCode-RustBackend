@@ -3,7 +3,7 @@
 Status legend: `Todo`, `In Progress`, `Blocked`, `Done (Locked)`.
 
 ## Scope
-F2 turns PulseCode from a project that can be worked on by insiders into one that external developers can realistically learn, adopt, navigate, and succeed with. It covers the language specification, reference and tutorial documentation, style guidance, API documentation generation, starter templates, onboarding flows, and the developer-experience contract around docs staying aligned with the actual language/toolchain. Feature documentation is expected to land during F1; F2 turns that growing body of truthful docs into a coherent, externally usable documentation system, including the distinction between public `stdlib` guidance and any later `authorlib` documentation needed for compiler/runtime authors.
+F2 turns Aden Lang from a project that can be worked on by insiders into one that external developers can realistically learn, adopt, navigate, and succeed with. It covers the language specification, reference and tutorial documentation, style guidance, API documentation generation, starter templates, onboarding flows, and the developer-experience contract around docs staying aligned with the actual language/toolchain. Feature documentation is expected to land during F1; F2 turns that growing body of truthful docs into a coherent, externally usable documentation system, including the distinction between public `stdlib` guidance and any later `adklib` documentation needed for compiler/runtime authors.
 
 ## F2 Strict Done Policy
 - F2 is not complete when docs merely exist; they must be accurate, navigable, and aligned with current compiler/runtime behavior.
@@ -28,7 +28,7 @@ F2 turns PulseCode from a project that can be worked on by insiders into one tha
 | F2-05 | Publish a formal-ish language specification baseline for the selected F1 Java-close subset | F1-68, F1-70 | - | - | Todo | A readable spec exists covering declarations, statements, expressions, types, and core semantics |
 | F2-06 | Expand syntax reference into grammar-oriented reference pages with examples and edge-case notes | F2-05 | - | - | Todo | Syntax reference is deeper than tutorials and clearly separates syntax from semantics |
 | F2-07 | Publish semantic rules reference (type conversions, overloads, visibility, nullability, exceptions, generics policy) | F2-05 | - | - | Todo | Core semantic rules are documented in one discoverable reference surface |
-| F2-08 | Document intentional Pulse-vs-Java differences and supported subset boundaries | F2-05, F1-68 | - | - | Todo | Compatibility boundaries are explicit and easy to find for external developers |
+| F2-08 | Document intentional Aden-vs-Java differences and supported subset boundaries | F2-05, F1-68 | - | - | Todo | Compatibility boundaries are explicit and easy to find for external developers |
 | F2-09 | Add cookbook/reference examples for common language features and cross-feature interactions | F2-06, F2-07 | - | - | Todo | Developers can find concrete working examples for major language features |
 
 ## Workstream C: Stdlib and API Documentation
@@ -36,22 +36,22 @@ F2 turns PulseCode from a project that can be worked on by insiders into one tha
 | ID | Task | Depends On | Owner | Target | Status | Exit Condition |
 |---|---|---|---|---|---|---|
 | F2-10 | Expand stdlib docs from class inventory to signature-level API reference | F1-69 | - | - | Todo | API docs cover classes, methods, constructors, and behavior notes at signature granularity |
-| F2-11 | Define API doc generation strategy from stdlib/compiler metadata or source PulseDoc annotations | F2-10 | - | - | Todo | API doc generation pipeline is designed around the real Pulse source/doc model and is reproducible |
+| F2-11 | Define API doc generation strategy from stdlib/compiler metadata or source AdenDoc annotations | F2-10 | - | - | Todo | API doc generation pipeline is designed around the real Aden source/doc model and is reproducible |
 | F2-12 | Implement API docs generator baseline for shipped stdlib surface | F2-11 | - | - | Todo | Generated API docs can be produced deterministically and integrated into docs output |
 | F2-13 | Add behavior notes/examples for core stdlib families (`lang`, collections, io, math, time, util-style helpers) | F2-10 | - | - | Todo | API docs include enough examples/notes to be practical, not just signature dumps |
 | F2-14 | Cross-link API docs to language/reference docs and compatibility notes | F2-10, F2-12, F2-13 | - | - | Todo | Users can move cleanly between language rules and API surfaces without dead ends |
-| F2-14A | Require JavaDoc-style PulseDoc coverage for shipped stdlib `.pulse` files and document multiline PulseDoc conventions | F1, F2-03 | - | - | Todo | Current stdlib source documents each shipped class/interface plus its public constructors, methods, and public fields with `/** ... */` blocks before full docs generation lands |
+| F2-14A | Require JavaDoc-style AdenDoc coverage for shipped stdlib `.aden` files and document multiline AdenDoc conventions | F1, F2-03 | - | - | Todo | Current stdlib source documents each shipped class/interface plus its public constructors, methods, and public fields with `/** ... */` blocks before full docs generation lands |
 
 ## Workstream D: Developer Guides, Tutorials, and Templates
 
 | ID | Task | Depends On | Owner | Target | Status | Exit Condition |
 |---|---|---|---|---|---|---|
 | F2-15 | Publish a getting-started guide from install to first successful build/run/package | D, F1 | - | - | Todo | A new developer can go from zero to a working project using only the published docs |
-| F2-16 | Publish project-structure and package-layout guide for real-world PulseCode apps | D2, F1 | - | - | Todo | Project organization guidance is clear and consistent with manifest/build behavior |
+| F2-16 | Publish project-structure and package-layout guide for real-world Aden Lang apps | D2, F1 | - | - | Todo | Project organization guidance is clear and consistent with manifest/build behavior |
 | F2-17 | Publish official style guide and conventions baseline | F2-05, F2-15 | - | - | Todo | A stable style guide exists for formatting, naming, package structure, and code organization |
 | F2-18 | Create starter templates for common project types (console app, library, collections/io app, larger multi-file app) | D1, D2, F1 | - | - | Todo | Starter templates are useful, maintained, and aligned with the actual recommended workflow |
 | F2-19 | Add template-specific docs and walkthroughs that explain the generated project layout | F2-18 | - | - | Todo | Templates teach, not just scaffold, and are backed by docs that stay current |
-| F2-20 | Publish migration/adoption guidance for Java-oriented developers evaluating PulseCode | F2-08, F2-15, F2-17 | - | - | Todo | Java-familiar users can quickly understand similarities, differences, and current limits |
+| F2-20 | Publish migration/adoption guidance for Java-oriented developers evaluating Aden Lang | F2-08, F2-15, F2-17 | - | - | Todo | Java-familiar users can quickly understand similarities, differences, and current limits |
 
 ## Workstream E: Tooling UX Documentation and Contributor Experience
 
@@ -122,4 +122,4 @@ F2 turns PulseCode from a project that can be worked on by insiders into one tha
 | Milestone | Exit Criteria |
 |---|---|
 | F2 | Tasks `F2-01`..`F2-29` and gates `F2-G1`..`F2-G6` are all `Done (Locked)` |
-| F2 Deliverable | External developers can learn, navigate, and use PulseCode through a complete, accurate, and maintainable documentation/devex surface |
+| F2 Deliverable | External developers can learn, navigate, and use Aden Lang through a complete, accurate, and maintainable documentation/devex surface |

@@ -1,0 +1,8151 @@
+option casemap:none
+extrn GetStdHandle:proc
+extrn ReadFile:proc
+extrn WriteFile:proc
+extrn ExitProcess:proc
+extrn GetSystemTimeAsFileTime:proc
+extrn GetTickCount64:proc
+extrn GetProcessHeap:proc
+extrn HeapAlloc:proc
+extrn HeapReAlloc:proc
+extrn HeapFree:proc
+extrn adenc_rt_stringFromBytes:proc
+extrn adenc_rt_consoleWrite:proc
+extrn adenc_rt_dispatchNullReceiverPanic:proc
+extrn adenc_rt_dispatchInvalidTypePanic:proc
+extrn adenc_rt_objectNew:proc
+extrn adenc_rt_objectClassId:proc
+extrn adenc_rt_arcRetain:proc
+extrn adenc_rt_arcRelease:proc
+extrn rt_slot_capacity:dword
+extrn rt_arc_refcounts_tbl:dword
+extrn rt_arc_kinds_tbl:dword
+extrn rt_arc_flags_tbl:dword
+extrn adenc_rt_tracePush:proc
+extrn adenc_rt_traceUpdateTop:proc
+extrn adenc_rt_tracePop:proc
+extrn adenc_aden_lang_CharSequence_charAt__int:proc
+extrn adenc_aden_lang_CharSequence_length:proc
+extrn adenc_aden_lang_CharSequence_subSequence__int_int:proc
+extrn adenc_aden_lang_String_charAt__int:proc
+extrn adenc_aden_lang_String_concat__String:proc
+extrn adenc_aden_lang_String_indexOf__String:proc
+extrn adenc_aden_lang_String_indexOf__String_int:proc
+extrn adenc_aden_lang_String_lastIndexOf__String:proc
+extrn adenc_aden_lang_String_lastIndexOf__String_int:proc
+extrn adenc_aden_lang_String_length:proc
+extrn adenc_aden_lang_String_subSequence__int_int:proc
+extrn adenc_aden_lang_String_substring__int:proc
+extrn adenc_aden_lang_String_substring__int_int:proc
+extrn adenc_aden_lang_String_valueOf__Object:proc
+extrn adenc_aden_lang_String_valueOf__boolean:proc
+extrn adenc_aden_lang_String_valueOf__byte:proc
+extrn adenc_aden_lang_String_valueOf__char:proc
+extrn adenc_aden_lang_String_valueOf__charArr:proc
+extrn adenc_aden_lang_String_valueOf__charArr_int_int:proc
+extrn adenc_aden_lang_String_valueOf__double:proc
+extrn adenc_aden_lang_String_valueOf__float:proc
+extrn adenc_aden_lang_String_valueOf__int:proc
+extrn adenc_aden_lang_String_valueOf__long:proc
+extrn adenc_aden_lang_String_valueOf__short:proc
+extrn adenc_aden_lang_String_valueOf__ubyte:proc
+extrn adenc_aden_lang_String_valueOf__uint:proc
+extrn adenc_aden_lang_String_valueOf__ulong:proc
+extrn adenc_aden_lang_String_valueOf__ushort:proc
+extrn adenc_fget_aden_lang_Double_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_Double_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_Double_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_Double_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_Float_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_Float_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_Float_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_Float_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_Integer_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_Integer_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_Integer_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_Integer_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_Long_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_Long_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_Long_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_Long_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_UInteger_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_UInteger_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_UInteger_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_UInteger_MAX_VALUE:proc
+extrn adenc_fget_aden_lang_ULong_MIN_VALUE:proc
+extrn adenc_fset_aden_lang_ULong_MIN_VALUE:proc
+extrn adenc_fget_aden_lang_ULong_MAX_VALUE:proc
+extrn adenc_fset_aden_lang_ULong_MAX_VALUE:proc
+
+public adenc_fld_aden_lang_StringBuilder_value
+public adenc_fld_aden_lang_StringBuilder_value_heap_owned
+
+.data
+written dq 0
+adenc_objc_aden_lang_StringBuilder dd 0
+adenc_fcap_aden_lang_StringBuilder dd 63
+adenc_fld_aden_lang_StringBuilder_value_tbl dq 64 dup(0)
+adenc_fld_aden_lang_StringBuilder_value dq adenc_fld_aden_lang_StringBuilder_value_tbl
+adenc_fld_aden_lang_StringBuilder_value_heap_owned dd 0
+trace_m0 db "aden.lang.StringBuilder.StringBuilder"
+trace_m0_len equ 37
+adenc_aden_lang_StringBuilder_StringBuilder_trace_s0 db "aden.lang.StringBuilder.StringBuilder(StringBuilder.aden:14)"
+adenc_aden_lang_StringBuilder_StringBuilder_trace_s0_len equ 60
+trace_m2 db "aden.lang.StringBuilder.StringBuilder"
+trace_m2_len equ 37
+adenc_aden_lang_StringBuilder_StringBuilder__String_trace_s0 db "aden.lang.StringBuilder.StringBuilder(StringBuilder.aden:22)"
+adenc_aden_lang_StringBuilder_StringBuilder__String_trace_s0_len equ 60
+trace_m4 db "aden.lang.StringBuilder.append"
+trace_m4_len equ 30
+adenc_aden_lang_StringBuilder_append__String_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:30)"
+adenc_aden_lang_StringBuilder_append__String_trace_s0_len equ 53
+adenc_aden_lang_StringBuilder_append__String_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:31)"
+adenc_aden_lang_StringBuilder_append__String_trace_s1_len equ 53
+adenc_aden_lang_StringBuilder_append__String_trace_s2 db "aden.lang.StringBuilder.append(StringBuilder.aden:32)"
+adenc_aden_lang_StringBuilder_append__String_trace_s2_len equ 53
+adenc_aden_lang_StringBuilder_append__String_trace_s3 db "aden.lang.StringBuilder.append(StringBuilder.aden:34)"
+adenc_aden_lang_StringBuilder_append__String_trace_s3_len equ 53
+adenc_aden_lang_StringBuilder_append__String_trace_s4 db "aden.lang.StringBuilder.append(StringBuilder.aden:35)"
+adenc_aden_lang_StringBuilder_append__String_trace_s4_len equ 53
+trace_m10 db "aden.lang.StringBuilder.append"
+trace_m10_len equ 30
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:43)"
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s0_len equ 53
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:44)"
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s1_len equ 53
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s2 db "aden.lang.StringBuilder.append(StringBuilder.aden:45)"
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s2_len equ 53
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s3 db "aden.lang.StringBuilder.append(StringBuilder.aden:47)"
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s3_len equ 53
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s4 db "aden.lang.StringBuilder.append(StringBuilder.aden:48)"
+adenc_aden_lang_StringBuilder_append__CharSequence_trace_s4_len equ 53
+trace_m16 db "aden.lang.StringBuilder.append"
+trace_m16_len equ 30
+adenc_aden_lang_StringBuilder_append__charArr_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:56)"
+adenc_aden_lang_StringBuilder_append__charArr_trace_s0_len equ 53
+adenc_aden_lang_StringBuilder_append__charArr_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:57)"
+adenc_aden_lang_StringBuilder_append__charArr_trace_s1_len equ 53
+adenc_aden_lang_StringBuilder_append__charArr_trace_s2 db "aden.lang.StringBuilder.append(StringBuilder.aden:58)"
+adenc_aden_lang_StringBuilder_append__charArr_trace_s2_len equ 53
+adenc_aden_lang_StringBuilder_append__charArr_trace_s3 db "aden.lang.StringBuilder.append(StringBuilder.aden:60)"
+adenc_aden_lang_StringBuilder_append__charArr_trace_s3_len equ 53
+adenc_aden_lang_StringBuilder_append__charArr_trace_s4 db "aden.lang.StringBuilder.append(StringBuilder.aden:61)"
+adenc_aden_lang_StringBuilder_append__charArr_trace_s4_len equ 53
+trace_m22 db "aden.lang.StringBuilder.append"
+trace_m22_len equ 30
+adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:69)"
+adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s0_len equ 53
+adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:70)"
+adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s1_len equ 53
+adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s2 db "aden.lang.StringBuilder.append(StringBuilder.aden:72)"
+adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s2_len equ 53
+adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s3 db "aden.lang.StringBuilder.append(StringBuilder.aden:73)"
+adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s3_len equ 53
+trace_m27 db "aden.lang.StringBuilder.append"
+trace_m27_len equ 30
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:81)"
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s0_len equ 53
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:82)"
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s1_len equ 53
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s2 db "aden.lang.StringBuilder.append(StringBuilder.aden:84)"
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s2_len equ 53
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s3 db "aden.lang.StringBuilder.append(StringBuilder.aden:85)"
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s3_len equ 53
+trace_m32 db "aden.lang.StringBuilder.append"
+trace_m32_len equ 30
+adenc_aden_lang_StringBuilder_append__int_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:93)"
+adenc_aden_lang_StringBuilder_append__int_trace_s0_len equ 53
+adenc_aden_lang_StringBuilder_append__int_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:94)"
+adenc_aden_lang_StringBuilder_append__int_trace_s1_len equ 53
+trace_m35 db "aden.lang.StringBuilder.append"
+trace_m35_len equ 30
+adenc_aden_lang_StringBuilder_append__byte_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:102)"
+adenc_aden_lang_StringBuilder_append__byte_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__byte_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:103)"
+adenc_aden_lang_StringBuilder_append__byte_trace_s1_len equ 54
+trace_m38 db "aden.lang.StringBuilder.append"
+trace_m38_len equ 30
+adenc_aden_lang_StringBuilder_append__short_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:111)"
+adenc_aden_lang_StringBuilder_append__short_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__short_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:112)"
+adenc_aden_lang_StringBuilder_append__short_trace_s1_len equ 54
+trace_m41 db "aden.lang.StringBuilder.append"
+trace_m41_len equ 30
+adenc_aden_lang_StringBuilder_append__boolean_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:120)"
+adenc_aden_lang_StringBuilder_append__boolean_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__boolean_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:121)"
+adenc_aden_lang_StringBuilder_append__boolean_trace_s1_len equ 54
+trace_m44 db "aden.lang.StringBuilder.append"
+trace_m44_len equ 30
+adenc_aden_lang_StringBuilder_append__char_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:129)"
+adenc_aden_lang_StringBuilder_append__char_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__char_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:130)"
+adenc_aden_lang_StringBuilder_append__char_trace_s1_len equ 54
+trace_m47 db "aden.lang.StringBuilder.append"
+trace_m47_len equ 30
+adenc_aden_lang_StringBuilder_append__float_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:138)"
+adenc_aden_lang_StringBuilder_append__float_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__float_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:139)"
+adenc_aden_lang_StringBuilder_append__float_trace_s1_len equ 54
+trace_m50 db "aden.lang.StringBuilder.append"
+trace_m50_len equ 30
+adenc_aden_lang_StringBuilder_append__double_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:147)"
+adenc_aden_lang_StringBuilder_append__double_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__double_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:148)"
+adenc_aden_lang_StringBuilder_append__double_trace_s1_len equ 54
+trace_m53 db "aden.lang.StringBuilder.append"
+trace_m53_len equ 30
+adenc_aden_lang_StringBuilder_append__long_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:156)"
+adenc_aden_lang_StringBuilder_append__long_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__long_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:157)"
+adenc_aden_lang_StringBuilder_append__long_trace_s1_len equ 54
+trace_m56 db "aden.lang.StringBuilder.append"
+trace_m56_len equ 30
+adenc_aden_lang_StringBuilder_append__ubyte_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:165)"
+adenc_aden_lang_StringBuilder_append__ubyte_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__ubyte_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:166)"
+adenc_aden_lang_StringBuilder_append__ubyte_trace_s1_len equ 54
+trace_m59 db "aden.lang.StringBuilder.append"
+trace_m59_len equ 30
+adenc_aden_lang_StringBuilder_append__ushort_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:174)"
+adenc_aden_lang_StringBuilder_append__ushort_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__ushort_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:175)"
+adenc_aden_lang_StringBuilder_append__ushort_trace_s1_len equ 54
+trace_m62 db "aden.lang.StringBuilder.append"
+trace_m62_len equ 30
+adenc_aden_lang_StringBuilder_append__uint_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:183)"
+adenc_aden_lang_StringBuilder_append__uint_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__uint_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:184)"
+adenc_aden_lang_StringBuilder_append__uint_trace_s1_len equ 54
+trace_m65 db "aden.lang.StringBuilder.append"
+trace_m65_len equ 30
+adenc_aden_lang_StringBuilder_append__ulong_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:192)"
+adenc_aden_lang_StringBuilder_append__ulong_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__ulong_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:193)"
+adenc_aden_lang_StringBuilder_append__ulong_trace_s1_len equ 54
+trace_m68 db "aden.lang.StringBuilder.appendLine"
+trace_m68_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__String_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:201)"
+adenc_aden_lang_StringBuilder_appendLine__String_trace_s0_len equ 58
+trace_m70 db "aden.lang.StringBuilder.appendLine"
+trace_m70_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__CharSequence_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:209)"
+adenc_aden_lang_StringBuilder_appendLine__CharSequence_trace_s0_len equ 58
+trace_m72 db "aden.lang.StringBuilder.appendLine"
+trace_m72_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__charArr_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:217)"
+adenc_aden_lang_StringBuilder_appendLine__charArr_trace_s0_len equ 58
+trace_m74 db "aden.lang.StringBuilder.appendLine"
+trace_m74_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__int_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:225)"
+adenc_aden_lang_StringBuilder_appendLine__int_trace_s0_len equ 58
+trace_m76 db "aden.lang.StringBuilder.appendLine"
+trace_m76_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__byte_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:233)"
+adenc_aden_lang_StringBuilder_appendLine__byte_trace_s0_len equ 58
+trace_m78 db "aden.lang.StringBuilder.appendLine"
+trace_m78_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__short_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:241)"
+adenc_aden_lang_StringBuilder_appendLine__short_trace_s0_len equ 58
+trace_m80 db "aden.lang.StringBuilder.appendLine"
+trace_m80_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__boolean_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:249)"
+adenc_aden_lang_StringBuilder_appendLine__boolean_trace_s0_len equ 58
+trace_m82 db "aden.lang.StringBuilder.appendLine"
+trace_m82_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__char_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:257)"
+adenc_aden_lang_StringBuilder_appendLine__char_trace_s0_len equ 58
+trace_m84 db "aden.lang.StringBuilder.appendLine"
+trace_m84_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__float_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:265)"
+adenc_aden_lang_StringBuilder_appendLine__float_trace_s0_len equ 58
+trace_m86 db "aden.lang.StringBuilder.appendLine"
+trace_m86_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__double_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:273)"
+adenc_aden_lang_StringBuilder_appendLine__double_trace_s0_len equ 58
+trace_m88 db "aden.lang.StringBuilder.appendLine"
+trace_m88_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__long_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:281)"
+adenc_aden_lang_StringBuilder_appendLine__long_trace_s0_len equ 58
+trace_m90 db "aden.lang.StringBuilder.appendLine"
+trace_m90_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__ubyte_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:289)"
+adenc_aden_lang_StringBuilder_appendLine__ubyte_trace_s0_len equ 58
+trace_m92 db "aden.lang.StringBuilder.appendLine"
+trace_m92_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__ushort_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:297)"
+adenc_aden_lang_StringBuilder_appendLine__ushort_trace_s0_len equ 58
+trace_m94 db "aden.lang.StringBuilder.appendLine"
+trace_m94_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__uint_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:305)"
+adenc_aden_lang_StringBuilder_appendLine__uint_trace_s0_len equ 58
+trace_m96 db "aden.lang.StringBuilder.appendLine"
+trace_m96_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__ulong_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:313)"
+adenc_aden_lang_StringBuilder_appendLine__ulong_trace_s0_len equ 58
+trace_m98 db "aden.lang.StringBuilder.appendLine"
+trace_m98_len equ 34
+adenc_aden_lang_StringBuilder_appendLine__Object_trace_s0 db "aden.lang.StringBuilder.appendLine(StringBuilder.aden:321)"
+adenc_aden_lang_StringBuilder_appendLine__Object_trace_s0_len equ 58
+trace_m100 db "aden.lang.StringBuilder.append"
+trace_m100_len equ 30
+adenc_aden_lang_StringBuilder_append__Object_trace_s0 db "aden.lang.StringBuilder.append(StringBuilder.aden:329)"
+adenc_aden_lang_StringBuilder_append__Object_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_append__Object_trace_s1 db "aden.lang.StringBuilder.append(StringBuilder.aden:330)"
+adenc_aden_lang_StringBuilder_append__Object_trace_s1_len equ 54
+trace_m103 db "aden.lang.StringBuilder.length"
+trace_m103_len equ 30
+adenc_aden_lang_StringBuilder_length_trace_s0 db "aden.lang.StringBuilder.length(StringBuilder.aden:338)"
+adenc_aden_lang_StringBuilder_length_trace_s0_len equ 54
+trace_m105 db "aden.lang.StringBuilder.isEmpty"
+trace_m105_len equ 31
+adenc_aden_lang_StringBuilder_isEmpty_trace_s0 db "aden.lang.StringBuilder.isEmpty(StringBuilder.aden:346)"
+adenc_aden_lang_StringBuilder_isEmpty_trace_s0_len equ 55
+trace_m107 db "aden.lang.StringBuilder.charAt"
+trace_m107_len equ 30
+adenc_aden_lang_StringBuilder_charAt__int_trace_s0 db "aden.lang.StringBuilder.charAt(StringBuilder.aden:354)"
+adenc_aden_lang_StringBuilder_charAt__int_trace_s0_len equ 54
+trace_m109 db "aden.lang.StringBuilder.subSequence"
+trace_m109_len equ 35
+adenc_aden_lang_StringBuilder_subSequence__int_int_trace_s0 db "aden.lang.StringBuilder.subSequence(StringBuilder.aden:362)"
+adenc_aden_lang_StringBuilder_subSequence__int_int_trace_s0_len equ 59
+trace_m111 db "aden.lang.StringBuilder.contentEquals"
+trace_m111_len equ 37
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s0 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:370)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s0_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s1 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:371)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s1_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s2 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:373)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s2_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s3 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:374)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s3_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s4 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:375)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s4_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s5 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:377)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s5_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s6 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:378)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s6_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s7 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:379)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s7_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s8 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:380)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s8_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s9 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:382)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s9_len equ 61
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s10 db "aden.lang.StringBuilder.contentEquals(StringBuilder.aden:384)"
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s10_len equ 61
+trace_m123 db "aden.lang.StringBuilder.compareTo"
+trace_m123_len equ 33
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s0 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:392)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s0_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s1 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:393)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s1_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s2 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:395)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s2_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s3 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:396)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s3_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s4 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:397)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s4_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s5 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:398)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s5_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s6 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:399)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s6_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s7 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:401)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s7_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s8 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:402)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s8_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s9 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:403)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s9_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s10 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:404)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s10_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s11 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:405)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s11_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s12 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:406)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s12_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s13 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:408)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s13_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s14 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:409)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s14_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s15 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:411)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s15_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s16 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:413)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s16_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s17 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:414)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s17_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s18 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:416)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s18_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s19 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:417)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s19_len equ 57
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s20 db "aden.lang.StringBuilder.compareTo(StringBuilder.aden:419)"
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s20_len equ 57
+trace_m145 db "aden.lang.StringBuilder.clear"
+trace_m145_len equ 29
+adenc_aden_lang_StringBuilder_clear_trace_s0 db "aden.lang.StringBuilder.clear(StringBuilder.aden:427)"
+adenc_aden_lang_StringBuilder_clear_trace_s0_len equ 53
+trace_m147 db "aden.lang.StringBuilder.insert"
+trace_m147_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:435)"
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s1 db "aden.lang.StringBuilder.insert(StringBuilder.aden:436)"
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s1_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s2 db "aden.lang.StringBuilder.insert(StringBuilder.aden:438)"
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s2_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s3 db "aden.lang.StringBuilder.insert(StringBuilder.aden:439)"
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s3_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s4 db "aden.lang.StringBuilder.insert(StringBuilder.aden:440)"
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s4_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s5 db "aden.lang.StringBuilder.insert(StringBuilder.aden:441)"
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s5_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s6 db "aden.lang.StringBuilder.insert(StringBuilder.aden:442)"
+adenc_aden_lang_StringBuilder_insert__int_String_trace_s6_len equ 54
+trace_m155 db "aden.lang.StringBuilder.insert"
+trace_m155_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:450)"
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s1 db "aden.lang.StringBuilder.insert(StringBuilder.aden:451)"
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s1_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s2 db "aden.lang.StringBuilder.insert(StringBuilder.aden:453)"
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s2_len equ 54
+trace_m159 db "aden.lang.StringBuilder.insert"
+trace_m159_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:461)"
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s1 db "aden.lang.StringBuilder.insert(StringBuilder.aden:462)"
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s1_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s2 db "aden.lang.StringBuilder.insert(StringBuilder.aden:464)"
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s2_len equ 54
+trace_m163 db "aden.lang.StringBuilder.insert"
+trace_m163_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:472)"
+adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s1 db "aden.lang.StringBuilder.insert(StringBuilder.aden:473)"
+adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s1_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s2 db "aden.lang.StringBuilder.insert(StringBuilder.aden:475)"
+adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s2_len equ 54
+trace_m167 db "aden.lang.StringBuilder.insert"
+trace_m167_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:483)"
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s1 db "aden.lang.StringBuilder.insert(StringBuilder.aden:484)"
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s1_len equ 54
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s2 db "aden.lang.StringBuilder.insert(StringBuilder.aden:486)"
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s2_len equ 54
+trace_m171 db "aden.lang.StringBuilder.insert"
+trace_m171_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_Object_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:494)"
+adenc_aden_lang_StringBuilder_insert__int_Object_trace_s0_len equ 54
+trace_m173 db "aden.lang.StringBuilder.insert"
+trace_m173_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_boolean_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:502)"
+adenc_aden_lang_StringBuilder_insert__int_boolean_trace_s0_len equ 54
+trace_m175 db "aden.lang.StringBuilder.insert"
+trace_m175_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_char_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:510)"
+adenc_aden_lang_StringBuilder_insert__int_char_trace_s0_len equ 54
+trace_m177 db "aden.lang.StringBuilder.insert"
+trace_m177_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_int_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:518)"
+adenc_aden_lang_StringBuilder_insert__int_int_trace_s0_len equ 54
+trace_m179 db "aden.lang.StringBuilder.insert"
+trace_m179_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_byte_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:526)"
+adenc_aden_lang_StringBuilder_insert__int_byte_trace_s0_len equ 54
+trace_m181 db "aden.lang.StringBuilder.insert"
+trace_m181_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_short_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:534)"
+adenc_aden_lang_StringBuilder_insert__int_short_trace_s0_len equ 54
+trace_m183 db "aden.lang.StringBuilder.insert"
+trace_m183_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_long_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:542)"
+adenc_aden_lang_StringBuilder_insert__int_long_trace_s0_len equ 54
+trace_m185 db "aden.lang.StringBuilder.insert"
+trace_m185_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_ubyte_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:550)"
+adenc_aden_lang_StringBuilder_insert__int_ubyte_trace_s0_len equ 54
+trace_m187 db "aden.lang.StringBuilder.insert"
+trace_m187_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_ushort_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:558)"
+adenc_aden_lang_StringBuilder_insert__int_ushort_trace_s0_len equ 54
+trace_m189 db "aden.lang.StringBuilder.insert"
+trace_m189_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_uint_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:566)"
+adenc_aden_lang_StringBuilder_insert__int_uint_trace_s0_len equ 54
+trace_m191 db "aden.lang.StringBuilder.insert"
+trace_m191_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_ulong_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:574)"
+adenc_aden_lang_StringBuilder_insert__int_ulong_trace_s0_len equ 54
+trace_m193 db "aden.lang.StringBuilder.insert"
+trace_m193_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_float_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:582)"
+adenc_aden_lang_StringBuilder_insert__int_float_trace_s0_len equ 54
+trace_m195 db "aden.lang.StringBuilder.insert"
+trace_m195_len equ 30
+adenc_aden_lang_StringBuilder_insert__int_double_trace_s0 db "aden.lang.StringBuilder.insert(StringBuilder.aden:590)"
+adenc_aden_lang_StringBuilder_insert__int_double_trace_s0_len equ 54
+trace_m197 db "aden.lang.StringBuilder.delete"
+trace_m197_len equ 30
+adenc_aden_lang_StringBuilder_delete__int_int_trace_s0 db "aden.lang.StringBuilder.delete(StringBuilder.aden:598)"
+adenc_aden_lang_StringBuilder_delete__int_int_trace_s0_len equ 54
+adenc_aden_lang_StringBuilder_delete__int_int_trace_s1 db "aden.lang.StringBuilder.delete(StringBuilder.aden:599)"
+adenc_aden_lang_StringBuilder_delete__int_int_trace_s1_len equ 54
+adenc_aden_lang_StringBuilder_delete__int_int_trace_s2 db "aden.lang.StringBuilder.delete(StringBuilder.aden:600)"
+adenc_aden_lang_StringBuilder_delete__int_int_trace_s2_len equ 54
+adenc_aden_lang_StringBuilder_delete__int_int_trace_s3 db "aden.lang.StringBuilder.delete(StringBuilder.aden:601)"
+adenc_aden_lang_StringBuilder_delete__int_int_trace_s3_len equ 54
+trace_m202 db "aden.lang.StringBuilder.deleteCharAt"
+trace_m202_len equ 36
+adenc_aden_lang_StringBuilder_deleteCharAt__int_trace_s0 db "aden.lang.StringBuilder.deleteCharAt(StringBuilder.aden:609)"
+adenc_aden_lang_StringBuilder_deleteCharAt__int_trace_s0_len equ 60
+trace_m204 db "aden.lang.StringBuilder.replace"
+trace_m204_len equ 31
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s0 db "aden.lang.StringBuilder.replace(StringBuilder.aden:617)"
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s0_len equ 55
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s1 db "aden.lang.StringBuilder.replace(StringBuilder.aden:618)"
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s1_len equ 55
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s2 db "aden.lang.StringBuilder.replace(StringBuilder.aden:619)"
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s2_len equ 55
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s3 db "aden.lang.StringBuilder.replace(StringBuilder.aden:620)"
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s3_len equ 55
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s4 db "aden.lang.StringBuilder.replace(StringBuilder.aden:621)"
+adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s4_len equ 55
+trace_m210 db "aden.lang.StringBuilder.setCharAt"
+trace_m210_len equ 33
+adenc_aden_lang_StringBuilder_setCharAt__int_char_trace_s0 db "aden.lang.StringBuilder.setCharAt(StringBuilder.aden:629)"
+adenc_aden_lang_StringBuilder_setCharAt__int_char_trace_s0_len equ 57
+trace_m212 db "aden.lang.StringBuilder.setLength"
+trace_m212_len equ 33
+adenc_aden_lang_StringBuilder_setLength__int_trace_s0 db "aden.lang.StringBuilder.setLength(StringBuilder.aden:637)"
+adenc_aden_lang_StringBuilder_setLength__int_trace_s0_len equ 57
+adenc_aden_lang_StringBuilder_setLength__int_trace_s1 db "aden.lang.StringBuilder.setLength(StringBuilder.aden:638)"
+adenc_aden_lang_StringBuilder_setLength__int_trace_s1_len equ 57
+adenc_aden_lang_StringBuilder_setLength__int_trace_s2 db "aden.lang.StringBuilder.setLength(StringBuilder.aden:639)"
+adenc_aden_lang_StringBuilder_setLength__int_trace_s2_len equ 57
+adenc_aden_lang_StringBuilder_setLength__int_trace_s3 db "aden.lang.StringBuilder.setLength(StringBuilder.aden:640)"
+adenc_aden_lang_StringBuilder_setLength__int_trace_s3_len equ 57
+adenc_aden_lang_StringBuilder_setLength__int_trace_s4 db "aden.lang.StringBuilder.setLength(StringBuilder.aden:642)"
+adenc_aden_lang_StringBuilder_setLength__int_trace_s4_len equ 57
+adenc_aden_lang_StringBuilder_setLength__int_trace_s5 db "aden.lang.StringBuilder.setLength(StringBuilder.aden:643)"
+adenc_aden_lang_StringBuilder_setLength__int_trace_s5_len equ 57
+adenc_aden_lang_StringBuilder_setLength__int_trace_s6 db "aden.lang.StringBuilder.setLength(StringBuilder.aden:644)"
+adenc_aden_lang_StringBuilder_setLength__int_trace_s6_len equ 57
+trace_m220 db "aden.lang.StringBuilder.substring"
+trace_m220_len equ 33
+adenc_aden_lang_StringBuilder_substring__int_trace_s0 db "aden.lang.StringBuilder.substring(StringBuilder.aden:653)"
+adenc_aden_lang_StringBuilder_substring__int_trace_s0_len equ 57
+trace_m222 db "aden.lang.StringBuilder.substring"
+trace_m222_len equ 33
+adenc_aden_lang_StringBuilder_substring__int_int_trace_s0 db "aden.lang.StringBuilder.substring(StringBuilder.aden:661)"
+adenc_aden_lang_StringBuilder_substring__int_int_trace_s0_len equ 57
+trace_m224 db "aden.lang.StringBuilder.indexOf"
+trace_m224_len equ 31
+adenc_aden_lang_StringBuilder_indexOf__String_trace_s0 db "aden.lang.StringBuilder.indexOf(StringBuilder.aden:669)"
+adenc_aden_lang_StringBuilder_indexOf__String_trace_s0_len equ 55
+trace_m226 db "aden.lang.StringBuilder.indexOf"
+trace_m226_len equ 31
+adenc_aden_lang_StringBuilder_indexOf__String_int_trace_s0 db "aden.lang.StringBuilder.indexOf(StringBuilder.aden:677)"
+adenc_aden_lang_StringBuilder_indexOf__String_int_trace_s0_len equ 55
+trace_m228 db "aden.lang.StringBuilder.lastIndexOf"
+trace_m228_len equ 35
+adenc_aden_lang_StringBuilder_lastIndexOf__String_trace_s0 db "aden.lang.StringBuilder.lastIndexOf(StringBuilder.aden:685)"
+adenc_aden_lang_StringBuilder_lastIndexOf__String_trace_s0_len equ 59
+trace_m230 db "aden.lang.StringBuilder.lastIndexOf"
+trace_m230_len equ 35
+adenc_aden_lang_StringBuilder_lastIndexOf__String_int_trace_s0 db "aden.lang.StringBuilder.lastIndexOf(StringBuilder.aden:693)"
+adenc_aden_lang_StringBuilder_lastIndexOf__String_int_trace_s0_len equ 59
+trace_m232 db "aden.lang.StringBuilder.reverse"
+trace_m232_len equ 31
+adenc_aden_lang_StringBuilder_reverse_trace_s0 db "aden.lang.StringBuilder.reverse(StringBuilder.aden:701)"
+adenc_aden_lang_StringBuilder_reverse_trace_s0_len equ 55
+adenc_aden_lang_StringBuilder_reverse_trace_s1 db "aden.lang.StringBuilder.reverse(StringBuilder.aden:702)"
+adenc_aden_lang_StringBuilder_reverse_trace_s1_len equ 55
+adenc_aden_lang_StringBuilder_reverse_trace_s2 db "aden.lang.StringBuilder.reverse(StringBuilder.aden:703)"
+adenc_aden_lang_StringBuilder_reverse_trace_s2_len equ 55
+adenc_aden_lang_StringBuilder_reverse_trace_s3 db "aden.lang.StringBuilder.reverse(StringBuilder.aden:704)"
+adenc_aden_lang_StringBuilder_reverse_trace_s3_len equ 55
+adenc_aden_lang_StringBuilder_reverse_trace_s4 db "aden.lang.StringBuilder.reverse(StringBuilder.aden:705)"
+adenc_aden_lang_StringBuilder_reverse_trace_s4_len equ 55
+adenc_aden_lang_StringBuilder_reverse_trace_s5 db "aden.lang.StringBuilder.reverse(StringBuilder.aden:707)"
+adenc_aden_lang_StringBuilder_reverse_trace_s5_len equ 55
+adenc_aden_lang_StringBuilder_reverse_trace_s6 db "aden.lang.StringBuilder.reverse(StringBuilder.aden:708)"
+adenc_aden_lang_StringBuilder_reverse_trace_s6_len equ 55
+trace_m240 db "aden.lang.StringBuilder.toString"
+trace_m240_len equ 32
+adenc_aden_lang_StringBuilder_toString_trace_s0 db "aden.lang.StringBuilder.toString(StringBuilder.aden:716)"
+adenc_aden_lang_StringBuilder_toString_trace_s0_len equ 56
+msg0 db 0
+msg0_len equ 0
+msg1 db "null"
+msg1_len equ 4
+msg2 db "null"
+msg2_len equ 4
+msg3 db "null"
+msg3_len equ 4
+msg4 db "null"
+msg4_len equ 4
+msg5 db "null"
+msg5_len equ 4
+msg6 db 0
+msg6_len equ 0
+msg7 db "null"
+msg7_len equ 4
+msg8 db "null"
+msg8_len equ 4
+msg9 db "null"
+msg9_len equ 4
+msg10 db "null"
+msg10_len equ 4
+msg11 db "null"
+msg11_len equ 4
+msg12 db 0
+msg12_len equ 0
+
+.code
+adenc_fcap_aden_lang_StringBuilder_ensure proc
+    cmp ecx, 1
+    jb adenc_fcap_aden_lang_StringBuilder_ensure_done_ok
+    cmp ecx, dword ptr [adenc_fcap_aden_lang_StringBuilder]
+    jbe adenc_fcap_aden_lang_StringBuilder_ensure_done_ok
+    sub rsp, 88
+    mov qword ptr [rsp+40], rbx
+    mov qword ptr [rsp+48], rsi
+    mov qword ptr [rsp+56], rdi
+    mov qword ptr [rsp+64], r12
+    mov qword ptr [rsp+72], r13
+    mov dword ptr [rsp+80], ecx
+    mov eax, dword ptr [adenc_fcap_aden_lang_StringBuilder]
+    mov dword ptr [rsp+84], eax
+    call GetProcessHeap
+    test rax, rax
+    jz adenc_fcap_aden_lang_StringBuilder_ensure_fail
+    mov r13, rax
+    mov eax, dword ptr [rt_slot_capacity]
+    add eax, 1
+    shl eax, 3
+    mov edx, eax
+    mov rcx, r13
+    mov r8d, edx
+    mov edx, 8
+    call HeapAlloc
+    test rax, rax
+    jz adenc_fcap_aden_lang_StringBuilder_ensure_alloc_fail
+    mov r12, rax
+    mov rbx, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    xor esi, esi
+adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done_copy_loop:
+    cmp esi, dword ptr [rsp+84]
+    ja adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done
+    test rbx, rbx
+    jz adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done_next
+    mov rax, qword ptr [rbx+rsi*8]
+    mov qword ptr [r12+rsi*8], rax
+adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done_next:
+    add esi, 1
+    jmp adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done_copy_loop
+adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done:
+    cmp dword ptr [adenc_fld_aden_lang_StringBuilder_value_heap_owned], 0
+    je adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done_commit
+    test rbx, rbx
+    jz adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done_commit
+    mov rcx, r13
+    xor edx, edx
+    mov r8, rbx
+    call HeapFree
+adenc_fcap_aden_lang_StringBuilder_ensure_field_0_done_commit:
+    mov qword ptr [adenc_fld_aden_lang_StringBuilder_value], r12
+    mov dword ptr [adenc_fld_aden_lang_StringBuilder_value_heap_owned], 1
+    mov eax, dword ptr [rt_slot_capacity]
+    mov dword ptr [adenc_fcap_aden_lang_StringBuilder], eax
+    mov rbx, qword ptr [rsp+40]
+    mov rsi, qword ptr [rsp+48]
+    mov rdi, qword ptr [rsp+56]
+    mov r12, qword ptr [rsp+64]
+    mov r13, qword ptr [rsp+72]
+    add rsp, 88
+adenc_fcap_aden_lang_StringBuilder_ensure_done_ok:
+    xor eax, eax
+    ret
+adenc_fcap_aden_lang_StringBuilder_ensure_alloc_fail:
+adenc_fcap_aden_lang_StringBuilder_ensure_fail:
+    mov ecx, 1
+    call ExitProcess
+    xor eax, eax
+    ret
+adenc_fcap_aden_lang_StringBuilder_ensure endp
+
+adenc_fcap_aden_lang_StringBuilder_arc_teardown proc
+    cmp ecx, 1
+    jb adenc_fcap_aden_lang_StringBuilder_arc_teardown_done
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_lang_StringBuilder_arc_teardown_done
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rcx*8]
+    mov qword ptr [r10+rcx*8], 0
+    test rax, rax
+    jz adenc_fcap_aden_lang_StringBuilder_arc_teardown_field_0_skip
+    mov rcx, rax
+    call adenc_rt_arcRelease
+adenc_fcap_aden_lang_StringBuilder_arc_teardown_field_0_skip:
+    add rsp, 40
+adenc_fcap_aden_lang_StringBuilder_arc_teardown_done:
+    ret
+adenc_fcap_aden_lang_StringBuilder_arc_teardown endp
+adenc_fcap_aden_lang_StringBuilder_arc_scan_edges proc
+    cmp ecx, 1
+    jb adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_done
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_done
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rcx, qword ptr [r10+rcx*8]
+    test rcx, rcx
+    jz adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_field_0_skip
+    and ecx, 4294967295
+    cmp ecx, 1
+    jb adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_field_0_skip
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_field_0_skip
+    lea r11, rt_arc_refcounts_tbl
+    mov eax, dword ptr [r11+rcx*4]
+    cmp eax, 0
+    je adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_field_0_skip
+    lea r11, rt_arc_kinds_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_field_0_skip
+    lea r11, rt_arc_flags_tbl
+    mov eax, dword ptr [r11+rcx*4]
+    cmp eax, 4294967294
+    jae adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_field_0_skip
+    add eax, 1
+    mov dword ptr [r11+rcx*4], eax
+adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_field_0_skip:
+    add rsp, 40
+adenc_fcap_aden_lang_StringBuilder_arc_scan_edges_done:
+    ret
+adenc_fcap_aden_lang_StringBuilder_arc_scan_edges endp
+adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges proc
+    cmp ecx, 1
+    jb adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_done
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_done
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov ecx, dword ptr [rsp+32]
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rcx, qword ptr [r10+rcx*8]
+    test rcx, rcx
+    jz adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_field_0_skip
+    and ecx, 4294967295
+    cmp ecx, 1
+    jb adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_field_0_skip
+    cmp ecx, dword ptr [rt_slot_capacity]
+    ja adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_field_0_skip
+    lea r11, rt_arc_kinds_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_field_0_skip
+    lea r11, rt_arc_refcounts_tbl
+    cmp dword ptr [r11+rcx*4], 0
+    je adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_field_0_skip
+    lea r11, rt_arc_flags_tbl
+    cmp dword ptr [r11+rcx*4], 1
+    jne adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_field_0_skip
+    mov dword ptr [r11+rcx*4], 0
+adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_field_0_skip:
+    add rsp, 40
+adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges_done:
+    ret
+adenc_fcap_aden_lang_StringBuilder_arc_invalidate_edges endp
+adenc_aden_lang_StringBuilder_StringBuilder proc
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m0
+    mov edx, trace_m0_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+    mov rax, qword ptr [rsp+64]
+    test rax, rax
+    jne adenc_aden_lang_StringBuilder_StringBuilder_ctor_reuse
+    mov ecx, 31
+    call adenc_rt_objectNew
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_fcap_aden_lang_StringBuilder_ensure
+    mov rax, qword ptr [rsp+104]
+    jmp adenc_aden_lang_StringBuilder_StringBuilder_ctor_ready
+adenc_aden_lang_StringBuilder_StringBuilder_ctor_reuse:
+    mov rax, qword ptr [rsp+64]
+adenc_aden_lang_StringBuilder_StringBuilder_ctor_ready:
+    mov rcx, rax
+    mov qword ptr [rsp+64], rcx
+adenc_aden_lang_StringBuilder_StringBuilder_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_StringBuilder_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_StringBuilder_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg0
+    mov edx, msg0_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+104]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    mov rax, qword ptr [rsp+64]
+    jmp adenc_aden_lang_StringBuilder_StringBuilder_epilogue
+adenc_aden_lang_StringBuilder_StringBuilder_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_lang_StringBuilder_StringBuilder_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 200
+    ret
+adenc_aden_lang_StringBuilder_StringBuilder endp
+
+adenc_aden_lang_StringBuilder_StringBuilder__String proc
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m2
+    mov edx, trace_m2_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov rax, qword ptr [rsp+64]
+    test rax, rax
+    jne adenc_aden_lang_StringBuilder_StringBuilder__String_ctor_reuse
+    mov ecx, 31
+    call adenc_rt_objectNew
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_fcap_aden_lang_StringBuilder_ensure
+    mov rax, qword ptr [rsp+112]
+    jmp adenc_aden_lang_StringBuilder_StringBuilder__String_ctor_ready
+adenc_aden_lang_StringBuilder_StringBuilder__String_ctor_reuse:
+    mov rax, qword ptr [rsp+64]
+adenc_aden_lang_StringBuilder_StringBuilder__String_ctor_ready:
+    mov rcx, rax
+    mov qword ptr [rsp+64], rcx
+adenc_aden_lang_StringBuilder_StringBuilder__String_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_StringBuilder__String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_StringBuilder__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    mov rax, qword ptr [rsp+64]
+    jmp adenc_aden_lang_StringBuilder_StringBuilder__String_epilogue
+adenc_aden_lang_StringBuilder_StringBuilder__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_StringBuilder__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 200
+    ret
+adenc_aden_lang_StringBuilder_StringBuilder__String endp
+
+adenc_aden_lang_StringBuilder_append__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m4
+    mov edx, trace_m4_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_append__String_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+80], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+80]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_append__String_b1
+    jmp adenc_aden_lang_StringBuilder_append__String_b2
+adenc_aden_lang_StringBuilder_append__String_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_append__String_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__String_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    lea rcx, msg1
+    mov edx, msg1_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__String_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_append__String_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__String_epilogue
+adenc_aden_lang_StringBuilder_append__String_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_append__String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_append__String_b3
+adenc_aden_lang_StringBuilder_append__String_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_append__String_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_append__String_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__String_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_append__String_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__String_epilogue
+adenc_aden_lang_StringBuilder_append__String_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_append__String_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_append__String endp
+
+adenc_aden_lang_StringBuilder_append__CharSequence proc
+    sub rsp, 328
+    mov qword ptr [rsp+296], rcx
+    mov qword ptr [rsp+304], rdx
+    mov qword ptr [rsp+312], r8
+    mov qword ptr [rsp+320], r9
+    lea rcx, trace_m10
+    mov edx, trace_m10_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+296]
+    mov rdx, qword ptr [rsp+304]
+    mov r8, qword ptr [rsp+312]
+    mov r9, qword ptr [rsp+320]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_append__CharSequence_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+80], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+80]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_append__CharSequence_b1
+    jmp adenc_aden_lang_StringBuilder_append__CharSequence_b2
+adenc_aden_lang_StringBuilder_append__CharSequence_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    lea rcx, msg2
+    mov edx, msg2_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__CharSequence_epilogue
+adenc_aden_lang_StringBuilder_append__CharSequence_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_append__CharSequence_b3
+adenc_aden_lang_StringBuilder_append__CharSequence_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+176], rax
+    mov eax, 0
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+224], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+216], rax
+    mov rcx, qword ptr [rsp+216]
+    test rcx, rcx
+    je StringBuilder_append_vd3_21_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz StringBuilder_append_vd3_21_type
+    cmp eax, 30
+    je StringBuilder_append_vd3_21_assign_ok
+    cmp eax, 31
+    je StringBuilder_append_vd3_21_assign_ok
+    jmp StringBuilder_append_vd3_21_type
+StringBuilder_append_vd3_21_assign_ok:
+    cmp eax, 30
+    je StringBuilder_append_vd3_21_ovr0
+    cmp eax, 31
+    je StringBuilder_append_vd3_21_ovr1
+    jmp StringBuilder_append_vd3_21_default
+StringBuilder_append_vd3_21_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_String_length
+    jmp StringBuilder_append_vd3_21_done
+StringBuilder_append_vd3_21_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_StringBuilder_length
+    jmp StringBuilder_append_vd3_21_done
+StringBuilder_append_vd3_21_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_CharSequence_length
+    jmp StringBuilder_append_vd3_21_done
+StringBuilder_append_vd3_21_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp StringBuilder_append_vd3_21_done
+StringBuilder_append_vd3_21_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+StringBuilder_append_vd3_21_done:
+    movsxd rax, eax
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+224]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+176]
+    test rcx, rcx
+    je StringBuilder_append_vd3_22_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz StringBuilder_append_vd3_22_type
+    cmp eax, 30
+    je StringBuilder_append_vd3_22_assign_ok
+    cmp eax, 31
+    je StringBuilder_append_vd3_22_assign_ok
+    jmp StringBuilder_append_vd3_22_type
+StringBuilder_append_vd3_22_assign_ok:
+    cmp eax, 30
+    je StringBuilder_append_vd3_22_ovr0
+    cmp eax, 31
+    je StringBuilder_append_vd3_22_ovr1
+    jmp StringBuilder_append_vd3_22_default
+StringBuilder_append_vd3_22_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_String_subSequence__int_int
+    jmp StringBuilder_append_vd3_22_done
+StringBuilder_append_vd3_22_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_StringBuilder_subSequence__int_int
+    jmp StringBuilder_append_vd3_22_done
+StringBuilder_append_vd3_22_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_CharSequence_subSequence__int_int
+    jmp StringBuilder_append_vd3_22_done
+StringBuilder_append_vd3_22_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp StringBuilder_append_vd3_22_done
+StringBuilder_append_vd3_22_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+StringBuilder_append_vd3_22_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__CharSequence_epilogue
+adenc_aden_lang_StringBuilder_append__CharSequence_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_append__CharSequence_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 328
+    ret
+adenc_aden_lang_StringBuilder_append__CharSequence endp
+
+adenc_aden_lang_StringBuilder_append__charArr proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m16
+    mov edx, trace_m16_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_append__charArr_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+80], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+80]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_append__charArr_b1
+    jmp adenc_aden_lang_StringBuilder_append__charArr_b2
+adenc_aden_lang_StringBuilder_append__charArr_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    lea rcx, msg3
+    mov edx, msg3_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__charArr_epilogue
+adenc_aden_lang_StringBuilder_append__charArr_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_append__charArr_b3
+adenc_aden_lang_StringBuilder_append__charArr_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__charArr
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__charArr_epilogue
+adenc_aden_lang_StringBuilder_append__charArr_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_append__charArr_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_append__charArr endp
+
+adenc_aden_lang_StringBuilder_append__charArr_int_int proc
+    sub rsp, 312
+    mov qword ptr [rsp+280], rcx
+    mov qword ptr [rsp+288], rdx
+    mov qword ptr [rsp+296], r8
+    mov qword ptr [rsp+304], r9
+    lea rcx, trace_m22
+    mov edx, trace_m22_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+280]
+    mov rdx, qword ptr [rsp+288]
+    mov r8, qword ptr [rsp+296]
+    mov r9, qword ptr [rsp+304]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov dword ptr [rsp+80], r8d
+    mov dword ptr [rsp+88], r9d
+adenc_aden_lang_StringBuilder_append__charArr_int_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+96], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+96]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_append__charArr_int_int_b1
+    jmp adenc_aden_lang_StringBuilder_append__charArr_int_int_b2
+adenc_aden_lang_StringBuilder_append__charArr_int_int_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg4
+    mov edx, msg4_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+200], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+248], rax
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+104], eax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    add eax, edx
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+200]
+    call adenc_aden_lang_String_substring__int_int
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_append_vd1_12_null
+    call adenc_aden_lang_StringBuilder_append__String
+    jmp StringBuilder_append_vd1_12_done
+StringBuilder_append_vd1_12_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_append_vd1_12_done:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    jmp adenc_aden_lang_StringBuilder_append__charArr_int_int_epilogue
+adenc_aden_lang_StringBuilder_append__charArr_int_int_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_append__charArr_int_int_b3
+adenc_aden_lang_StringBuilder_append__charArr_int_int_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+248], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+248], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+256]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+120]
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    mov r8d, eax
+    call adenc_aden_lang_String_valueOf__charArr_int_int
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+144], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_append__charArr_int_int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__charArr_int_int_epilogue
+adenc_aden_lang_StringBuilder_append__charArr_int_int_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+adenc_aden_lang_StringBuilder_append__charArr_int_int_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 312
+    ret
+adenc_aden_lang_StringBuilder_append__charArr_int_int endp
+
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int proc
+    sub rsp, 312
+    mov qword ptr [rsp+280], rcx
+    mov qword ptr [rsp+288], rdx
+    mov qword ptr [rsp+296], r8
+    mov qword ptr [rsp+304], r9
+    lea rcx, trace_m27
+    mov edx, trace_m27_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+280]
+    mov rdx, qword ptr [rsp+288]
+    mov r8, qword ptr [rsp+296]
+    mov r9, qword ptr [rsp+304]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov dword ptr [rsp+80], r8d
+    mov dword ptr [rsp+88], r9d
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+96], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+96]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_append__CharSequence_int_int_b1
+    jmp adenc_aden_lang_StringBuilder_append__CharSequence_int_int_b2
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg5
+    mov edx, msg5_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+192], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+240], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+240]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+192]
+    call adenc_aden_lang_String_substring__int_int
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_append_vd1_10_null
+    call adenc_aden_lang_StringBuilder_append__String
+    jmp StringBuilder_append_vd1_10_done
+StringBuilder_append_vd1_10_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_append_vd1_10_done:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    jmp adenc_aden_lang_StringBuilder_append__CharSequence_int_int_epilogue
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_append__CharSequence_int_int_b3
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+192], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+240], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+240]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+192]
+    test rcx, rcx
+    je StringBuilder_append_vd2_20_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz StringBuilder_append_vd2_20_type
+    cmp eax, 30
+    je StringBuilder_append_vd2_20_assign_ok
+    cmp eax, 31
+    je StringBuilder_append_vd2_20_assign_ok
+    jmp StringBuilder_append_vd2_20_type
+StringBuilder_append_vd2_20_assign_ok:
+    cmp eax, 30
+    je StringBuilder_append_vd2_20_ovr0
+    cmp eax, 31
+    je StringBuilder_append_vd2_20_ovr1
+    jmp StringBuilder_append_vd2_20_default
+StringBuilder_append_vd2_20_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_String_subSequence__int_int
+    jmp StringBuilder_append_vd2_20_done
+StringBuilder_append_vd2_20_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_StringBuilder_subSequence__int_int
+    jmp StringBuilder_append_vd2_20_done
+StringBuilder_append_vd2_20_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_CharSequence_subSequence__int_int
+    jmp StringBuilder_append_vd2_20_done
+StringBuilder_append_vd2_20_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp StringBuilder_append_vd2_20_done
+StringBuilder_append_vd2_20_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+StringBuilder_append_vd2_20_done:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+152]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_append__CharSequence_int_int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__CharSequence_int_int_epilogue
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_epilogue:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int_epilogue_post:
+    mov qword ptr [rsp+144], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+144]
+    add rsp, 312
+    ret
+adenc_aden_lang_StringBuilder_append__CharSequence_int_int endp
+
+adenc_aden_lang_StringBuilder_append__int proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m32
+    mov edx, trace_m32_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_append__int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__int
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__int_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__int_epilogue
+adenc_aden_lang_StringBuilder_append__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__int endp
+
+adenc_aden_lang_StringBuilder_append__byte proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m35
+    mov edx, trace_m35_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_append__byte_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__byte_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__byte_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__byte
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__byte_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__byte_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__byte_epilogue
+adenc_aden_lang_StringBuilder_append__byte_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__byte_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__byte endp
+
+adenc_aden_lang_StringBuilder_append__short proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m38
+    mov edx, trace_m38_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_append__short_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__short_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__short_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__short
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__short_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__short_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__short_epilogue
+adenc_aden_lang_StringBuilder_append__short_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__short_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__short endp
+
+adenc_aden_lang_StringBuilder_append__boolean proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m41
+    mov edx, trace_m41_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_append__boolean_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__boolean_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__boolean_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__boolean
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__boolean_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__boolean_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__boolean_epilogue
+adenc_aden_lang_StringBuilder_append__boolean_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__boolean_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__boolean endp
+
+adenc_aden_lang_StringBuilder_append__char proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m44
+    mov edx, trace_m44_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_append__char_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__char_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__char_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__char
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__char_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__char_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__char_epilogue
+adenc_aden_lang_StringBuilder_append__char_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__char_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__char endp
+
+adenc_aden_lang_StringBuilder_append__float proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m47
+    mov edx, trace_m47_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_append__float_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__float_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__float_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__float
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__float_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__float_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__float_epilogue
+adenc_aden_lang_StringBuilder_append__float_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__float_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__float endp
+
+adenc_aden_lang_StringBuilder_append__double proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m50
+    mov edx, trace_m50_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_append__double_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__double_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__double_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__double
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__double_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__double_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__double_epilogue
+adenc_aden_lang_StringBuilder_append__double_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__double_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__double endp
+
+adenc_aden_lang_StringBuilder_append__long proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m53
+    mov edx, trace_m53_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_append__long_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__long_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__long_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__long
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__long_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__long_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__long_epilogue
+adenc_aden_lang_StringBuilder_append__long_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__long_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__long endp
+
+adenc_aden_lang_StringBuilder_append__ubyte proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m56
+    mov edx, trace_m56_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_append__ubyte_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__ubyte_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__ubyte_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__ubyte
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__ubyte_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__ubyte_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__ubyte_epilogue
+adenc_aden_lang_StringBuilder_append__ubyte_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__ubyte_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__ubyte endp
+
+adenc_aden_lang_StringBuilder_append__ushort proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m59
+    mov edx, trace_m59_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_append__ushort_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__ushort_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__ushort_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__ushort
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__ushort_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__ushort_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__ushort_epilogue
+adenc_aden_lang_StringBuilder_append__ushort_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__ushort_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__ushort endp
+
+adenc_aden_lang_StringBuilder_append__uint proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m62
+    mov edx, trace_m62_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_append__uint_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__uint_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__uint_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__uint
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__uint_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__uint_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__uint_epilogue
+adenc_aden_lang_StringBuilder_append__uint_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__uint_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__uint endp
+
+adenc_aden_lang_StringBuilder_append__ulong proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m65
+    mov edx, trace_m65_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_append__ulong_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__ulong_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__ulong_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__ulong
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__ulong_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__ulong_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__ulong_epilogue
+adenc_aden_lang_StringBuilder_append__ulong_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__ulong_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__ulong endp
+
+adenc_aden_lang_StringBuilder_appendLine__String proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m68
+    mov edx, trace_m68_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_appendLine__String_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__String
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__String_epilogue
+adenc_aden_lang_StringBuilder_appendLine__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__String endp
+
+adenc_aden_lang_StringBuilder_appendLine__CharSequence proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m70
+    mov edx, trace_m70_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_appendLine__CharSequence_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__CharSequence_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__CharSequence_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__CharSequence
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__CharSequence_epilogue
+adenc_aden_lang_StringBuilder_appendLine__CharSequence_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__CharSequence_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__CharSequence endp
+
+adenc_aden_lang_StringBuilder_appendLine__charArr proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m72
+    mov edx, trace_m72_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_appendLine__charArr_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__charArr_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__charArr_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__charArr
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__charArr_epilogue
+adenc_aden_lang_StringBuilder_appendLine__charArr_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__charArr_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__charArr endp
+
+adenc_aden_lang_StringBuilder_appendLine__int proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m74
+    mov edx, trace_m74_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_appendLine__int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__int
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__int_epilogue
+adenc_aden_lang_StringBuilder_appendLine__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__int endp
+
+adenc_aden_lang_StringBuilder_appendLine__byte proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m76
+    mov edx, trace_m76_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_appendLine__byte_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__byte_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__byte_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__byte
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__byte_epilogue
+adenc_aden_lang_StringBuilder_appendLine__byte_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__byte_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__byte endp
+
+adenc_aden_lang_StringBuilder_appendLine__short proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m78
+    mov edx, trace_m78_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_appendLine__short_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__short_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__short_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__short
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__short_epilogue
+adenc_aden_lang_StringBuilder_appendLine__short_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__short_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__short endp
+
+adenc_aden_lang_StringBuilder_appendLine__boolean proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m80
+    mov edx, trace_m80_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_appendLine__boolean_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__boolean_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__boolean_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__boolean
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__boolean_epilogue
+adenc_aden_lang_StringBuilder_appendLine__boolean_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__boolean_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__boolean endp
+
+adenc_aden_lang_StringBuilder_appendLine__char proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m82
+    mov edx, trace_m82_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_appendLine__char_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__char_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__char_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__char_epilogue
+adenc_aden_lang_StringBuilder_appendLine__char_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__char_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__char endp
+
+adenc_aden_lang_StringBuilder_appendLine__float proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m84
+    mov edx, trace_m84_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_appendLine__float_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__float_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__float_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__float
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__float_epilogue
+adenc_aden_lang_StringBuilder_appendLine__float_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__float_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__float endp
+
+adenc_aden_lang_StringBuilder_appendLine__double proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m86
+    mov edx, trace_m86_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_appendLine__double_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__double_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__double_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__double
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__double_epilogue
+adenc_aden_lang_StringBuilder_appendLine__double_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__double_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__double endp
+
+adenc_aden_lang_StringBuilder_appendLine__long proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m88
+    mov edx, trace_m88_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_appendLine__long_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__long_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__long_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__long
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__long_epilogue
+adenc_aden_lang_StringBuilder_appendLine__long_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__long_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__long endp
+
+adenc_aden_lang_StringBuilder_appendLine__ubyte proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m90
+    mov edx, trace_m90_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_appendLine__ubyte_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__ubyte_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__ubyte_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__ubyte
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__ubyte_epilogue
+adenc_aden_lang_StringBuilder_appendLine__ubyte_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__ubyte_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__ubyte endp
+
+adenc_aden_lang_StringBuilder_appendLine__ushort proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m92
+    mov edx, trace_m92_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_appendLine__ushort_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__ushort_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__ushort_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__ushort
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__ushort_epilogue
+adenc_aden_lang_StringBuilder_appendLine__ushort_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__ushort_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__ushort endp
+
+adenc_aden_lang_StringBuilder_appendLine__uint proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m94
+    mov edx, trace_m94_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_appendLine__uint_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__uint_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__uint_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__uint
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__uint_epilogue
+adenc_aden_lang_StringBuilder_appendLine__uint_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__uint_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__uint endp
+
+adenc_aden_lang_StringBuilder_appendLine__ulong proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m96
+    mov edx, trace_m96_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_appendLine__ulong_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__ulong_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__ulong_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__ulong
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__ulong_epilogue
+adenc_aden_lang_StringBuilder_appendLine__ulong_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__ulong_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__ulong endp
+
+adenc_aden_lang_StringBuilder_appendLine__Object proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m98
+    mov edx, trace_m98_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_appendLine__Object_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_appendLine__Object_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_appendLine__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_3_null
+    call adenc_aden_lang_StringBuilder_append__Object
+    jmp StringBuilder_appendLine_vd0_3_done
+StringBuilder_appendLine_vd0_3_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_3_done:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+128], rax
+    mov eax, 10
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    test rcx, rcx
+    je StringBuilder_appendLine_vd0_6_null
+    call adenc_aden_lang_StringBuilder_append__char
+    jmp StringBuilder_appendLine_vd0_6_done
+StringBuilder_appendLine_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_appendLine_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_appendLine__Object_epilogue
+adenc_aden_lang_StringBuilder_appendLine__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_appendLine__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_appendLine__Object endp
+
+adenc_aden_lang_StringBuilder_append__Object proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m100
+    mov edx, trace_m100_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_append__Object_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_append__Object_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_append__Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__Object
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+80], rax
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+112]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_append__Object_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_append__Object_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_append__Object_epilogue
+adenc_aden_lang_StringBuilder_append__Object_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_append__Object_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_append__Object endp
+
+adenc_aden_lang_StringBuilder_length proc
+    sub rsp, 232
+    mov qword ptr [rsp+200], rcx
+    mov qword ptr [rsp+208], rdx
+    mov qword ptr [rsp+216], r8
+    mov qword ptr [rsp+224], r9
+    lea rcx, trace_m103
+    mov edx, trace_m103_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+200]
+    mov rdx, qword ptr [rsp+208]
+    mov r8, qword ptr [rsp+216]
+    mov r9, qword ptr [rsp+224]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_lang_StringBuilder_length_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_length_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_length_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+120], rax
+    mov rcx, qword ptr [rsp+120]
+    call adenc_aden_lang_String_length
+    movsxd rax, eax
+    jmp adenc_aden_lang_StringBuilder_length_epilogue
+adenc_aden_lang_StringBuilder_length_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_lang_StringBuilder_length_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 232
+    ret
+adenc_aden_lang_StringBuilder_length endp
+
+adenc_aden_lang_StringBuilder_isEmpty proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m105
+    mov edx, trace_m105_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_lang_StringBuilder_isEmpty_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_isEmpty_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_isEmpty_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_isEmpty_vd0_2_null
+    call adenc_aden_lang_StringBuilder_length
+    jmp StringBuilder_isEmpty_vd0_2_done
+StringBuilder_isEmpty_vd0_2_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_isEmpty_vd0_2_done:
+    movsxd rax, eax
+    mov dword ptr [rsp+72], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+72]
+    cmp eax, edx
+    sete al
+    movzx eax, al
+    jmp adenc_aden_lang_StringBuilder_isEmpty_epilogue
+adenc_aden_lang_StringBuilder_isEmpty_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_isEmpty_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_isEmpty endp
+
+adenc_aden_lang_StringBuilder_charAt__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m107
+    mov edx, trace_m107_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_charAt__int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_charAt__int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_charAt__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_charAt__int
+    movzx eax, ax
+    jmp adenc_aden_lang_StringBuilder_charAt__int_epilogue
+adenc_aden_lang_StringBuilder_charAt__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_charAt__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_charAt__int endp
+
+adenc_aden_lang_StringBuilder_subSequence__int_int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m109
+    mov edx, trace_m109_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_subSequence__int_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_subSequence__int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_subSequence__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_substring__int_int
+    jmp adenc_aden_lang_StringBuilder_subSequence__int_int_epilogue
+adenc_aden_lang_StringBuilder_subSequence__int_int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_subSequence__int_int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_subSequence__int_int endp
+
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m111
+    mov edx, trace_m111_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+88], rdx
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+96], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+96]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b1
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b2
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_epilogue
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b3
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+80]
+    test rcx, rcx
+    je StringBuilder_contentEquals_vd2_6_null
+    call adenc_aden_lang_StringBuilder_length
+    jmp StringBuilder_contentEquals_vd2_6_done
+StringBuilder_contentEquals_vd2_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_contentEquals_vd2_6_done:
+    movsxd rax, eax
+    mov dword ptr [rsp+64], eax
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+104], eax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rcx, qword ptr [rsp+184]
+    test rcx, rcx
+    je StringBuilder_contentEquals_vd3_10_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz StringBuilder_contentEquals_vd3_10_type
+    cmp eax, 30
+    je StringBuilder_contentEquals_vd3_10_assign_ok
+    cmp eax, 31
+    je StringBuilder_contentEquals_vd3_10_assign_ok
+    jmp StringBuilder_contentEquals_vd3_10_type
+StringBuilder_contentEquals_vd3_10_assign_ok:
+    cmp eax, 30
+    je StringBuilder_contentEquals_vd3_10_ovr0
+    cmp eax, 31
+    je StringBuilder_contentEquals_vd3_10_ovr1
+    jmp StringBuilder_contentEquals_vd3_10_default
+StringBuilder_contentEquals_vd3_10_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_String_length
+    jmp StringBuilder_contentEquals_vd3_10_done
+StringBuilder_contentEquals_vd3_10_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_StringBuilder_length
+    jmp StringBuilder_contentEquals_vd3_10_done
+StringBuilder_contentEquals_vd3_10_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_CharSequence_length
+    jmp StringBuilder_contentEquals_vd3_10_done
+StringBuilder_contentEquals_vd3_10_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp StringBuilder_contentEquals_vd3_10_done
+StringBuilder_contentEquals_vd3_10_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+StringBuilder_contentEquals_vd3_10_done:
+    movsxd rax, eax
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    cmp eax, edx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b4
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b5
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b4:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_epilogue
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b5:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b6
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b6:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s5
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s6
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b7
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b7:
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+112], eax
+    mov eax, dword ptr [rsp+64]
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b8
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b9
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b8:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s7
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+176]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+136], rax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+80]
+    test rcx, rcx
+    je StringBuilder_contentEquals_vd7_20_null
+    call adenc_aden_lang_StringBuilder_charAt__int
+    jmp StringBuilder_contentEquals_vd7_20_done
+StringBuilder_contentEquals_vd7_20_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_contentEquals_vd7_20_done:
+    movzx eax, ax
+    mov dword ptr [rsp+120], eax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+176]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+136], rax
+    mov eax, dword ptr [rsp+136]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+184]
+    test rcx, rcx
+    je StringBuilder_contentEquals_vd7_24_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz StringBuilder_contentEquals_vd7_24_type
+    cmp eax, 30
+    je StringBuilder_contentEquals_vd7_24_assign_ok
+    cmp eax, 31
+    je StringBuilder_contentEquals_vd7_24_assign_ok
+    jmp StringBuilder_contentEquals_vd7_24_type
+StringBuilder_contentEquals_vd7_24_assign_ok:
+    cmp eax, 30
+    je StringBuilder_contentEquals_vd7_24_ovr0
+    cmp eax, 31
+    je StringBuilder_contentEquals_vd7_24_ovr1
+    jmp StringBuilder_contentEquals_vd7_24_default
+StringBuilder_contentEquals_vd7_24_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_String_charAt__int
+    jmp StringBuilder_contentEquals_vd7_24_done
+StringBuilder_contentEquals_vd7_24_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_StringBuilder_charAt__int
+    jmp StringBuilder_contentEquals_vd7_24_done
+StringBuilder_contentEquals_vd7_24_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_CharSequence_charAt__int
+    jmp StringBuilder_contentEquals_vd7_24_done
+StringBuilder_contentEquals_vd7_24_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp StringBuilder_contentEquals_vd7_24_done
+StringBuilder_contentEquals_vd7_24_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+StringBuilder_contentEquals_vd7_24_done:
+    movzx eax, ax
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    cmp eax, edx
+    setne al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b10
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b11
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b9:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s10
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_epilogue
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b10:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s8
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_epilogue
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b11:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s7
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b12
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b12:
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s9
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+128], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    add eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s6
+    mov edx, adenc_aden_lang_StringBuilder_contentEquals__CharSequence_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_contentEquals__CharSequence_b7
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_epilogue:
+    mov qword ptr [rsp+176], rax
+    mov rax, qword ptr [rsp+176]
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence_epilogue_post:
+    mov qword ptr [rsp+176], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+176]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_contentEquals__CharSequence endp
+
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder proc
+    sub rsp, 360
+    mov qword ptr [rsp+328], rcx
+    mov qword ptr [rsp+336], rdx
+    mov qword ptr [rsp+344], r8
+    mov qword ptr [rsp+352], r9
+    lea rcx, trace_m123
+    mov edx, trace_m123_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+328]
+    mov rdx, qword ptr [rsp+336]
+    mov r8, qword ptr [rsp+344]
+    mov r9, qword ptr [rsp+352]
+    mov qword ptr [rsp+112], rcx
+    mov qword ptr [rsp+120], rdx
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+128], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+128]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b1
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b2
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_epilogue
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b3
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rcx, qword ptr [rsp+112]
+    test rcx, rcx
+    je StringBuilder_compareTo_vd2_6_null
+    call adenc_aden_lang_StringBuilder_length
+    jmp StringBuilder_compareTo_vd2_6_done
+StringBuilder_compareTo_vd2_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_compareTo_vd2_6_done:
+    movsxd rax, eax
+    mov dword ptr [rsp+64], eax
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+240], rax
+    mov rcx, qword ptr [rsp+240]
+    test rcx, rcx
+    je StringBuilder_compareTo_vd3_9_null
+    call adenc_aden_lang_StringBuilder_length
+    jmp StringBuilder_compareTo_vd3_9_done
+StringBuilder_compareTo_vd3_9_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_compareTo_vd3_9_done:
+    movsxd rax, eax
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+80], eax
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s5
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+136], eax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov eax, dword ptr [rsp+136]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b4
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b5
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b4:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s6
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+80], eax
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s5
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b6
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b5:
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b6
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b6:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s7
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s7_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    mov dword ptr [rsp+88], eax
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s8
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b7
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b7:
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+144], eax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov eax, dword ptr [rsp+144]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b8
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b9
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b8:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s9
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s9_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+232], rax
+    mov rax, qword ptr [rsp+232]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+192], rax
+    mov eax, dword ptr [rsp+192]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+112]
+    test rcx, rcx
+    je StringBuilder_compareTo_vd9_23_null
+    call adenc_aden_lang_StringBuilder_charAt__int
+    jmp StringBuilder_compareTo_vd9_23_done
+StringBuilder_compareTo_vd9_23_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_compareTo_vd9_23_done:
+    movzx eax, ax
+    mov dword ptr [rsp+96], eax
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s10
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s10_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+240], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+232], rax
+    mov rax, qword ptr [rsp+232]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+192], rax
+    mov eax, dword ptr [rsp+192]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+240]
+    test rcx, rcx
+    je StringBuilder_compareTo_vd10_27_null
+    call adenc_aden_lang_StringBuilder_charAt__int
+    jmp StringBuilder_compareTo_vd10_27_done
+StringBuilder_compareTo_vd10_27_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_compareTo_vd10_27_done:
+    movzx eax, ax
+    mov dword ptr [rsp+104], eax
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s11
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+152], eax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov eax, dword ptr [rsp+152]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b10
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b11
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b9:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s16
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s16_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+176], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+176]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b16
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b17
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b10:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s12
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s12_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    neg eax
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_epilogue
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b11:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s11
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s11_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b12
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b12:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s13
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s13_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+96]
+    mov dword ptr [rsp+160], eax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov eax, dword ptr [rsp+160]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b13
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b14
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b13:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s14
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s14_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_epilogue
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b14:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s13
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s13_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b15
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b15:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s15
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s15_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+168], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+168]
+    add eax, edx
+    mov dword ptr [rsp+88], eax
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s8
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s8_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b7
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b16:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s17
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s17_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    neg eax
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_epilogue
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b17:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s16
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s16_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b18
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b18:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s18
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s18_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+184], eax
+    mov eax, dword ptr [rsp+72]
+    mov edx, eax
+    mov eax, dword ptr [rsp+184]
+    cmp eax, edx
+    setg al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b19
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b20
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b19:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s19
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s19_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 1
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_epilogue
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b20:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s18
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s18_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b21
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_b21:
+    lea rcx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s20
+    mov edx, adenc_aden_lang_StringBuilder_compareTo__StringBuilder_trace_s20_len
+    call adenc_rt_traceUpdateTop
+    mov eax, 0
+    jmp adenc_aden_lang_StringBuilder_compareTo__StringBuilder_epilogue
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_epilogue:
+    mov qword ptr [rsp+232], rax
+    mov rax, qword ptr [rsp+232]
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder_epilogue_post:
+    mov qword ptr [rsp+232], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+232]
+    add rsp, 360
+    ret
+adenc_aden_lang_StringBuilder_compareTo__StringBuilder endp
+
+adenc_aden_lang_StringBuilder_clear proc
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m145
+    mov edx, trace_m145_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_lang_StringBuilder_clear_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_clear_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_clear_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg6
+    mov edx, msg6_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+104]
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    xor eax, eax
+    jmp adenc_aden_lang_StringBuilder_clear_epilogue
+adenc_aden_lang_StringBuilder_clear_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_lang_StringBuilder_clear_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 200
+    ret
+adenc_aden_lang_StringBuilder_clear endp
+
+adenc_aden_lang_StringBuilder_insert__int_String proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m147
+    mov edx, trace_m147_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov qword ptr [rsp+96], r8
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+64], 0
+adenc_aden_lang_StringBuilder_insert__int_String_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+104], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_insert__int_String_b1
+    jmp adenc_aden_lang_StringBuilder_insert__int_String_b2
+adenc_aden_lang_StringBuilder_insert__int_String_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg7
+    mov edx, msg7_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+96], rax
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_insert__int_String_b3
+adenc_aden_lang_StringBuilder_insert__int_String_b2:
+    jmp adenc_aden_lang_StringBuilder_insert__int_String_b3
+adenc_aden_lang_StringBuilder_insert__int_String_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov eax, 0
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+208], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_substring__int_int
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_substring__int
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+144], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s5
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+144], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s6
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_String_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_insert__int_String_epilogue
+adenc_aden_lang_StringBuilder_insert__int_String_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+adenc_aden_lang_StringBuilder_insert__int_String_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_insert__int_String endp
+
+adenc_aden_lang_StringBuilder_insert__int_CharSequence proc
+    sub rsp, 344
+    mov qword ptr [rsp+312], rcx
+    mov qword ptr [rsp+320], rdx
+    mov qword ptr [rsp+328], r8
+    mov qword ptr [rsp+336], r9
+    lea rcx, trace_m155
+    mov edx, trace_m155_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+312]
+    mov rdx, qword ptr [rsp+320]
+    mov r8, qword ptr [rsp+328]
+    mov r9, qword ptr [rsp+336]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_insert__int_CharSequence_b1
+    jmp adenc_aden_lang_StringBuilder_insert__int_CharSequence_b2
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    lea rcx, msg8
+    mov edx, msg8_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov rax, qword ptr [rsp+104]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd1_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd1_7_done
+StringBuilder_insert_vd1_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd1_7_done:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    jmp adenc_aden_lang_StringBuilder_insert__int_CharSequence_epilogue
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_insert__int_CharSequence_b3
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+184], rax
+    mov eax, 0
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+232], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+224], rax
+    mov rcx, qword ptr [rsp+224]
+    test rcx, rcx
+    je StringBuilder_insert_vd2_16_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz StringBuilder_insert_vd2_16_type
+    cmp eax, 30
+    je StringBuilder_insert_vd2_16_assign_ok
+    cmp eax, 31
+    je StringBuilder_insert_vd2_16_assign_ok
+    jmp StringBuilder_insert_vd2_16_type
+StringBuilder_insert_vd2_16_assign_ok:
+    cmp eax, 30
+    je StringBuilder_insert_vd2_16_ovr0
+    cmp eax, 31
+    je StringBuilder_insert_vd2_16_ovr1
+    jmp StringBuilder_insert_vd2_16_default
+StringBuilder_insert_vd2_16_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_String_length
+    jmp StringBuilder_insert_vd2_16_done
+StringBuilder_insert_vd2_16_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_StringBuilder_length
+    jmp StringBuilder_insert_vd2_16_done
+StringBuilder_insert_vd2_16_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_CharSequence_length
+    jmp StringBuilder_insert_vd2_16_done
+StringBuilder_insert_vd2_16_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp StringBuilder_insert_vd2_16_done
+StringBuilder_insert_vd2_16_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+StringBuilder_insert_vd2_16_done:
+    movsxd rax, eax
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+232]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+104], rax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+184]
+    test rcx, rcx
+    je StringBuilder_insert_vd2_17_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz StringBuilder_insert_vd2_17_type
+    cmp eax, 30
+    je StringBuilder_insert_vd2_17_assign_ok
+    cmp eax, 31
+    je StringBuilder_insert_vd2_17_assign_ok
+    jmp StringBuilder_insert_vd2_17_type
+StringBuilder_insert_vd2_17_assign_ok:
+    cmp eax, 30
+    je StringBuilder_insert_vd2_17_ovr0
+    cmp eax, 31
+    je StringBuilder_insert_vd2_17_ovr1
+    jmp StringBuilder_insert_vd2_17_default
+StringBuilder_insert_vd2_17_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_String_subSequence__int_int
+    jmp StringBuilder_insert_vd2_17_done
+StringBuilder_insert_vd2_17_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_StringBuilder_subSequence__int_int
+    jmp StringBuilder_insert_vd2_17_done
+StringBuilder_insert_vd2_17_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_CharSequence_subSequence__int_int
+    jmp StringBuilder_insert_vd2_17_done
+StringBuilder_insert_vd2_17_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp StringBuilder_insert_vd2_17_done
+StringBuilder_insert_vd2_17_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+StringBuilder_insert_vd2_17_done:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+104], rax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov rax, qword ptr [rsp+104]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd2_18_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd2_18_done
+StringBuilder_insert_vd2_18_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd2_18_done:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    jmp adenc_aden_lang_StringBuilder_insert__int_CharSequence_epilogue
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_epilogue:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_epilogue_post:
+    mov qword ptr [rsp+136], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+136]
+    add rsp, 344
+    ret
+adenc_aden_lang_StringBuilder_insert__int_CharSequence endp
+
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int proc
+    sub rsp, 312
+    mov qword ptr [rsp+280], rcx
+    mov qword ptr [rsp+288], rdx
+    mov qword ptr [rsp+296], r8
+    mov qword ptr [rsp+304], r9
+    lea rcx, trace_m159
+    mov edx, trace_m159_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+280]
+    mov rdx, qword ptr [rsp+288]
+    mov r8, qword ptr [rsp+296]
+    mov r9, qword ptr [rsp+304]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+    mov dword ptr [rsp+88], r9d
+    mov eax, dword ptr [rsp+352]
+    mov dword ptr [rsp+96], eax
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+104], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_b1
+    jmp adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_b2
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+208], rax
+    lea rcx, msg9
+    mov edx, msg9_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+200], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+248], rax
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+200]
+    call adenc_aden_lang_String_substring__int_int
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+120], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov rax, qword ptr [rsp+120]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd1_11_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd1_11_done
+StringBuilder_insert_vd1_11_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd1_11_done:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    jmp adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_epilogue
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_b3
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+208], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+200], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+248], rax
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+248]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+200]
+    test rcx, rcx
+    je StringBuilder_insert_vd2_19_null
+    sub rsp, 80
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    call adenc_rt_objectClassId
+    test eax, eax
+    jz StringBuilder_insert_vd2_19_type
+    cmp eax, 30
+    je StringBuilder_insert_vd2_19_assign_ok
+    cmp eax, 31
+    je StringBuilder_insert_vd2_19_assign_ok
+    jmp StringBuilder_insert_vd2_19_type
+StringBuilder_insert_vd2_19_assign_ok:
+    cmp eax, 30
+    je StringBuilder_insert_vd2_19_ovr0
+    cmp eax, 31
+    je StringBuilder_insert_vd2_19_ovr1
+    jmp StringBuilder_insert_vd2_19_default
+StringBuilder_insert_vd2_19_ovr0:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_String_subSequence__int_int
+    jmp StringBuilder_insert_vd2_19_done
+StringBuilder_insert_vd2_19_ovr1:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_StringBuilder_subSequence__int_int
+    jmp StringBuilder_insert_vd2_19_done
+StringBuilder_insert_vd2_19_default:
+    mov rcx, qword ptr [rsp+40]
+    mov rdx, qword ptr [rsp+48]
+    mov r8, qword ptr [rsp+56]
+    mov r9, qword ptr [rsp+64]
+    add rsp, 80
+    call adenc_aden_lang_CharSequence_subSequence__int_int
+    jmp StringBuilder_insert_vd2_19_done
+StringBuilder_insert_vd2_19_null:
+    call adenc_rt_dispatchNullReceiverPanic
+    jmp StringBuilder_insert_vd2_19_done
+StringBuilder_insert_vd2_19_type:
+    add rsp, 80
+    call adenc_rt_dispatchInvalidTypePanic
+StringBuilder_insert_vd2_19_done:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+120], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov rax, qword ptr [rsp+120]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd2_20_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd2_20_done
+StringBuilder_insert_vd2_20_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd2_20_done:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    jmp adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_epilogue
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 312
+    ret
+adenc_aden_lang_StringBuilder_insert__int_CharSequence_int_int endp
+
+adenc_aden_lang_StringBuilder_insert__int_charArr proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m163
+    mov edx, trace_m163_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_lang_StringBuilder_insert__int_charArr_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+88], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+88]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_insert__int_charArr_b1
+    jmp adenc_aden_lang_StringBuilder_insert__int_charArr_b2
+adenc_aden_lang_StringBuilder_insert__int_charArr_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    lea rcx, msg10
+    mov edx, msg10_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov rax, qword ptr [rsp+104]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd1_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd1_7_done
+StringBuilder_insert_vd1_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd1_7_done:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    jmp adenc_aden_lang_StringBuilder_insert__int_charArr_epilogue
+adenc_aden_lang_StringBuilder_insert__int_charArr_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_insert__int_charArr_b3
+adenc_aden_lang_StringBuilder_insert__int_charArr_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_charArr_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+96], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+96]
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__charArr
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+104], rax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov rax, qword ptr [rsp+104]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd2_15_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd2_15_done
+StringBuilder_insert_vd2_15_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd2_15_done:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    jmp adenc_aden_lang_StringBuilder_insert__int_charArr_epilogue
+adenc_aden_lang_StringBuilder_insert__int_charArr_epilogue:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+adenc_aden_lang_StringBuilder_insert__int_charArr_epilogue_post:
+    mov qword ptr [rsp+136], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+136]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_charArr endp
+
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int proc
+    sub rsp, 328
+    mov qword ptr [rsp+296], rcx
+    mov qword ptr [rsp+304], rdx
+    mov qword ptr [rsp+312], r8
+    mov qword ptr [rsp+320], r9
+    lea rcx, trace_m167
+    mov edx, trace_m167_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+296]
+    mov rdx, qword ptr [rsp+304]
+    mov r8, qword ptr [rsp+312]
+    mov r9, qword ptr [rsp+320]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+    mov dword ptr [rsp+88], r9d
+    mov eax, dword ptr [rsp+368]
+    mov dword ptr [rsp+96], eax
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+104], rax
+    xor eax, eax
+    mov rdx, rax
+    mov rax, qword ptr [rsp+104]
+    cmp rax, rdx
+    sete al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_b1
+    jmp adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_b2
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+216], rax
+    lea rcx, msg11
+    mov edx, msg11_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+208], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov eax, dword ptr [rsp+88]
+    mov dword ptr [rsp+112], eax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    add eax, edx
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+256]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+120]
+    mov edx, eax
+    mov eax, dword ptr [rsp+128]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+208]
+    call adenc_aden_lang_String_substring__int_int
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+216]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+120]
+    mov edx, eax
+    mov rax, qword ptr [rsp+128]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd1_13_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd1_13_done
+StringBuilder_insert_vd1_13_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd1_13_done:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    jmp adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_epilogue
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_b3
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+216], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+120], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+120]
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+256]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+256], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+264], rax
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+256]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+264]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+160]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    mov eax, dword ptr [rsp+128]
+    mov edx, eax
+    mov eax, dword ptr [rsp+136]
+    mov r8d, eax
+    call adenc_aden_lang_String_valueOf__charArr_int_int
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+120]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+216]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+160]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+120]
+    mov edx, eax
+    mov rax, qword ptr [rsp+128]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd2_23_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd2_23_done
+StringBuilder_insert_vd2_23_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd2_23_done:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+160]
+    jmp adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_epilogue
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_epilogue:
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+160]
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int_epilogue_post:
+    mov qword ptr [rsp+160], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+160]
+    add rsp, 328
+    ret
+adenc_aden_lang_StringBuilder_insert__int_charArr_int_int endp
+
+adenc_aden_lang_StringBuilder_insert__int_Object proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m171
+    mov edx, trace_m171_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_lang_StringBuilder_insert__int_Object_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_Object_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_Object_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__Object
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_Object_epilogue
+adenc_aden_lang_StringBuilder_insert__int_Object_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_Object_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_Object endp
+
+adenc_aden_lang_StringBuilder_insert__int_boolean proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m173
+    mov edx, trace_m173_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_insert__int_boolean_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_boolean_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_boolean_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__boolean
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_boolean_epilogue
+adenc_aden_lang_StringBuilder_insert__int_boolean_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_boolean_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_boolean endp
+
+adenc_aden_lang_StringBuilder_insert__int_char proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m175
+    mov edx, trace_m175_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_insert__int_char_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_char_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_char_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__char
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_char_epilogue
+adenc_aden_lang_StringBuilder_insert__int_char_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_char_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_char endp
+
+adenc_aden_lang_StringBuilder_insert__int_int proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m177
+    mov edx, trace_m177_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_insert__int_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__int
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_int_epilogue
+adenc_aden_lang_StringBuilder_insert__int_int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_int endp
+
+adenc_aden_lang_StringBuilder_insert__int_byte proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m179
+    mov edx, trace_m179_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_insert__int_byte_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_byte_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_byte_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__byte
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_byte_epilogue
+adenc_aden_lang_StringBuilder_insert__int_byte_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_byte_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_byte endp
+
+adenc_aden_lang_StringBuilder_insert__int_short proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m181
+    mov edx, trace_m181_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_insert__int_short_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_short_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_short_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__short
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_short_epilogue
+adenc_aden_lang_StringBuilder_insert__int_short_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_short_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_short endp
+
+adenc_aden_lang_StringBuilder_insert__int_long proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m183
+    mov edx, trace_m183_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_lang_StringBuilder_insert__int_long_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_long_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_long_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__long
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_long_epilogue
+adenc_aden_lang_StringBuilder_insert__int_long_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_long_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_long endp
+
+adenc_aden_lang_StringBuilder_insert__int_ubyte proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m185
+    mov edx, trace_m185_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_insert__int_ubyte_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_ubyte_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_ubyte_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__ubyte
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_ubyte_epilogue
+adenc_aden_lang_StringBuilder_insert__int_ubyte_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_ubyte_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_ubyte endp
+
+adenc_aden_lang_StringBuilder_insert__int_ushort proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m187
+    mov edx, trace_m187_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_insert__int_ushort_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_ushort_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_ushort_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__ushort
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_ushort_epilogue
+adenc_aden_lang_StringBuilder_insert__int_ushort_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_ushort_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_ushort endp
+
+adenc_aden_lang_StringBuilder_insert__int_uint proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m189
+    mov edx, trace_m189_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_insert__int_uint_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_uint_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_uint_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov eax, dword ptr [rsp+88]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__uint
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_uint_epilogue
+adenc_aden_lang_StringBuilder_insert__int_uint_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_uint_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_uint endp
+
+adenc_aden_lang_StringBuilder_insert__int_ulong proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m191
+    mov edx, trace_m191_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_lang_StringBuilder_insert__int_ulong_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_ulong_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_ulong_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__ulong
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_ulong_epilogue
+adenc_aden_lang_StringBuilder_insert__int_ulong_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_ulong_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_ulong endp
+
+adenc_aden_lang_StringBuilder_insert__int_float proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m193
+    mov edx, trace_m193_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_lang_StringBuilder_insert__int_float_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_float_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_float_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__float
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_float_epilogue
+adenc_aden_lang_StringBuilder_insert__int_float_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_float_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_float endp
+
+adenc_aden_lang_StringBuilder_insert__int_double proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m195
+    mov edx, trace_m195_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov qword ptr [rsp+80], r8
+adenc_aden_lang_StringBuilder_insert__int_double_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_insert__int_double_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_insert__int_double_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov rax, qword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_aden_lang_String_valueOf__double
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov rax, qword ptr [rsp+96]
+    mov r8, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_insert_vd0_7_null
+    call adenc_aden_lang_StringBuilder_insert__int_String
+    jmp StringBuilder_insert_vd0_7_done
+StringBuilder_insert_vd0_7_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_insert_vd0_7_done:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+96]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_insert__int_double_epilogue
+adenc_aden_lang_StringBuilder_insert__int_double_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_insert__int_double_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_insert__int_double endp
+
+adenc_aden_lang_StringBuilder_delete__int_int proc
+    sub rsp, 264
+    mov qword ptr [rsp+232], rcx
+    mov qword ptr [rsp+240], rdx
+    mov qword ptr [rsp+248], r8
+    mov qword ptr [rsp+256], r9
+    lea rcx, trace_m197
+    mov edx, trace_m197_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+232]
+    mov rdx, qword ptr [rsp+240]
+    mov r8, qword ptr [rsp+248]
+    mov r9, qword ptr [rsp+256]
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov dword ptr [rsp+96], r8d
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+64], 0
+adenc_aden_lang_StringBuilder_delete__int_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_delete__int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_delete__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+152], rax
+    mov eax, 0
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov eax, dword ptr [rsp+112]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+152]
+    call adenc_aden_lang_String_substring__int_int
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_lang_StringBuilder_delete__int_int_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_delete__int_int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+152], rax
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+104], rax
+    mov eax, dword ptr [rsp+104]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+152]
+    call adenc_aden_lang_String_substring__int
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_lang_StringBuilder_delete__int_int_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_delete__int_int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+104], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+104]
+    mov rax, qword ptr [rsp+104]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+152]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+104]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+136], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_delete__int_int_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_delete__int_int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_delete__int_int_epilogue
+adenc_aden_lang_StringBuilder_delete__int_int_epilogue:
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+adenc_aden_lang_StringBuilder_delete__int_int_epilogue_post:
+    mov qword ptr [rsp+144], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+144]
+    add rsp, 264
+    ret
+adenc_aden_lang_StringBuilder_delete__int_int endp
+
+adenc_aden_lang_StringBuilder_deleteCharAt__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m202
+    mov edx, trace_m202_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_deleteCharAt__int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_deleteCharAt__int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_deleteCharAt__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+80], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+80]
+    add eax, edx
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je StringBuilder_deleteCharAt_vd0_6_null
+    call adenc_aden_lang_StringBuilder_delete__int_int
+    jmp StringBuilder_deleteCharAt_vd0_6_done
+StringBuilder_deleteCharAt_vd0_6_null:
+    call adenc_rt_dispatchNullReceiverPanic
+StringBuilder_deleteCharAt_vd0_6_done:
+    jmp adenc_aden_lang_StringBuilder_deleteCharAt__int_epilogue
+adenc_aden_lang_StringBuilder_deleteCharAt__int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_deleteCharAt__int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_deleteCharAt__int endp
+
+adenc_aden_lang_StringBuilder_replace__int_int_String proc
+    sub rsp, 280
+    mov qword ptr [rsp+248], rcx
+    mov qword ptr [rsp+256], rdx
+    mov qword ptr [rsp+264], r8
+    mov qword ptr [rsp+272], r9
+    lea rcx, trace_m204
+    mov edx, trace_m204_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+248]
+    mov rdx, qword ptr [rsp+256]
+    mov r8, qword ptr [rsp+264]
+    mov r9, qword ptr [rsp+272]
+    mov qword ptr [rsp+80], rcx
+    mov dword ptr [rsp+88], edx
+    mov dword ptr [rsp+96], r8d
+    mov qword ptr [rsp+104], r9
+    mov qword ptr [rsp+72], 0
+    mov qword ptr [rsp+64], 0
+adenc_aden_lang_StringBuilder_replace__int_int_String_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov eax, 0
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+208], rax
+    mov eax, dword ptr [rsp+88]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_substring__int_int
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov eax, dword ptr [rsp+96]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_substring__int
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+72], rax
+    lea rcx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+144], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+112], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+112]
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+144], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_replace__int_int_String_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_replace__int_int_String_epilogue
+adenc_aden_lang_StringBuilder_replace__int_int_String_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+72]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+adenc_aden_lang_StringBuilder_replace__int_int_String_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 280
+    ret
+adenc_aden_lang_StringBuilder_replace__int_int_String endp
+
+adenc_aden_lang_StringBuilder_setCharAt__int_char proc
+    sub rsp, 296
+    mov qword ptr [rsp+264], rcx
+    mov qword ptr [rsp+272], rdx
+    mov qword ptr [rsp+280], r8
+    mov qword ptr [rsp+288], r9
+    lea rcx, trace_m210
+    mov edx, trace_m210_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+264]
+    mov rdx, qword ptr [rsp+272]
+    mov r8, qword ptr [rsp+280]
+    mov r9, qword ptr [rsp+288]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_setCharAt__int_char_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_setCharAt__int_char_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_setCharAt__int_char_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+88], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+88]
+    add eax, edx
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+96]
+    mov qword ptr [rsp+192], rax
+    mov rax, qword ptr [rsp+104]
+    mov qword ptr [rsp+200], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+96]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__char
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+192]
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+200]
+    mov qword ptr [rsp+104], rax
+    mov rax, qword ptr [rsp+136]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+96]
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    mov r8d, eax
+    mov rax, qword ptr [rsp+112]
+    mov r9, rax
+    mov rcx, qword ptr [rsp+64]
+    test rcx, rcx
+    je adenc_aden_lang_StringBuilder_setCharAt__int_char_vd_stmt_0_0_0_null
+    call adenc_aden_lang_StringBuilder_replace__int_int_String
+    jmp adenc_aden_lang_StringBuilder_setCharAt__int_char_vd_stmt_0_0_0_done
+adenc_aden_lang_StringBuilder_setCharAt__int_char_vd_stmt_0_0_0_null:
+    call adenc_rt_dispatchNullReceiverPanic
+adenc_aden_lang_StringBuilder_setCharAt__int_char_vd_stmt_0_0_0_done:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+136]
+    xor eax, eax
+    jmp adenc_aden_lang_StringBuilder_setCharAt__int_char_epilogue
+adenc_aden_lang_StringBuilder_setCharAt__int_char_epilogue:
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+136]
+adenc_aden_lang_StringBuilder_setCharAt__int_char_epilogue_post:
+    mov qword ptr [rsp+136], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+136]
+    add rsp, 296
+    ret
+adenc_aden_lang_StringBuilder_setCharAt__int_char endp
+
+adenc_aden_lang_StringBuilder_setLength__int proc
+    sub rsp, 312
+    mov qword ptr [rsp+280], rcx
+    mov qword ptr [rsp+288], rdx
+    mov qword ptr [rsp+296], r8
+    mov qword ptr [rsp+304], r9
+    lea rcx, trace_m212
+    mov edx, trace_m212_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+280]
+    mov rdx, qword ptr [rsp+288]
+    mov r8, qword ptr [rsp+296]
+    mov r9, qword ptr [rsp+304]
+    mov qword ptr [rsp+72], rcx
+    mov dword ptr [rsp+80], edx
+adenc_aden_lang_StringBuilder_setLength__int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_length
+    movsxd rax, eax
+    mov dword ptr [rsp+64], eax
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+80]
+    mov dword ptr [rsp+88], eax
+    mov eax, dword ptr [rsp+64]
+    mov edx, eax
+    mov eax, dword ptr [rsp+88]
+    cmp eax, edx
+    setle al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_setLength__int_b1
+    jmp adenc_aden_lang_StringBuilder_setLength__int_b2
+adenc_aden_lang_StringBuilder_setLength__int_b1:
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov eax, 0
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov qword ptr [rsp+208], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+208]
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+120], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov eax, dword ptr [rsp+120]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_substring__int_int
+    mov qword ptr [rsp+144], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    xor eax, eax
+    jmp adenc_aden_lang_StringBuilder_setLength__int_epilogue
+adenc_aden_lang_StringBuilder_setLength__int_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_setLength__int_b3
+adenc_aden_lang_StringBuilder_setLength__int_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_setLength__int_b4
+adenc_aden_lang_StringBuilder_setLength__int_b4:
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+96], eax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    cmp eax, edx
+    setl al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_setLength__int_b5
+    jmp adenc_aden_lang_StringBuilder_setLength__int_b6
+adenc_aden_lang_StringBuilder_setLength__int_b5:
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s5
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov eax, 0
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+112]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__char
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+144], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov edx, dword ptr [rsp+72]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s6
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+64]
+    mov dword ptr [rsp+104], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    add eax, edx
+    mov dword ptr [rsp+64], eax
+    lea rcx, adenc_aden_lang_StringBuilder_setLength__int_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_setLength__int_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_setLength__int_b4
+adenc_aden_lang_StringBuilder_setLength__int_b6:
+    xor eax, eax
+    jmp adenc_aden_lang_StringBuilder_setLength__int_epilogue
+adenc_aden_lang_StringBuilder_setLength__int_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+adenc_aden_lang_StringBuilder_setLength__int_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 312
+    ret
+adenc_aden_lang_StringBuilder_setLength__int endp
+
+adenc_aden_lang_StringBuilder_substring__int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m220
+    mov edx, trace_m220_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+adenc_aden_lang_StringBuilder_substring__int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_substring__int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_substring__int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+80], rax
+    mov eax, dword ptr [rsp+80]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_substring__int
+    jmp adenc_aden_lang_StringBuilder_substring__int_epilogue
+adenc_aden_lang_StringBuilder_substring__int_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_substring__int_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_substring__int endp
+
+adenc_aden_lang_StringBuilder_substring__int_int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m222
+    mov edx, trace_m222_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov dword ptr [rsp+72], edx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_substring__int_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_substring__int_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_substring__int_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov eax, dword ptr [rsp+88]
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_substring__int_int
+    jmp adenc_aden_lang_StringBuilder_substring__int_int_epilogue
+adenc_aden_lang_StringBuilder_substring__int_int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_substring__int_int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_substring__int_int endp
+
+adenc_aden_lang_StringBuilder_indexOf__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m224
+    mov edx, trace_m224_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_indexOf__String_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_indexOf__String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_indexOf__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_indexOf__String
+    movsxd rax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_lang_StringBuilder_indexOf__String_epilogue
+adenc_aden_lang_StringBuilder_indexOf__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_indexOf__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_indexOf__String endp
+
+adenc_aden_lang_StringBuilder_indexOf__String_int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m226
+    mov edx, trace_m226_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_indexOf__String_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_indexOf__String_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_indexOf__String_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_indexOf__String_int
+    movsxd rax, eax
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_indexOf__String_int_epilogue
+adenc_aden_lang_StringBuilder_indexOf__String_int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_indexOf__String_int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_indexOf__String_int endp
+
+adenc_aden_lang_StringBuilder_lastIndexOf__String proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m228
+    mov edx, trace_m228_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+adenc_aden_lang_StringBuilder_lastIndexOf__String_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_lastIndexOf__String_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_lastIndexOf__String_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+    mov qword ptr [rsp+80], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+80]
+    mov rax, qword ptr [rsp+80]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+128]
+    call adenc_aden_lang_String_lastIndexOf__String
+    movsxd rax, eax
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+120]
+    jmp adenc_aden_lang_StringBuilder_lastIndexOf__String_epilogue
+adenc_aden_lang_StringBuilder_lastIndexOf__String_epilogue:
+    mov qword ptr [rsp+120], rax
+    mov rax, qword ptr [rsp+120]
+adenc_aden_lang_StringBuilder_lastIndexOf__String_epilogue_post:
+    mov qword ptr [rsp+120], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+120]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_lastIndexOf__String endp
+
+adenc_aden_lang_StringBuilder_lastIndexOf__String_int proc
+    sub rsp, 248
+    mov qword ptr [rsp+216], rcx
+    mov qword ptr [rsp+224], rdx
+    mov qword ptr [rsp+232], r8
+    mov qword ptr [rsp+240], r9
+    lea rcx, trace_m230
+    mov edx, trace_m230_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+216]
+    mov rdx, qword ptr [rsp+224]
+    mov r8, qword ptr [rsp+232]
+    mov r9, qword ptr [rsp+240]
+    mov qword ptr [rsp+64], rcx
+    mov qword ptr [rsp+72], rdx
+    mov dword ptr [rsp+80], r8d
+adenc_aden_lang_StringBuilder_lastIndexOf__String_int_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_lastIndexOf__String_int_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_lastIndexOf__String_int_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+136], rax
+    mov rax, qword ptr [rsp+72]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+    mov qword ptr [rsp+88], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov rax, qword ptr [rsp+88]
+    mov rax, qword ptr [rsp+88]
+    mov qword ptr [rsp+184], rax
+    mov eax, dword ptr [rsp+80]
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+184]
+    mov qword ptr [rsp+88], rax
+    mov rax, qword ptr [rsp+128]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+96], rax
+    mov rax, qword ptr [rsp+88]
+    mov rdx, rax
+    mov eax, dword ptr [rsp+96]
+    mov r8d, eax
+    mov rcx, qword ptr [rsp+136]
+    call adenc_aden_lang_String_lastIndexOf__String_int
+    movsxd rax, eax
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+88]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+128]
+    jmp adenc_aden_lang_StringBuilder_lastIndexOf__String_int_epilogue
+adenc_aden_lang_StringBuilder_lastIndexOf__String_int_epilogue:
+    mov qword ptr [rsp+128], rax
+    mov rax, qword ptr [rsp+128]
+adenc_aden_lang_StringBuilder_lastIndexOf__String_int_epilogue_post:
+    mov qword ptr [rsp+128], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+128]
+    add rsp, 248
+    ret
+adenc_aden_lang_StringBuilder_lastIndexOf__String_int endp
+
+adenc_aden_lang_StringBuilder_reverse proc
+    sub rsp, 360
+    mov qword ptr [rsp+328], rcx
+    mov qword ptr [rsp+336], rdx
+    mov qword ptr [rsp+344], r8
+    mov qword ptr [rsp+352], r9
+    lea rcx, trace_m232
+    mov edx, trace_m232_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+328]
+    mov rdx, qword ptr [rsp+336]
+    mov r8, qword ptr [rsp+344]
+    mov r9, qword ptr [rsp+352]
+    mov qword ptr [rsp+80], rcx
+    mov qword ptr [rsp+64], 0
+adenc_aden_lang_StringBuilder_reverse_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_reverse_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_reverse_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    lea rcx, msg12
+    mov edx, msg12_len
+    call adenc_rt_stringFromBytes
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_lang_StringBuilder_reverse_trace_s1
+    mov edx, adenc_aden_lang_StringBuilder_reverse_trace_s1_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+160], rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_length
+    movsxd rax, eax
+    mov dword ptr [rsp+88], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+88]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_lang_StringBuilder_reverse_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_reverse_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_reverse_b1
+adenc_aden_lang_StringBuilder_reverse_b1:
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+96], eax
+    mov eax, 0
+    mov edx, eax
+    mov eax, dword ptr [rsp+96]
+    cmp eax, edx
+    setge al
+    movzx eax, al
+    test eax, eax
+    jne adenc_aden_lang_StringBuilder_reverse_b2
+    jmp adenc_aden_lang_StringBuilder_reverse_b3
+adenc_aden_lang_StringBuilder_reverse_b2:
+    lea rcx, adenc_aden_lang_StringBuilder_reverse_trace_s3
+    mov edx, adenc_aden_lang_StringBuilder_reverse_trace_s3_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+160], rax
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov qword ptr [rsp+240], rax
+    mov eax, dword ptr [rsp+72]
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+112]
+    mov edx, eax
+    mov rcx, qword ptr [rsp+240]
+    call adenc_aden_lang_String_charAt__int
+    movzx eax, ax
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    and rax, 0FFFFFFFFh
+    mov qword ptr [rsp+112], rax
+    mov eax, dword ptr [rsp+112]
+    mov ecx, eax
+    call adenc_aden_lang_String_valueOf__char
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+152]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+    mov rdx, rax
+    mov rcx, qword ptr [rsp+160]
+    call adenc_aden_lang_String_concat__String
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+112]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+    mov qword ptr [rsp+144], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov qword ptr [rsp+64], rax
+    lea rcx, adenc_aden_lang_StringBuilder_reverse_trace_s4
+    mov edx, adenc_aden_lang_StringBuilder_reverse_trace_s4_len
+    call adenc_rt_traceUpdateTop
+    mov eax, dword ptr [rsp+72]
+    mov dword ptr [rsp+104], eax
+    mov eax, 1
+    mov edx, eax
+    mov eax, dword ptr [rsp+104]
+    sub eax, edx
+    mov dword ptr [rsp+72], eax
+    lea rcx, adenc_aden_lang_StringBuilder_reverse_trace_s2
+    mov edx, adenc_aden_lang_StringBuilder_reverse_trace_s2_len
+    call adenc_rt_traceUpdateTop
+    jmp adenc_aden_lang_StringBuilder_reverse_b1
+adenc_aden_lang_StringBuilder_reverse_b3:
+    lea rcx, adenc_aden_lang_StringBuilder_reverse_trace_s5
+    mov edx, adenc_aden_lang_StringBuilder_reverse_trace_s5_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+144], rax
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+144]
+    mov edx, dword ptr [rsp+80]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov qword ptr [r10+rdx*8], rax
+    lea rcx, adenc_aden_lang_StringBuilder_reverse_trace_s6
+    mov edx, adenc_aden_lang_StringBuilder_reverse_trace_s6_len
+    call adenc_rt_traceUpdateTop
+    mov rax, qword ptr [rsp+80]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_reverse_epilogue
+adenc_aden_lang_StringBuilder_reverse_epilogue:
+    mov qword ptr [rsp+152], rax
+    mov rax, qword ptr [rsp+64]
+    mov rcx, rax
+    call adenc_rt_arcRelease
+    mov rax, qword ptr [rsp+152]
+adenc_aden_lang_StringBuilder_reverse_epilogue_post:
+    mov qword ptr [rsp+152], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+152]
+    add rsp, 360
+    ret
+adenc_aden_lang_StringBuilder_reverse endp
+
+adenc_aden_lang_StringBuilder_toString proc
+    sub rsp, 200
+    mov qword ptr [rsp+168], rcx
+    mov qword ptr [rsp+176], rdx
+    mov qword ptr [rsp+184], r8
+    mov qword ptr [rsp+192], r9
+    lea rcx, trace_m240
+    mov edx, trace_m240_len
+    call adenc_rt_tracePush
+    mov rcx, qword ptr [rsp+168]
+    mov rdx, qword ptr [rsp+176]
+    mov r8, qword ptr [rsp+184]
+    mov r9, qword ptr [rsp+192]
+    mov qword ptr [rsp+64], rcx
+adenc_aden_lang_StringBuilder_toString_b0:
+    lea rcx, adenc_aden_lang_StringBuilder_toString_trace_s0
+    mov edx, adenc_aden_lang_StringBuilder_toString_trace_s0_len
+    call adenc_rt_traceUpdateTop
+    mov edx, dword ptr [rsp+64]
+    cmp edx, 4294967295
+    jbe @F
+    mov edx, 4294967295
+@@:
+    mov r10, qword ptr [adenc_fld_aden_lang_StringBuilder_value]
+    mov rax, qword ptr [r10+rdx*8]
+    mov rcx, rax
+    call adenc_rt_arcRetain
+    jmp adenc_aden_lang_StringBuilder_toString_epilogue
+adenc_aden_lang_StringBuilder_toString_epilogue:
+    mov qword ptr [rsp+112], rax
+    mov rax, qword ptr [rsp+112]
+adenc_aden_lang_StringBuilder_toString_epilogue_post:
+    mov qword ptr [rsp+112], rax
+    call adenc_rt_tracePop
+    mov rax, qword ptr [rsp+112]
+    add rsp, 200
+    ret
+adenc_aden_lang_StringBuilder_toString endp
+
+end

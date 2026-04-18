@@ -1,0 +1,36 @@
+package adk.toolchain;
+
+import aden.collections.List;
+import aden.io.HostFiles;
+import aden.io.Path;
+
+/**
+ * Host-backed filesystem helpers used by toolchain execution while the backend is still bootstrapped.
+ */
+public final class ToolchainHostFilesystem {
+    /**
+     * Renders and writes one response file on the real host filesystem.
+     * Returns the normalized written path.
+     */
+    public static String writeResponseFile(String responseFilePath, List<String> arguments) {
+        String path = Path.normalize(responseFilePath);
+        if (!HostFiles.writeAllText(path, ToolchainResolver.renderResponseFileBody(arguments))) {
+            aden.rt.Intrinsics.panic(
+                "Failed to write toolchain response file '".concat(path).concat("'")
+            );
+        }
+        return path;
+    }
+
+    public static void ensureDirectoryTree(String path) {
+        String normalized = Path.normalize(path);
+        if (!normalized.isEmpty() && !normalized.equals("/") && !normalized.equals(".")
+            && !HostFiles.isDirectory(normalized)
+            && !HostFiles.createDirectories(normalized)
+            && !HostFiles.isDirectory(normalized)) {
+            aden.rt.Intrinsics.panic(
+                "Failed to create toolchain directory '".concat(path).concat("'")
+            );
+        }
+    }
+}

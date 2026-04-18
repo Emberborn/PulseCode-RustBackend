@@ -1,0 +1,12 @@
+package aden.lang;
+
+/**
+ * Ordering contract for values that can compare themselves.
+ */
+public interface Comparable {
+    /**
+     * Compares this value to another object of the same logical type.
+     * Use this when exposing deterministic ordering semantics.
+     */
+    public int compareTo(Object other);
+}

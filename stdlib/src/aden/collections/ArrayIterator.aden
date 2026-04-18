@@ -1,0 +1,43 @@
+package aden.collections;
+
+import aden.lang.Iterator;
+import aden.lang.Object;
+import aden.rt.Intrinsics;
+
+/**
+ * Sequential iterator over the current fixed-length array facade.
+ */
+final class ArrayIterator implements Iterator {
+    private Array array;
+    private int index;
+    private int length;
+
+    /**
+     * Creates an iterator over the supplied array snapshot.
+     */
+    public ArrayIterator(Array array) {
+        this.array = array;
+        this.index = 0;
+        this.length = array.length();
+    }
+
+    /**
+     * Reports whether another value is available from the iterator.
+     */
+    public boolean hasNext() {
+        return this.index < this.length;
+    }
+
+    /**
+     * Returns the next value from the iterator.
+     */
+    public Object next() {
+        if (!this.hasNext()) {
+            Intrinsics.panic("Iterator is exhausted");
+            return null;
+        }
+        Object value = this.array.getObject(this.index);
+        this.index = this.index + 1;
+        return value;
+    }
+}

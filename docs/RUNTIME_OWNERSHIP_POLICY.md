@@ -1,6 +1,6 @@
 # Runtime Ownership Policy
 
-Schema intent: `pulsec.runtime.ownership.policy.v1`
+Schema intent: `adenc.runtime.ownership.policy.v1`
 
 This policy turns the runtime ownership inventory into a stable boundary contract for shared linking.
 
@@ -22,7 +22,7 @@ Rule:
 - app code may only reach these surfaces through documented runtime procedures and ABI imports
 
 Examples:
-- `pulsec_rt_obj_class_ids`
+- `adenc_rt_obj_class_ids`
 - `rt_arc_refcounts_tbl`
 - `rt_weak_generation`
 - `rt_list_count`
@@ -40,23 +40,23 @@ Allowed surface:
 - dispatch/type-check helper boundary
 
 Examples:
-- `pulsec_rt_init`
-- `pulsec_rt_shutdown`
-- `pulsec_rt_objectNew`
-- `pulsec_rt_arcRetain`
-- `pulsec_rt_arcRelease`
-- `pulsec_rt_arcCycleTick`
-- `pulsec_rt_weakNew`
-- `pulsec_rt_stringFromBytes`
-- `pulsec_rt_consoleWrite`
-- `pulsec_rt_consoleWriteLine`
-- `pulsec_rt_dispatchNullReceiverPanic`
-- `pulsec_rt_dispatchInvalidTypePanic`
+- `adenc_rt_init`
+- `adenc_rt_shutdown`
+- `adenc_rt_objectNew`
+- `adenc_rt_arcRetain`
+- `adenc_rt_arcRelease`
+- `adenc_rt_arcCycleTick`
+- `adenc_rt_weakNew`
+- `adenc_rt_stringFromBytes`
+- `adenc_rt_consoleWrite`
+- `adenc_rt_consoleWriteLine`
+- `adenc_rt_dispatchNullReceiverPanic`
+- `adenc_rt_dispatchInvalidTypePanic`
 
 Rule:
 - app code may import these symbols as procedures only
 - app code must not import runtime backing tables or runtime-private data symbols directly
-- runtime initialization sentinels such as `rt_runtime_init_state` and `rt_runtime_init_epoch` remain runtime-private even though app startup calls `pulsec_rt_init`
+- runtime initialization sentinels such as `rt_runtime_init_state` and `rt_runtime_init_epoch` remain runtime-private even though app startup calls `adenc_rt_init`
 - runtime shutdown tears down runtime-owned bootstrap allocations, but app startup still owns the final `ExitProcess` boundary
 
 ### App-Owned

@@ -1,10 +1,10 @@
-# PulseCode Manifest Example Matrix
+# Aden Lang Manifest Example Matrix
 
-This document provides reference `pulsec.toml` examples for the current manifest surface.
+This document provides reference `adenc.toml` examples for the current manifest surface.
 
 Rebase note (`RB-05`):
 
-- canonical public target IDs are `windows-x64`, `pulseos-x64`, `linux-x64`, and `macos-arm64`
+- canonical public target IDs are `windows-x64`, `adenos-x64`, `linux-x64`, and `macos-arm64`
 - the examples below are now rebased onto the canonical target taxonomy
 
 Packaging removal note (`RB-17.1`):
@@ -14,7 +14,7 @@ Packaging removal note (`RB-17.1`):
 
 Primary schema reference:
 
-- [PULSEC_MANIFEST_V1.md](/D:/Programming/codex/PulseCode/docs/PULSEC_MANIFEST_V1.md)
+- [PULSEC_MANIFEST_V1.md](/D:/Programming/codex/Aden Lang/docs/PULSEC_MANIFEST_V1.md)
 
 ## Matrix
 
@@ -22,7 +22,7 @@ Primary schema reference:
 |---|---|---|
 | App baseline | Single executable app project | `[package]`, `[sources]`, `[build]`, `[toolchain]` |
 | Shared output app | App built as exe + runtime/library set | `[build].output_mode = "shared"`, `[build].output_entry` |
-| PulseOS requested-target app | Contract-planning request for PulseOS | `[build].target = "pulseos-x64"` |
+| AdenOS requested-target app | Contract-planning request for AdenOS | `[build].target = "adenos-x64"` |
 | macOS Apple Silicon requested-target app | Planned Darwin/Apple Silicon contract request | `[build].target = "macos-arm64"` |
 | Workspace root | Multi-member project orchestration | `[workspace].members` |
 | Layout override project | Custom source/build directories | `[sources]` + `[build]` directory override keys |
@@ -35,15 +35,15 @@ name = "demo_app"
 version = "1.0.0"
 
 [sources]
-main_pulse = "src/main/pulse"
+main_aden = "src/main/aden"
 main_resources = "src/main/resources"
-test_pulse = "src/test/pulse"
+test_aden = "src/test/aden"
 test_resources = "src/test/resources"
-api_pulse = "src/api/pulse"
+api_aden = "src/api/aden"
 api_resources = "src/api/resources"
 docs = "docs"
 libraries = "libraries"
-entry = "app/main/Main.pulse"
+entry = "app/main/Main.aden"
 
 [build]
 profile = "release"
@@ -72,8 +72,8 @@ name = "shared_demo"
 version = "1.0.0"
 
 [sources]
-main_pulse = "src/main/pulse"
-entry = "app/main/Main.pulse"
+main_aden = "src/main/aden"
+entry = "app/main/Main.aden"
 
 [build]
 profile = "release"
@@ -84,20 +84,20 @@ runtime_debug_allocator = "off"
 runtime_cycle_collector = "on"
 ```
 
-## 3) PulseOS Requested-target App
+## 3) AdenOS Requested-target App
 
 ```toml
 [package]
-name = "pulseos_demo"
+name = "adenos_demo"
 version = "1.0.0"
 
 [sources]
-main_pulse = "src/main/pulse"
-entry = "app/main/Main.pulse"
+main_aden = "src/main/aden"
+entry = "app/main/Main.aden"
 
 [build]
 profile = "release"
-target = "pulseos-x64"
+target = "adenos-x64"
 output_mode = "fat"
 output_entry = "main"
 runtime_debug_allocator = "off"
@@ -112,8 +112,8 @@ name = "macos_demo"
 version = "1.0.0"
 
 [sources]
-main_pulse = "src/main/pulse"
-entry = "app/main/Main.pulse"
+main_aden = "src/main/aden"
+entry = "app/main/Main.aden"
 
 [build]
 profile = "release"
@@ -131,7 +131,7 @@ runtime_cycle_collector = "on"
 members = "apps/core, apps/tools, libs/shared"
 ```
 
-Each member path must point to a project containing its own `pulsec.toml`, and member manifests cannot define `[workspace]`.
+Each member path must point to a project containing its own `adenc.toml`, and member manifests cannot define `[workspace]`.
 
 ## 6) Layout Override Project
 
@@ -141,15 +141,15 @@ name = "layout_demo"
 version = "1.0.0"
 
 [sources]
-main_pulse = "code/main"
+main_aden = "code/main"
 main_resources = "res/main"
-test_pulse = "code/tests"
+test_aden = "code/tests"
 test_resources = "res/tests"
-api_pulse = "api/main"
+api_aden = "api/main"
 api_resources = "api/res"
 docs = "documentation"
 libraries = "deps"
-entry = "app/core/Main.pulse"
+entry = "app/core/Main.aden"
 
 [build]
 profile = "debug"
@@ -166,6 +166,6 @@ distro_dir = "out/distro"
 
 ## Alignment Notes
 
-- CLI/manifest lock tests live in `crates/pulsec-cli/tests/stage_locks_d.rs`
-- parser/validation unit tests live in `crates/pulsec-cli/src/cli/mod.rs`
-- if schema keys evolve, update this matrix and [PULSEC_MANIFEST_V1.md](/D:/Programming/codex/PulseCode/docs/PULSEC_MANIFEST_V1.md) in the same change
+- CLI/manifest lock tests live in `crates/adenc-cli/tests/stage_locks_d.rs`
+- parser/validation unit tests live in `crates/adenc-cli/src/cli/mod.rs`
+- if schema keys evolve, update this matrix and [PULSEC_MANIFEST_V1.md](/D:/Programming/codex/Aden Lang/docs/PULSEC_MANIFEST_V1.md) in the same change

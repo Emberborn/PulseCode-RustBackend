@@ -6,12 +6,12 @@ Date locked: 2026-03-12
 Historical scope note:
 
 - the executable/build/publication parity parts of E3 remain historically relevant
-- older packaging/install parity language in this document is superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
-- current PulseCode parity scope is build/output/runtime parity, not compiler-owned installer generation
+- older packaging/install parity language in this document is superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
+- current Aden Lang parity scope is build/output/runtime parity, not compiler-owned installer generation
 
 ## Purpose
 
-This guide summarizes the locked parity contract between PulseCode fat and shared native output modes.
+This guide summarizes the locked parity contract between Aden Lang fat and shared native output modes.
 
 ## Supported Parity Surface
 
@@ -73,7 +73,7 @@ Locked rule:
 
 The old E3 closure included packaging/install parity work.
 
-That material is now historical only. Current compiler scope stops at build/publication/runtime parity, and any installer generation belongs to downstream tooling per [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md).
+That material is now historical only. Current compiler scope stops at build/publication/runtime parity, and any installer generation belongs to downstream tooling per [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md).
 
 ## Regression Gate Strategy
 
@@ -86,9 +86,9 @@ Parity is locked by:
 
 ## Related Specs
 
-- [E3_PARITY_SUPPORT_MATRIX.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_SUPPORT_MATRIX.md)
-- [E3_PARITY_EVIDENCE_STRATEGY.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_EVIDENCE_STRATEGY.md)
-- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
-- [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/PulseCode/docs/PROJECT_LAYOUT_CONVENTIONS.md)
-- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
-- [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
+- [E3_PARITY_SUPPORT_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/E3_PARITY_SUPPORT_MATRIX.md)
+- [E3_PARITY_EVIDENCE_STRATEGY.md](/D:/Programming/codex/Aden Lang/docs/E3_PARITY_EVIDENCE_STRATEGY.md)
+- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/CLI_COMMAND_CONTRACT.md)
+- [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/Aden Lang/docs/PROJECT_LAYOUT_CONVENTIONS.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
+- [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_TOOLCHAIN_MATRIX.md)

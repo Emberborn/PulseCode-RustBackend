@@ -1,0 +1,111 @@
+package aden.collections;
+import aden.lang.Integer;
+import aden.lang.Iterable;
+import aden.lang.Iterator;
+import aden.lang.Object;
+import aden.rt.Intrinsics;
+
+/**
+ * Runtime-backed fixed-length array facade for primitive and string lanes.
+ */
+public class Array implements Iterable {
+    private static final int LANE_UNKNOWN = 0;
+    private static final int LANE_INT = 1;
+    private static final int LANE_STRING = 2;
+
+    private long handle;
+    private int laneKind;
+
+    /**
+     * Creates an array with the requested fixed length.
+     * Use this when code needs indexed storage for ints or strings.
+     */
+    public Array(int length) {
+        this.handle = Intrinsics.arrayNew(length);
+        this.laneKind = LANE_UNKNOWN;
+    }
+
+    /**
+     * Returns the array length.
+     * Use this before indexed reads or writes.
+     */
+    public int length() {
+        return Intrinsics.arrayLength(this.handle);
+    }
+
+    /**
+     * Returns the integer stored at the supplied index.
+     * Use this when reading primitive array lanes.
+     */
+    public int getInt(int index) {
+        return Intrinsics.arrayGetInt(this.handle, index);
+    }
+
+    /**
+     * Stores an integer at the supplied index.
+     * Use this when mutating primitive array lanes.
+     */
+    public void setInt(int index, int value) {
+        this.ensureLane(LANE_INT);
+        Intrinsics.arraySetInt(this.handle, index, value);
+    }
+
+    /**
+     * Returns the string stored at the supplied index.
+     * Use this when reading text array lanes.
+     */
+    public String getString(int index) {
+        return Intrinsics.arrayGetString(this.handle, index);
+    }
+
+    /**
+     * Stores a string at the supplied index.
+     * Use this when mutating text array lanes.
+     */
+    public void setString(int index, String value) {
+        this.ensureLane(LANE_STRING);
+        Intrinsics.arraySetString(this.handle, index, value);
+    }
+
+    /**
+     * Returns the current storage lane for iteration and diagnostics.
+     */
+    public int laneKind() {
+        return this.laneKind;
+    }
+
+    /**
+     * Returns one array value as a boxed/raw object for iterable-style traversal.
+     */
+    public Object getObject(int index) {
+        if (this.laneKind == LANE_INT) {
+            return Integer.boxObject(this.getInt(index));
+        }
+        if (this.laneKind == LANE_STRING) {
+            return this.getString(index);
+        }
+        Intrinsics.panic("Array lane is unknown; establish int or String writes before Object iteration");
+        return null;
+    }
+
+    /**
+     * Returns an iterator over the current array values using the established lane.
+     */
+    public Iterator iterator() {
+        return new ArrayIterator(this);
+    }
+
+    /**
+     * Locks the runtime-backed array to one lane once writes begin.
+     */
+    private void ensureLane(int expectedLane) {
+        if (this.laneKind == LANE_UNKNOWN) {
+            this.laneKind = expectedLane;
+            return;
+        }
+        if (this.laneKind != expectedLane) {
+            Intrinsics.panic("Array cannot mix int and String lanes");
+        }
+    }
+}
+

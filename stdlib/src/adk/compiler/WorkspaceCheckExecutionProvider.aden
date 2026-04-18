@@ -1,0 +1,114 @@
+package adk.compiler;
+
+import adk.project.CheckInvocation;
+import adk.project.ProjectDiscovery;
+import adk.project.ProjectInvocationResolver;
+import adk.project.WorkspaceContext;
+import aden.io.Path;
+import aden.lang.StringBuilder;
+import aden.util.Objects;
+
+/**
+ * Provider-backed workspace-check execution through authored project discovery and member providers.
+ */
+public final class WorkspaceCheckExecutionProvider {
+    public static WorkspaceCheckExecutionResult execute(
+        String compilerPath,
+        String workspaceRoot,
+        boolean strictPackage
+    ) {
+        Objects.requireNonNull(compilerPath, "compilerPath must not be null");
+        Objects.requireNonNull(workspaceRoot, "workspaceRoot must not be null");
+
+        WorkspaceContext workspace = ProjectDiscovery.resolveWorkspaceContext(workspaceRoot);
+        if (workspace == null) {
+            return WorkspaceCheckExecutionResult.failure(
+                "workspace root '".concat(workspaceRoot).concat("' does not resolve to a workspace manifest")
+            );
+        }
+
+        String mode = strictPackage ? "strict" : "friendly";
+        StringBuilder out = new StringBuilder();
+        int passed = 0;
+        int failed = 0;
+        int total = workspace.memberCount();
+
+        WorkspaceCheckExecutionProvider.appendLine(
+            out,
+            CheckSummaryWriter.renderWorkspaceCheckStartResult(
+                new WorkspaceCheckResult(workspace.rootPath(), workspace.memberCount(), mode, 0, 0)
+            )
+        );
+
+        int index = 0;
+        while (index < workspace.memberCount()) {
+            String memberRoot = workspace.memberRoots().getString(index);
+            CheckInvocation invocation =
+                ProjectInvocationResolver.resolveCheckInvocation(memberRoot, null, null);
+            CheckExecutionResult result = CheckExecutionProvider.execute(
+                compilerPath,
+                invocation.entryPath(),
+                invocation.sourceRoot(),
+                strictPackage,
+                invocation.adklibEnabled()
+            );
+            if (result.success()) {
+                passed = passed + 1;
+                WorkspaceCheckExecutionProvider.appendLine(
+                    out,
+                    CheckSummaryWriter.renderWorkspaceCheckMemberResult(
+                        WorkspaceCheckMemberResult.success(
+                            Path.normalize(memberRoot),
+                            result.packageName(),
+                            result.filesLoaded()
+                        )
+                    )
+                );
+            } else {
+                failed = failed + 1;
+                WorkspaceCheckExecutionProvider.appendLine(
+                    out,
+                    CheckSummaryWriter.renderWorkspaceCheckMemberResult(
+                        WorkspaceCheckMemberResult.failure(
+                            Path.normalize(memberRoot),
+                            WorkspaceCheckExecutionProvider.detailOrUnknown(result.detail())
+                        )
+                    )
+                );
+            }
+            index = index + 1;
+        }
+
+        WorkspaceCheckExecutionProvider.appendLine(
+            out,
+            CheckSummaryWriter.renderWorkspaceCheckSummaryResult(
+                new WorkspaceCheckResult(
+                    workspace.rootPath(),
+                    workspace.memberCount(),
+                    mode,
+                    passed,
+                    failed
+                )
+            )
+        );
+
+        return WorkspaceCheckExecutionResult.success(out.toString(), passed, failed, total);
+    }
+
+    private static void appendLine(StringBuilder out, String value) {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+        out.append(value);
+        if (!value.endsWith("\n")) {
+            out.append('\n');
+        }
+    }
+
+    private static String detailOrUnknown(String detail) {
+        if (detail == null || detail.isEmpty()) {
+            return "unknown compiler provider failure";
+        }
+        return detail;
+    }
+}

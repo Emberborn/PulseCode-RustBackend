@@ -1,0 +1,9 @@
+package adk.compiler.tests;
+
+import aden.lang.IO;
+
+class CompilerScaffoldTest {
+    public static void main() {
+        IO.println("compiler_scaffold_ok");
+    }
+}

@@ -1,12 +1,12 @@
 # Windows x64 Adapter Scope
 
-This document is the source of truth for `RB-09` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-09` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
 
-It scopes the retained Windows x64 lane honestly: Windows x64 remains an immediate target and the current host/bootstrap adapter, but it no longer defines the whole backend architecture or the strategic destination for PulseCode.
+It scopes the retained Windows x64 lane honestly: Windows x64 remains an immediate target and the current host/bootstrap adapter, but it no longer defines the whole backend architecture or the strategic destination for Aden Lang.
 
 The follow-on freeze policy for what this retained lane may still grow into now lives at:
 
-- [WINDOWS_X64_SCOPE_FREEZE_POLICY.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md)
+- [WINDOWS_X64_SCOPE_FREEZE_POLICY.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md)
 
 ## Inputs
 
@@ -34,10 +34,10 @@ The current Windows x64 adapter owns:
 
 In code, this currently routes through:
 
-- `crates/pulsec-cli/src/backend/adapters/windows_x64/mod.rs`
-- `crates/pulsec-cli/src/backend/support/toolchain_linking.rs`
-- `crates/pulsec-cli/src/backend/emission/program_emitters.rs`
-- `crates/pulsec-cli/src/backend/emission/runtime_emitters.rs`
+- `crates/adenc-cli/src/backend/adapters/windows_x64/mod.rs`
+- `crates/adenc-cli/src/backend/support/toolchain_linking.rs`
+- `crates/adenc-cli/src/backend/emission/program_emitters.rs`
+- `crates/adenc-cli/src/backend/emission/runtime_emitters.rs`
 
 ## What The Windows x64 Adapter Does Not Own
 
@@ -46,7 +46,7 @@ The current Windows x64 adapter does not own:
 - the public target taxonomy
 - manifest/scaffold target selection policy
 - target-neutral backend planning structures
-- the future PulseOS runtime or loader contract
+- the future AdenOS runtime or loader contract
 - the later Linux adapter lane
 - the later macOS adapter lane
 - compiler-owned packaging or installer generation
@@ -70,7 +70,7 @@ Compiler-owned packaging/install generation is removed under `RB-17.1`.
 
 That removal includes:
 
-- `pulsec package`
+- `adenc package`
 - MSI/WiX generation
 - SignTool hook execution
 - staging-tree packaging layouts
@@ -84,7 +84,7 @@ The honest current support statement is:
 
 - Windows x64 is an immediate supported target lane
 - Windows x64 is also the current host/bootstrap adapter lane
-- PulseOS is the next target contract that still needs explicit runtime/startup/loader definition
+- AdenOS is the next target contract that still needs explicit runtime/startup/loader definition
 - generic Linux and macOS remain later adapter lanes
 - Windows-focused work must preserve the adapter seams those later targets will need
 
@@ -95,16 +95,16 @@ The honest host statement is narrower:
 
 ## Relationship To Windows Tooling Docs
 
-[WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md) should now be read as support evidence for the retained Windows x64 adapter lane, not as the top-level project support matrix.
+[WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_TOOLCHAIN_MATRIX.md) should now be read as support evidence for the retained Windows x64 adapter lane, not as the top-level project support matrix.
 
 It remains useful because it proves the current Windows lane is real, but it no longer defines the whole architecture.
 
 ## Relationship To Later Tasks
 
 - `RB-10` strips Windows-only assumptions out of target-neutral planning
-- `RB-15` publishes [TARGET_ARTIFACT_CONTRACT_SPLIT.md](/D:/Programming/codex/PulseCode/docs/TARGET_ARTIFACT_CONTRACT_SPLIT.md) so the Windows x64 artifact contract stays explicit instead of being inferred from broader backend prose
+- `RB-15` publishes [TARGET_ARTIFACT_CONTRACT_SPLIT.md](/D:/Programming/codex/Aden Lang/docs/TARGET_ARTIFACT_CONTRACT_SPLIT.md) so the Windows x64 artifact contract stays explicit instead of being inferred from broader backend prose
 - `RB-17.1` removes compiler-owned packaging/install generation from the public compiler surface
-- `RB-19` is now published in [WINDOWS_X64_SCOPE_FREEZE_POLICY.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md) and freezes the removed productization surface against re-entry
+- `RB-19` is now published in [WINDOWS_X64_SCOPE_FREEZE_POLICY.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md) and freezes the removed productization surface against re-entry
 
 ## Locked Result For `RB-09`
 

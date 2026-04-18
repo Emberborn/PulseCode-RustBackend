@@ -1,0 +1,193 @@
+package aden.io;
+
+import aden.collections.ArrayList;
+import aden.collections.List;
+import aden.rt.Intrinsics;
+
+/**
+ * Public host-filesystem facade over the native intrinsic boundary.
+ * Use this when code needs the real host filesystem instead of the runtime-backed `Files` overlay.
+ */
+public final class HostFiles {
+    /**
+     * Reads the full host text payload at the supplied path.
+     * Returns `null` when the host path is absent or unreadable through the current native backend.
+     */
+    public static String readAllText(String path) {
+        return Intrinsics.hostReadAllText(Path.normalize(path));
+    }
+
+    /**
+     * Reads the full host text payload at the supplied path, or the fallback when absent.
+     * Use this for optional host reads that should not require a separate existence check.
+     */
+    public static String readAllTextOrDefault(String path, String fallback) {
+        String text = HostFiles.readAllText(path);
+        if (text == null) {
+            return fallback;
+        }
+        return text;
+    }
+
+    /**
+     * Writes the supplied text payload onto the real host filesystem.
+     * Parent directories are created when needed. Returns `true` when the native backend reports success.
+     */
+    public static boolean writeAllText(String path, String text) {
+        String normalized = Path.normalize(path);
+        HostFiles.createParentDirectories(normalized);
+        return Intrinsics.hostWriteAllText(normalized, text);
+    }
+
+    /**
+     * Copies one host file to the destination path.
+     * Parent directories are created when needed. Returns `true` when the native backend reports success.
+     */
+    public static boolean copy(String sourcePath, String destinationPath) {
+        String source = Path.normalize(sourcePath);
+        String destination = Path.normalize(destinationPath);
+        HostFiles.createParentDirectories(destination);
+        return Intrinsics.hostCopyFile(source, destination);
+    }
+
+    /**
+     * Reports whether the supplied host path currently exists.
+     * Use this for real host existence checks outside the runtime-backed `Files` overlay.
+     */
+    public static boolean exists(String path) {
+        return Intrinsics.hostExists(Path.normalize(path));
+    }
+
+    /**
+     * Reports whether the supplied host path is a file.
+     * Use this for real host file checks outside the runtime-backed `Files` overlay.
+     */
+    public static boolean isFile(String path) {
+        return Intrinsics.hostIsFile(Path.normalize(path));
+    }
+
+    /**
+     * Reports whether the supplied host path is a directory.
+     * Use this for real host directory checks outside the runtime-backed `Files` overlay.
+     */
+    public static boolean isDirectory(String path) {
+        return Intrinsics.hostIsDirectory(Path.normalize(path));
+    }
+
+    /**
+     * Creates one host directory when absent and reports whether the native backend created it.
+     * Returns `false` when the directory already exists or when creation fails.
+     */
+    public static boolean createDirectory(String path) {
+        String normalized = Path.normalize(path);
+        if (normalized.isEmpty() || normalized.equals("/") || HostFiles.isDirectory(normalized)) {
+            return false;
+        }
+        return Intrinsics.hostCreateDirectory(normalized);
+    }
+
+    /**
+     * Creates the full host directory chain when absent and reports whether anything changed.
+     * Use this for mkdirs-style host setup in tool, build, or user-facing code.
+     */
+    public static boolean createDirectories(String path) {
+        String normalized = Path.normalize(path);
+        if (normalized.isEmpty() || normalized.equals("/") || normalized.equals(".")) {
+            return false;
+        }
+        if (HostFiles.isDirectory(normalized)) {
+            return false;
+        }
+        String parent = Path.parent(normalized);
+        boolean changed = false;
+        if (parent != null && !parent.isEmpty() && !parent.equals("/") && !parent.equals(normalized)) {
+            changed = HostFiles.createDirectories(parent) || changed;
+        }
+        if (!HostFiles.isDirectory(normalized)) {
+            if (!Intrinsics.hostCreateDirectory(normalized) && !HostFiles.isDirectory(normalized)) {
+                return changed;
+            }
+            changed = true;
+        }
+        return changed;
+    }
+
+    /**
+     * Creates every host parent directory needed for the supplied path.
+     * Returns `true` when any parent directory changed.
+     */
+    public static boolean createParentDirectories(String path) {
+        String parent = Path.parent(Path.normalize(path));
+        if (parent == null || parent.isEmpty() || parent.equals("/") || parent.equals(path)) {
+            return false;
+        }
+        return HostFiles.createDirectories(parent);
+    }
+
+    /**
+     * Returns the direct child paths currently visible under the supplied host directory.
+     * Use this for real host directory enumeration outside the runtime-backed `Files` overlay.
+     */
+    public static List<String> listChildren(String directoryPath) {
+        String normalized = Path.normalize(directoryPath);
+        ArrayList<String> children = new ArrayList<String>();
+        if (!HostFiles.isDirectory(normalized)) {
+            return children;
+        }
+        String text = Intrinsics.hostListChildren(normalized);
+        if (text == null || text.isEmpty()) {
+            return children;
+        }
+        int start = 0;
+        int index = 0;
+        while (index < text.length()) {
+            if (text.charAt(index) == '\n') {
+                HostFiles.appendChild(children, normalized, text.substring(start, index));
+                start = index + 1;
+            }
+            index = index + 1;
+        }
+        if (start < text.length()) {
+            HostFiles.appendChild(children, normalized, text.substring(start));
+        }
+        return children;
+    }
+
+    /**
+     * Copies one host file or directory subtree into the destination path.
+     * Returns `true` when the source existed and every copied file succeeded.
+     */
+    public static boolean copyRecursive(String sourcePath, String destinationPath) {
+        String source = Path.normalize(sourcePath);
+        String destination = Path.normalize(destinationPath);
+        if (HostFiles.isFile(source)) {
+            return HostFiles.copy(source, destination);
+        }
+        if (!HostFiles.isDirectory(source)) {
+            return false;
+        }
+        HostFiles.createDirectories(destination);
+        List<String> children = HostFiles.listChildren(source);
+        int index = 0;
+        while (index < children.size()) {
+            String child = children.get(index);
+            String childName = Path.fileName(child);
+            if (!HostFiles.copyRecursive(child, Path.resolve(destination, childName))) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    private static void appendChild(ArrayList<String> children, String parent, String name) {
+        String value = name;
+        if (value != null && value.endsWith("\r")) {
+            value = value.substring(0, value.length() - 1);
+        }
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+        children.add(Path.resolve(parent, value));
+    }
+}

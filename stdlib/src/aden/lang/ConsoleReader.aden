@@ -1,0 +1,86 @@
+package aden.lang;
+
+import aden.rt.Intrinsics;
+
+/**
+ * Console-backed line reader used by `System.in`.
+ */
+public final class ConsoleReader implements AutoCloseable {
+    private boolean closed;
+
+    /**
+     * Creates an open console reader facade.
+     * Use this for the process-wide `System.in` baseline.
+     */
+    public ConsoleReader() {
+        this.closed = false;
+    }
+
+    /**
+     * Panics when the reader has already been closed.
+     * Use this to keep the current console-reader lifecycle behavior explicit.
+     */
+    private void ensureOpen() {
+        if (this.closed) {
+            Intrinsics.panic("ConsoleReader is closed");
+        }
+    }
+
+    /**
+     * Writes a prompt and then reads the next console line.
+     * Use this for minimal interactive command flows without introducing a richer scanner/parser layer.
+     */
+    public String readLine(String prompt) {
+        this.ensureOpen();
+        System.out.print(prompt);
+        return this.readLine();
+    }
+
+    /**
+     * Reads the next console line.
+     * Returns `null` when no more input is available.
+     */
+    public String readLine() {
+        this.ensureOpen();
+        return Intrinsics.consoleReadLine();
+    }
+
+    /**
+     * Reads the next console line or returns the supplied fallback on end-of-input.
+     * Use this when interactive flows want a deterministic default without null handling.
+     */
+    public String readLineOrDefault(String fallback) {
+        String line = this.readLine();
+        if (line == null) {
+            return fallback;
+        }
+        return line;
+    }
+
+    /**
+     * Reports whether this console reader facade has been closed.
+     * Use this for explicit lifecycle checks on `System.in`.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Reports whether this console reader facade is currently open.
+     * Use this for explicit lifecycle checks without negating `isClosed()`.
+     */
+    public boolean isOpen() {
+        return !this.closed;
+    }
+
+    /**
+     * Closes this console reader facade.
+     * Closing is idempotent and only affects this stdlib lifecycle wrapper.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        this.closed = true;
+    }
+}

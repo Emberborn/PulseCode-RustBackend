@@ -1,0 +1,110 @@
+package aden.time;
+import aden.lang.Object;
+
+/**
+ * Internal ticking monotonic time-source implementation that truncates reads from a base source.
+ */
+final class TickTimeSource implements TimeSource {
+    private TimeSource base;
+    private long tickNanos;
+
+    TickTimeSource(TimeSource base, long tickNanos) {
+        this.base = base;
+        this.tickNanos = tickNanos;
+    }
+
+    /**
+     * Reports whether the wrapped base source is fixed.
+     * Use this to preserve deterministic elapsed-time identity through tick composition.
+     */
+    public boolean isFixed() {
+        return this.base.isFixed();
+    }
+
+    /**
+     * Reports whether the wrapped base source is offset.
+     * Use this to preserve shifted elapsed-time identity through tick composition.
+     */
+    public boolean isOffset() {
+        return this.base.isOffset();
+    }
+
+    /**
+     * Reports that this source truncates reads to a configured tick size.
+     * Use this when callers need to branch on stepped versus raw monotonic behavior.
+     */
+    public boolean isTicking() {
+        return true;
+    }
+
+    /**
+     * Returns the wrapped base source's offset duration.
+     * Use this to preserve offset introspection through tick composition.
+     */
+    public Duration offsetDuration() {
+        return this.base.offsetDuration();
+    }
+
+    /**
+     * Returns this source's configured tick duration.
+     * Use this when callers need to inspect stepped elapsed-time behavior explicitly.
+     */
+    public Duration tickDuration() {
+        return Duration.ofMillis(TimeSupport.floorDiv(this.tickNanos, TimeSupport.NANOS_PER_MILLI));
+    }
+
+    /**
+     * Returns this source's configured raw nanosecond tick size.
+     * Use this when callers need precise stepped elapsed-time introspection.
+     */
+    public long tickNanos() {
+        return this.tickNanos;
+    }
+
+    /**
+     * Returns the current monotonic reading truncated to this source's tick size.
+     * Use this for deterministic stepped elapsed-time behavior instead of raw nanosecond precision.
+     */
+    public long nanos() {
+        long value = this.base.nanos();
+        return value - TimeSupport.floorMod(value, this.tickNanos);
+    }
+
+    /**
+     * Reports value equality for ticking monotonic sources.
+     * Use this to compare composed ticking sources structurally by base source and tick size.
+     */
+    public boolean equals(Object other) {
+        if (!(other instanceof TickTimeSource)) {
+            return false;
+        }
+        TickTimeSource value = (TickTimeSource) other;
+        return this.base.equals(value.base) && this.tickNanos == value.tickNanos;
+    }
+
+    /**
+     * Returns a stable hash code for this ticking monotonic source.
+     * Use this when ticking elapsed-time sources participate in maps, sets, or diagnostics.
+     */
+    public int hashCode() {
+        long mixed = this.tickNanos ^ (this.tickNanos >>> 32);
+        return (this.base.hashCode() * 31) + (int) mixed;
+    }
+
+    /**
+     * Formats this source for diagnostics.
+     * Use this when code needs a readable description of stepped elapsed-time composition.
+     */
+    public String toString() {
+        if (this.base.isOffset()) {
+            if (this.base.isFixed()) {
+                return "TimeSource[tick=".concat(this.tickDuration().toString()).concat(",offset=").concat(this.offsetDuration().toString()).concat(",fixed=").concat(aden.lang.Long.toString(this.nanos())).concat("ns]");
+            }
+            return "TimeSource[tick=".concat(this.tickDuration().toString()).concat(",offset=").concat(this.offsetDuration().toString()).concat(",base=systemMonotonic]");
+        }
+        if (this.base.isFixed()) {
+            return "TimeSource[tick=".concat(this.tickDuration().toString()).concat(",fixed=").concat(aden.lang.Long.toString(this.nanos())).concat("ns]");
+        }
+        return "TimeSource[tick=".concat(this.tickDuration().toString()).concat(",base=systemMonotonic]");
+    }
+}

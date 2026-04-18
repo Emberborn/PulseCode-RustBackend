@@ -1,0 +1,87 @@
+package adk.build;
+
+/**
+ * Bridge codec for provider-backed full build-pipeline execution results.
+ */
+public final class BuildPipelineExecutionBridge {
+    public static String toBridgeText(BuildPipelineExecutionResult result) {
+        return BuildPipelineExecutionBridge.writeValue(String.valueOf(result.success()))
+            .concat(BuildPipelineExecutionBridge.writeValue(result.outputText()))
+            .concat(BuildPipelineExecutionBridge.writeValue(result.detail()));
+    }
+
+    public static BuildPipelineExecutionResult fromBridgeText(String text) {
+        if ("true".equals(BuildPipelineExecutionBridge.readValue(text, 0))) {
+            return BuildPipelineExecutionResult.success(
+                BuildPipelineExecutionBridge.readValue(text, 1)
+            );
+        }
+        return BuildPipelineExecutionResult.failure(
+            BuildPipelineExecutionBridge.readValue(text, 2)
+        );
+    }
+
+    private static String writeValue(String value) {
+        if (value == null) {
+            return "0:\n";
+        }
+        return "1:"
+            .concat(BuildPipelineExecutionBridge.escape(value))
+            .concat("\n");
+    }
+
+    private static String readValue(String text, int index) {
+        int lineIndex = 0;
+        int start = 0;
+        while (lineIndex < index) {
+            int next = text.indexOf('\n', start);
+            if (next < 0) {
+                return null;
+            }
+            start = next + 1;
+            lineIndex = lineIndex + 1;
+        }
+        int end = text.indexOf('\n', start);
+        String line = end < 0 ? text.substring(start) : text.substring(start, end);
+        int separator = line.indexOf(':');
+        if (separator < 0) {
+            return null;
+        }
+        if (line.substring(0, separator).equals("0")) {
+            return null;
+        }
+        return BuildPipelineExecutionBridge.unescape(line.substring(separator + 1));
+    }
+
+    private static String escape(String value) {
+        return value
+            .replace("\\", "\\\\")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r");
+    }
+
+    private static String unescape(String value) {
+        String out = "";
+        int index = 0;
+        while (index < value.length()) {
+            char ch = value.charAt(index);
+            if (ch != '\\' || index + 1 >= value.length()) {
+                out = out.concat(String.valueOf(ch));
+                index = index + 1;
+                continue;
+            }
+            char escaped = value.charAt(index + 1);
+            if (escaped == 'n') {
+                out = out.concat("\n");
+            } else if (escaped == 'r') {
+                out = out.concat("\r");
+            } else if (escaped == '\\') {
+                out = out.concat("\\");
+            } else {
+                out = out.concat("\\").concat(String.valueOf(escaped));
+            }
+            index = index + 2;
+        }
+        return out;
+    }
+}

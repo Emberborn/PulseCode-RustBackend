@@ -1,0 +1,75 @@
+package aden.util;
+
+import aden.collections.Array;
+import aden.collections.ArrayList;
+import aden.collections.List;
+import aden.lang.Iterator;
+import aden.lang.String;
+
+/**
+ * Array-oriented utility helpers for the current fixed-lane and collection bridge baseline.
+ */
+public final class Arrays {
+    /**
+     * Returns a list copy of the supplied runtime-backed array.
+     * Use this when array-shaped storage must participate in the current collection baseline.
+     */
+    public static List asList(Array values) {
+        ArrayList list = new ArrayList();
+        Iterator items = values.iterator();
+        while (items.hasNext()) {
+            list.add(items.next());
+        }
+        return list;
+    }
+
+    /**
+     * Returns the first index containing the supplied integer helper value.
+     * Use this when current fixed-lane arrays need Java-like utility lookup support.
+     */
+    public static int indexOf(Array values, int target) {
+        int index = 0;
+        while (index < values.length()) {
+            if (values.getInt(index) == target) {
+                return index;
+            }
+            index = index + 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the first index containing the supplied string value.
+     * Use this when current fixed-lane arrays need Java-like utility lookup support.
+     */
+    public static int indexOf(Array values, String target) {
+        int index = 0;
+        while (index < values.length()) {
+            String current = values.getString(index);
+            if (current == target) {
+                return index;
+            }
+            if (current != null && target != null && current.equals(target)) {
+                return index;
+            }
+            index = index + 1;
+        }
+        return -1;
+    }
+
+    /**
+     * Reports whether the supplied integer helper value is present.
+     * Use this as the current integer containment helper for runtime-backed arrays.
+     */
+    public static boolean contains(Array values, int target) {
+        return indexOf(values, target) >= 0;
+    }
+
+    /**
+     * Reports whether the supplied string value is present.
+     * Use this as the current string containment helper for runtime-backed arrays.
+     */
+    public static boolean contains(Array values, String target) {
+        return indexOf(values, target) >= 0;
+    }
+}

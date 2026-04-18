@@ -1,0 +1,31 @@
+package aden.collections;
+
+/**
+ * Copy-style map entry value used by the current non-live map view baseline.
+ */
+final class MapEntry<K, V> {
+    private K key;
+    private V value;
+
+    /**
+     * Creates one copy-style key/value entry.
+     */
+    public MapEntry(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    /**
+     * Returns the key stored in this entry.
+     */
+    public K getKey() {
+        return this.key;
+    }
+
+    /**
+     * Returns the value stored in this entry.
+     */
+    public V getValue() {
+        return this.value;
+    }
+}

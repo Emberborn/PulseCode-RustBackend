@@ -1,23 +1,23 @@
-# PulseCode Packaging Pipeline Contract (Historical, Superseded by RB-17.1)
+# Aden Lang Packaging Pipeline Contract (Historical, Superseded by RB-17.1)
 
 This document is retained as a historical archive of the old pre-rebase packaging plan.
 
-It is not the live contract for current PulseCode behavior.
+It is not the live contract for current Aden Lang behavior.
 
 Current truth:
 
 - compiler-owned packaging/install/signing scope was removed in `RB-17.1`
-- `pulsec` now publishes build artifacts and plan metadata only
+- `adenc` now publishes build artifacts and plan metadata only
 - downstream tools own MSI or other package generation if desired
-- the live source of truth is [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
-- any `pulsec package`, `--msi`, `--wix`, `--signtool`, staging-tree, or `packaging_regressions` references below are archived historical material only
+- the live source of truth is [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
+- any `adenc package`, `--msi`, `--wix`, `--signtool`, staging-tree, or `packaging_regressions` references below are archived historical material only
 
 This document locks the packaging pipeline boundary between build output and future MSI generation.
 
 ## Contract Summary
 
-1. `pulsec build` emits runnable binaries under `build/distro/<profile>`.
-2. `pulsec package` assembles package inputs under `build/staging`.
+1. `adenc build` emits runnable binaries under `build/distro/<profile>`.
+2. `adenc package` assembles package inputs under `build/staging`.
 3. Package reports/artifacts are emitted under `build/distro/package`.
 4. MSI mode (`--msi` or `packaging_mode = "msi"`) validates metadata now and remains backend-stubbed until D4.
 
@@ -67,7 +67,7 @@ Locked subtree:
 - `staging/metadata/`
   - `build.config.plan.json`
   - `native.plan.json`
-  - `pulsec.ir.txt`
+  - `adenc.ir.txt`
 - `staging/logs/`
   - `native.link.txt`
 - `staging/obj/`
@@ -77,9 +77,9 @@ Locked subtree:
 
 - Build resources are staged from `build/assets` into `build/staging/assets`.
 - Shared-mode package staging also reuses the published shared executable payload from `build/distro/<profile>/bin`.
-- Shared-mode staged `bin/launch.txt` uses schema `pulsec.shared.launch.v1` and resolves the runtime from the same directory as the executable:
-  - `runtime_library=pulsecore-<pulsec-semver>.dll`
-  - `runtime_import_library=pulsecore-<pulsec-semver>.lib`
+- Shared-mode staged `bin/launch.txt` uses schema `adenc.shared.launch.v1` and resolves the runtime from the same directory as the executable:
+  - `runtime_library=adencore-<adenc-semver>.dll`
+  - `runtime_import_library=adencore-<adenc-semver>.lib`
 - Shared-mode staged `bin/launch.txt` also carries:
   - runtime ABI/object-model ABI compatibility fields
   - `mismatch_policy=deterministic-fail-fast`
@@ -100,7 +100,7 @@ Locked subtree:
 
 ## Fixture Reuse Gate (D3-04)
 
-- Packaging reuses the same `src/test/pulse` fixture corpus used by `pulsec test`.
+- Packaging reuses the same `src/test/aden` fixture corpus used by `adenc test`.
 - When fixture tests exist, package flow compile-validates them before staging.
 - Package fails deterministically if one or more fixture checks fail.
 - Package report includes:
@@ -123,24 +123,24 @@ Locked subtree:
     - `build/distro/debug/<name>-<version>-build.config.plan.json`
     - `build/distro/debug/<name>-<version>-native.link.txt`
     - `build/distro/debug/<name>-<version>-native.plan.json`
-    - `build/distro/debug/<name>-<version>-pulsec.ir.txt`
+    - `build/distro/debug/<name>-<version>-adenc.ir.txt`
     - `build/distro/debug/stamp.txt`
 - Shared-mode profile builds instead publish:
   - release:
     - `build/distro/release/bin/<name>-<version>.exe`
     - `build/distro/release/bin/...` published runtime resources
-    - `build/distro/release/lib/pulsecore-<pulsec-semver>.dll`
-    - `build/distro/release/lib/pulsecore-<pulsec-semver>.lib`
+    - `build/distro/release/lib/adencore-<adenc-semver>.dll`
+    - `build/distro/release/lib/adencore-<adenc-semver>.lib`
     - no debug metadata bucket and no published `.pdb` sidecars
   - debug:
     - `build/distro/debug/bin/<name>-<version>.exe`
     - `build/distro/debug/bin/...` published runtime resources
-    - `build/distro/debug/lib/pulsecore-<pulsec-semver>.dll`
-    - `build/distro/debug/lib/pulsecore-<pulsec-semver>.lib`
+    - `build/distro/debug/lib/adencore-<adenc-semver>.dll`
+    - `build/distro/debug/lib/adencore-<adenc-semver>.lib`
     - `build/distro/debug/metadata/<name>-<version>-build.config.plan.json`
     - `build/distro/debug/metadata/<name>-<version>-native.link.txt`
     - `build/distro/debug/metadata/<name>-<version>-native.plan.json`
-    - `build/distro/debug/metadata/<name>-<version>-pulsec.ir.txt`
+    - `build/distro/debug/metadata/<name>-<version>-adenc.ir.txt`
     - `build/distro/debug/metadata/stamp.txt`
     - no published `.pdb` sidecars
 - Release/debug internal metadata needed for staging/package handoff remains available under `build/tmp` and backend temp roots; `.obj` files are not published into distro outputs.
@@ -195,7 +195,7 @@ Locked subtree:
 - MSI flow now executes WiX build and emits:
   - `<project>/build/distro/package/<artifact-stamp>.msi`
   - `<project>/build/distro/package/msi.build.log.txt`
-- `pulsec package --msi` and `pulsec build --msi` both use the same generation path.
+- `adenc package --msi` and `adenc build --msi` both use the same generation path.
 - Deterministic outcomes:
   - Success: package summary/report status `ready` with `msi_output` path.
   - Failure: package summary/report status `failed` with `msi_error` and stable diagnostics (`PULSEC:E_PACKAGE_FAILED`).
@@ -301,7 +301,7 @@ Locked subtree:
 
 ## Locked Tests
 
-- `crates/pulsec-cli/tests/stage_locks_d.rs`
+- `crates/adenc-cli/tests/stage_locks_d.rs`
   - `lock_d1_06_package_staged_baseline_is_deterministic`
   - `lock_d1_06_build_msi_and_package_msi_share_entrypoint_contract`
   - `lock_d3_01_packaging_uses_build_output_as_staging_root`
@@ -320,7 +320,7 @@ Locked subtree:
   - `lock_d4_05_real_msi_repair_and_upgrade_behave_predictably_when_tooling_is_available`
   - `lock_d4_06_release_package_surfaces_explicit_unsigned_policy`
   - `lock_d4_06_release_package_runs_signtool_hook_when_configured`
-- `crates/pulsec-cli/tests/packaging_regressions.rs`
+- `crates/adenc-cli/tests/packaging_regressions.rs`
   - `d5_03_staged_package_snapshot_is_stable_for_app_project`
   - `d5_03_msi_failure_emits_stable_report_and_build_log`
   - `d5_03_release_signing_failure_is_deterministic_and_logged`

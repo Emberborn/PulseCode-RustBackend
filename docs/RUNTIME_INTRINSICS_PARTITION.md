@@ -1,13 +1,13 @@
 # Runtime Intrinsics Partition (`RB-11`)
 
-This document is the source of truth for `RB-11` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-11` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
 
 It partitions the current runtime surface into:
 
 - portable language/runtime contract
 - adapter-specific service glue
 
-This is a partitioning task, not the full bootstrap-runtime contract and not the first PulseOS service ABI. Those land under `RB-12` and `RB-13`.
+This is a partitioning task, not the full bootstrap-runtime contract and not the first AdenOS service ABI. Those land under `RB-12` and `RB-13`.
 
 ## Consumed Inventory Rows
 
@@ -22,17 +22,17 @@ This is a partitioning task, not the full bootstrap-runtime contract and not the
 
 ## Portable Contract
 
-The following are now treated as portable Pulse/runtime contract surfaces rather than Windows-specific truth:
+The following are now treated as portable Aden/runtime contract surfaces rather than Windows-specific truth:
 
-- stdlib/language-facing runtime methods under `com.pulse.rt.Intrinsics.*`
-- runtime-backed ownership helpers under `com.pulse.memory.Memory.*`
+- stdlib/language-facing runtime methods under `com.aden.rt.Intrinsics.*`
+- runtime-backed ownership helpers under `com.aden.memory.Memory.*`
 - stdlib-owned runtime-backed `System` methods:
   - `System.currentTimeMillis()`
   - `System.nanoTime()`
   - `System.exit(int)`
 - backend-private runtime procedures used to implement language/runtime behavior:
-  - `pulsec_rt_throw`
-  - `pulsec_rt_traceUpdateTop`
+  - `adenc_rt_throw`
+  - `adenc_rt_traceUpdateTop`
 
 Portable means:
 
@@ -42,8 +42,8 @@ Portable means:
 
 Current portable proof surface:
 
-- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_ABI.md) now describes the portable contract first and treats Windows x64 ABI details as adapter notes
-- `windows_x64_backend_contract().runtime_symbols` remains limited to Pulse/runtime bridge symbols rather than raw OS import names
+- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_INTRINSICS_ABI.md) now describes the portable contract first and treats Windows x64 ABI details as adapter notes
+- `windows_x64_backend_contract().runtime_symbols` remains limited to Aden/runtime bridge symbols rather than raw OS import names
 
 ## Adapter-Specific Service Glue
 
@@ -60,8 +60,8 @@ The following are not portable runtime ABI truth. They are current Windows x64 h
 Current ownership rule:
 
 - direct OS/service imports belong to the target adapter layer
-- they must not be treated as part of the public Pulse intrinsic ABI
-- the active Windows x64 inventory is tracked separately in `windows_x64_runtime_service_imports()` at [windows_x64/mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/adapters/windows_x64/mod.rs)
+- they must not be treated as part of the public Aden intrinsic ABI
+- the active Windows x64 inventory is tracked separately in `windows_x64_runtime_service_imports()` at [windows_x64/mod.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/adapters/windows_x64/mod.rs)
 
 Current embedded Windows x64 glue still includes:
 
@@ -77,9 +77,9 @@ Those implementation details remain real for the retained Windows x64 adapter la
 `RB-11` does not yet freeze:
 
 - the minimum Rust-host bootstrap runtime/service contract
-- the first PulseOS runtime-service ABI slice
+- the first AdenOS runtime-service ABI slice
 - startup entry naming and loader lifecycle as a cross-target contract
-- final ownership movement between Pulse stdlib/runtime code, Rust bootstrap code, and adapter-owned syscall/loader glue
+- final ownership movement between Aden stdlib/runtime code, Rust bootstrap code, and adapter-owned syscall/loader glue
 
 Those belong to:
 
@@ -91,18 +91,18 @@ Those belong to:
 
 `RB-12` is now published at:
 
-- [HOST_BOOTSTRAP_RUNTIME_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/HOST_BOOTSTRAP_RUNTIME_CONTRACT.md)
+- [HOST_BOOTSTRAP_RUNTIME_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/HOST_BOOTSTRAP_RUNTIME_CONTRACT.md)
 
 `RB-13` is now published at:
 
-- [PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md)
+- [PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md](/D:/Programming/codex/Aden Lang/docs/PULSEOS_RUNTIME_SERVICE_ABI_SLICE.md)
 
 `RB-14` is now published at:
 
-- [RUNTIME_OWNERSHIP_REBASE.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_REBASE.md)
+- [RUNTIME_OWNERSHIP_REBASE.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_REBASE.md)
 
 ## Consequences For Follow-On Work
 
 - `RB-12` should define the smallest retained bootstrap runtime/service seam needed to keep Windows x64 execution and compiler validation moving.
-- `RB-13` now defines the first honest PulseOS runtime-service contract without inheriting Windows imports as the default shape.
+- `RB-13` now defines the first honest AdenOS runtime-service contract without inheriting Windows imports as the default shape.
 - `RB-14` now moves ownership boundaries based on this split instead of leaving stdlib/runtime/adapter logic blended together.

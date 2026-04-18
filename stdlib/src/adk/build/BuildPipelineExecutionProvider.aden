@@ -1,0 +1,159 @@
+package adk.build;
+
+import aden.collections.ArrayList;
+import aden.io.Files;
+import aden.process.ProcessEnvironment;
+import aden.process.ProcessPlan;
+import aden.process.ProcessResult;
+import aden.process.Processes;
+import aden.util.Objects;
+
+/**
+ * Provider-backed full build-pipeline execution through the current host compiler binary.
+ */
+public final class BuildPipelineExecutionProvider {
+    public static BuildPipelineExecutionResult execute(
+        String compilerPath,
+        BuildInvocation invocation,
+        boolean profileExplicit
+    ) {
+        Objects.requireNonNull(compilerPath, "compilerPath must not be null");
+        Objects.requireNonNull(invocation, "invocation must not be null");
+
+        ArrayList<String> arguments = new ArrayList<String>();
+        arguments.add("__provider-build-pipeline");
+        arguments.add(invocation.entryPath());
+        arguments.add(invocation.sourceRoot());
+        arguments.add(invocation.buildLayout().buildRoot());
+        arguments.add(invocation.outputRoot());
+        arguments.add(invocation.mainPulseRoot());
+        arguments.add(invocation.mainResourcesRoot());
+        arguments.add(invocation.buildLayout().asmRoot());
+        arguments.add(invocation.buildLayout().generatedRoot());
+        arguments.add(invocation.buildLayout().assetsRoot());
+        arguments.add(invocation.buildLayout().sanityRoot());
+        arguments.add(invocation.buildLayout().tmpRoot());
+        arguments.add(invocation.profile());
+        arguments.add(profileExplicit ? "true" : "false");
+        arguments.add(invocation.target());
+        arguments.add(invocation.outputMode());
+        arguments.add(invocation.outputEntry());
+        arguments.add(invocation.runtimeDebugAllocator());
+        arguments.add(invocation.runtimeCycleCollector());
+        arguments.add(invocation.assembler() == null ? "" : invocation.assembler());
+        arguments.add(invocation.linker() == null ? "" : invocation.linker());
+        arguments.add(invocation.packageName() == null ? "" : invocation.packageName());
+        arguments.add(invocation.packageVersion() == null ? "" : invocation.packageVersion());
+        arguments.add(invocation.usedManifest() ? "true" : "false");
+        arguments.add(invocation.authorlibEnabled() ? "true" : "false");
+
+        ProcessPlan plan = new ProcessPlan(
+            compilerPath,
+            null,
+            arguments,
+            ProcessEnvironment.defaults()
+        );
+        String captureRoot = Files.createTempDirectory("compiler_build_pipeline_provider");
+        ProcessResult result = Processes.execute(plan, captureRoot, "provider");
+        String stdoutText = result.stdoutText();
+        if (stdoutText != null && !stdoutText.isEmpty()) {
+            return BuildPipelineExecutionProvider.fromProviderText(stdoutText);
+        }
+        if (result.stderrText() != null && !result.stderrText().isEmpty()) {
+            return BuildPipelineExecutionResult.failure(result.stderrText());
+        }
+        return BuildPipelineExecutionResult.failure(
+            "compiler build pipeline provider exited with code "
+                .concat(String.valueOf(result.exitCode()))
+        );
+    }
+
+    private static BuildPipelineExecutionResult fromProviderText(String text) {
+        if (!"true".equals(BuildPipelineExecutionProvider.readValue(text, 0))) {
+            return BuildPipelineExecutionResult.failure(
+                BuildPipelineExecutionProvider.readValue(text, 23)
+            );
+        }
+        return BuildPipelineExecutionResult.success(
+            BuildSummaryWriter.renderBuildSummary(
+                BuildPipelineExecutionProvider.parseCount(BuildPipelineExecutionProvider.readValue(text, 1)),
+                BuildPipelineExecutionProvider.parseCount(BuildPipelineExecutionProvider.readValue(text, 2)),
+                BuildPipelineExecutionProvider.parseCount(BuildPipelineExecutionProvider.readValue(text, 3)),
+                BuildPipelineExecutionProvider.parseCount(BuildPipelineExecutionProvider.readValue(text, 4)),
+                BuildPipelineExecutionProvider.readValue(text, 5),
+                BuildPipelineExecutionProvider.readValue(text, 6),
+                BuildPipelineExecutionProvider.readValue(text, 7),
+                BuildPipelineExecutionProvider.readValue(text, 8),
+                BuildPipelineExecutionProvider.readValue(text, 9),
+                BuildPipelineExecutionProvider.readValue(text, 10),
+                "true".equals(BuildPipelineExecutionProvider.readValue(text, 11)),
+                BuildPipelineExecutionProvider.readValue(text, 12),
+                BuildPipelineExecutionProvider.readValue(text, 13),
+                BuildPipelineExecutionProvider.readValue(text, 14),
+                BuildPipelineExecutionProvider.readValue(text, 15),
+                BuildPipelineExecutionProvider.readValue(text, 16),
+                BuildPipelineExecutionProvider.readValue(text, 17),
+                BuildPipelineExecutionProvider.readValue(text, 18),
+                BuildPipelineExecutionProvider.readValue(text, 19),
+                BuildPipelineExecutionProvider.readValue(text, 20),
+                BuildPipelineExecutionProvider.readValue(text, 21),
+                BuildPipelineExecutionProvider.readValue(text, 22)
+            )
+        );
+    }
+
+    private static String readValue(String text, int index) {
+        int lineIndex = 0;
+        int start = 0;
+        while (lineIndex < index) {
+            int next = text.indexOf('\n', start);
+            if (next < 0) {
+                return null;
+            }
+            start = next + 1;
+            lineIndex = lineIndex + 1;
+        }
+        int end = text.indexOf('\n', start);
+        String line = end < 0 ? text.substring(start) : text.substring(start, end);
+        int separator = line.indexOf(':');
+        if (separator < 0) {
+            return null;
+        }
+        if (line.substring(0, separator).equals("0")) {
+            return null;
+        }
+        return BuildPipelineExecutionProvider.unescape(line.substring(separator + 1));
+    }
+
+    private static int parseCount(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0;
+        }
+        return Integer.parse(value);
+    }
+
+    private static String unescape(String value) {
+        String out = "";
+        int index = 0;
+        while (index < value.length()) {
+            char ch = value.charAt(index);
+            if (ch != '\\' || index + 1 >= value.length()) {
+                out = out.concat(String.valueOf(ch));
+                index = index + 1;
+                continue;
+            }
+            char escaped = value.charAt(index + 1);
+            if (escaped == 'n') {
+                out = out.concat("\n");
+            } else if (escaped == 'r') {
+                out = out.concat("\r");
+            } else if (escaped == '\\') {
+                out = out.concat("\\");
+            } else {
+                out = out.concat("\\").concat(String.valueOf(escaped));
+            }
+            index = index + 2;
+        }
+        return out;
+    }
+}

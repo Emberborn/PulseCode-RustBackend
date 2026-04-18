@@ -1,6 +1,6 @@
-# PulseCode Target Taxonomy and Naming Policy
+# Aden Lang Target Taxonomy and Naming Policy
 
-This document is the source of truth for `RB-03` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-03` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
 
 It defines the canonical target IDs that `RB-04`, `RB-05`, and `RB-06` wire through CLI, manifest, and build-plan surfaces.
 
@@ -9,8 +9,8 @@ It defines the canonical target IDs that `RB-04`, `RB-05`, and `RB-06` wire thro
 `RB-03` exists to replace the old single-target story around `native-x64` with one target vocabulary that can honestly name:
 
 - the immediate Windows x64 lane
-- the PulseOS lane as its own future target contract
-- the generic Linux lane that also serves as the substrate family PulseOS will build on
+- the AdenOS lane as its own future target contract
+- the generic Linux lane that also serves as the substrate family AdenOS will build on
 - a later macOS Apple Silicon lane that preserves future portability without changing the public naming model
 
 The target taxonomy must stay stable even when adapter internals change.
@@ -24,7 +24,7 @@ Canonical public target IDs use:
 Examples:
 
 - `windows-x64`
-- `pulseos-x64`
+- `adenos-x64`
 - `linux-x64`
 - future-compatible examples such as `macos-arm64`
 
@@ -44,7 +44,7 @@ Those belong in adapter metadata, runtime ABI metadata, or build-plan metadata, 
 | Target ID | Status | Current lane meaning |
 |---|---|---|
 | `windows-x64` | Immediate | Current Windows x64 target plus the current host/bootstrap execution lane |
-| `pulseos-x64` | Immediate | PulseOS platform target contract lane; first-slice runtime/startup/artifact contract work continues under the rebase board |
+| `adenos-x64` | Immediate | AdenOS platform target contract lane; first-slice runtime/startup/artifact contract work continues under the rebase board |
 | `linux-x64` | Later | Generic Linux target lane preserved as its own future adapter path |
 | `macos-arm64` | Later | Planned macOS Apple Silicon target lane; preserved at the public taxonomy level so later Darwin adapter work fits the same target-neutral contract |
 
@@ -55,7 +55,7 @@ Target IDs are public selectors. Adapter lane names describe the current impleme
 Current lane names:
 
 - `windows-x64-host-bootstrap`
-- `pulseos-x64-first-slice`
+- `adenos-x64-first-slice`
 - `linux-x64-planned`
 - `macos-arm64-planned`
 
@@ -67,12 +67,12 @@ The rebase now treats these as separate axes:
 
 - target ID:
   - `windows-x64`
-  - `pulseos-x64`
+  - `adenos-x64`
   - `linux-x64`
   - `macos-arm64`
 - adapter lane:
   - `windows-x64-host-bootstrap`
-  - `pulseos-x64-first-slice`
+  - `adenos-x64-first-slice`
   - `linux-x64-planned`
   - `macos-arm64-planned`
 - runtime ABI family:

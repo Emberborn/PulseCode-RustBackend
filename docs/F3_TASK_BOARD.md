@@ -13,11 +13,11 @@ Reason:
 
 ## New Ownership
 
-Validation and CI work now lives in [F1_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md):
+Validation and CI work now lives in [F1_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/F1_TASK_BOARD.md):
 - `F1-74`..`F1-82`
 - gate `F1-G9`
 
-Docs-quality and docs-validation work now lives in [F2_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/F2_TASK_BOARD.md):
+Docs-quality and docs-validation work now lives in [F2_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/F2_TASK_BOARD.md):
 - `F2-24`..`F2-29`
 - gate `F2-G6`
 

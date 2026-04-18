@@ -2,24 +2,24 @@
 
 ## Primary Board
 
-- [E2_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/E2_TASK_BOARD.md)
+- [E2_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/E2_TASK_BOARD.md)
 
 ## Runtime Ownership + ABI Contracts
 
-- [SHARED_RUNTIME_ABI.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_ABI.md)
-- [RUNTIME_OWNERSHIP_INVENTORY.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_INVENTORY.md)
-- [RUNTIME_OWNERSHIP_POLICY.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_POLICY.md)
-- [SHARED_RUNTIME_STATE_LAYOUT.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_STATE_LAYOUT.md)
-- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
-- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- [SHARED_RUNTIME_ABI.md](/D:/Programming/codex/Aden Lang/docs/SHARED_RUNTIME_ABI.md)
+- [RUNTIME_OWNERSHIP_INVENTORY.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_INVENTORY.md)
+- [RUNTIME_OWNERSHIP_POLICY.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_POLICY.md)
+- [SHARED_RUNTIME_STATE_LAYOUT.md](/D:/Programming/codex/Aden Lang/docs/SHARED_RUNTIME_STATE_LAYOUT.md)
+- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/CLI_COMMAND_CONTRACT.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
 
 ## Lock Suites
 
-- `cargo test -q -p pulsec --test fixture_projects`
-- `cargo test -q -p pulsec --test stage_locks_c3`
-- `cargo test -q -p pulsec --test stage_locks_d`
-- `cargo test -q -p pulsec --test phase_d_cli`
-- `cargo test -q -p pulsec`
+- `cargo test -q -p adenc --test fixture_projects`
+- `cargo test -q -p adenc --test stage_locks_c3`
+- `cargo test -q -p adenc --test stage_locks_d`
+- `cargo test -q -p adenc --test phase_d_cli`
+- `cargo test -q -p adenc`
 
 ## Key E2 Coverage
 
@@ -40,4 +40,4 @@
 
 ## Roadmap Reference
 
-- [STANDALONE_ROADMAP.md](/D:/Programming/codex/PulseCode/docs/STANDALONE_ROADMAP.md)
+- [STANDALONE_ROADMAP.md](/D:/Programming/codex/Aden Lang/docs/STANDALONE_ROADMAP.md)

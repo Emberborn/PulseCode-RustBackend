@@ -10,7 +10,7 @@ Current truth:
 
 - fat/shared build and runtime parity remain live architecture concerns
 - compiler-owned packaging/install scope is removed
-- packaging/install rows below are historical only and are superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- packaging/install rows below are historical only and are superseded by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
 
 ## Scope
 E3 locked behavioral parity between fat and shared native output modes. The executable/runtime/publication parts remain historically relevant; the packaging/install parts below are archived only and no longer define current compiler scope.

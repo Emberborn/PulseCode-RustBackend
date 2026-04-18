@@ -1,0 +1,40 @@
+package aden.time;
+import aden.lang.Object;
+import aden.lang.System;
+
+/**
+ * Internal runtime-backed system clock implementation for the current UTC-style time model.
+ */
+final class SystemClock implements Clock {
+    /**
+     * Returns the current runtime-backed epoch millisecond value.
+     * Use this as the concrete wall-clock read for the default UTC-style system clock.
+     */
+    public long millis() {
+        return System.currentTimeMillis();
+    }
+
+    /**
+     * Reports equality for system clock instances.
+     * Use this to treat all system clock instances as the same runtime-backed source.
+     */
+    public boolean equals(Object other) {
+        return other instanceof SystemClock;
+    }
+
+    /**
+     * Returns a stable hash code for system clocks.
+     * Use this when system clocks participate in maps, sets, or diagnostics.
+     */
+    public int hashCode() {
+        return 17;
+    }
+
+    /**
+     * Formats this clock for diagnostics.
+     * Use this when code needs a readable description of the runtime-backed system clock.
+     */
+    public String toString() {
+        return "Clock[systemUTC]";
+    }
+}

@@ -1,22 +1,22 @@
 # Compiler Packaging Removal (`RB-17.1`)
 
-This document is the source of truth for `RB-17.1` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-17.1` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
 
 ## Decision
 
-`pulsec` no longer owns package, installer, or signing workflows.
+`adenc` no longer owns package, installer, or signing workflows.
 
 The compiler publishes build artifacts, plan metadata, and target-adapter contract metadata only. If users want MSI installers or any other packaging format, they must use external packaging tools against the build outputs.
 
 The follow-on no-reentry policy for removed Windows-specific productization scope now lives at:
 
-- [WINDOWS_X64_SCOPE_FREEZE_POLICY.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md)
+- [WINDOWS_X64_SCOPE_FREEZE_POLICY.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_SCOPE_FREEZE_POLICY.md)
 
 ## Removed Public Surface
 
 The compiler-owned packaging surface is removed entirely:
 
-- top-level command: `pulsec package`
+- top-level command: `adenc package`
 - build flags:
   - `--packaging-mode`
   - `--msi`
@@ -29,11 +29,11 @@ The compiler-owned packaging surface is removed entirely:
   - `[toolchain].signtool`
   - `[package.metadata]`
 
-These are not frozen compatibility surfaces. PulseCode is still unreleased, so the removed packaging surface should not be carried forward as legacy.
+These are not frozen compatibility surfaces. Aden Lang is still unreleased, so the removed packaging surface should not be carried forward as legacy.
 
 ## Compiler Scope After Removal
 
-`pulsec build` remains responsible for:
+`adenc build` remains responsible for:
 
 - resolving the requested target lane
 - resolving the active host/bootstrap adapter
@@ -42,7 +42,7 @@ These are not frozen compatibility surfaces. PulseCode is still unreleased, so t
 - publishing runnable build artifacts for the active adapter lane
 - publishing deterministic debug metadata for build/test/runtime validation
 
-`pulsec` is not responsible for:
+`adenc` is not responsible for:
 
 - MSI generation
 - WiX template generation
@@ -53,7 +53,7 @@ These are not frozen compatibility surfaces. PulseCode is still unreleased, so t
 
 ## Architectural Reason
 
-This rebase is about making the backend truthful for Windows x64, PulseOS, and later Linux without binding the compiler to one Windows-shaped product workflow.
+This rebase is about making the backend truthful for Windows x64, AdenOS, and later Linux without binding the compiler to one Windows-shaped product workflow.
 
 Keeping compiler-owned MSI/WiX/signing logic would preserve exactly the wrong pressure:
 
@@ -72,7 +72,7 @@ Removing packaging reduces compiler scope and keeps the adapter boundary focused
 
 The replacement policy is explicit:
 
-- `pulsec build` produces the outputs
+- `adenc build` produces the outputs
 - downstream tools package those outputs if desired
 - downstream tools own installers/packages
 - target adapters may still describe artifact/publication layout
@@ -82,7 +82,7 @@ The replacement policy is explicit:
 
 `RB-17.1` is satisfied when all of the following are true:
 
-- `pulsec package` is gone
+- `adenc package` is gone
 - removed packaging flags and manifest keys are rejected
 - scaffolded projects no longer reseed packaging metadata
 - CLI/manifest docs no longer teach compiler-owned packaging

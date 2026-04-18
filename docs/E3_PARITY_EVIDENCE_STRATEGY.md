@@ -9,7 +9,7 @@ This document defines how E3 parity claims are proved.
 
 No E3 parity claim is accepted from one mode alone.
 
-Under `RB-18` rebase validation layering, this document is Windows x64 adapter evidence only. It does not prove PulseOS or Linux parity by proxy.
+Under `RB-18` rebase validation layering, this document is Windows x64 adapter evidence only. It does not prove AdenOS or Linux parity by proxy.
 
 ## Required Evidence Model
 
@@ -93,7 +93,7 @@ No new parity contract should live only in prose once executable coverage exists
 
 ## Related Specs
 
-- [REBASE_VALIDATION_LAYERING.md](/D:/Programming/codex/PulseCode/docs/REBASE_VALIDATION_LAYERING.md)
-- [E3_PARITY_SUPPORT_MATRIX.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_SUPPORT_MATRIX.md)
-- [E3_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/E3_TASK_BOARD.md)
-- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
+- [REBASE_VALIDATION_LAYERING.md](/D:/Programming/codex/Aden Lang/docs/REBASE_VALIDATION_LAYERING.md)
+- [E3_PARITY_SUPPORT_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/E3_PARITY_SUPPORT_MATRIX.md)
+- [E3_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/E3_TASK_BOARD.md)
+- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/CLI_COMMAND_CONTRACT.md)

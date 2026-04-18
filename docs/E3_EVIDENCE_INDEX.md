@@ -2,26 +2,26 @@
 
 ## Primary Board
 
-- [E3_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/E3_TASK_BOARD.md)
+- [E3_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/E3_TASK_BOARD.md)
 
 ## Parity Contracts
 
-- [E3_PARITY_GUIDE.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_GUIDE.md)
-- [E3_PARITY_SUPPORT_MATRIX.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_SUPPORT_MATRIX.md)
-- [E3_PARITY_EVIDENCE_STRATEGY.md](/D:/Programming/codex/PulseCode/docs/E3_PARITY_EVIDENCE_STRATEGY.md)
-- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
-- [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/PulseCode/docs/PROJECT_LAYOUT_CONVENTIONS.md)
-- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
-- [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
+- [E3_PARITY_GUIDE.md](/D:/Programming/codex/Aden Lang/docs/E3_PARITY_GUIDE.md)
+- [E3_PARITY_SUPPORT_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/E3_PARITY_SUPPORT_MATRIX.md)
+- [E3_PARITY_EVIDENCE_STRATEGY.md](/D:/Programming/codex/Aden Lang/docs/E3_PARITY_EVIDENCE_STRATEGY.md)
+- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/CLI_COMMAND_CONTRACT.md)
+- [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/Aden Lang/docs/PROJECT_LAYOUT_CONVENTIONS.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
+- [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
 
 ## Lock Suites
 
-- `cargo test -q -p pulsec --test e3_parity`
-- `cargo test -q -p pulsec --test fixture_projects`
-- `cargo test -q -p pulsec --test phase_d_cli`
-- `cargo test -q -p pulsec --test stage_locks`
-- `cargo test -q -p pulsec --test stage_locks_d`
-- `cargo test -q -p pulsec`
+- `cargo test -q -p adenc --test e3_parity`
+- `cargo test -q -p adenc --test fixture_projects`
+- `cargo test -q -p adenc --test phase_d_cli`
+- `cargo test -q -p adenc --test stage_locks`
+- `cargo test -q -p adenc --test stage_locks_d`
+- `cargo test -q -p adenc`
 
 ## Key E3 Coverage
 
@@ -42,4 +42,4 @@
 
 ## Roadmap Reference
 
-- [STANDALONE_ROADMAP.md](/D:/Programming/codex/PulseCode/docs/STANDALONE_ROADMAP.md)
+- [STANDALONE_ROADMAP.md](/D:/Programming/codex/Aden Lang/docs/STANDALONE_ROADMAP.md)

@@ -1,0 +1,581 @@
+package aden.util;
+
+import aden.lang.Integer;
+import aden.lang.String;
+import aden.lang.StringBuilder;
+
+/**
+ * Lightweight string-backed parse cursor for structured text readers.
+ */
+public final class TextCursor {
+    private String source;
+    private int cursor;
+    private int mark;
+
+    /**
+     * Creates a cursor over the supplied text.
+     * Use this as the low-level shared cursor for JSON/XML/TOML/YAML-style parsers.
+     */
+    public TextCursor(String source) {
+        this.source = source;
+        this.cursor = 0;
+        this.mark = -1;
+    }
+
+    private boolean isWhitespace(char value) {
+        return value == ' ' || value == '\t' || value == '\n' || value == '\r';
+    }
+
+    private boolean isIdentifierChar(char value) {
+        return (value >= 'a' && value <= 'z')
+            || (value >= 'A' && value <= 'Z')
+            || (value >= '0' && value <= '9')
+            || value == '_'
+            || value == '-';
+    }
+
+    private boolean isDigit(char value) {
+        return value >= '0' && value <= '9';
+    }
+
+    private char decodeEscape(char value) {
+        if (value == 'n') {
+            return '\n';
+        }
+        if (value == 'r') {
+            return '\r';
+        }
+        if (value == 't') {
+            return '\t';
+        }
+        if (value == '\\') {
+            return '\\';
+        }
+        if (value == '"') {
+            return '"';
+        }
+        if (value == '\'') {
+            return '\'';
+        }
+        return value;
+    }
+
+    private void panicAt(String message, int position) {
+        int safePosition = position;
+        if (safePosition < 0) {
+            safePosition = 0;
+        }
+        if (safePosition > this.source.length()) {
+            safePosition = this.source.length();
+        }
+        aden.rt.Intrinsics.panic(
+            "TextCursor " + message
+                + " at line " + Integer.toString(this.lineAt(safePosition))
+                + ", column " + Integer.toString(this.columnAt(safePosition))
+                + " (position " + Integer.toString(position) + ")"
+        );
+    }
+
+    private int lineAt(int position) {
+        int index = 0;
+        int line = 1;
+        while (index < position && index < this.source.length()) {
+            if (this.source.charAt(index) == '\n') {
+                line = line + 1;
+            }
+            index = index + 1;
+        }
+        return line;
+    }
+
+    private int columnAt(int position) {
+        int index = 0;
+        int column = 1;
+        while (index < position && index < this.source.length()) {
+            if (this.source.charAt(index) == '\n') {
+                column = 1;
+            } else {
+                column = column + 1;
+            }
+            index = index + 1;
+        }
+        return column;
+    }
+
+    /**
+     * Returns the current cursor position.
+     */
+    public int position() {
+        return this.cursor;
+    }
+
+    /**
+     * Moves the cursor to the supplied absolute position.
+     */
+    public void seek(int position) {
+        if (position < 0 || position > this.source.length()) {
+            this.panicAt("position out of bounds", position);
+        }
+        this.cursor = position;
+    }
+
+    /**
+     * Returns the current cursor location as line/column/position text.
+     * Use this for parser diagnostics and human-readable cursor reporting.
+     */
+    public String locationString() {
+        return "line " + Integer.toString(this.line())
+            + ", column " + Integer.toString(this.column())
+            + " (position " + Integer.toString(this.cursor) + ")";
+    }
+
+    /**
+     * Panics with the supplied message plus the current cursor location.
+     * Use this when parser code needs a consistent cursor-aware failure shape.
+     */
+    public void panicHere(String message) {
+        this.panicAt(message, this.cursor);
+    }
+
+    /**
+     * Panics with a standardized "expected ..." message at the current cursor location.
+     * Use this when required syntax is missing at the current cursor position.
+     */
+    public void panicExpected(String expected) {
+        this.panicHere("expected " + expected);
+    }
+
+    /**
+     * Reports whether no text remains.
+     */
+    public boolean isAtEnd() {
+        return this.cursor >= this.source.length();
+    }
+
+    /**
+     * Reports whether unread text remains.
+     */
+    public boolean hasRemaining() {
+        return this.cursor < this.source.length();
+    }
+
+    /**
+     * Returns the unread tail from the current cursor position.
+     */
+    public String remainingText() {
+        if (this.cursor >= this.source.length()) {
+            return "";
+        }
+        return this.source.substring(this.cursor);
+    }
+
+    /**
+     * Returns the next character without advancing, or `\0` at end.
+     */
+    public char peek() {
+        if (this.cursor >= this.source.length()) {
+            return '\0';
+        }
+        return this.source.charAt(this.cursor);
+    }
+
+    /**
+     * Returns a lookahead character without advancing, or `\0` when out of range.
+     */
+    public char peek(int offset) {
+        int index = this.cursor + offset;
+        if (index < 0 || index >= this.source.length()) {
+            return '\0';
+        }
+        return this.source.charAt(index);
+    }
+
+    /**
+     * Reads one character and advances, or returns `\0` at end.
+     */
+    public char read() {
+        if (this.cursor >= this.source.length()) {
+            return '\0';
+        }
+        char value = this.source.charAt(this.cursor);
+        this.cursor = this.cursor + 1;
+        return value;
+    }
+
+    /**
+     * Reports whether the unread tail starts with the supplied text.
+     */
+    public boolean startsWith(String text) {
+        if (text == null) {
+            return false;
+        }
+        int length = text.length();
+        if (this.cursor + length > this.source.length()) {
+            return false;
+        }
+        int index = 0;
+        while (index < length) {
+            if (this.source.charAt(this.cursor + index) != text.charAt(index)) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Reports whether the next character matches the supplied value.
+     */
+    public boolean startsWith(char value) {
+        return this.peek() == value;
+    }
+
+    /**
+     * Consumes the supplied text when present and reports whether it matched.
+     */
+    public boolean consumeIf(String text) {
+        if (!this.startsWith(text)) {
+            return false;
+        }
+        this.cursor = this.cursor + text.length();
+        return true;
+    }
+
+    /**
+     * Consumes the supplied character when present and reports whether it matched.
+     */
+    public boolean consumeIf(char value) {
+        if (this.peek() != value) {
+            return false;
+        }
+        this.cursor = this.cursor + 1;
+        return true;
+    }
+
+    /**
+     * Consumes the supplied text or panics when it is not present.
+     */
+    public void consume(String text) {
+        if (!this.consumeIf(text)) {
+            this.panicExpected("`" + text + "`");
+        }
+    }
+
+    /**
+     * Consumes the supplied character or panics when it is not present.
+     */
+    public void consume(char value) {
+        if (!this.consumeIf(value)) {
+            this.panicExpected("`" + String.valueOf(value) + "`");
+        }
+    }
+
+    /**
+     * Skips ASCII whitespace from the current cursor position.
+     */
+    public void skipWhitespace() {
+        while (this.cursor < this.source.length() && this.isWhitespace(this.source.charAt(this.cursor))) {
+            this.cursor = this.cursor + 1;
+        }
+    }
+
+    /**
+     * Reads characters until the supplied delimiter or end-of-text, leaving the delimiter unread.
+     */
+    public String readUntil(char delimiter) {
+        int start = this.cursor;
+        while (this.cursor < this.source.length() && this.source.charAt(this.cursor) != delimiter) {
+            this.cursor = this.cursor + 1;
+        }
+        return this.source.substring(start, this.cursor);
+    }
+
+    /**
+     * Reads the next logical line and advances past its trailing newline when present.
+     */
+    public String readLine() {
+        if (this.cursor >= this.source.length()) {
+            return null;
+        }
+
+        int start = this.cursor;
+        while (this.cursor < this.source.length()) {
+            char value = this.source.charAt(this.cursor);
+            if (value == '\n') {
+                int end = this.cursor;
+                if (end > start && this.source.charAt(end - 1) == '\r') {
+                    end = end - 1;
+                }
+                this.cursor = this.cursor + 1;
+                return this.source.substring(start, end);
+            }
+            this.cursor = this.cursor + 1;
+        }
+
+        return this.source.substring(start);
+    }
+
+    /**
+     * Reads characters while they match the current identifier character policy.
+     * This is a practical shared helper, not the canonical identifier grammar for every future format reader.
+     */
+    public String readIdentifier() {
+        String value = this.consumeIdentifier();
+        if (value == null) {
+            return "";
+        }
+        return value;
+    }
+
+    /**
+     * Reads characters while they match the current identifier character policy.
+     * This is a practical shared helper, not the canonical identifier grammar for every future format reader.
+     * Returns `null` when no identifier starts at the current cursor position.
+     */
+    public String tryReadIdentifier() {
+        int start = this.cursor;
+        String value = this.consumeIdentifier();
+        this.cursor = start;
+        return value;
+    }
+
+    private String consumeIdentifier() {
+        int start = this.cursor;
+        while (this.cursor < this.source.length() && this.isIdentifierChar(this.source.charAt(this.cursor))) {
+            this.cursor = this.cursor + 1;
+        }
+        if (start == this.cursor) {
+            return null;
+        }
+        return this.source.substring(start, this.cursor);
+    }
+
+    /**
+     * Reads consecutive ASCII digits from the current cursor position.
+     * This is a practical shared helper, not a universal numeric grammar for every future format reader.
+     */
+    public String readDigits() {
+        String value = this.consumeDigits();
+        if (value == null) {
+            return "";
+        }
+        return value;
+    }
+
+    /**
+     * Reads consecutive ASCII digits from the current cursor position.
+     * Returns `null` when no digit run starts at the current cursor position.
+     */
+    public String tryReadDigits() {
+        int start = this.cursor;
+        String value = this.consumeDigits();
+        this.cursor = start;
+        return value;
+    }
+
+    private String consumeDigits() {
+        int start = this.cursor;
+        while (this.cursor < this.source.length() && this.isDigit(this.source.charAt(this.cursor))) {
+            this.cursor = this.cursor + 1;
+        }
+        if (start == this.cursor) {
+            return null;
+        }
+        return this.source.substring(start, this.cursor);
+    }
+
+    /**
+     * Reads a practical numeric token with optional sign, decimal point, and exponent marker.
+     * This is a practical shared decimal/scientific helper, not the canonical number grammar for every future format reader.
+     * Returns an empty string when the current cursor is not positioned at a numeric token.
+     */
+    public String readNumberToken() {
+        String value = this.consumeNumberToken();
+        if (value == null) {
+            return "";
+        }
+        return value;
+    }
+
+    /**
+     * Reads a practical numeric token with optional sign, decimal point, and exponent marker.
+     * This is a practical shared decimal/scientific helper, not the canonical number grammar for every future format reader.
+     * Returns `null` when the current cursor is not positioned at a numeric token.
+     */
+    public String tryReadNumberToken() {
+        int start = this.cursor;
+        String value = this.consumeNumberToken();
+        this.cursor = start;
+        return value;
+    }
+
+    private String consumeNumberToken() {
+        int start = this.cursor;
+
+        if (this.peek() == '+' || this.peek() == '-') {
+            this.cursor = this.cursor + 1;
+        }
+
+        boolean sawDigits = false;
+        while (this.cursor < this.source.length() && this.isDigit(this.source.charAt(this.cursor))) {
+            this.cursor = this.cursor + 1;
+            sawDigits = true;
+        }
+
+        if (this.peek() == '.') {
+            this.cursor = this.cursor + 1;
+            while (this.cursor < this.source.length() && this.isDigit(this.source.charAt(this.cursor))) {
+                this.cursor = this.cursor + 1;
+                sawDigits = true;
+            }
+        }
+
+        if (!sawDigits) {
+            this.cursor = start;
+            return null;
+        }
+
+        if (this.peek() == 'e' || this.peek() == 'E') {
+            int exponentStart = this.cursor;
+            this.cursor = this.cursor + 1;
+            if (this.peek() == '+' || this.peek() == '-') {
+                this.cursor = this.cursor + 1;
+            }
+            int exponentDigitsStart = this.cursor;
+            while (this.cursor < this.source.length() && this.isDigit(this.source.charAt(this.cursor))) {
+                this.cursor = this.cursor + 1;
+            }
+            if (this.cursor == exponentDigitsStart) {
+                this.cursor = exponentStart;
+            }
+        }
+
+        return this.source.substring(start, this.cursor);
+    }
+
+    /**
+     * Reads a quoted string using the quote character at the current cursor position.
+     * Supports the current basic escape subset: `\\`, `\"`, `\'`, `\n`, `\r`, and `\t`.
+     * This is a practical shared helper, not the canonical string grammar for every future format reader.
+     */
+    public String readQuotedString() {
+        char quote = this.peek();
+        if (quote != '"' && quote != '\'') {
+            this.panicExpected("quoted string");
+        }
+        return this.consumeQuotedString(quote);
+    }
+
+    /**
+     * Reads a quoted string when a quote starts at the current cursor position.
+     * This is a practical shared helper, not the canonical string grammar for every future format reader.
+     * Returns `null` when the current cursor is not positioned at either quote delimiter.
+     */
+    public String tryReadQuotedString() {
+        char quote = this.peek();
+        if (quote != '"' && quote != '\'') {
+            return null;
+        }
+        int start = this.cursor;
+        String value = this.consumeQuotedString(quote);
+        this.cursor = start;
+        return value;
+    }
+
+    /**
+     * Reads a quoted string using the supplied quote delimiter.
+     * Supports the current basic escape subset: `\\`, `\"`, `\'`, `\n`, `\r`, and `\t`.
+     * This is a practical shared helper, not the canonical string grammar for every future format reader.
+     */
+    public String readQuotedString(char quote) {
+        if (this.peek() != quote) {
+            this.panicExpected("`" + String.valueOf(quote) + "`");
+        }
+        return this.consumeQuotedString(quote);
+    }
+
+    /**
+     * Reads a quoted string using the supplied quote delimiter when it is present.
+     * Returns `null` when the current cursor is not positioned at that quote delimiter.
+     */
+    public String tryReadQuotedString(char quote) {
+        if (this.peek() != quote) {
+            return null;
+        }
+        int start = this.cursor;
+        String value = this.consumeQuotedString(quote);
+        this.cursor = start;
+        return value;
+    }
+
+    private String consumeQuotedString(char quote) {
+        this.cursor = this.cursor + 1;
+        StringBuilder out = new StringBuilder();
+        while (this.cursor < this.source.length()) {
+            char value = this.read();
+            if (value == quote) {
+                return out.toString();
+            }
+            if (value == '\\') {
+                if (this.cursor >= this.source.length()) {
+                    this.panicHere("ended inside escape sequence");
+                }
+                out.append(this.decodeEscape(this.read()));
+            } else if (value == '\n' || value == '\r') {
+                this.panicHere("encountered raw newline inside quoted string");
+            } else {
+                out.append(value);
+            }
+        }
+
+        this.panicHere("reached end of input before closing quote");
+        return null;
+    }
+
+    /**
+     * Returns the current 1-based line number.
+     * This is intentionally derived by rescanning from the start for correctness across seek/reset operations.
+     */
+    public int line() {
+        return this.lineAt(this.cursor);
+    }
+
+    /**
+     * Returns the current 1-based column number.
+     * This is intentionally derived by rescanning from the start for correctness across seek/reset operations.
+     */
+    public int column() {
+        return this.columnAt(this.cursor);
+    }
+
+    /**
+     * Stores the current cursor position as a mark.
+     */
+    public void mark() {
+        this.mark = this.cursor;
+    }
+
+    /**
+     * Reports whether a mark is currently stored.
+     */
+    public boolean hasMark() {
+        return this.mark >= 0;
+    }
+
+    /**
+     * Clears the current mark.
+     */
+    public void clearMark() {
+        this.mark = -1;
+    }
+
+    /**
+     * Resets the cursor to the stored mark or panics when no mark exists.
+     */
+    public void resetToMark() {
+        if (this.mark < 0) {
+            this.panicHere("has no mark");
+        }
+        this.cursor = this.mark;
+    }
+}
