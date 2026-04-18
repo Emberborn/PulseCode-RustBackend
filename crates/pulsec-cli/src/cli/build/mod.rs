@@ -21,6 +21,7 @@ pub(super) fn lower_checked_project_to_ir(result: &CheckResult) -> Result<IrProg
 pub(super) struct CliFlags {
     pub(super) strict_package: bool,
     pub(super) friendly: bool,
+    pub(super) selfhost_provider: bool,
     pub(super) project_root: Option<String>,
     pub(super) source_root: Option<String>,
     pub(super) profile: Option<String>,
@@ -79,6 +80,7 @@ pub(super) fn execute_build_pipeline(
         resolved,
         &backend_out_dir,
         resolved.profile == "debug",
+        flags.selfhost_provider,
     )?;
     let publish_debug_diagnostics = publish_profile_layout && resolved.profile == "debug";
     let (published_artifact, build_config_plan_path) = finalize_build_outputs(
@@ -106,17 +108,46 @@ pub(super) fn execute_build_pipeline(
     })
 }
 
+#[derive(Debug, Clone)]
+pub(super) struct BuildPipelineProviderExecution {
+    pub(super) success: bool,
+    pub(super) output_text: Option<String>,
+    pub(super) detail: Option<String>,
+}
+
+pub(super) fn execute_build_pipeline_owned(
+    resolved: &BuildInvocation,
+    flags: &CliFlags,
+) -> Result<BuildPipelineProviderExecution, String> {
+    if flags.selfhost_provider {
+        if let Ok(result) = execute_build_pipeline_via_authorlib_bridge(resolved, flags) {
+            return Ok(result);
+        }
+    }
+    let build = execute_build_pipeline(resolved, flags)?;
+    let output_text =
+        author_build_render_summary(&build).unwrap_or_else(|_| render_build_summary_fallback(&build));
+    Ok(BuildPipelineProviderExecution {
+        success: true,
+        output_text: Some(output_text),
+        detail: None,
+    })
+}
+
 fn execute_build_compiler_core(
     resolved: &BuildInvocation,
     backend_out_dir: &Path,
     emit_statement_trace_metadata: bool,
+    selfhost_provider: bool,
 ) -> Result<(usize, BackendArtifact), String> {
-    if let Ok(result) = execute_build_compiler_core_via_authorlib_bridge(
-        resolved,
-        backend_out_dir,
-        emit_statement_trace_metadata,
-    ) {
-        return Ok(result);
+    if selfhost_provider {
+        if let Ok(result) = execute_build_compiler_core_via_authorlib_bridge(
+            resolved,
+            backend_out_dir,
+            emit_statement_trace_metadata,
+        ) {
+            return Ok(result);
+        }
     }
     let result = check_project_with_authorlib(
         &resolved.entry_path,
@@ -137,6 +168,79 @@ fn execute_build_compiler_core(
         .emit(&ir, backend_out_dir)
         .map_err(|e| format!("backend emit failed: {e}"))?;
     Ok((result.files_loaded, artifact))
+}
+
+fn execute_build_pipeline_via_authorlib_bridge(
+    resolved: &BuildInvocation,
+    flags: &CliFlags,
+) -> Result<BuildPipelineProviderExecution, String> {
+    let current_exe = env::current_exe()
+        .map_err(|e| format!("Failed to resolve pulsec provider path: {e}"))?;
+    let profile_explicit = if flags.profile.is_some() { "true" } else { "false" };
+    let request = {
+        let mut out = String::new();
+        out.push_str("build-execute-pipeline\n");
+        append_bridge_request_raw_value(&mut out, current_exe.to_str());
+        append_bridge_request_raw_value(&mut out, Some(&resolved.entry_path));
+        append_bridge_request_raw_value(&mut out, resolved.source_root.as_deref());
+        append_bridge_request_raw_value(&mut out, resolved.build_root.to_str());
+        append_bridge_request_raw_value(&mut out, resolved.output_root.to_str());
+        append_bridge_request_raw_value(&mut out, resolved.main_pulse_root.to_str());
+        append_bridge_request_raw_value(&mut out, resolved.main_resources_root.to_str());
+        append_bridge_request_raw_value(&mut out, resolved.build_asm_dir.to_str());
+        append_bridge_request_raw_value(&mut out, resolved.build_generated_dir.to_str());
+        append_bridge_request_raw_value(&mut out, resolved.build_assets_dir.to_str());
+        append_bridge_request_raw_value(&mut out, resolved.build_sanity_dir.to_str());
+        append_bridge_request_raw_value(&mut out, resolved.build_tmp_dir.to_str());
+        append_bridge_request_raw_value(&mut out, Some(&resolved.profile));
+        append_bridge_request_raw_value(&mut out, Some(profile_explicit));
+        append_bridge_request_raw_value(&mut out, Some(&resolved.target));
+        append_bridge_request_raw_value(&mut out, Some(&resolved.output_mode));
+        append_bridge_request_raw_value(&mut out, Some(&resolved.output_entry));
+        append_bridge_request_raw_value(&mut out, Some(&resolved.runtime_debug_allocator));
+        append_bridge_request_raw_value(&mut out, Some(&resolved.runtime_cycle_collector));
+        append_bridge_request_raw_value(&mut out, resolved.assembler.as_deref());
+        append_bridge_request_raw_value(&mut out, resolved.linker.as_deref());
+        append_bridge_request_raw_value(&mut out, resolved.package_name.as_deref());
+        append_bridge_request_raw_value(&mut out, resolved.package_version.as_deref());
+        append_bridge_request_raw_value(
+            &mut out,
+            Some(if resolved.used_manifest { "true" } else { "false" }),
+        );
+        append_bridge_request_raw_value(
+            &mut out,
+            Some(if resolved.authorlib_enabled { "true" } else { "false" }),
+        );
+        out
+    };
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_build_pipeline_execution_output(&stdout)
+}
+
+fn parse_build_pipeline_execution_output(text: &str) -> Result<BuildPipelineProviderExecution, String> {
+    let values = parse_build_compiler_core_bridge_values(text)?;
+    let success = match values.first().and_then(|value| value.as_deref()) {
+        Some("true") => true,
+        Some("false") => false,
+        other => {
+            return Err(format!(
+                "author build pipeline bridge returned invalid success flag {:?}",
+                other
+            ))
+        }
+    };
+    if success {
+        return Ok(BuildPipelineProviderExecution {
+            success: true,
+            output_text: values.get(1).cloned().flatten(),
+            detail: None,
+        });
+    }
+    Ok(BuildPipelineProviderExecution {
+        success: false,
+        output_text: None,
+        detail: values.get(2).cloned().flatten(),
+    })
 }
 
 fn execute_build_compiler_core_via_authorlib_bridge(
@@ -2382,6 +2486,7 @@ mod tests {
         let flags = CliFlags {
             strict_package: true,
             friendly: false,
+            selfhost_provider: false,
             project_root: Some(root.display().to_string()),
             source_root: None,
             profile: None,

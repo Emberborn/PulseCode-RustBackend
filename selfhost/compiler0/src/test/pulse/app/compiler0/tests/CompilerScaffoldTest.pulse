@@ -1,0 +1,29 @@
+package app.compiler0.tests;
+
+import app.compiler0.CompilerIdentity;
+import author.compiler.CheckResult;
+import pulse.lang.AssertionError;
+import pulse.lang.IO;
+
+class CompilerScaffoldTest {
+    public static void main() {
+        CheckResult result = CompilerIdentity.smokeCheckContract();
+        if (!CompilerIdentity.projectName().equals("pulsec-compiler0")) {
+            AssertionError.fail("compiler0 scaffold project name drifted");
+        }
+        if (!CompilerIdentity.stageName().equals("compiler0")) {
+            AssertionError.fail("compiler0 scaffold stage drifted");
+        }
+        if (!CompilerIdentity.target().equals("windows-x64")) {
+            AssertionError.fail("compiler0 scaffold target drifted");
+        }
+        if (!result.success()) {
+            AssertionError.fail("compiler0 authored check contract should succeed");
+        }
+        if (!result.packageName().equals("app.compiler0")) {
+            AssertionError.fail("compiler0 authored check contract package drifted");
+        }
+        IO.println("compiler0_scaffold_ok");
+    }
+}
+

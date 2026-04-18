@@ -118,11 +118,17 @@ pub(super) fn execute_test_file(
     source_root: Option<&str>,
     strict_package: bool,
     authorlib_enabled: bool,
+    selfhost_provider: bool,
 ) -> Result<TestFileExecution, String> {
-    if let Ok(result) =
-        execute_test_file_via_authorlib_bridge(entry_path, source_root, strict_package, authorlib_enabled)
-    {
-        return Ok(result);
+    if selfhost_provider {
+        if let Ok(result) = execute_test_file_via_authorlib_bridge(
+            entry_path,
+            source_root,
+            strict_package,
+            authorlib_enabled,
+        ) {
+            return Ok(result);
+        }
     }
     execute_test_file_fallback(entry_path, source_root, strict_package, authorlib_enabled)
 }

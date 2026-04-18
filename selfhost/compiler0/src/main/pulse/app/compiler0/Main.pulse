@@ -1,0 +1,10 @@
+package app.compiler0;
+
+import pulse.lang.IO;
+
+class Main {
+    public static void main() {
+        IO.println(CompilerIdentity.banner());
+    }
+}
+

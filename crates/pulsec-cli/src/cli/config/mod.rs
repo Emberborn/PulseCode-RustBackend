@@ -271,12 +271,19 @@ fn emit_build_invocation_bridge_source() -> String {
 
         import author.build.BuildInvocation;
         import author.build.BuildInvocationBridge;
+        import author.build.BuildLayout;
+        import author.build.BuildPipelineExecutionBridge;
+        import author.build.BuildPipelineExecutionProvider;
+        import author.build.BuildPipelineExecutionResult;
         import author.build.BuildPublishedArtifact;
         import author.build.BuildPublishedArtifactBridge;
         import author.build.BuildPublicationPlan;
         import author.build.BuildPublicationPlanBridge;
         import author.build.BuildSummaryWriter;
         import author.build.WorkspaceBuildMemberResult;
+        import author.build.WorkspaceBuildExecutionBridge;
+        import author.build.WorkspaceBuildExecutionProvider;
+        import author.build.WorkspaceBuildExecutionResult;
         import author.build.WorkspaceBuildResult;
         import author.build.BuildPublicationWriter;
         import author.build.BuildInvocationResolver;
@@ -287,28 +294,35 @@ fn emit_build_invocation_bridge_source() -> String {
         import author.project.TestInvocationBridge;
         import author.project.WorkspaceContext;
         import author.project.WorkspaceContextBridge;
-                import author.compiler.CheckResult;
-                import author.compiler.BuildCoreExecutionBridge;
-                import author.compiler.BuildCoreExecutionProvider;
-                import author.compiler.BuildCoreExecutionResult;
-                import author.compiler.CheckExecutionBridge;
-                import author.compiler.CheckExecutionProvider;
-                import author.compiler.CheckExecutionResult;
-                import author.compiler.CheckSummaryWriter;
-                import author.compiler.TestDiagnosticWriter;
-                import author.compiler.TestDiscoveryResult;
-                import author.compiler.TestExecutionResult;
-                import author.compiler.TestExecutionWriter;
-                import author.compiler.TestFileExecutionBridge;
-                import author.compiler.TestFileExecutionProvider;
-                import author.compiler.TestFileExecutionResult;
-                import author.compiler.TestResult;
-                import author.compiler.TestSummaryWriter;
-                import author.compiler.WorkspaceCheckMemberResult;
-                import author.compiler.WorkspaceCheckResult;
-                import author.compiler.WorkspaceTestResult;
+        import author.compiler.CheckResult;
+        import author.compiler.BuildCoreExecutionBridge;
+        import author.compiler.BuildCoreExecutionProvider;
+        import author.compiler.BuildCoreExecutionResult;
+        import author.compiler.CheckExecutionBridge;
+        import author.compiler.CheckExecutionProvider;
+        import author.compiler.CheckExecutionResult;
+        import author.compiler.CheckSummaryWriter;
+        import author.compiler.TestDiagnosticWriter;
+        import author.compiler.TestDiscoveryResult;
+        import author.compiler.TestExecutionResult;
+        import author.compiler.TestExecutionWriter;
+        import author.compiler.TestFileExecutionBridge;
+        import author.compiler.TestFileExecutionProvider;
+        import author.compiler.TestFileExecutionResult;
+        import author.compiler.TestResult;
+        import author.compiler.TestSummaryWriter;
+        import author.compiler.WorkspaceCheckExecutionBridge;
+        import author.compiler.WorkspaceCheckExecutionProvider;
+        import author.compiler.WorkspaceCheckExecutionResult;
+        import author.compiler.WorkspaceCheckMemberResult;
+        import author.compiler.WorkspaceCheckResult;
+        import author.compiler.WorkspaceTestExecutionBridge;
+        import author.compiler.WorkspaceTestExecutionProvider;
+        import author.compiler.WorkspaceTestExecutionResult;
+        import author.compiler.WorkspaceTestResult;
         import author.toolchain.ToolchainCandidateBridge;
         import author.toolchain.ToolchainCandidatePlan;
+        import author.toolchain.ToolchainConfig;
         import author.toolchain.ToolchainDiscoveryBridge;
         import author.toolchain.ToolchainDiscoveryPlan;
         import author.toolchain.ToolchainDiscoveryResolver;
@@ -751,6 +765,14 @@ fn emit_build_invocation_bridge_source() -> String {
                     IO.print(text);
                     return;
                 }}
+                if (mode.equals("build-execute-pipeline")) {{
+                    IO.print(Main.executeBuildPipeline(Main.readLines(25)));
+                    return;
+                }}
+                if (mode.equals("build-execute-workspace")) {{
+                    IO.print(Main.executeWorkspaceBuild(Main.readLines(10)));
+                    return;
+                }}
                 if (mode.equals("build-render-workspace-start")) {{
                     IO.print(Main.renderBuildWorkspaceStart(Main.readLines(2)));
                     return;
@@ -800,12 +822,20 @@ fn emit_build_invocation_bridge_source() -> String {
                     IO.print(Main.executeCompilerCheck(Main.readLines(5)));
                     return;
                 }}
+                if (mode.equals("compiler-execute-workspace-check")) {{
+                    IO.print(Main.executeCompilerWorkspaceCheck(Main.readLines(3)));
+                    return;
+                }}
                 if (mode.equals("compiler-execute-build-core")) {{
                     IO.print(Main.executeCompilerBuildCore(Main.readLines(10)));
                     return;
                 }}
                 if (mode.equals("compiler-execute-test-file")) {{
                     IO.print(Main.executeCompilerTestFile(Main.readLines(5)));
+                    return;
+                }}
+                if (mode.equals("compiler-execute-workspace-test")) {{
+                    IO.print(Main.executeCompilerWorkspaceTest(Main.readLines(3)));
                     return;
                 }}
                 if (mode.equals("compiler-render-test-discovery")) {{
@@ -876,6 +906,62 @@ fn emit_build_invocation_bridge_source() -> String {
                 return CheckSummaryWriter.renderCheckResult(result);
             }}
 
+            private static String executeBuildPipeline(String request) {{
+                BuildInvocation invocation = new BuildInvocation(
+                    pulse.io.Path.parent(Main.readValue(request, 3)),
+                    Main.readValue(request, 1),
+                    Main.readValue(request, 2),
+                    Main.readValue(request, 5),
+                    Main.readValue(request, 6),
+                    Main.readValue(request, 4),
+                    new BuildLayout(
+                        Main.readValue(request, 3),
+                        Main.readValue(request, 7),
+                        Main.readValue(request, 8),
+                        Main.readValue(request, 9),
+                        Main.readValue(request, 10),
+                        Main.readValue(request, 11),
+                        pulse.io.Path.resolve(Main.readValue(request, 3), "distro")
+                    ),
+                    Main.readValue(request, 12),
+                    Main.readValue(request, 14),
+                    Main.readValue(request, 15),
+                    Main.readValue(request, 16),
+                    Main.readValue(request, 17),
+                    Main.readValue(request, 18),
+                    new ToolchainConfig(
+                        Main.readValue(request, 19),
+                        Main.readValue(request, 20)
+                    ),
+                    Main.readValue(request, 21),
+                    Main.readValue(request, 22),
+                    "true".equals(Main.readValue(request, 23)),
+                    "true".equals(Main.readValue(request, 24))
+                );
+                BuildPipelineExecutionResult result = BuildPipelineExecutionProvider.execute(
+                    Main.readValue(request, 0),
+                    invocation,
+                    "true".equals(Main.readValue(request, 13))
+                );
+                return BuildPipelineExecutionBridge.toBridgeText(result);
+            }}
+
+            private static String executeWorkspaceBuild(String request) {{
+                WorkspaceBuildExecutionResult result = WorkspaceBuildExecutionProvider.execute(
+                    Main.readValue(request, 0),
+                    Main.readValue(request, 1),
+                    Main.readValue(request, 2),
+                    Main.readValue(request, 3),
+                    Main.readValue(request, 4),
+                    Main.readValue(request, 5),
+                    Main.readValue(request, 6),
+                    Main.readValue(request, 7),
+                    Main.readValue(request, 8),
+                    Main.readValue(request, 9)
+                );
+                return WorkspaceBuildExecutionBridge.toBridgeText(result);
+            }}
+
             private static String executeCompilerCheck(String request) {{
                 CheckExecutionResult result = CheckExecutionProvider.execute(
                     Main.readValue(request, 0),
@@ -885,6 +971,15 @@ fn emit_build_invocation_bridge_source() -> String {
                     "true".equals(Main.readValue(request, 4))
                 );
                 return CheckExecutionBridge.toBridgeText(result);
+            }}
+
+            private static String executeCompilerWorkspaceCheck(String request) {{
+                WorkspaceCheckExecutionResult result = WorkspaceCheckExecutionProvider.execute(
+                    Main.readValue(request, 0),
+                    Main.readValue(request, 1),
+                    "true".equals(Main.readValue(request, 2))
+                );
+                return WorkspaceCheckExecutionBridge.toBridgeText(result);
             }}
 
             private static String executeCompilerBuildCore(String request) {{
@@ -912,6 +1007,15 @@ fn emit_build_invocation_bridge_source() -> String {
                     "true".equals(Main.readValue(request, 4))
                 );
                 return TestFileExecutionBridge.toBridgeText(result);
+            }}
+
+            private static String executeCompilerWorkspaceTest(String request) {{
+                WorkspaceTestExecutionResult result = WorkspaceTestExecutionProvider.execute(
+                    Main.readValue(request, 0),
+                    Main.readValue(request, 1),
+                    "true".equals(Main.readValue(request, 2))
+                );
+                return WorkspaceTestExecutionBridge.toBridgeText(result);
             }}
 
             private static String renderBuildWorkspaceStart(String request) {{
@@ -2309,6 +2413,7 @@ mod tests {
         CliFlags {
             strict_package: true,
             friendly: false,
+            selfhost_provider: false,
             project_root: Some(project_root.display().to_string()),
             source_root: None,
             profile: None,

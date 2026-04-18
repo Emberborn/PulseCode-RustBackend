@@ -1,0 +1,23 @@
+package app.runtime0.tests;
+
+import app.runtime0.RuntimeIdentity;
+import author.project.ProjectLayout;
+import pulse.lang.AssertionError;
+import pulse.lang.IO;
+
+class RuntimeScaffoldTest {
+    public static void main() {
+        ProjectLayout layout = RuntimeIdentity.layout();
+        if (!RuntimeIdentity.projectName().equals("pulsec-runtime0")) {
+            AssertionError.fail("runtime0 scaffold project name drifted");
+        }
+        if (!RuntimeIdentity.stageName().equals("runtime0")) {
+            AssertionError.fail("runtime0 scaffold stage drifted");
+        }
+        if (!layout.mainPulseRoot().contains("src/main/pulse")) {
+            AssertionError.fail("runtime0 scaffold layout drifted");
+        }
+        IO.println("runtime0_scaffold_ok");
+    }
+}
+

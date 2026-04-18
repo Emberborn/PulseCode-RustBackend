@@ -400,6 +400,28 @@ Current immediate continuation inside that target:
   - single-project `pulsec test` now prefers authored test-file execution through the cached bridge before falling back to the old direct Rust check loop
     - Pulse owns the hot-path per-test compiler execution orchestration and calls the current `pulsec` binary as a host provider through `pulse.process.*`
     - Rust still performs parsing/analysis underneath that provider call, but it is no longer the only conductor of normal single-project test-file execution
+  - workspace compiler/build orchestration now also prefers authored provider-backed execution through the cached bridge:
+    - `author.compiler.WorkspaceCheckExecutionResult`
+    - `author.compiler.WorkspaceCheckExecutionBridge`
+    - `author.compiler.WorkspaceCheckExecutionProvider`
+    - `author.compiler.WorkspaceTestExecutionResult`
+    - `author.compiler.WorkspaceTestExecutionBridge`
+    - `author.compiler.WorkspaceTestExecutionProvider`
+    - `author.build.WorkspaceBuildExecutionResult`
+    - `author.build.WorkspaceBuildExecutionBridge`
+    - `author.build.WorkspaceBuildExecutionProvider`
+    - `author.build.BuildPipelineExecutionResult`
+    - `author.build.BuildPipelineExecutionBridge`
+    - `author.build.BuildPipelineExecutionProvider`
+  - workspace `check` / `build` / `test` and the normal single-project build pipeline now prefer authored provider-backed execution first and only fall back to the older inline Rust orchestration if the bridge/provider path is unavailable
+  - operational correction after that aggressive lift:
+    - provider-backed compiler/build/test execution is now reserved for explicit selfhost bring-up flows selected by the hidden Rust-bootstrap flag `--selfhost-provider`
+    - normal CLI hot paths for ordinary fixtures/parity/regression runs now go straight to the direct Rust compiler loop again
+    - this keeps the selfhost/compiler-runtime ownership seam alive without forcing the whole regression suite through nested `pulsec` provider processes or tying the behavior permanently to a specific directory name
+  - the first real Pulse-side compiler/runtime project workspace now exists under [selfhost](/G:/Programming/Rust/PulseCode/selfhost):
+    - [selfhost/compiler0](/G:/Programming/Rust/PulseCode/selfhost/compiler0)
+    - [selfhost/runtime0](/G:/Programming/Rust/PulseCode/selfhost/runtime0)
+  - those projects are still scaffolds, not full implementations, but they are real Pulse projects with manifests, entrypoints, and smoke tests that the Rust-built `pulsec` can already `check` / `build` / `test`
   - remaining Rust-owned build publication/materialization residue is now:
     - fallback/bootstrap publication-plan mirroring
     - fallback/bootstrap layout materialization mirroring
@@ -498,6 +520,13 @@ Preferred package homes:
 - `author.compiler.*` for compiler-only support
 - `author.runtime.*` for runtime-only support
 - `author.memory.*` and `author.system.*` for sharper advanced-control surfaces
+  - Pulse-side compiler/runtime project scaffolds now live in the repository workspace under [selfhost](/G:/Programming/Rust/PulseCode/selfhost) so the program lift can happen in real Pulse projects instead of a future one-shot dump
+  - compiler/runtime port shape is now governed by [SELFHOST_PORTING_RULES.md](/G:/Programming/Rust/PulseCode/docs/SELFHOST_PORTING_RULES.md)
+    - small focused classes
+    - no mega-files
+    - clean nested packages
+    - KISS by default
+    - when the clean port shape fights the substrate, fix the bootstrap/stdlib/backend instead of forcing the Pulse code into an ugly shape
 
 ### What should remain public stdlib
 
@@ -645,6 +674,7 @@ Start with:
 8. [PROJECT_LAYOUT_CONVENTIONS.md](/G:/Programming/Rust/PulseCode/docs/PROJECT_LAYOUT_CONVENTIONS.md)
 9. [CLI_COMMAND_CONTRACT.md](/G:/Programming/Rust/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
 10. [F1_SUPPORT_POLICY.md](/G:/Programming/Rust/PulseCode/docs/F1_SUPPORT_POLICY.md)
+11. [SELFHOST_PORTING_RULES.md](/G:/Programming/Rust/PulseCode/docs/SELFHOST_PORTING_RULES.md)
 
 Important ingestion rule:
 

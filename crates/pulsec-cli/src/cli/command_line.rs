@@ -13,6 +13,7 @@ pub(crate) fn parse_command(raw: &str) -> Option<CliCommand> {
         "__provider-check" => Some(CliCommand::ProviderCheck),
         "__provider-test-file" => Some(CliCommand::ProviderTestFile),
         "__provider-build-core" => Some(CliCommand::ProviderBuildCore),
+        "__provider-build-pipeline" => Some(CliCommand::ProviderBuildPipeline),
         "__prewarm-author-build-bridge" => Some(CliCommand::PrewarmAuthorBuildBridge),
         "help" | "--help" | "-h" => Some(CliCommand::Help),
         "version" | "--version" | "-V" => Some(CliCommand::Version),
@@ -23,6 +24,7 @@ pub(crate) fn parse_command(raw: &str) -> Option<CliCommand> {
 pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFlags, String> {
     let mut strict_package = false;
     let mut friendly = false;
+    let mut selfhost_provider = false;
     let mut project_root: Option<String> = None;
     let mut source_root: Option<String> = None;
     let mut profile: Option<String> = None;
@@ -46,6 +48,10 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
                     return Err("--friendly is only valid for 'check' or 'test'".to_string());
                 }
                 friendly = true;
+                i += 1;
+            }
+            "--selfhost-provider" => {
+                selfhost_provider = true;
                 i += 1;
             }
             "--project-root" => {
@@ -193,6 +199,7 @@ pub(crate) fn parse_flags(command: CliCommand, flags: &[String]) -> Result<CliFl
     Ok(CliFlags {
         strict_package,
         friendly,
+        selfhost_provider,
         project_root,
         source_root,
         profile,

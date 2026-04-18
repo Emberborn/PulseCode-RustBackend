@@ -104,6 +104,8 @@ The current target taxonomy is:
     - `author.compiler.TestFileExecutionResult` for structured provider-backed compiler test-file execution state
     - `author.compiler.TestFileExecutionBridge` for bridge-safe provider-backed compiler test-file transport
     - `author.compiler.TestFileExecutionProvider` for Pulse-owned single-project test-file orchestration over the current host compiler provider
+    - `author.compiler.WorkspaceCheckExecutionResult` / `Bridge` / `Provider` for provider-backed workspace check orchestration
+    - `author.compiler.WorkspaceTestExecutionResult` / `Bridge` / `Provider` for provider-backed workspace test orchestration
 - `author.runtime.*`
   - runtime-construction/runtime-service/runtime-object-model support APIs
 - `author.memory.*`
@@ -159,6 +161,26 @@ over:
 - or treating "disable ARC/GC globally" as the first design primitive
 
 Any future decision about component-level managed-vs-manual memory policy for the compiler, runtime, or OS work should be expressed through explicit Pulse-owned authoring surfaces, not by silently weakening the default language model for ordinary user code.
+
+## Current Program-Scaffold Direction
+
+The first real Pulse-side compiler/runtime project workspace now lives under
+[selfhost](/G:/Programming/Rust/PulseCode/selfhost):
+
+- [selfhost/compiler0](/G:/Programming/Rust/PulseCode/selfhost/compiler0)
+- [selfhost/runtime0](/G:/Programming/Rust/PulseCode/selfhost/runtime0)
+
+These are intentionally small scaffolds right now, but they are real Pulse
+projects with manifests, entrypoints, authorlib enabled, and smoke tests. The
+goal is to keep the compiler/runtime program lift happening inside real Pulse
+projects that the Rust-built `pulsec` can already `check`, `build`, and `test`.
+
+Operational rule for the current transition:
+
+- provider-backed compiler/build/test execution is for explicit bring-up flows
+  selected by the hidden Rust-bootstrap flag `--selfhost-provider`
+- ordinary fixture/parity/regression runs should stay on the direct Rust
+  compiler loop until the real Pulse compiler/runtime replace that loop
 
 ## Access Policy
 

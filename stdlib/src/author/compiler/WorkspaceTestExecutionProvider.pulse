@@ -1,0 +1,148 @@
+package author.compiler;
+
+import author.project.ProjectDiscovery;
+import author.project.ProjectInvocationResolver;
+import author.project.TestInvocation;
+import author.project.WorkspaceContext;
+import pulse.collections.List;
+import pulse.io.Path;
+import pulse.lang.StringBuilder;
+import pulse.util.Objects;
+
+/**
+ * Provider-backed workspace-test execution through authored project discovery and test-file providers.
+ */
+public final class WorkspaceTestExecutionProvider {
+    public static WorkspaceTestExecutionResult execute(
+        String compilerPath,
+        String workspaceRoot,
+        boolean strictPackage
+    ) {
+        Objects.requireNonNull(compilerPath, "compilerPath must not be null");
+        Objects.requireNonNull(workspaceRoot, "workspaceRoot must not be null");
+
+        WorkspaceContext workspace = ProjectDiscovery.resolveWorkspaceContext(workspaceRoot);
+        if (workspace == null) {
+            return WorkspaceTestExecutionResult.failure(
+                "workspace root '".concat(workspaceRoot).concat("' does not resolve to a workspace manifest")
+            );
+        }
+
+        String mode = strictPackage ? "strict" : "friendly";
+        StringBuilder out = new StringBuilder();
+        int passed = 0;
+        int failed = 0;
+        int total = 0;
+
+        WorkspaceTestExecutionProvider.appendLine(
+            out,
+            TestSummaryWriter.renderWorkspaceTestStartResult(
+                new WorkspaceTestResult(workspace.rootPath(), workspace.memberCount(), mode, 0, 0, 0)
+            )
+        );
+
+        int index = 0;
+        while (index < workspace.memberCount()) {
+            String memberRoot = workspace.memberRoots().getString(index);
+            TestInvocation invocation = ProjectInvocationResolver.resolveTestInvocation(memberRoot, null);
+            List<String> tests = ProjectDiscovery.discoverTestFiles(invocation.testsRoot());
+            if (tests.isEmpty()) {
+                failed = failed + 1;
+                WorkspaceTestExecutionProvider.appendLine(
+                    out,
+                    TestDiagnosticWriter.renderTestDiscoveryResult(
+                        TestDiscoveryResult.workspaceMemberNoTestsFound(
+                            Path.normalize(memberRoot),
+                            invocation.testsRoot()
+                        )
+                    )
+                );
+                index = index + 1;
+                continue;
+            }
+            WorkspaceTestExecutionProvider.appendLine(
+                out,
+                TestSummaryWriter.renderTestDiscoveryResult(
+                    TestDiscoveryResult.workspaceMemberSuccess(
+                        Path.normalize(memberRoot),
+                        invocation.testsRoot(),
+                        invocation.sourceRoot(),
+                        tests.size()
+                    )
+                )
+            );
+            int testIndex = 0;
+            while (testIndex < tests.size()) {
+                String testFile = tests.getString(testIndex);
+                String testName = Path.relativeTo(invocation.testsRoot(), testFile);
+                total = total + 1;
+                TestFileExecutionResult result = TestFileExecutionProvider.execute(
+                    compilerPath,
+                    testFile,
+                    invocation.sourceRoot(),
+                    strictPackage,
+                    invocation.authorlibEnabled()
+                );
+                if (result.success()) {
+                    passed = passed + 1;
+                    WorkspaceTestExecutionProvider.appendLine(
+                        out,
+                        TestExecutionWriter.renderTestExecutionResult(
+                            TestExecutionResult.workspacePass(
+                                Path.normalize(memberRoot),
+                                testName
+                            )
+                        )
+                    );
+                } else {
+                    failed = failed + 1;
+                    WorkspaceTestExecutionProvider.appendLine(
+                        out,
+                        TestExecutionWriter.renderTestExecutionResult(
+                            TestExecutionResult.workspaceFail(
+                                Path.normalize(memberRoot),
+                                testName,
+                                WorkspaceTestExecutionProvider.detailOrUnknown(result.detail())
+                            )
+                        )
+                    );
+                }
+                testIndex = testIndex + 1;
+            }
+            index = index + 1;
+        }
+
+        WorkspaceTestExecutionProvider.appendLine(
+            out,
+            TestSummaryWriter.renderWorkspaceTestSummaryResult(
+                new WorkspaceTestResult(
+                    workspace.rootPath(),
+                    workspace.memberCount(),
+                    mode,
+                    passed,
+                    failed,
+                    total
+                )
+            )
+        );
+
+        return WorkspaceTestExecutionResult.success(out.toString(), passed, failed, total);
+    }
+
+    private static void appendLine(StringBuilder out, String value) {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+        out.append(value);
+        if (!value.endsWith("\n")) {
+            out.append('\n');
+        }
+    }
+
+    private static String detailOrUnknown(String detail) {
+        if (detail == null || detail.isEmpty()) {
+            return "unknown compiler provider failure";
+        }
+        return detail;
+    }
+}

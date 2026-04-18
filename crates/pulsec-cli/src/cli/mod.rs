@@ -55,6 +55,7 @@ enum CliCommand {
     ProviderCheck,
     ProviderTestFile,
     ProviderBuildCore,
+    ProviderBuildPipeline,
     PrewarmAuthorBuildBridge,
     Help,
     Version,
@@ -264,6 +265,22 @@ pub(crate) fn run() {
                 }
             }
         }
+        CliCommand::ProviderBuildPipeline => {
+            let args = command_args;
+            match execute_build_pipeline_inline_from_args(args) {
+                Ok(build) => {
+                    print!("{}", emit_provider_build_pipeline_result_bridge_text(&build));
+                    process::exit(EXIT_OK);
+                }
+                Err(err) => {
+                    print!(
+                        "{}",
+                        emit_provider_build_pipeline_failure_bridge_text(&err)
+                    );
+                    process::exit(EXIT_COMMAND_FAILURE);
+                }
+            }
+        }
         CliCommand::New => {
             if command_args
                 .iter()
@@ -332,6 +349,37 @@ pub(crate) fn run() {
                 }
             };
             if let Some(workspace) = workspace {
+                if cli_flags.selfhost_provider {
+                    if let Ok(result) = execute_workspace_check_owned(
+                        &workspace.root,
+                        cli_flags.strict_package && !cli_flags.friendly,
+                    ) {
+                        if let Some(output) = result.output_text.as_deref() {
+                            print!("{output}");
+                        }
+                        if !result.success {
+                            emit_error(
+                                DIAG_CHECK,
+                                &render_workspace_check_failed(
+                                    &workspace.root,
+                                    workspace.member_roots.len(),
+                                    if cli_flags.strict_package && !cli_flags.friendly {
+                                        "strict"
+                                    } else {
+                                        "friendly"
+                                    },
+                                    result.passed,
+                                    result.failed,
+                                ),
+                            );
+                            emit_hint(
+                                "inspect [FAIL] lines and re-run on the failing member with --project-root",
+                            );
+                            process::exit(EXIT_COMMAND_FAILURE);
+                        }
+                        process::exit(EXIT_OK);
+                    }
+                }
                 let strict = cli_flags.strict_package && !cli_flags.friendly;
                 let mode_label = if strict { "strict" } else { "friendly" };
                 let mut passed = 0usize;
@@ -433,6 +481,7 @@ pub(crate) fn run() {
                 resolved.source_root.as_deref(),
                 strict,
                 resolved.authorlib_enabled,
+                cli_flags.selfhost_provider,
             ) {
                 Ok(result) if result.success => {
                     println!(
@@ -519,6 +568,28 @@ pub(crate) fn run() {
                 }
             };
             if let Some(workspace) = workspace {
+                if cli_flags.selfhost_provider {
+                    if let Ok(result) = execute_workspace_build_owned(&workspace.root, &cli_flags) {
+                        if let Some(output) = result.output_text.as_deref() {
+                            print!("{output}");
+                        }
+                        if !result.success {
+                            emit_error(
+                                DIAG_BUILD,
+                                &render_workspace_build_failed(
+                                    &workspace.root,
+                                    workspace.member_roots.len(),
+                                    result.failed,
+                                ),
+                            );
+                            emit_hint(
+                                "inspect [FAIL] lines and re-run on the failing member with --project-root",
+                            );
+                            process::exit(EXIT_COMMAND_FAILURE);
+                        }
+                        process::exit(EXIT_OK);
+                    }
+                }
                 let mut failed = 0usize;
                 println!(
                     "{}",
@@ -585,15 +656,32 @@ pub(crate) fn run() {
                     process::exit(EXIT_USAGE_ERROR);
                 }
             };
-            let build = match execute_build_pipeline(&resolved, &cli_flags) {
-                Ok(build) => build,
+            match execute_build_pipeline_owned(&resolved, &cli_flags) {
+                Ok(result) if result.success => {
+                    if let Some(output) = result.output_text.as_deref() {
+                        print!("{output}");
+                    }
+                }
+                Ok(result) => {
+                    emit_error(
+                        DIAG_BUILD,
+                        &format!(
+                            "Compile error: {}",
+                            result
+                                .detail
+                                .as_deref()
+                                .unwrap_or("unknown build pipeline provider failure")
+                        ),
+                    );
+                    emit_hint("run 'pulsec check' first to isolate compile-time issues");
+                    process::exit(EXIT_COMMAND_FAILURE);
+                }
                 Err(err) => {
                     emit_error(DIAG_BUILD, &format!("Compile error: {err}"));
                     emit_hint("run 'pulsec check' first to isolate compile-time issues");
                     process::exit(EXIT_COMMAND_FAILURE);
                 }
-            };
-            print_build_summary(&build);
+            }
         }
         CliCommand::Test => {
             if command_args
@@ -622,6 +710,36 @@ pub(crate) fn run() {
                 }
             };
             if let Some(workspace) = workspace {
+                if cli_flags.selfhost_provider {
+                    if let Ok(result) = execute_workspace_test_owned(
+                        &workspace.root,
+                        cli_flags.strict_package && !cli_flags.friendly,
+                    ) {
+                        if let Some(output) = result.output_text.as_deref() {
+                            print!("{output}");
+                        }
+                        if !result.success {
+                            emit_error(
+                                DIAG_TEST,
+                                &render_workspace_tests_failed(
+                                    &workspace.root,
+                                    workspace.member_roots.len(),
+                                    if cli_flags.strict_package && !cli_flags.friendly {
+                                        "strict"
+                                    } else {
+                                        "friendly"
+                                    },
+                                    result.passed,
+                                    result.failed,
+                                    result.total,
+                                ),
+                            );
+                            emit_hint("review [FAIL] diagnostics above and re-run for the failing member");
+                            process::exit(EXIT_COMMAND_FAILURE);
+                        }
+                        process::exit(EXIT_OK);
+                    }
+                }
                 let strict = cli_flags.strict_package && !cli_flags.friendly;
                 let mode_label = if strict { "strict" } else { "friendly" };
                 let mut passed = 0usize;
@@ -788,6 +906,7 @@ pub(crate) fn run() {
                     Some(&invocation.source_root.display().to_string()),
                     strict,
                     invocation.authorlib_enabled,
+                    cli_flags.selfhost_provider,
                 ) {
                     Ok(execution) => {
                         let _ = execution.files_loaded;
@@ -818,6 +937,129 @@ pub(crate) fn run() {
         }
         CliCommand::Help | CliCommand::Version => unreachable!("handled before dispatch"),
     }
+}
+
+fn execute_build_pipeline_inline_from_args(args: &[String]) -> Result<BuildRun, String> {
+    if args.len() < 24 {
+        return Err(format!(
+            "build pipeline provider expected 24 arguments, got {}",
+            args.len()
+        ));
+    }
+    let resolved = BuildInvocation {
+        entry_path: args[0].clone(),
+        source_root: optional_provider_arg(args.get(1)),
+        build_root: PathBuf::from(required_provider_arg(args, 2, "build_root")?),
+        output_root: PathBuf::from(required_provider_arg(args, 3, "output_root")?),
+        main_pulse_root: PathBuf::from(required_provider_arg(args, 4, "main_pulse_root")?),
+        main_resources_root: PathBuf::from(required_provider_arg(args, 5, "main_resources_root")?),
+        build_asm_dir: PathBuf::from(required_provider_arg(args, 6, "build_asm_dir")?),
+        build_generated_dir: PathBuf::from(required_provider_arg(args, 7, "build_generated_dir")?),
+        build_assets_dir: PathBuf::from(required_provider_arg(args, 8, "build_assets_dir")?),
+        build_sanity_dir: PathBuf::from(required_provider_arg(args, 9, "build_sanity_dir")?),
+        build_tmp_dir: PathBuf::from(required_provider_arg(args, 10, "build_tmp_dir")?),
+        profile: required_provider_arg(args, 11, "profile")?.to_string(),
+        target: required_provider_arg(args, 13, "target")?.to_string(),
+        output_mode: required_provider_arg(args, 14, "output_mode")?.to_string(),
+        output_entry: required_provider_arg(args, 15, "output_entry")?.to_string(),
+        runtime_debug_allocator: required_provider_arg(args, 16, "runtime_debug_allocator")?
+            .to_string(),
+        runtime_cycle_collector: required_provider_arg(args, 17, "runtime_cycle_collector")?
+            .to_string(),
+        assembler: optional_provider_arg(args.get(18)),
+        linker: optional_provider_arg(args.get(19)),
+        package_name: optional_provider_arg(args.get(20)),
+        package_version: optional_provider_arg(args.get(21)),
+        used_manifest: provider_bool_arg(args.get(22)),
+        authorlib_enabled: provider_bool_arg(args.get(23)),
+    };
+    let flags = CliFlags {
+        strict_package: false,
+        friendly: false,
+        selfhost_provider: true,
+        project_root: None,
+        source_root: None,
+        profile: if provider_bool_arg(args.get(12)) {
+            Some(resolved.profile.clone())
+        } else {
+            None
+        },
+        target: None,
+        output_mode: None,
+        runtime_debug_allocator: None,
+        runtime_cycle_collector: None,
+        out_dir: None,
+        assembler: None,
+        linker: None,
+    };
+    execute_build_pipeline(&resolved, &flags)
+}
+
+fn emit_provider_build_pipeline_result_bridge_text(build: &BuildRun) -> String {
+    let mut out = String::new();
+    append_bridge_request_raw_value(&mut out, Some("true"));
+    append_bridge_request_raw_value(&mut out, Some(&build.artifact.classes.to_string()));
+    append_bridge_request_raw_value(&mut out, Some(&build.artifact.methods.to_string()));
+    append_bridge_request_raw_value(&mut out, Some(&build.artifact.fields.to_string()));
+    append_bridge_request_raw_value(&mut out, Some(&build.files_loaded.to_string()));
+    append_bridge_request_raw_value(&mut out, Some(&build.resolved.profile));
+    append_bridge_request_raw_value(&mut out, Some(&build.resolved.target));
+    append_bridge_request_raw_value(&mut out, Some(&build.resolved.output_mode));
+    append_bridge_request_raw_value(&mut out, Some(&build.resolved.output_entry));
+    append_bridge_request_raw_value(&mut out, Some(&build.resolved.runtime_debug_allocator));
+    append_bridge_request_raw_value(&mut out, Some(&build.resolved.runtime_cycle_collector));
+    append_bridge_request_raw_value(
+        &mut out,
+        Some(if build.resolved.used_manifest { "true" } else { "false" }),
+    );
+    append_bridge_request_raw_value(&mut out, build.resolved.source_root.as_deref());
+    append_bridge_request_raw_value(&mut out, build.resolved.output_root.to_str());
+    append_bridge_request_raw_value(&mut out, build.artifact.ir_artifact_path.to_str());
+    append_bridge_request_raw_value(&mut out, build.artifact.native_plan_path.to_str());
+    append_bridge_request_raw_value(&mut out, build.artifact.object_path.to_str());
+    append_bridge_request_raw_value(&mut out, build.artifact.link_report_path.to_str());
+    append_bridge_request_raw_value(&mut out, build.build_config_plan_path.to_str());
+    append_bridge_request_raw_value(&mut out, build.resolved.package_name.as_deref());
+    append_bridge_request_raw_value(&mut out, build.resolved.package_version.as_deref());
+    append_bridge_request_raw_value(&mut out, Some(&build.artifact.entry_codegen));
+    append_bridge_request_raw_value(
+        &mut out,
+        build.artifact.exe_path.as_deref().and_then(Path::to_str),
+    );
+    append_bridge_request_raw_value(&mut out, None);
+    out
+}
+
+fn emit_provider_build_pipeline_failure_bridge_text(detail: &str) -> String {
+    let mut out = String::new();
+    append_bridge_request_raw_value(&mut out, Some("false"));
+    for _ in 0..22 {
+        append_bridge_request_raw_value(&mut out, None);
+    }
+    append_bridge_request_raw_value(&mut out, Some(detail));
+    out
+}
+
+fn required_provider_arg<'a>(
+    args: &'a [String],
+    index: usize,
+    key: &str,
+) -> Result<&'a str, String> {
+    args.get(index)
+        .map(|value| value.as_str())
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| format!("build pipeline provider missing '{key}'"))
+}
+
+fn optional_provider_arg(value: Option<&String>) -> Option<String> {
+    value
+        .map(|value| value.as_str())
+        .filter(|value| !value.is_empty())
+        .map(|value| value.to_string())
+}
+
+fn provider_bool_arg(value: Option<&String>) -> bool {
+    matches!(value.map(|value| value.as_str()), Some("true"))
 }
 
 fn emit_compiler_bridge_summary_request(mode: &str, values: &[Option<&str>]) -> String {
@@ -1072,19 +1314,167 @@ struct CompilerBuildCoreExecution {
     artifact: BackendArtifact,
 }
 
+#[derive(Debug, Clone)]
+struct WorkspaceCheckExecution {
+    success: bool,
+    output_text: Option<String>,
+    passed: usize,
+    failed: usize,
+}
+
+#[derive(Debug, Clone)]
+struct WorkspaceTestExecution {
+    success: bool,
+    output_text: Option<String>,
+    passed: usize,
+    failed: usize,
+    total: usize,
+}
+
+#[derive(Debug, Clone)]
+struct WorkspaceBuildExecution {
+    success: bool,
+    output_text: Option<String>,
+    failed: usize,
+}
+
+fn execute_workspace_check_owned(
+    workspace_root: &Path,
+    strict_package: bool,
+) -> Result<WorkspaceCheckExecution, String> {
+    let current_exe = env::current_exe()
+        .map_err(|e| format!("Failed to resolve pulsec provider path: {e}"))?;
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-execute-workspace-check",
+        &[
+            current_exe.to_str(),
+            workspace_root.to_str(),
+            Some(if strict_package { "true" } else { "false" }),
+        ],
+    );
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_workspace_check_execution_output(&stdout)
+}
+
+fn parse_workspace_check_execution_output(text: &str) -> Result<WorkspaceCheckExecution, String> {
+    let values = parse_bridge_raw_values(text)?;
+    let success = match values.first().and_then(|value| value.as_deref()) {
+        Some("true") => true,
+        Some("false") => false,
+        other => {
+            return Err(format!(
+                "author compiler workspace-check bridge returned invalid success flag {:?}",
+                other
+            ))
+        }
+    };
+    Ok(WorkspaceCheckExecution {
+        success,
+        output_text: values.get(1).cloned().flatten(),
+        passed: parse_bridge_usize(values.get(2).and_then(|value| value.as_deref()), "passed")?,
+        failed: parse_bridge_usize(values.get(3).and_then(|value| value.as_deref()), "failed")?,
+    })
+}
+
+fn execute_workspace_test_owned(
+    workspace_root: &Path,
+    strict_package: bool,
+) -> Result<WorkspaceTestExecution, String> {
+    let current_exe = env::current_exe()
+        .map_err(|e| format!("Failed to resolve pulsec provider path: {e}"))?;
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-execute-workspace-test",
+        &[
+            current_exe.to_str(),
+            workspace_root.to_str(),
+            Some(if strict_package { "true" } else { "false" }),
+        ],
+    );
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_workspace_test_execution_output(&stdout)
+}
+
+fn parse_workspace_test_execution_output(text: &str) -> Result<WorkspaceTestExecution, String> {
+    let values = parse_bridge_raw_values(text)?;
+    let success = match values.first().and_then(|value| value.as_deref()) {
+        Some("true") => true,
+        Some("false") => false,
+        other => {
+            return Err(format!(
+                "author compiler workspace-test bridge returned invalid success flag {:?}",
+                other
+            ))
+        }
+    };
+    Ok(WorkspaceTestExecution {
+        success,
+        output_text: values.get(1).cloned().flatten(),
+        passed: parse_bridge_usize(values.get(2).and_then(|value| value.as_deref()), "passed")?,
+        failed: parse_bridge_usize(values.get(3).and_then(|value| value.as_deref()), "failed")?,
+        total: parse_bridge_usize(values.get(4).and_then(|value| value.as_deref()), "total")?,
+    })
+}
+
+fn execute_workspace_build_owned(
+    workspace_root: &Path,
+    flags: &CliFlags,
+) -> Result<WorkspaceBuildExecution, String> {
+    let current_exe = env::current_exe()
+        .map_err(|e| format!("Failed to resolve pulsec provider path: {e}"))?;
+    let request = emit_compiler_bridge_summary_request(
+        "build-execute-workspace",
+        &[
+            current_exe.to_str(),
+            workspace_root.to_str(),
+            flags.profile.as_deref(),
+            flags.target.as_deref(),
+            flags.output_mode.as_deref(),
+            flags.runtime_debug_allocator.as_deref(),
+            flags.runtime_cycle_collector.as_deref(),
+            flags.out_dir.as_deref(),
+            flags.assembler.as_deref(),
+            flags.linker.as_deref(),
+        ],
+    );
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_workspace_build_execution_output(&stdout)
+}
+
+fn parse_workspace_build_execution_output(text: &str) -> Result<WorkspaceBuildExecution, String> {
+    let values = parse_bridge_raw_values(text)?;
+    let success = match values.first().and_then(|value| value.as_deref()) {
+        Some("true") => true,
+        Some("false") => false,
+        other => {
+            return Err(format!(
+                "author build workspace bridge returned invalid success flag {:?}",
+                other
+            ))
+        }
+    };
+    Ok(WorkspaceBuildExecution {
+        success,
+        output_text: values.get(1).cloned().flatten(),
+        failed: parse_bridge_usize(values.get(2).and_then(|value| value.as_deref()), "failed")?,
+    })
+}
+
 fn execute_compiler_check(
     entry_path: &str,
     source_root: Option<&str>,
     strict_package: bool,
     authorlib_enabled: bool,
+    selfhost_provider: bool,
 ) -> Result<CompilerCheckExecution, String> {
-    if let Ok(result) = execute_compiler_check_via_authorlib_bridge(
-        entry_path,
-        source_root,
-        strict_package,
-        authorlib_enabled,
-    ) {
-        return Ok(result);
+    if selfhost_provider {
+        if let Ok(result) = execute_compiler_check_via_authorlib_bridge(
+            entry_path,
+            source_root,
+            strict_package,
+            authorlib_enabled,
+        ) {
+            return Ok(result);
+        }
     }
     match check_project_with_authorlib(entry_path, source_root, strict_package, authorlib_enabled) {
         Ok(result) => Ok(CompilerCheckExecution {
@@ -2968,6 +3358,7 @@ mod tests {
             &CliFlags {
                 strict_package: true,
                 friendly: false,
+                selfhost_provider: false,
                 project_root: Some(root.display().to_string()),
                 source_root: None,
                 profile: None,
