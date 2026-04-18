@@ -1,0 +1,5 @@
+schema=pulsec.artifact.stamp.v1
+name=pulsec
+version=0.1.0
+profile=debug
+stamp=pulsec-0.1.0-debug

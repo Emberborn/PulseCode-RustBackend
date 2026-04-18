@@ -238,6 +238,36 @@ This means the Pulse-side suite is no longer only a planning idea.
 
 ## What Still Needs To Be Done
 
+### Pre-port floor freeze
+
+Before large compiler/runtime subsystem porting begins, follow:
+
+- [F1_97_PREPORT_FLOOR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_PREPORT_FLOOR.md)
+- [F1_97_COMPILER_STAGE_MODEL.md](/G:/Programming/Rust/PulseCode/docs/F1_97_COMPILER_STAGE_MODEL.md)
+
+This is the locked sequencing rule for the lane:
+
+- do not postpone the self-sustained lift behind unlimited substrate work
+- do not begin major compiler/runtime subsystem porting on the current thin floor
+- first finish the minimum pre-port floor for:
+  - compiler staging/promotion
+  - concurrency
+  - systems/native ABI
+  - memory/system
+  - binary/data
+  - networking
+  - IDE/language-service substrate
+- after that floor is in place, port aggressively
+
+Important policy:
+
+- later board items may be pulled forward into `F1-97` when they are direct
+  blockers for clean self-sustained ownership
+- if one of those later board items is implemented early, update the original
+  board item immediately so the board does not drift out of sync
+- convenience features such as Lombok-style annotation processing are not part
+  of this minimum pre-port floor unless they become real blockers
+
 ### Immediate next implementation target
 
 Start the first real inward migration wave under `author.*`:
@@ -419,8 +449,8 @@ Current immediate continuation inside that target:
     - normal CLI hot paths for ordinary fixtures/parity/regression runs now go straight to the direct Rust compiler loop again
     - this keeps the compiler/runtime ownership seam alive without forcing the whole regression suite through nested `pulsec` provider processes or tying the behavior permanently to a staging directory name
   - the first real Pulse-side compiler/runtime project roots now live directly at the repository top level:
-    - [compiler](/G:/Programming/Rust/PulseCode/compiler)
-    - [runtime](/G:/Programming/Rust/PulseCode/runtime)
+    - [pulsec](/G:/Programming/Rust/PulseCode/pulsec)
+    - [pulsert](/G:/Programming/Rust/PulseCode/pulsert)
   - those projects are still early, not full implementations, but they are real Pulse projects with manifests, entrypoints, and smoke tests that the Rust-built `pulsec` can already `check` / `build` / `test`
   - remaining Rust-owned build publication/materialization residue is now:
     - fallback/bootstrap publication-plan mirroring
@@ -520,7 +550,7 @@ Preferred package homes:
 - `author.compiler.*` for compiler-only support
 - `author.runtime.*` for runtime-only support
 - `author.memory.*` and `author.system.*` for sharper advanced-control surfaces
-  - Pulse-side compiler/runtime project roots now live directly at the repository top level through [compiler](/G:/Programming/Rust/PulseCode/compiler) and [runtime](/G:/Programming/Rust/PulseCode/runtime) so the program lift happens in the permanent system layout instead of a staging island
+  - Pulse-side compiler/runtime project roots now live directly at the repository top level through [pulsec](/G:/Programming/Rust/PulseCode/pulsec) and [pulsert](/G:/Programming/Rust/PulseCode/pulsert) so the program lift happens in the permanent system layout instead of a staging island
   - compiler/runtime port shape is now governed by [SELFHOST_PORTING_RULES.md](/G:/Programming/Rust/PulseCode/docs/SELFHOST_PORTING_RULES.md)
     - small focused classes
     - no mega-files

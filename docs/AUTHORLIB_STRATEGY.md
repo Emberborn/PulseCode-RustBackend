@@ -167,8 +167,8 @@ Any future decision about component-level managed-vs-manual memory policy for th
 The first real Pulse-side compiler/runtime project roots now live directly at
 the top level of the repo through:
 
-- [compiler](/G:/Programming/Rust/PulseCode/compiler)
-- [runtime](/G:/Programming/Rust/PulseCode/runtime)
+- [pulsec](/G:/Programming/Rust/PulseCode/pulsec)
+- [pulsert](/G:/Programming/Rust/PulseCode/pulsert)
 
 These are intentionally still small right now, but they are real Pulse
 projects with manifests, entrypoints, authorlib enabled, and smoke tests. The

@@ -37,6 +37,12 @@ The newer project rule is stronger than the older "self-host" wording:
 - the first concrete Pulse-side feature-lock homes now exist in:
   - [prelude_contract.rs](/G:/Programming/Rust/PulseCode/crates/pulsec-core/src/tests/prelude_contract.rs)
   - [pulse_feature_locks.rs](/G:/Programming/Rust/PulseCode/crates/pulsec-cli/tests/pulse_feature_locks.rs)
+- the current `F1-97` lane also has one locked pre-port floor freeze in:
+  - [F1_97_PREPORT_FLOOR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_PREPORT_FLOOR.md)
+- the current `F1-97` lane also has one locked compiler stage/promotion model in:
+  - [F1_97_COMPILER_STAGE_MODEL.md](/G:/Programming/Rust/PulseCode/docs/F1_97_COMPILER_STAGE_MODEL.md)
+- future agents should treat that doc as the sequencing rule for when to stop
+  for more floor work versus when to continue compiler/runtime porting
 
 ## Current F1 Surface Snapshot (2026-04-14)
 
@@ -1308,8 +1314,8 @@ Bridge / tooling truths added during the current `F1-97` push:
   - ordinary fixture/parity/regression CLI traffic now goes back to the direct Rust compiler loop
   - this removes the nested `pulsec` provider-process tax from the general suite while keeping the compiler/runtime ownership seam alive without hard-coding that seam to a staging directory name
 - the first real Pulse-side compiler/runtime project roots now live directly at the repository top level:
-  - [compiler](/G:/Programming/Rust/PulseCode/compiler)
-  - [runtime](/G:/Programming/Rust/PulseCode/runtime)
+  - [pulsec](/G:/Programming/Rust/PulseCode/pulsec)
+  - [pulsert](/G:/Programming/Rust/PulseCode/pulsert)
 - those members are intentionally still small, but they are real Pulse projects with manifests, entrypoints, and smoke tests that the Rust-built `pulsec` can already compile and exercise
 - compiler/runtime port structure is now explicitly governed by [SELFHOST_PORTING_RULES.md](/G:/Programming/Rust/PulseCode/docs/SELFHOST_PORTING_RULES.md):
   - keep packages nested and intentional

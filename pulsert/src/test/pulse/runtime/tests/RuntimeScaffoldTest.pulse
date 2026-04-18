@@ -1,0 +1,29 @@
+package runtime.tests;
+
+import runtime.RuntimePackageMap;
+import runtime.entry.RuntimeIdentity;
+import author.project.ProjectLayout;
+import pulse.lang.AssertionError;
+import pulse.lang.IO;
+
+class RuntimeScaffoldTest {
+    public static void main() {
+        ProjectLayout layout = RuntimeIdentity.layout();
+        if (!RuntimeIdentity.projectName().equals("pulsert")) {
+            AssertionError.fail("runtime scaffold project name drifted");
+        }
+        if (!RuntimeIdentity.stageName().equals("runtime")) {
+            AssertionError.fail("runtime scaffold stage drifted");
+        }
+        if (!RuntimePackageMap.entryPackage().equals("runtime.entry")) {
+            AssertionError.fail("runtime entry package map drifted");
+        }
+        if (!RuntimePackageMap.memoryPackage().equals("runtime.memory")) {
+            AssertionError.fail("runtime memory package map drifted");
+        }
+        if (!layout.mainPulseRoot().contains("src/main/pulse")) {
+            AssertionError.fail("runtime scaffold layout drifted");
+        }
+        IO.println("runtime_scaffold_ok");
+    }
+}

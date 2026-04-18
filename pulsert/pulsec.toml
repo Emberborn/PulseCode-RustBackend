@@ -1,0 +1,17 @@
+[package]
+name = "pulsert"
+version = "0.1.0"
+
+[sources]
+entry = "runtime/entry/Main.pulse"
+
+[build]
+profile = "debug"
+target = "windows-x64"
+output_mode = "fat"
+output_entry = "main"
+runtime_debug_allocator = "off"
+runtime_cycle_collector = "on"
+
+[authorlib]
+enabled = true
