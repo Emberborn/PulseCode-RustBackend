@@ -286,6 +286,16 @@ Returns `null` when the native address is null.
 Opens one dynamic library through the current host loader and returns the raw native handle.
 Returns `0` when the host loader cannot open the requested library.
 
+### ``public static long hostLookupLoadedDynamicLibrary(String source)``
+
+Returns the handle for one already-loaded dynamic library in the current process without taking ownership of its lifetime.
+Returns `0` when the module is not currently loaded.
+
+### ``public static long hostLookupSelfDynamicLibrary()``
+
+Returns the module handle for the current process image without taking ownership of its lifetime.
+Returns `0` when the host loader cannot resolve the current image module.
+
 ### ``public static boolean hostFreeDynamicLibrary(long handle)``
 
 Releases one raw dynamic library handle through the current host loader.

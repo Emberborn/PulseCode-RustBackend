@@ -1,0 +1,93 @@
+package pulse.interop;
+
+/**
+ * Structured host-ABI argument wrapper for native calls.
+ * Use this to pass mixed boolean, integer, pointer, buffer, span, and UTF-8-backed values into foreign code without scattering raw `long` conversions.
+ */
+public final class NativeArgument {
+    private final long rawValue;
+
+    private NativeArgument(long rawValue) {
+        this.rawValue = rawValue;
+    }
+
+    /**
+     * Wraps one raw 64-bit host-ABI value directly.
+     * Use this only when the foreign signature is already being modeled in explicit raw machine terms.
+     */
+    public static NativeArgument ofLong(long value) {
+        return new NativeArgument(value);
+    }
+
+    /**
+     * Wraps one 32-bit integer argument.
+     * Use this for Win32/C/Rust signatures that take ordinary `int`-sized scalar values.
+     */
+    public static NativeArgument ofInt(int value) {
+        return new NativeArgument((long) value);
+    }
+
+    /**
+     * Wraps one boolean/BOOL-style argument.
+     * Use this for foreign APIs that treat zero as false and non-zero as true.
+     */
+    public static NativeArgument ofBoolean(boolean value) {
+        return new NativeArgument(value ? 1L : 0L);
+    }
+
+    /**
+     * Wraps one structured native pointer argument.
+     * `null` pointers are converted to raw zero.
+     */
+    public static NativeArgument ofPointer(NativePointer value) {
+        return new NativeArgument(value == null ? 0L : value.rawAddress());
+    }
+
+    /**
+     * Wraps the first pointer of one owned or borrowed native buffer.
+     * Use this when a foreign ABI expects one mutable byte-buffer pointer.
+     */
+    public static NativeArgument ofBuffer(NativeBuffer value) {
+        return value == null
+            ? new NativeArgument(0L)
+            : NativeArgument.ofPointer(value.pointer());
+    }
+
+    /**
+     * Wraps the first pointer of one borrowed byte span.
+     * Use this when a foreign ABI expects one borrowed byte-range pointer.
+     */
+    public static NativeArgument ofByteSpan(NativeByteSpan value) {
+        return value == null
+            ? new NativeArgument(0L)
+            : NativeArgument.ofPointer(value.pointer());
+    }
+
+    /**
+     * Wraps the first pointer of one owned temporary UTF-8 string buffer.
+     * Use this for foreign APIs that expect one `char*` / `LPCSTR` style argument.
+     */
+    public static NativeArgument ofUtf8String(NativeUtf8String value) {
+        return value == null
+            ? new NativeArgument(0L)
+            : NativeArgument.ofPointer(value.pointer());
+    }
+
+    /**
+     * Wraps one callable native function or callback pointer.
+     * Use this when one foreign API expects another foreign entrypoint address as one argument.
+     */
+    public static NativeArgument ofFunction(NativeFunction value) {
+        return value == null
+            ? new NativeArgument(0L)
+            : new NativeArgument(value.address());
+    }
+
+    /**
+     * Returns the raw 64-bit host-ABI value represented by this argument wrapper.
+     * Use this only at the final raw native call boundary.
+     */
+    public long rawValue() {
+        return this.rawValue;
+    }
+}

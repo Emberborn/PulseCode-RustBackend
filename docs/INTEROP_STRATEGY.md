@@ -48,7 +48,9 @@ This surface is intentionally low-level:
 
 - dynamic library handles
 - symbol lookup
+- function/callback pointer wrappers
 - raw host-ABI calls
+- structured host-ABI argument wrappers
 - structured native pointers
 - owned native byte buffers
 - borrowed byte spans/views
@@ -75,8 +77,10 @@ The first executable interop slice is intentionally narrow:
 
 - public `pulse.interop.NativeLibrary`
 - public `pulse.interop.NativeSymbol`
+- public `pulse.interop.NativeFunction`
 - public `pulse.interop.NativeCalls`
 - public `pulse.interop.NativePointer`
+- public `pulse.interop.NativeArgument`
 - public `pulse.interop.NativeBuffer`
 - public `pulse.interop.NativeByteSpan`
 - public `pulse.interop.NativeUtf8String`
@@ -85,12 +89,17 @@ The first executable interop slice is intentionally narrow:
 - backend/runtime support for:
   - dynamic library load/unload
   - exported symbol resolution
-  - raw 0-4 argument native calls
+- raw 0-4 argument native calls
+- mixed boolean/int/pointer/buffer/span/UTF-8 argument marshalling through `NativeArgument`
 - owned native byte allocation/free
 - byte reads/writes/copies
 - pointer-sized reads/writes
 - Pulse string -> owned UTF-8+NUL backing storage
 - explicit-length and NUL-terminated UTF-8 decode
+- loaded-module lookup without taking loader ownership
+- current-process-image lookup without taking loader ownership
+- symbol-to-function lifting and direct function-pointer invocation
+- function-pointer arguments passed back into foreign APIs through `NativeArgument`
 - adopted interop resources now release through ARC-backed object teardown by default
 - borrowed and manual wrappers keep structured Pulse ownership without taking over the foreign release path
 
@@ -109,6 +118,7 @@ The next durable interop boundary is not just "more raw calls." It is
 ownership-safe marshalling:
 
 - `NativePointer` replaces naked `long` for pointer arithmetic and pointer-sized field access
+- `NativeArgument` keeps mixed foreign call shapes structured without inventing a second native call ABI
 - `NativeBuffer` owns mutable native storage and closes deterministically
 - `NativeByteSpan` borrows subranges without taking ownership
 - `NativeUtf8String` owns temporary UTF-8+NUL call backing storage and decodes foreign UTF-8 back into Pulse strings
@@ -125,7 +135,7 @@ Follow-up interop growth should focus on the hard-to-add-later host boundary
 pieces while `F1-97` is still open:
 
 - broader argument/return kind support
-- module/self/process symbol lookup helpers
+- native-to-Pulse callback re-entry/trampoline support
 - structured native error capture where useful
 - durable wrapper patterns for absorbed foreign-backed features
 

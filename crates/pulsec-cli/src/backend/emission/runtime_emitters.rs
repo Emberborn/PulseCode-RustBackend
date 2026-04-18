@@ -3789,6 +3789,47 @@ pub(crate) fn emit_host_load_dynamic_library_proc(out: &mut String, symbol: &str
     out.push_str(&format!("{} endp\n", symbol));
 }
 
+pub(crate) fn emit_host_lookup_loaded_dynamic_library_proc(out: &mut String, symbol: &str) {
+    const RESULT_OFFSET: i32 = 56;
+    const SOURCE_PTR_OFFSET: i32 = 64;
+    let cleanup = format!("{}_cleanup", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 88\n");
+    out.push_str(&format!("    mov qword ptr [rsp+{}], 0\n", RESULT_OFFSET));
+    out.push_str(&format!("    mov qword ptr [rsp+{}], 0\n", SOURCE_PTR_OFFSET));
+    out.push_str("    call pulsec_rt_hostPathAlloc\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", cleanup));
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", SOURCE_PTR_OFFSET));
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call GetModuleHandleA\n");
+    out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", RESULT_OFFSET));
+    out.push_str(&format!("{}:\n", cleanup));
+    out.push_str(&format!("    mov r8, qword ptr [rsp+{}]\n", SOURCE_PTR_OFFSET));
+    out.push_str("    test r8, r8\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str(&format!("    mov r8, qword ptr [rsp+{}]\n", SOURCE_PTR_OFFSET));
+    out.push_str("    call HeapFree\n");
+    out.push_str("@@:\n");
+    out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", RESULT_OFFSET));
+    out.push_str("    add rsp, 88\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_lookup_self_dynamic_library_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("    call GetModuleHandleA\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
 pub(crate) fn emit_host_free_dynamic_library_proc(out: &mut String, symbol: &str) {
     let done = format!("{}_done", symbol);
     out.push_str(&format!("{} proc\n", symbol));

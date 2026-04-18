@@ -1074,6 +1074,7 @@ pub(crate) fn emit_masm_split_program_objects(
     std_src.push_str("extrn CopyFileA:proc\n");
     std_src.push_str("extrn CreateFileA:proc\n");
     std_src.push_str("extrn LoadLibraryA:proc\n");
+    std_src.push_str("extrn GetModuleHandleA:proc\n");
     std_src.push_str("extrn FreeLibrary:proc\n");
     std_src.push_str("extrn GetProcAddress:proc\n");
     std_src.push_str("extrn CreateProcessA:proc\n");
@@ -1247,6 +1248,12 @@ pub(crate) fn emit_masm_split_program_objects(
             "pulsec_rt_hostStringFromUtf8Z" => emit_host_string_from_utf8z_proc(&mut std_src, &sym),
             "pulsec_rt_hostLoadDynamicLibrary" => {
                 emit_host_load_dynamic_library_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostLookupLoadedDynamicLibrary" => {
+                emit_host_lookup_loaded_dynamic_library_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostLookupSelfDynamicLibrary" => {
+                emit_host_lookup_self_dynamic_library_proc(&mut std_src, &sym)
             }
             "pulsec_rt_hostFreeDynamicLibrary" => {
                 emit_host_free_dynamic_library_proc(&mut std_src, &sym)
@@ -1501,6 +1508,7 @@ pub(crate) fn emit_masm_full_program_object(
     source.push_str("extrn CopyFileA:proc\n");
     source.push_str("extrn CreateFileA:proc\n");
     source.push_str("extrn LoadLibraryA:proc\n");
+    source.push_str("extrn GetModuleHandleA:proc\n");
     source.push_str("extrn FreeLibrary:proc\n");
     source.push_str("extrn GetProcAddress:proc\n");
     source.push_str("extrn CreateProcessA:proc\n");
@@ -1837,6 +1845,12 @@ pub(crate) fn emit_masm_full_program_object(
             "pulsec_rt_hostStringFromUtf8Z" => emit_host_string_from_utf8z_proc(&mut source, &sym),
             "pulsec_rt_hostLoadDynamicLibrary" => {
                 emit_host_load_dynamic_library_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostLookupLoadedDynamicLibrary" => {
+                emit_host_lookup_loaded_dynamic_library_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostLookupSelfDynamicLibrary" => {
+                emit_host_lookup_self_dynamic_library_proc(&mut source, &sym)
             }
             "pulsec_rt_hostFreeDynamicLibrary" => {
                 emit_host_free_dynamic_library_proc(&mut source, &sym)

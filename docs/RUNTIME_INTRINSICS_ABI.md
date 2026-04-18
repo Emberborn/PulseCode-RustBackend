@@ -111,6 +111,8 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
 - `Intrinsics.hostStringFromUtf8(long, int) -> String`
 - `Intrinsics.hostStringFromUtf8Z(long) -> String`
 - `Intrinsics.hostLoadDynamicLibrary(String) -> long`
+- `Intrinsics.hostLookupLoadedDynamicLibrary(String) -> long`
+- `Intrinsics.hostLookupSelfDynamicLibrary() -> long`
 - `Intrinsics.hostFreeDynamicLibrary(long) -> boolean`
 - `Intrinsics.hostResolveDynamicSymbol(long, String) -> long`
 - `Intrinsics.hostCallNative0(long) -> long`
@@ -207,6 +209,8 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
   - `pulsec_rt_hostStringFromUtf8`
   - `pulsec_rt_hostStringFromUtf8Z`
   - `pulsec_rt_hostLoadDynamicLibrary`
+  - `pulsec_rt_hostLookupLoadedDynamicLibrary`
+  - `pulsec_rt_hostLookupSelfDynamicLibrary`
   - `pulsec_rt_hostFreeDynamicLibrary`
   - `pulsec_rt_hostResolveDynamicSymbol`
   - `pulsec_rt_hostCallNative0`

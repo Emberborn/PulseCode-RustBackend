@@ -1328,7 +1328,9 @@ Selected direction:
 - the first executable slice covers:
   - dynamic library load/unload
   - symbol lookup
+  - function/callback pointer wrappers
   - raw 0-4 argument native calls
+  - structured mixed argument marshalling through `pulse.interop.NativeArgument`
   - structured native pointers
   - owned native byte buffers
   - borrowed byte spans/views
@@ -1336,6 +1338,10 @@ Selected direction:
   - byte reads/writes/copies
   - pointer-sized reads/writes
   - explicit-length and NUL-terminated UTF-8 decode
+  - borrowed loaded-module lookup through `NativeLibrary.lookupLoaded(...)`
+  - borrowed current-process-image lookup through `NativeLibrary.lookupSelf()`
+  - symbol-to-function lifting and direct function-pointer invocation
+  - function-pointer arguments passed back into foreign APIs through `NativeArgument`
   - explicit borrowed/adopted/manual ownership modes for interop-backed resources
   - ARC-backed native cleanup for adopted `NativeBuffer` / `NativeLibrary` wrappers
 - absorbed foreign-backed features should wrap that raw surface behind

@@ -1584,3 +1584,247 @@ entry = "app/core/Main.pulse"
         stderr
     );
 }
+
+#[test]
+fn lock_pulse_feature_10_public_interop_argument_and_loader_helpers_execute_without_authorlib_opt_in() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "public-interop-args"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.interop.NativeArgument;
+        import pulse.interop.NativeBuffer;
+        import pulse.interop.NativeCalls;
+        import pulse.interop.NativeLibrary;
+        import pulse.interop.NativeOwnership;
+        import pulse.interop.NativePointer;
+        import pulse.interop.NativeSymbol;
+        import pulse.interop.NativeUtf8String;
+        import pulse.io.ResourceScope;
+
+        class Main {
+            public static void main() {
+                ResourceScope scope = new ResourceScope();
+                NativeLibrary kernel = NativeLibrary.lookupLoadedRequired("kernel32.dll");
+                NativeLibrary self = NativeLibrary.lookupSelfRequired();
+
+                NativeSymbol lstrlenA = kernel.resolveRequired("lstrlenA");
+                NativeSymbol lstrcpyA = kernel.resolveRequired("lstrcpyA");
+                NativeSymbol getCurrentProcessId = kernel.resolveRequired("GetCurrentProcessId");
+
+                NativeUtf8String text = NativeUtf8String.encode("interop_args_ok");
+                NativeBuffer copy = NativeBuffer.allocate(text.byteLength() + 1);
+                scope.add(text);
+                scope.add(copy);
+
+                int copiedLength = NativeCalls.callInt1(
+                    lstrlenA,
+                    NativeArgument.ofUtf8String(text)
+                );
+                NativePointer copiedPointer = NativeCalls.callPointer2(
+                    lstrcpyA,
+                    NativeArgument.ofBuffer(copy),
+                    NativeArgument.ofUtf8String(text)
+                );
+                String copiedText = NativeUtf8String.decodeNullTerminated(copy.pointer());
+                int pid = NativeCalls.asInt(NativeCalls.callLong0(getCurrentProcessId));
+
+                boolean ok =
+                    copiedLength == text.byteLength()
+                    && !copiedPointer.isNull()
+                    && "interop_args_ok".equals(copiedText)
+                    && pid > 0
+                    && kernel.ownershipMode() == NativeOwnership.BORROWED
+                    && self.ownershipMode() == NativeOwnership.BORROWED
+                    && self.isOpen()
+                    && !kernel.close()
+                    && !self.close();
+
+                scope.close();
+
+                if (ok) {
+                    pulse.lang.IO.println("interop_args_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("interop_args_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected public interop argument/loader helper build success without authorlib opt-in\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("public-interop-args-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected public interop argument/loader helper exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("interop_args_ok"),
+        "expected interop argument/loader helper success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_11_public_interop_function_pointer_surface_executes_without_authorlib_opt_in(
+) {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "public-interop-function-pointers"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.interop.NativeArgument;
+        import pulse.interop.NativeBuffer;
+        import pulse.interop.NativeCalls;
+        import pulse.interop.NativeFunction;
+        import pulse.interop.NativeLibrary;
+        import pulse.interop.NativeOwnership;
+        import pulse.interop.NativePointer;
+        import pulse.interop.NativeUtf8String;
+        import pulse.io.ResourceScope;
+
+        class Main {
+            public static void main() {
+                ResourceScope scope = new ResourceScope();
+                NativeLibrary kernel = NativeLibrary.lookupLoadedRequired("kernel32.dll");
+                NativeFunction getProcAddress = kernel.resolveFunctionRequired("GetProcAddress");
+                NativeFunction getCurrentProcessId = kernel.resolveFunctionRequired("GetCurrentProcessId");
+                NativeFunction getModuleHandleExA = kernel.resolveFunctionRequired("GetModuleHandleExA");
+                NativeUtf8String tickName = NativeUtf8String.encode("GetTickCount64");
+                NativeBuffer moduleOut = NativeBuffer.allocate(8);
+                scope.add(tickName);
+                scope.add(moduleOut);
+
+                int pid = NativeCalls.asInt(NativeCalls.callLong0(getCurrentProcessId));
+                NativePointer tickPointer = NativeCalls.asPointer(
+                    NativeCalls.callLong2(
+                        getProcAddress,
+                        NativeArgument.ofLong(kernel.rawHandle()),
+                        NativeArgument.ofUtf8String(tickName)
+                    )
+                );
+                NativeFunction getTickCount64 = NativeFunction.fromPointer(tickPointer, "GetTickCount64");
+                long ticks = NativeCalls.callLong0(getTickCount64);
+                boolean resolvedModule = NativeCalls.asBoolean(
+                    NativeCalls.callLong3(
+                        getModuleHandleExA,
+                        NativeArgument.ofInt(4),
+                        NativeArgument.ofFunction(getCurrentProcessId),
+                        NativeArgument.ofBuffer(moduleOut)
+                    )
+                );
+                long moduleHandle = moduleOut.pointer().readLong(0);
+
+                boolean ok =
+                    pid > 0
+                    && ticks > 0L
+                    && !tickPointer.isNull()
+                    && resolvedModule
+                    && moduleHandle == kernel.rawHandle()
+                    && kernel.ownershipMode() == NativeOwnership.BORROWED
+                    && getCurrentProcessId.isAvailable()
+                    && getCurrentProcessId.pointer().rawAddress() == getCurrentProcessId.address()
+                    && "GetCurrentProcessId".equals(getCurrentProcessId.name())
+                    && kernel.resolveRequired("GetCurrentProcessId").asFunction().address() == getCurrentProcessId.address()
+                    && !kernel.close();
+
+                scope.close();
+
+                if (ok) {
+                    pulse.lang.IO.println("interop_function_pointer_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("interop_function_pointer_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected public interop function-pointer build success without authorlib opt-in\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("public-interop-function-pointers-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected public interop function-pointer exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("interop_function_pointer_ok"),
+        "expected interop function-pointer success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}

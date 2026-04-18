@@ -421,6 +421,22 @@ final class Intrinsics {
     }
 
     /**
+     * Returns the handle for one already-loaded dynamic library in the current process without taking ownership of its lifetime.
+     * Returns `0` when the module is not currently loaded.
+     */
+    public static long hostLookupLoadedDynamicLibrary(String source) {
+        return 0;
+    }
+
+    /**
+     * Returns the module handle for the current process image without taking ownership of its lifetime.
+     * Returns `0` when the host loader cannot resolve the current image module.
+     */
+    public static long hostLookupSelfDynamicLibrary() {
+        return 0;
+    }
+
+    /**
      * Releases one raw dynamic library handle through the current host loader.
      * Returns `true` when the host loader reports success.
      */

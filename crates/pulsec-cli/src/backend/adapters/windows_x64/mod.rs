@@ -29,6 +29,7 @@ static WINDOWS_X64_RUNTIME_SERVICE_IMPORTS: &[&str] = &[
     "HeapFree",
     "GetSystemTimeAsFileTime",
     "LoadLibraryA",
+    "GetModuleHandleA",
     "FreeLibrary",
     "GetProcAddress",
     "CreateProcessA",

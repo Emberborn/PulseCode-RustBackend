@@ -38,6 +38,12 @@ public final class NativeSymbol {
     public long address() { return this.address; }
 
     /**
+     * Returns this resolved symbol as one callable function-pointer wrapper.
+     * Use this when the symbol should be invoked or re-passed independently of the symbol metadata wrapper.
+     */
+    public NativeFunction asFunction() { return NativeFunction.fromSymbol(this); }
+
+    /**
      * Reports whether this symbol currently points at a non-zero native address.
      * Use this before direct raw-address call sites.
      */

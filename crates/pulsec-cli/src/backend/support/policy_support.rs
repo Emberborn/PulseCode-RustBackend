@@ -97,6 +97,8 @@ pub(crate) fn windows_x64_backend_contract() -> BackendContract {
             "pulse.rt.Intrinsics.hostStringFromUtf8",
             "pulse.rt.Intrinsics.hostStringFromUtf8Z",
             "pulse.rt.Intrinsics.hostLoadDynamicLibrary",
+            "pulse.rt.Intrinsics.hostLookupLoadedDynamicLibrary",
+            "pulse.rt.Intrinsics.hostLookupSelfDynamicLibrary",
             "pulse.rt.Intrinsics.hostFreeDynamicLibrary",
             "pulse.rt.Intrinsics.hostResolveDynamicSymbol",
             "pulse.rt.Intrinsics.hostCallNative0",
@@ -388,6 +390,14 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("Intrinsics".to_string(), "hostLoadDynamicLibrary".to_string()),
         "pulsec_rt_hostLoadDynamicLibrary".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostLookupLoadedDynamicLibrary".to_string()),
+        "pulsec_rt_hostLookupLoadedDynamicLibrary".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostLookupSelfDynamicLibrary".to_string()),
+        "pulsec_rt_hostLookupSelfDynamicLibrary".to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "hostFreeDynamicLibrary".to_string()),

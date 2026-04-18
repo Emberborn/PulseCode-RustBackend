@@ -14,6 +14,7 @@ extrn CreateDirectoryA:proc
 extrn CopyFileA:proc
 extrn CreateFileA:proc
 extrn LoadLibraryA:proc
+extrn GetModuleHandleA:proc
 extrn FreeLibrary:proc
 extrn GetProcAddress:proc
 extrn CreateProcessA:proc
@@ -4590,6 +4591,40 @@ pulsec_rt_hostLoadDynamicLibrary_cleanup:
     add rsp, 88
     ret
 pulsec_rt_hostLoadDynamicLibrary endp
+
+pulsec_rt_hostLookupLoadedDynamicLibrary proc
+    sub rsp, 88
+    mov qword ptr [rsp+56], 0
+    mov qword ptr [rsp+64], 0
+    call pulsec_rt_hostPathAlloc
+    test rax, rax
+    jz pulsec_rt_hostLookupLoadedDynamicLibrary_cleanup
+    mov qword ptr [rsp+64], rax
+    mov rcx, rax
+    call GetModuleHandleA
+    mov qword ptr [rsp+56], rax
+pulsec_rt_hostLookupLoadedDynamicLibrary_cleanup:
+    mov r8, qword ptr [rsp+64]
+    test r8, r8
+    jz @F
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    mov r8, qword ptr [rsp+64]
+    call HeapFree
+@@:
+    mov rax, qword ptr [rsp+56]
+    add rsp, 88
+    ret
+pulsec_rt_hostLookupLoadedDynamicLibrary endp
+
+pulsec_rt_hostLookupSelfDynamicLibrary proc
+    sub rsp, 40
+    xor ecx, ecx
+    call GetModuleHandleA
+    add rsp, 40
+    ret
+pulsec_rt_hostLookupSelfDynamicLibrary endp
 
 pulsec_rt_hostReadAllText proc
     sub rsp, 120

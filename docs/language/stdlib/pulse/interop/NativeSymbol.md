@@ -32,6 +32,11 @@ Use this for diagnostics and wrapper-level symbol inventory.
 Returns the raw native symbol address.
 Use this only in low-level interop glue and call helpers.
 
+### ``public NativeFunction asFunction() { return NativeFunction.fromSymbol(this); }``
+
+Returns this resolved symbol as one callable function-pointer wrapper.
+Use this when the symbol should be invoked or re-passed independently of the symbol metadata wrapper.
+
 ### ``public boolean isAvailable() { return this.address != 0L; }``
 
 Reports whether this symbol currently points at a non-zero native address.

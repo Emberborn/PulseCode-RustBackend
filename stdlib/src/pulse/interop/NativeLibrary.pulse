@@ -28,6 +28,55 @@ public final class NativeLibrary implements NativeManagedResource {
     }
 
     /**
+     * Looks up one already-loaded native library in the current process without taking over its lifetime.
+     * Returns `null` when the named module is not currently loaded.
+     */
+    public static NativeLibrary lookupLoaded(String source) {
+        Objects.requireNonNull(source, "source must not be null");
+        long handle = Intrinsics.hostLookupLoadedDynamicLibrary(source);
+        if (handle == 0L) {
+            return null;
+        }
+        return new NativeLibrary(handle, source, NativeOwnership.BORROWED);
+    }
+
+    /**
+     * Looks up one already-loaded native library or panics when absent.
+     * Use this when a wrapper depends on one host module already being present in the current process.
+     */
+    public static NativeLibrary lookupLoadedRequired(String source) {
+        NativeLibrary library = NativeLibrary.lookupLoaded(source);
+        if (library == null) {
+            Intrinsics.panic("Failed to find loaded native library '".concat(source).concat("'"));
+        }
+        return library;
+    }
+
+    /**
+     * Returns the current process image module as a borrowed library wrapper.
+     * Use this when interop code needs to resolve exports from the current executable image without taking over its lifetime.
+     */
+    public static NativeLibrary lookupSelf() {
+        long handle = Intrinsics.hostLookupSelfDynamicLibrary();
+        if (handle == 0L) {
+            return null;
+        }
+        return new NativeLibrary(handle, "<self>", NativeOwnership.BORROWED);
+    }
+
+    /**
+     * Returns the current process image module or panics when it cannot be resolved.
+     * Use this when a wrapper depends on exports from the current executable image.
+     */
+    public static NativeLibrary lookupSelfRequired() {
+        NativeLibrary library = NativeLibrary.lookupSelf();
+        if (library == null) {
+            Intrinsics.panic("Failed to resolve current process image as one native library");
+        }
+        return library;
+    }
+
+    /**
      * Wraps one loaded native library handle as borrowed ownership.
      * Use this when the host or another subsystem owns the library lifetime.
      */
@@ -125,6 +174,36 @@ public final class NativeLibrary implements NativeManagedResource {
             );
         }
         return symbol;
+    }
+
+    /**
+     * Resolves one exported symbol as one callable function pointer and returns `null` when absent.
+     * Use this when Pulse code wants to keep one callable foreign address around independently of the symbol wrapper.
+     */
+    public NativeFunction resolveFunction(String symbolName) {
+        NativeSymbol symbol = this.resolve(symbolName);
+        if (symbol == null) {
+            return null;
+        }
+        return NativeFunction.fromSymbol(symbol);
+    }
+
+    /**
+     * Resolves one exported symbol as one callable function pointer or panics when absent.
+     * Use this when one Pulse-owned wrapper depends on one specific foreign entrypoint being callable.
+     */
+    public NativeFunction resolveFunctionRequired(String symbolName) {
+        NativeFunction function = this.resolveFunction(symbolName);
+        if (function == null) {
+            Intrinsics.panic(
+                "Failed to resolve native function '"
+                    .concat(symbolName)
+                    .concat("' from '")
+                    .concat(this.source)
+                    .concat("'")
+            );
+        }
+        return function;
     }
 
     /**

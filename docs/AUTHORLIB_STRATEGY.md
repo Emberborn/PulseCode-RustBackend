@@ -248,8 +248,10 @@ Current first executable slice:
 
 - `pulse.interop.NativeLibrary`
 - `pulse.interop.NativeSymbol`
+- `pulse.interop.NativeFunction`
 - `pulse.interop.NativeCalls`
 - `pulse.interop.NativePointer`
+- `pulse.interop.NativeArgument`
 - `pulse.interop.NativeBuffer`
 - `pulse.interop.NativeByteSpan`
 - `pulse.interop.NativeUtf8String`
@@ -261,6 +263,7 @@ That surface is intentionally low-level. It exists so:
 - ordinary users have a standard interop path
 - Pulse-owned absorbed foreign-backed features can wrap a public raw boundary instead of inventing a second private interop stack
 - adopted interop resources can default to ARC-backed release without forcing manual memory ownership on every caller
+- mixed foreign call shapes, callable function pointers, and borrowed loaded/self-module lookup now also live on the same public `pulse.interop.*` surface instead of a second authorlib-only bridge
 
 `author.*` should consume or extend that public raw interop surface where
 appropriate, not become the first home of general foreign-call capability.

@@ -22,6 +22,26 @@ public final class NativeLibrary implements NativeManagedResource
 Opens one native library and returns `null` when the host loader cannot open it.
 Use this for optional interop where the caller wants to probe availability first.
 
+### ``public static NativeLibrary lookupLoaded(String source)``
+
+Looks up one already-loaded native library in the current process without taking over its lifetime.
+Returns `null` when the named module is not currently loaded.
+
+### ``public static NativeLibrary lookupLoadedRequired(String source)``
+
+Looks up one already-loaded native library or panics when absent.
+Use this when a wrapper depends on one host module already being present in the current process.
+
+### ``public static NativeLibrary lookupSelf()``
+
+Returns the current process image module as a borrowed library wrapper.
+Use this when interop code needs to resolve exports from the current executable image without taking over its lifetime.
+
+### ``public static NativeLibrary lookupSelfRequired()``
+
+Returns the current process image module or panics when it cannot be resolved.
+Use this when a wrapper depends on exports from the current executable image.
+
 ### ``public static NativeLibrary borrow(String source, long handle)``
 
 Wraps one loaded native library handle as borrowed ownership.
@@ -66,6 +86,16 @@ Use this for optional native entrypoints where the caller wants to branch on cap
 
 Resolves one exported symbol or panics when absent.
 Use this when a Pulse-owned wrapper requires a specific native backend slot to exist.
+
+### ``public NativeFunction resolveFunction(String symbolName)``
+
+Resolves one exported symbol as one callable function pointer and returns `null` when absent.
+Use this when Pulse code wants to keep one callable foreign address around independently of the symbol wrapper.
+
+### ``public NativeFunction resolveFunctionRequired(String symbolName)``
+
+Resolves one exported symbol as one callable function pointer or panics when absent.
+Use this when one Pulse-owned wrapper depends on one specific foreign entrypoint being callable.
 
 ### ``public boolean close()``
 

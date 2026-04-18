@@ -362,6 +362,8 @@ class pulse.rt.Intrinsics
   method String hostStringFromUtf8(long address, int byteLength) blocks=1 values=1
   method String hostStringFromUtf8Z(long address) blocks=1 values=1
   method long hostLoadDynamicLibrary(String source) blocks=1 values=2
+  method long hostLookupLoadedDynamicLibrary(String source) blocks=1 values=2
+  method long hostLookupSelfDynamicLibrary() blocks=1 values=2
   method boolean hostFreeDynamicLibrary(long handle) blocks=1 values=1
   method long hostResolveDynamicSymbol(long libraryHandle, String symbolName) blocks=1 values=2
   method long hostCallNative0(long functionAddress) blocks=1 values=2
