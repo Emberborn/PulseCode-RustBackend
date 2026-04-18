@@ -1,5 +1,11 @@
 package pulse.rt;
 
+import pulse.interop.NativeCallback0;
+import pulse.interop.NativeCallback1;
+import pulse.interop.NativeCallback2;
+import pulse.interop.NativeCallback3;
+import pulse.interop.NativeCallback4;
+
 /**
  * Compiler/runtime intrinsic surface implemented by the native backend.
  */
@@ -496,6 +502,126 @@ final class Intrinsics {
         long arg3
     ) {
         return 0;
+    }
+
+    /**
+     * Registers one zero-argument Pulse callback and returns one runtime callback slot id.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback0(NativeCallback0 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered zero-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress0(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one zero-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback0(int slot) {
+        return false;
+    }
+
+    /**
+     * Registers one one-argument Pulse callback and returns one runtime callback slot id.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback1(NativeCallback1 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered one-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress1(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one one-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback1(int slot) {
+        return false;
+    }
+
+    /**
+     * Registers one two-argument Pulse callback and returns one runtime callback slot id.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback2(NativeCallback2 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered two-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress2(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one two-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback2(int slot) {
+        return false;
+    }
+
+    /**
+     * Registers one three-argument Pulse callback and returns one runtime callback slot id.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback3(NativeCallback3 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered three-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress3(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one three-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback3(int slot) {
+        return false;
+    }
+
+    /**
+     * Registers one four-argument Pulse callback and returns one runtime callback slot id.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static int hostRegisterNativeCallback4(NativeCallback4 callback) {
+        return 0;
+    }
+
+    /**
+     * Returns the native-callable address for one registered four-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static long hostGetNativeCallbackAddress4(int slot) {
+        return 0;
+    }
+
+    /**
+     * Unregisters one four-argument callback slot.
+     * Use this only behind `pulse.interop.NativeCallbackHandle`.
+     */
+    public static boolean hostUnregisterNativeCallback4(int slot) {
+        return false;
     }
 
     /**

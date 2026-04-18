@@ -649,6 +649,8 @@ The first executable public raw interop slice now exists under `pulse.interop.*`
 - `pulse.interop.NativeSymbol`
 - `pulse.interop.NativeFunction`
 - `pulse.interop.NativeCalls`
+- `pulse.interop.NativeCallback0..4`
+- `pulse.interop.NativeCallbackHandle`
 - `pulse.interop.NativePointer`
 - `pulse.interop.NativeArgument`
 - `pulse.interop.NativeBuffer`
@@ -673,8 +675,10 @@ Current executable boundary:
 - borrowed current-process-image lookup through `NativeLibrary.lookupSelf()`
 - symbol-to-function lifting and direct function-pointer invocation
 - function-pointer arguments passed back into foreign APIs through `NativeArgument`
+- registered callback handles with native-to-Pulse trampoline re-entry
 - explicit borrowed/adopted/manual ownership modes for interop-backed resources
 - ARC-backed native cleanup for adopted `NativeBuffer` / `NativeLibrary` wrappers on object teardown
+- ARC-backed native cleanup for registered `NativeCallbackHandle` wrappers on object teardown
 
 Direction rule:
 

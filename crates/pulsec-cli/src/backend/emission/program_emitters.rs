@@ -132,6 +132,245 @@ fn emit_class_id_set_table(out: &mut String, label: &str, class_ids: &[u32]) {
     }
 }
 
+fn callback_interface_name(arity: usize) -> String {
+    format!("pulse.interop.NativeCallback{}", arity)
+}
+
+fn callback_arg_types(arity: usize) -> Vec<String> {
+    (0..arity).map(|_| "long".to_string()).collect()
+}
+
+fn resolve_method_symbol_for_exact_signature(
+    owner: &str,
+    member: &str,
+    arg_types: &[String],
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+) -> Option<String> {
+    if let Some(symbol) =
+        method_symbols_by_sig.get(&(owner.to_string(), member.to_string(), arg_types.to_vec()))
+    {
+        return Some(symbol.clone());
+    }
+    for iface in interfaces_of_type(owner) {
+        if let Some(symbol) =
+            resolve_method_symbol_for_exact_signature(&iface, member, arg_types, method_symbols_by_sig)
+        {
+            return Some(symbol);
+        }
+    }
+    let parent = class_super_of(owner)?;
+    resolve_method_symbol_for_exact_signature(&parent, member, arg_types, method_symbols_by_sig)
+}
+
+fn collect_native_callback_targets(
+    arity: usize,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+) -> Vec<(u32, String)> {
+    let iface = callback_interface_name(arity);
+    let arg_types = callback_arg_types(arity);
+    let mut targets = Vec::new();
+    for (class_name, class_id) in all_class_ids() {
+        if !class_implements_interface_runtime(&class_name, &iface) {
+            continue;
+        }
+        if let Some(target) =
+            resolve_method_symbol_for_exact_signature(&class_name, "invoke", &arg_types, method_symbols_by_sig)
+        {
+            targets.push((class_id, target));
+        }
+    }
+    targets.sort_by(|a, b| a.0.cmp(&b.0));
+    targets.dedup_by(|a, b| a.0 == b.0);
+    targets
+}
+
+fn emit_native_callback_dispatch_helper(
+    out: &mut String,
+    arity: usize,
+    method_symbols_by_sig: &HashMap<(String, String, Vec<String>), String>,
+) {
+    let symbol = mangle_native_callback_dispatch_proc_symbol(arity);
+    let invalid = format!("{}_invalid", symbol);
+    let type_err = format!("{}_type", symbol);
+    let slots_label = format!("rt_native_callback{}_slots", arity);
+    let targets = collect_native_callback_targets(arity, method_symbols_by_sig);
+    let assignable_ids = targets.iter().map(|(class_id, _)| *class_id).collect::<Vec<_>>();
+    let default_target = targets.first().map(|(_, target)| target.clone());
+    let overrides = if let Some(default_target) = &default_target {
+        targets
+            .iter()
+            .filter(|(_, target)| target != default_target)
+            .map(|(class_id, target)| (*class_id, target.clone()))
+            .collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
+    let stack_size = match arity {
+        0 => 40,
+        1 | 2 => 56,
+        _ => 72,
+    };
+
+    out.push_str(&format!("{} proc\n", symbol));
+    match arity {
+        0 => {
+            out.push_str("    sub rsp, 40\n");
+            out.push_str("    cmp ecx, 1\n");
+            out.push_str(&format!("    jb {}\n", invalid));
+            out.push_str(&format!(
+                "    cmp ecx, {}\n",
+                NATIVE_CALLBACK_SLOTS_PER_ARITY
+            ));
+            out.push_str(&format!("    ja {}\n", invalid));
+            out.push_str(&format!("    mov eax, dword ptr [{}+rcx*4-4]\n", slots_label));
+            out.push_str("    test eax, eax\n");
+            out.push_str(&format!("    jz {}\n", invalid));
+            out.push_str("    mov dword ptr [rsp+16], eax\n");
+        }
+        1 => {
+            out.push_str("    sub rsp, 56\n");
+            out.push_str("    mov qword ptr [rsp+40], rdx\n");
+            out.push_str("    cmp ecx, 1\n");
+            out.push_str(&format!("    jb {}\n", invalid));
+            out.push_str(&format!(
+                "    cmp ecx, {}\n",
+                NATIVE_CALLBACK_SLOTS_PER_ARITY
+            ));
+            out.push_str(&format!("    ja {}\n", invalid));
+            out.push_str(&format!("    mov eax, dword ptr [{}+rcx*4-4]\n", slots_label));
+            out.push_str("    test eax, eax\n");
+            out.push_str(&format!("    jz {}\n", invalid));
+            out.push_str("    mov dword ptr [rsp+16], eax\n");
+        }
+        2 => {
+            out.push_str("    sub rsp, 56\n");
+            out.push_str("    mov qword ptr [rsp+40], rdx\n");
+            out.push_str("    mov qword ptr [rsp+48], r8\n");
+            out.push_str("    cmp ecx, 1\n");
+            out.push_str(&format!("    jb {}\n", invalid));
+            out.push_str(&format!(
+                "    cmp ecx, {}\n",
+                NATIVE_CALLBACK_SLOTS_PER_ARITY
+            ));
+            out.push_str(&format!("    ja {}\n", invalid));
+            out.push_str(&format!("    mov eax, dword ptr [{}+rcx*4-4]\n", slots_label));
+            out.push_str("    test eax, eax\n");
+            out.push_str(&format!("    jz {}\n", invalid));
+            out.push_str("    mov dword ptr [rsp+16], eax\n");
+        }
+        3 => {
+            out.push_str("    sub rsp, 72\n");
+            out.push_str("    mov qword ptr [rsp+40], rdx\n");
+            out.push_str("    mov qword ptr [rsp+48], r8\n");
+            out.push_str("    mov qword ptr [rsp+56], r9\n");
+            out.push_str("    cmp ecx, 1\n");
+            out.push_str(&format!("    jb {}\n", invalid));
+            out.push_str(&format!(
+                "    cmp ecx, {}\n",
+                NATIVE_CALLBACK_SLOTS_PER_ARITY
+            ));
+            out.push_str(&format!("    ja {}\n", invalid));
+            out.push_str(&format!("    mov eax, dword ptr [{}+rcx*4-4]\n", slots_label));
+            out.push_str("    test eax, eax\n");
+            out.push_str(&format!("    jz {}\n", invalid));
+            out.push_str("    mov dword ptr [rsp+16], eax\n");
+        }
+        4 => {
+            out.push_str("    mov rax, qword ptr [rsp+40]\n");
+            out.push_str("    sub rsp, 72\n");
+            out.push_str("    mov qword ptr [rsp+40], rdx\n");
+            out.push_str("    mov qword ptr [rsp+48], r8\n");
+            out.push_str("    mov qword ptr [rsp+56], r9\n");
+            out.push_str("    mov qword ptr [rsp+64], rax\n");
+            out.push_str("    cmp ecx, 1\n");
+            out.push_str(&format!("    jb {}\n", invalid));
+            out.push_str(&format!(
+                "    cmp ecx, {}\n",
+                NATIVE_CALLBACK_SLOTS_PER_ARITY
+            ));
+            out.push_str(&format!("    ja {}\n", invalid));
+            out.push_str(&format!("    mov eax, dword ptr [{}+rcx*4-4]\n", slots_label));
+            out.push_str("    test eax, eax\n");
+            out.push_str(&format!("    jz {}\n", invalid));
+            out.push_str("    mov dword ptr [rsp+16], eax\n");
+        }
+        _ => {}
+    }
+
+    out.push_str("    mov ecx, dword ptr [rsp+16]\n");
+    out.push_str(&format!("    call {}\n", OBJECT_CLASS_ID_SYMBOL));
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", type_err));
+    if assignable_ids.is_empty() {
+        out.push_str(&format!("    jmp {}\n", type_err));
+    } else {
+        let assign_ok = format!("{}_assign_ok", symbol);
+        for class_id in &assignable_ids {
+            out.push_str(&format!("    cmp eax, {}\n", class_id));
+            out.push_str(&format!("    je {}\n", assign_ok));
+        }
+        out.push_str(&format!("    jmp {}\n", type_err));
+        out.push_str(&format!("{}:\n", assign_ok));
+        for (idx, (class_id, _)) in overrides.iter().enumerate() {
+            out.push_str(&format!("    cmp eax, {}\n", class_id));
+            out.push_str(&format!("    je {}_ovr{}\n", symbol, idx));
+        }
+        let default_target = default_target.expect("callback default target");
+        out.push_str("    mov ecx, dword ptr [rsp+16]\n");
+        if arity >= 1 {
+            out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+        }
+        if arity >= 2 {
+            out.push_str("    mov r8, qword ptr [rsp+48]\n");
+        }
+        if arity >= 3 {
+            out.push_str("    mov r9, qword ptr [rsp+56]\n");
+        }
+        if arity == 4 {
+            out.push_str("    mov rax, qword ptr [rsp+64]\n");
+            out.push_str("    mov qword ptr [rsp+32], rax\n");
+        }
+        out.push_str(&format!("    add rsp, {}\n", stack_size));
+        out.push_str(&format!("    call {}\n", default_target));
+        out.push_str("    ret\n");
+        for (idx, (_, target)) in overrides.iter().enumerate() {
+            out.push_str(&format!("{}_ovr{}:\n", symbol, idx));
+            out.push_str("    mov ecx, dword ptr [rsp+16]\n");
+            if arity >= 1 {
+                out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+            }
+            if arity >= 2 {
+                out.push_str("    mov r8, qword ptr [rsp+48]\n");
+            }
+            if arity >= 3 {
+                out.push_str("    mov r9, qword ptr [rsp+56]\n");
+            }
+            if arity == 4 {
+                out.push_str("    mov rax, qword ptr [rsp+64]\n");
+                out.push_str("    mov qword ptr [rsp+32], rax\n");
+            }
+            out.push_str(&format!("    add rsp, {}\n", stack_size));
+            out.push_str(&format!("    call {}\n", target));
+            out.push_str("    ret\n");
+        }
+    }
+    out.push_str(&format!("{}:\n", invalid));
+    out.push_str("    lea rcx, rt_native_callback_invalid_err\n");
+    out.push_str("    mov edx, rt_native_callback_invalid_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str(&format!("    add rsp, {}\n", stack_size));
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", type_err));
+    out.push_str(&format!("    add rsp, {}\n", stack_size));
+    out.push_str(&format!("    call {}\n", DISPATCH_TYPE_PANIC_SYMBOL));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n\n", symbol));
+}
+
 fn collect_object_class_name_literals(ir: &IrProgram) -> Vec<(u32, String, String)> {
     let mut classes = ir
         .classes
@@ -1266,6 +1505,51 @@ pub(crate) fn emit_masm_split_program_objects(
             "pulsec_rt_hostCallNative2" => emit_host_call_native2_proc(&mut std_src, &sym),
             "pulsec_rt_hostCallNative3" => emit_host_call_native3_proc(&mut std_src, &sym),
             "pulsec_rt_hostCallNative4" => emit_host_call_native4_proc(&mut std_src, &sym),
+            "pulsec_rt_hostRegisterNativeCallback0" => {
+                emit_host_register_native_callback0_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress0" => {
+                emit_host_get_native_callback_address0_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback0" => {
+                emit_host_unregister_native_callback0_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostRegisterNativeCallback1" => {
+                emit_host_register_native_callback1_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress1" => {
+                emit_host_get_native_callback_address1_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback1" => {
+                emit_host_unregister_native_callback1_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostRegisterNativeCallback2" => {
+                emit_host_register_native_callback2_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress2" => {
+                emit_host_get_native_callback_address2_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback2" => {
+                emit_host_unregister_native_callback2_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostRegisterNativeCallback3" => {
+                emit_host_register_native_callback3_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress3" => {
+                emit_host_get_native_callback_address3_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback3" => {
+                emit_host_unregister_native_callback3_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostRegisterNativeCallback4" => {
+                emit_host_register_native_callback4_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress4" => {
+                emit_host_get_native_callback_address4_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback4" => {
+                emit_host_unregister_native_callback4_proc(&mut std_src, &sym)
+            }
             "pulsec_rt_hostRunShellProcess" => emit_host_run_shell_process_proc(&mut std_src, &sym),
             "pulsec_rt_arcRetain" => emit_arc_retain_proc(&mut std_src, &sym),
             "pulsec_rt_arcRelease" => emit_arc_release_proc(&mut std_src, &sym),
@@ -1283,6 +1567,10 @@ pub(crate) fn emit_masm_split_program_objects(
         }
         std_src.push('\n');
     }
+    for arity in 0..=4 {
+        emit_native_callback_dispatch_helper(&mut std_src, arity, &method_symbols_by_sig);
+    }
+    emit_native_callback_trampolines(&mut std_src);
     std_src.push_str("end\n");
     fs::write(&std_asm_path, std_src).map_err(|e| {
         format!(
@@ -1863,6 +2151,51 @@ pub(crate) fn emit_masm_full_program_object(
             "pulsec_rt_hostCallNative2" => emit_host_call_native2_proc(&mut source, &sym),
             "pulsec_rt_hostCallNative3" => emit_host_call_native3_proc(&mut source, &sym),
             "pulsec_rt_hostCallNative4" => emit_host_call_native4_proc(&mut source, &sym),
+            "pulsec_rt_hostRegisterNativeCallback0" => {
+                emit_host_register_native_callback0_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress0" => {
+                emit_host_get_native_callback_address0_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback0" => {
+                emit_host_unregister_native_callback0_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostRegisterNativeCallback1" => {
+                emit_host_register_native_callback1_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress1" => {
+                emit_host_get_native_callback_address1_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback1" => {
+                emit_host_unregister_native_callback1_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostRegisterNativeCallback2" => {
+                emit_host_register_native_callback2_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress2" => {
+                emit_host_get_native_callback_address2_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback2" => {
+                emit_host_unregister_native_callback2_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostRegisterNativeCallback3" => {
+                emit_host_register_native_callback3_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress3" => {
+                emit_host_get_native_callback_address3_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback3" => {
+                emit_host_unregister_native_callback3_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostRegisterNativeCallback4" => {
+                emit_host_register_native_callback4_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostGetNativeCallbackAddress4" => {
+                emit_host_get_native_callback_address4_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostUnregisterNativeCallback4" => {
+                emit_host_unregister_native_callback4_proc(&mut source, &sym)
+            }
             "pulsec_rt_hostRunShellProcess" => emit_host_run_shell_process_proc(&mut source, &sym),
             "pulsec_rt_arcRetain" => emit_arc_retain_proc(&mut source, &sym),
             "pulsec_rt_arcRelease" => emit_arc_release_proc(&mut source, &sym),
@@ -1889,6 +2222,11 @@ pub(crate) fn emit_masm_full_program_object(
         }
         source.push('\n');
     }
+
+    for arity in 0..=4 {
+        emit_native_callback_dispatch_helper(&mut source, arity, &method_symbols_by_sig);
+    }
+    emit_native_callback_trampolines(&mut source);
 
     if !source.trim_end().ends_with("end") {
         source.push_str("end\n");

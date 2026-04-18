@@ -120,6 +120,21 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
 - `Intrinsics.hostCallNative2(long, long, long) -> long`
 - `Intrinsics.hostCallNative3(long, long, long, long) -> long`
 - `Intrinsics.hostCallNative4(long, long, long, long, long) -> long`
+- `Intrinsics.hostRegisterNativeCallback0(pulse.interop.NativeCallback0) -> int`
+- `Intrinsics.hostGetNativeCallbackAddress0(int) -> long`
+- `Intrinsics.hostUnregisterNativeCallback0(int) -> boolean`
+- `Intrinsics.hostRegisterNativeCallback1(pulse.interop.NativeCallback1) -> int`
+- `Intrinsics.hostGetNativeCallbackAddress1(int) -> long`
+- `Intrinsics.hostUnregisterNativeCallback1(int) -> boolean`
+- `Intrinsics.hostRegisterNativeCallback2(pulse.interop.NativeCallback2) -> int`
+- `Intrinsics.hostGetNativeCallbackAddress2(int) -> long`
+- `Intrinsics.hostUnregisterNativeCallback2(int) -> boolean`
+- `Intrinsics.hostRegisterNativeCallback3(pulse.interop.NativeCallback3) -> int`
+- `Intrinsics.hostGetNativeCallbackAddress3(int) -> long`
+- `Intrinsics.hostUnregisterNativeCallback3(int) -> boolean`
+- `Intrinsics.hostRegisterNativeCallback4(pulse.interop.NativeCallback4) -> int`
+- `Intrinsics.hostGetNativeCallbackAddress4(int) -> long`
+- `Intrinsics.hostUnregisterNativeCallback4(int) -> boolean`
 - `String.runtimeConcat(String, String) -> String`
 - `String.runtimeLength(String) -> int`
 - `String.runtimeCharAt(String, int) -> char`
@@ -218,6 +233,21 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
   - `pulsec_rt_hostCallNative2`
   - `pulsec_rt_hostCallNative3`
   - `pulsec_rt_hostCallNative4`
+  - `pulsec_rt_hostRegisterNativeCallback0`
+  - `pulsec_rt_hostGetNativeCallbackAddress0`
+  - `pulsec_rt_hostUnregisterNativeCallback0`
+  - `pulsec_rt_hostRegisterNativeCallback1`
+  - `pulsec_rt_hostGetNativeCallbackAddress1`
+  - `pulsec_rt_hostUnregisterNativeCallback1`
+  - `pulsec_rt_hostRegisterNativeCallback2`
+  - `pulsec_rt_hostGetNativeCallbackAddress2`
+  - `pulsec_rt_hostUnregisterNativeCallback2`
+  - `pulsec_rt_hostRegisterNativeCallback3`
+  - `pulsec_rt_hostGetNativeCallbackAddress3`
+  - `pulsec_rt_hostUnregisterNativeCallback3`
+  - `pulsec_rt_hostRegisterNativeCallback4`
+  - `pulsec_rt_hostGetNativeCallbackAddress4`
+  - `pulsec_rt_hostUnregisterNativeCallback4`
   - `pulsec_rt_hostPathAlloc`
   - `pulsec_rt_classSimpleName`
   - `pulsec_rt_classPackageName`

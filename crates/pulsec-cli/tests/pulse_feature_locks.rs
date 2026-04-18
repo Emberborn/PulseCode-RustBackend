@@ -1828,3 +1828,125 @@ entry = "app/core/Main.pulse"
         stderr
     );
 }
+
+#[test]
+fn lock_pulse_feature_12_public_interop_callbacks_execute_without_authorlib_opt_in() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "public-interop-callbacks"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.interop.NativeArgument;
+        import pulse.interop.NativeBuffer;
+        import pulse.interop.NativeCallback2;
+        import pulse.interop.NativeCallbackHandle;
+        import pulse.interop.NativeCalls;
+        import pulse.interop.NativeLibrary;
+        import pulse.interop.NativePointer;
+
+        class SortComparator implements NativeCallback2 {
+            public static int calls = 0;
+
+            public long invoke(long leftAddress, long rightAddress) {
+                SortComparator.calls = SortComparator.calls + 1;
+                long left = NativePointer.fromRaw(leftAddress).readLong(0);
+                long right = NativePointer.fromRaw(rightAddress).readLong(0);
+                if (left < right) {
+                    return -1L;
+                }
+                if (left > right) {
+                    return 1L;
+                }
+                return 0L;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                NativeLibrary crt = NativeLibrary.openRequired("msvcrt.dll");
+                NativeBuffer values = NativeBuffer.allocate(24);
+                NativeCallbackHandle comparator = NativeCallbackHandle.create(new SortComparator());
+                values.pointer().writeLong(0, 7L);
+                values.pointer().writeLong(8, 1L);
+                values.pointer().writeLong(16, 4L);
+
+                NativeCalls.callLong4(
+                    crt.resolveFunctionRequired("qsort"),
+                    NativeArgument.ofBuffer(values),
+                    NativeArgument.ofLong(3L),
+                    NativeArgument.ofLong(8L),
+                    NativeArgument.ofFunction(comparator.function())
+                );
+
+                long first = values.pointer().readLong(0);
+                long second = values.pointer().readLong(8);
+                long third = values.pointer().readLong(16);
+                boolean closedComparator = comparator.close();
+                values.close();
+                boolean closedLibrary = crt.close();
+
+                if (first == 1L
+                    && second == 4L
+                    && third == 7L
+                    && SortComparator.calls > 0
+                    && closedComparator
+                    && closedLibrary) {
+                    pulse.lang.IO.println("interop_callback_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("interop_callback_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected public interop callback build success without authorlib opt-in\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("public-interop-callbacks-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected public interop callback exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("interop_callback_ok"),
+        "expected interop callback success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}

@@ -331,6 +331,81 @@ Returns the raw 64-bit result value from the foreign implementation.
 Calls one raw native function pointer with four host-ABI long/pointer arguments.
 Returns the raw 64-bit result value from the foreign implementation.
 
+### ``public static int hostRegisterNativeCallback0(NativeCallback0 callback)``
+
+Registers one zero-argument Pulse callback and returns one runtime callback slot id.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static long hostGetNativeCallbackAddress0(int slot)``
+
+Returns the native-callable address for one registered zero-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static boolean hostUnregisterNativeCallback0(int slot)``
+
+Unregisters one zero-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static int hostRegisterNativeCallback1(NativeCallback1 callback)``
+
+Registers one one-argument Pulse callback and returns one runtime callback slot id.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static long hostGetNativeCallbackAddress1(int slot)``
+
+Returns the native-callable address for one registered one-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static boolean hostUnregisterNativeCallback1(int slot)``
+
+Unregisters one one-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static int hostRegisterNativeCallback2(NativeCallback2 callback)``
+
+Registers one two-argument Pulse callback and returns one runtime callback slot id.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static long hostGetNativeCallbackAddress2(int slot)``
+
+Returns the native-callable address for one registered two-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static boolean hostUnregisterNativeCallback2(int slot)``
+
+Unregisters one two-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static int hostRegisterNativeCallback3(NativeCallback3 callback)``
+
+Registers one three-argument Pulse callback and returns one runtime callback slot id.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static long hostGetNativeCallbackAddress3(int slot)``
+
+Returns the native-callable address for one registered three-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static boolean hostUnregisterNativeCallback3(int slot)``
+
+Unregisters one three-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static int hostRegisterNativeCallback4(NativeCallback4 callback)``
+
+Registers one four-argument Pulse callback and returns one runtime callback slot id.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static long hostGetNativeCallbackAddress4(int slot)``
+
+Returns the native-callable address for one registered four-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
+### ``public static boolean hostUnregisterNativeCallback4(int slot)``
+
+Unregisters one four-argument callback slot.
+Use this only behind `pulse.interop.NativeCallbackHandle`.
+
 ### ``public static int hostRunShellProcess(String workingDirectory, String commandLine)``
 
 Executes one Windows shell command line under the supplied working directory.

@@ -175,3 +175,11 @@ pub(crate) fn mangle_class_arc_invalidate_edges_proc_symbol(
         mangle_class_field_capacity_symbol(package, class_name)
     ))
 }
+
+pub(crate) fn mangle_native_callback_dispatch_proc_symbol(arity: usize) -> String {
+    shorten_identifier(format!("pulsec_rt_invokeNativeCallback{}", arity))
+}
+
+pub(crate) fn mangle_native_callback_trampoline_symbol(arity: usize, slot: usize) -> String {
+    shorten_identifier(format!("pulsec_rt_nativeCallback{}_slot{}", arity, slot))
+}

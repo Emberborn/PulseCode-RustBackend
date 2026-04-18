@@ -79,6 +79,8 @@ The first executable interop slice is intentionally narrow:
 - public `pulse.interop.NativeSymbol`
 - public `pulse.interop.NativeFunction`
 - public `pulse.interop.NativeCalls`
+- public `pulse.interop.NativeCallback0..4`
+- public `pulse.interop.NativeCallbackHandle`
 - public `pulse.interop.NativePointer`
 - public `pulse.interop.NativeArgument`
 - public `pulse.interop.NativeBuffer`
@@ -100,6 +102,8 @@ The first executable interop slice is intentionally narrow:
 - current-process-image lookup without taking loader ownership
 - symbol-to-function lifting and direct function-pointer invocation
 - function-pointer arguments passed back into foreign APIs through `NativeArgument`
+- registered native callback handles with ARC-backed teardown
+- native-to-Pulse callback re-entry through generated trampoline slots
 - adopted interop resources now release through ARC-backed object teardown by default
 - borrowed and manual wrappers keep structured Pulse ownership without taking over the foreign release path
 
@@ -135,7 +139,6 @@ Follow-up interop growth should focus on the hard-to-add-later host boundary
 pieces while `F1-97` is still open:
 
 - broader argument/return kind support
-- native-to-Pulse callback re-entry/trampoline support
 - structured native error capture where useful
 - durable wrapper patterns for absorbed foreign-backed features
 

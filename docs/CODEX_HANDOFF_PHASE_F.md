@@ -1342,6 +1342,7 @@ Selected direction:
   - borrowed current-process-image lookup through `NativeLibrary.lookupSelf()`
   - symbol-to-function lifting and direct function-pointer invocation
   - function-pointer arguments passed back into foreign APIs through `NativeArgument`
+  - registered callback handles with native-to-Pulse trampoline re-entry
   - explicit borrowed/adopted/manual ownership modes for interop-backed resources
   - ARC-backed native cleanup for adopted `NativeBuffer` / `NativeLibrary` wrappers
 - absorbed foreign-backed features should wrap that raw surface behind

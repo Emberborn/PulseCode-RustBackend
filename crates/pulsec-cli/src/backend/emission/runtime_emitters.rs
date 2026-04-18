@@ -2082,6 +2082,61 @@ pub(crate) fn emit_class_native_cleanup_proc(
             out.push_str(&format!("    mov r10, qword ptr [{}]\n", handle_sym));
             out.push_str("    mov qword ptr [r10+rcx*8], 0\n");
         }
+        ("pulse.interop", "NativeCallbackHandle") => {
+            let slot_sym = mangle_field_symbol(package_name, class_name, "slot");
+            let arity_sym = mangle_field_symbol(package_name, class_name, "arity");
+            let address_sym = mangle_field_symbol(package_name, class_name, "address");
+            let closed_sym = mangle_field_symbol(package_name, class_name, "closed");
+            let arity1 = format!("{}_arity1", symbol);
+            let arity2 = format!("{}_arity2", symbol);
+            let arity3 = format!("{}_arity3", symbol);
+            let arity4 = format!("{}_arity4", symbol);
+            let release_done = format!("{}_release_done", symbol);
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", closed_sym));
+            out.push_str("    cmp dword ptr [r10+rcx*4], 0\n");
+            out.push_str(&format!("    jne {}\n", done));
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", slot_sym));
+            out.push_str("    mov eax, dword ptr [r10+rcx*4]\n");
+            out.push_str("    test eax, eax\n");
+            out.push_str(&format!("    jz {}\n", release_done));
+            out.push_str("    mov r11d, eax\n");
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", arity_sym));
+            out.push_str("    mov eax, dword ptr [r10+rcx*4]\n");
+            out.push_str("    cmp eax, 1\n");
+            out.push_str(&format!("    je {}\n", arity1));
+            out.push_str("    cmp eax, 2\n");
+            out.push_str(&format!("    je {}\n", arity2));
+            out.push_str("    cmp eax, 3\n");
+            out.push_str(&format!("    je {}\n", arity3));
+            out.push_str("    cmp eax, 4\n");
+            out.push_str(&format!("    je {}\n", arity4));
+            out.push_str("    mov ecx, r11d\n");
+            out.push_str("    call pulsec_rt_hostUnregisterNativeCallback0\n");
+            out.push_str(&format!("    jmp {}\n", release_done));
+            out.push_str(&format!("{}:\n", arity1));
+            out.push_str("    mov ecx, r11d\n");
+            out.push_str("    call pulsec_rt_hostUnregisterNativeCallback1\n");
+            out.push_str(&format!("    jmp {}\n", release_done));
+            out.push_str(&format!("{}:\n", arity2));
+            out.push_str("    mov ecx, r11d\n");
+            out.push_str("    call pulsec_rt_hostUnregisterNativeCallback2\n");
+            out.push_str(&format!("    jmp {}\n", release_done));
+            out.push_str(&format!("{}:\n", arity3));
+            out.push_str("    mov ecx, r11d\n");
+            out.push_str("    call pulsec_rt_hostUnregisterNativeCallback3\n");
+            out.push_str(&format!("    jmp {}\n", release_done));
+            out.push_str(&format!("{}:\n", arity4));
+            out.push_str("    mov ecx, r11d\n");
+            out.push_str("    call pulsec_rt_hostUnregisterNativeCallback4\n");
+            out.push_str(&format!("{}:\n", release_done));
+            out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", slot_sym));
+            out.push_str("    mov dword ptr [r10+rcx*4], 0\n");
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", address_sym));
+            out.push_str("    mov qword ptr [r10+rcx*8], 0\n");
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", closed_sym));
+            out.push_str("    mov dword ptr [r10+rcx*4], 1\n");
+        }
         _ => {}
     }
 
@@ -3970,6 +4025,235 @@ pub(crate) fn emit_host_call_native4_proc(out: &mut String, symbol: &str) {
     out.push_str("    xor eax, eax\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{} endp\n", symbol));
+}
+
+fn emit_host_register_native_callback_proc(out: &mut String, symbol: &str, arity: usize) {
+    let loop_label = format!("{}_loop", symbol);
+    let next_label = format!("{}_next", symbol);
+    let exhausted = format!("{}_exhausted", symbol);
+    let zero = format!("{}_zero", symbol);
+    let slots_label = format!("rt_native_callback{}_slots", arity);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test ecx, ecx\n");
+    out.push_str(&format!("    jz {}\n", zero));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    out.push_str("    mov edx, 1\n");
+    out.push_str(&format!("{}:\n", loop_label));
+    out.push_str(&format!(
+        "    cmp edx, {}\n",
+        NATIVE_CALLBACK_SLOTS_PER_ARITY
+    ));
+    out.push_str(&format!("    ja {}\n", exhausted));
+    out.push_str(&format!("    cmp dword ptr [{}+rdx*4-4], 0\n", slots_label));
+    out.push_str(&format!("    jne {}\n", next_label));
+    out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+    out.push_str("    call pulsec_rt_arcRetain\n");
+    out.push_str(&format!("    mov dword ptr [{}+rdx*4-4], eax\n", slots_label));
+    out.push_str("    mov eax, edx\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", next_label));
+    out.push_str("    add edx, 1\n");
+    out.push_str(&format!("    jmp {}\n", loop_label));
+    out.push_str(&format!("{}:\n", exhausted));
+    out.push_str("    lea rcx, rt_native_callback_exhausted_err\n");
+    out.push_str("    mov edx, rt_native_callback_exhausted_err_len\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_panic\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", zero));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+fn emit_host_get_native_callback_address_proc(out: &mut String, symbol: &str, arity: usize) {
+    let invalid = format!("{}_invalid", symbol);
+    let slots_label = format!("rt_native_callback{}_slots", arity);
+    let table_label = format!("rt_native_callback{}_entrypoints", arity);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", invalid));
+    out.push_str(&format!(
+        "    cmp ecx, {}\n",
+        NATIVE_CALLBACK_SLOTS_PER_ARITY
+    ));
+    out.push_str(&format!("    ja {}\n", invalid));
+    out.push_str(&format!("    cmp dword ptr [{}+rcx*4-4], 0\n", slots_label));
+    out.push_str(&format!("    je {}\n", invalid));
+    out.push_str(&format!("    mov rax, qword ptr [{}+rcx*8-8]\n", table_label));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", invalid));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+fn emit_host_unregister_native_callback_proc(out: &mut String, symbol: &str, arity: usize) {
+    let invalid = format!("{}_invalid", symbol);
+    let slots_label = format!("rt_native_callback{}_slots", arity);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", invalid));
+    out.push_str(&format!(
+        "    cmp ecx, {}\n",
+        NATIVE_CALLBACK_SLOTS_PER_ARITY
+    ));
+    out.push_str(&format!("    ja {}\n", invalid));
+    out.push_str(&format!("    mov eax, dword ptr [{}+rcx*4-4]\n", slots_label));
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jz {}\n", invalid));
+    out.push_str(&format!("    mov dword ptr [{}+rcx*4-4], 0\n", slots_label));
+    out.push_str("    mov ecx, eax\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", invalid));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+fn emit_native_callback_trampoline_proc(
+    out: &mut String,
+    symbol: &str,
+    arity: usize,
+    slot: usize,
+    dispatch_symbol: &str,
+) {
+    out.push_str(&format!("{} proc\n", symbol));
+    match arity {
+        0 => {
+            out.push_str("    sub rsp, 40\n");
+            out.push_str(&format!("    mov ecx, {}\n", slot));
+            out.push_str(&format!("    call {}\n", dispatch_symbol));
+            out.push_str("    add rsp, 40\n");
+        }
+        1 => {
+            out.push_str("    mov r10, rcx\n");
+            out.push_str("    sub rsp, 40\n");
+            out.push_str(&format!("    mov ecx, {}\n", slot));
+            out.push_str("    mov rdx, r10\n");
+            out.push_str(&format!("    call {}\n", dispatch_symbol));
+            out.push_str("    add rsp, 40\n");
+        }
+        2 => {
+            out.push_str("    mov r10, rcx\n");
+            out.push_str("    mov r11, rdx\n");
+            out.push_str("    sub rsp, 40\n");
+            out.push_str(&format!("    mov ecx, {}\n", slot));
+            out.push_str("    mov rdx, r10\n");
+            out.push_str("    mov r8, r11\n");
+            out.push_str(&format!("    call {}\n", dispatch_symbol));
+            out.push_str("    add rsp, 40\n");
+        }
+        3 => {
+            out.push_str("    mov r10, rcx\n");
+            out.push_str("    mov r11, rdx\n");
+            out.push_str("    mov rax, r8\n");
+            out.push_str("    sub rsp, 40\n");
+            out.push_str(&format!("    mov ecx, {}\n", slot));
+            out.push_str("    mov rdx, r10\n");
+            out.push_str("    mov r8, r11\n");
+            out.push_str("    mov r9, rax\n");
+            out.push_str(&format!("    call {}\n", dispatch_symbol));
+            out.push_str("    add rsp, 40\n");
+        }
+        4 => {
+            out.push_str("    sub rsp, 72\n");
+            out.push_str("    mov qword ptr [rsp+40], rcx\n");
+            out.push_str("    mov qword ptr [rsp+48], rdx\n");
+            out.push_str("    mov qword ptr [rsp+56], r8\n");
+            out.push_str("    mov qword ptr [rsp+64], r9\n");
+            out.push_str(&format!("    mov ecx, {}\n", slot));
+            out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+            out.push_str("    mov r8, qword ptr [rsp+48]\n");
+            out.push_str("    mov r9, qword ptr [rsp+56]\n");
+            out.push_str("    mov rax, qword ptr [rsp+64]\n");
+            out.push_str("    mov qword ptr [rsp+32], rax\n");
+            out.push_str(&format!("    call {}\n", dispatch_symbol));
+            out.push_str("    add rsp, 72\n");
+        }
+        _ => {}
+    }
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_register_native_callback0_proc(out: &mut String, symbol: &str) {
+    emit_host_register_native_callback_proc(out, symbol, 0);
+}
+
+pub(crate) fn emit_host_get_native_callback_address0_proc(out: &mut String, symbol: &str) {
+    emit_host_get_native_callback_address_proc(out, symbol, 0);
+}
+
+pub(crate) fn emit_host_unregister_native_callback0_proc(out: &mut String, symbol: &str) {
+    emit_host_unregister_native_callback_proc(out, symbol, 0);
+}
+
+pub(crate) fn emit_host_register_native_callback1_proc(out: &mut String, symbol: &str) {
+    emit_host_register_native_callback_proc(out, symbol, 1);
+}
+
+pub(crate) fn emit_host_get_native_callback_address1_proc(out: &mut String, symbol: &str) {
+    emit_host_get_native_callback_address_proc(out, symbol, 1);
+}
+
+pub(crate) fn emit_host_unregister_native_callback1_proc(out: &mut String, symbol: &str) {
+    emit_host_unregister_native_callback_proc(out, symbol, 1);
+}
+
+pub(crate) fn emit_host_register_native_callback2_proc(out: &mut String, symbol: &str) {
+    emit_host_register_native_callback_proc(out, symbol, 2);
+}
+
+pub(crate) fn emit_host_get_native_callback_address2_proc(out: &mut String, symbol: &str) {
+    emit_host_get_native_callback_address_proc(out, symbol, 2);
+}
+
+pub(crate) fn emit_host_unregister_native_callback2_proc(out: &mut String, symbol: &str) {
+    emit_host_unregister_native_callback_proc(out, symbol, 2);
+}
+
+pub(crate) fn emit_host_register_native_callback3_proc(out: &mut String, symbol: &str) {
+    emit_host_register_native_callback_proc(out, symbol, 3);
+}
+
+pub(crate) fn emit_host_get_native_callback_address3_proc(out: &mut String, symbol: &str) {
+    emit_host_get_native_callback_address_proc(out, symbol, 3);
+}
+
+pub(crate) fn emit_host_unregister_native_callback3_proc(out: &mut String, symbol: &str) {
+    emit_host_unregister_native_callback_proc(out, symbol, 3);
+}
+
+pub(crate) fn emit_host_register_native_callback4_proc(out: &mut String, symbol: &str) {
+    emit_host_register_native_callback_proc(out, symbol, 4);
+}
+
+pub(crate) fn emit_host_get_native_callback_address4_proc(out: &mut String, symbol: &str) {
+    emit_host_get_native_callback_address_proc(out, symbol, 4);
+}
+
+pub(crate) fn emit_host_unregister_native_callback4_proc(out: &mut String, symbol: &str) {
+    emit_host_unregister_native_callback_proc(out, symbol, 4);
+}
+
+pub(crate) fn emit_native_callback_trampolines(out: &mut String) {
+    for arity in 0..=4 {
+        let dispatch_symbol = mangle_native_callback_dispatch_proc_symbol(arity);
+        for slot in 1..=NATIVE_CALLBACK_SLOTS_PER_ARITY {
+            let trampoline = mangle_native_callback_trampoline_symbol(arity, slot);
+            emit_native_callback_trampoline_proc(out, &trampoline, arity, slot, &dispatch_symbol);
+        }
+    }
 }
 
 pub(crate) fn emit_host_run_shell_process_proc(out: &mut String, symbol: &str) {

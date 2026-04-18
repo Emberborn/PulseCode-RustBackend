@@ -23,6 +23,7 @@ pub(crate) const ABI_VERSION_SCHEMA: &str = "pulsec.runtime.abi.v1";
 pub(crate) const ABI_VERSION_V2: u32 = 2;
 pub(crate) const OBJECT_MODEL_ABI_VERSION_V1: u32 = 1;
 pub(crate) const CLASS_ID_IN_SET_SYMBOL: &str = "pulsec_rt_classIdInSet";
+pub(crate) const NATIVE_CALLBACK_SLOTS_PER_ARITY: usize = 16;
 
 pub(crate) fn debug_allocator_enabled() -> bool {
     match env::var("PULSEC_DEBUG_ALLOC") {
@@ -205,6 +206,20 @@ pub(crate) fn emit_runtime_data_tables(out: &mut String) {
     out.push_str("rt_tmp_ptr_b dq 0\n");
     out.push_str("rt_tmp_ptr_c dq 0\n");
     out.push_str("rt_tmp_ptr_d dq 0\n");
+    for arity in 0..=4 {
+        out.push_str(&format!(
+            "rt_native_callback{}_slots dd {} dup(0)\n",
+            arity, NATIVE_CALLBACK_SLOTS_PER_ARITY
+        ));
+        for slot in 1..=NATIVE_CALLBACK_SLOTS_PER_ARITY {
+            let symbol = mangle_native_callback_trampoline_symbol(arity, slot);
+            if slot == 1 {
+                out.push_str(&format!("rt_native_callback{}_entrypoints dq {}\n", arity, symbol));
+            } else {
+                out.push_str(&format!("    dq {}\n", symbol));
+            }
+        }
+    }
     out.push_str("rt_true db 't','r','u','e'\n");
     out.push_str("rt_false db 'f','a','l','s','e'\n");
     out.push_str("rt_newline db 13,10\n");
@@ -259,6 +274,10 @@ pub(crate) fn emit_runtime_data_tables(out: &mut String) {
     out.push_str("rt_map_growth_err_len equ $ - rt_map_growth_err\n\n");
     out.push_str("rt_stale_handle_err db 'S','t','a','l','e',' ','r','u','n','t','i','m','e',' ','h','a','n','d','l','e'\n");
     out.push_str("rt_stale_handle_err_len equ $ - rt_stale_handle_err\n\n");
+    out.push_str("rt_native_callback_exhausted_err db 'N','a','t','i','v','e',' ','c','a','l','l','b','a','c','k',' ','s','l','o','t','s',' ','e','x','h','a','u','s','t','e','d'\n");
+    out.push_str("rt_native_callback_exhausted_err_len equ $ - rt_native_callback_exhausted_err\n");
+    out.push_str("rt_native_callback_invalid_err db 'I','n','v','a','l','i','d',' ','n','a','t','i','v','e',' ','c','a','l','l','b','a','c','k',' ','s','l','o','t'\n");
+    out.push_str("rt_native_callback_invalid_err_len equ $ - rt_native_callback_invalid_err\n\n");
     out.push_str("rt_fp_int_min dq 0C1E0000000000000h\n");
     out.push_str("rt_fp_long_min dq 0C3E0000000000000h\n\n");
     out.push_str("rt_dispatch_null_receiver_err db 'N','u','l','l',' ','d','i','s','p','a','t','c','h',' ','r','e','c','e','i','v','e','r'\n");
@@ -601,7 +620,9 @@ pub(crate) fn is_string_type_name(ty: &str) -> bool {
 pub(crate) fn class_requires_native_cleanup(package: &str, class_name: &str) -> bool {
     matches!(
         (package, class_name),
-        ("pulse.interop", "NativeBuffer") | ("pulse.interop", "NativeLibrary")
+        ("pulse.interop", "NativeBuffer")
+            | ("pulse.interop", "NativeLibrary")
+            | ("pulse.interop", "NativeCallbackHandle")
     )
 }
 

@@ -73,6 +73,91 @@ rt_tmp_ptr_a dq 0
 rt_tmp_ptr_b dq 0
 rt_tmp_ptr_c dq 0
 rt_tmp_ptr_d dq 0
+rt_native_callback0_slots dd 16 dup(0)
+rt_native_callback0_entrypoints dq pulsec_rt_nativeCallback0_slot1
+    dq pulsec_rt_nativeCallback0_slot2
+    dq pulsec_rt_nativeCallback0_slot3
+    dq pulsec_rt_nativeCallback0_slot4
+    dq pulsec_rt_nativeCallback0_slot5
+    dq pulsec_rt_nativeCallback0_slot6
+    dq pulsec_rt_nativeCallback0_slot7
+    dq pulsec_rt_nativeCallback0_slot8
+    dq pulsec_rt_nativeCallback0_slot9
+    dq pulsec_rt_nativeCallback0_slot10
+    dq pulsec_rt_nativeCallback0_slot11
+    dq pulsec_rt_nativeCallback0_slot12
+    dq pulsec_rt_nativeCallback0_slot13
+    dq pulsec_rt_nativeCallback0_slot14
+    dq pulsec_rt_nativeCallback0_slot15
+    dq pulsec_rt_nativeCallback0_slot16
+rt_native_callback1_slots dd 16 dup(0)
+rt_native_callback1_entrypoints dq pulsec_rt_nativeCallback1_slot1
+    dq pulsec_rt_nativeCallback1_slot2
+    dq pulsec_rt_nativeCallback1_slot3
+    dq pulsec_rt_nativeCallback1_slot4
+    dq pulsec_rt_nativeCallback1_slot5
+    dq pulsec_rt_nativeCallback1_slot6
+    dq pulsec_rt_nativeCallback1_slot7
+    dq pulsec_rt_nativeCallback1_slot8
+    dq pulsec_rt_nativeCallback1_slot9
+    dq pulsec_rt_nativeCallback1_slot10
+    dq pulsec_rt_nativeCallback1_slot11
+    dq pulsec_rt_nativeCallback1_slot12
+    dq pulsec_rt_nativeCallback1_slot13
+    dq pulsec_rt_nativeCallback1_slot14
+    dq pulsec_rt_nativeCallback1_slot15
+    dq pulsec_rt_nativeCallback1_slot16
+rt_native_callback2_slots dd 16 dup(0)
+rt_native_callback2_entrypoints dq pulsec_rt_nativeCallback2_slot1
+    dq pulsec_rt_nativeCallback2_slot2
+    dq pulsec_rt_nativeCallback2_slot3
+    dq pulsec_rt_nativeCallback2_slot4
+    dq pulsec_rt_nativeCallback2_slot5
+    dq pulsec_rt_nativeCallback2_slot6
+    dq pulsec_rt_nativeCallback2_slot7
+    dq pulsec_rt_nativeCallback2_slot8
+    dq pulsec_rt_nativeCallback2_slot9
+    dq pulsec_rt_nativeCallback2_slot10
+    dq pulsec_rt_nativeCallback2_slot11
+    dq pulsec_rt_nativeCallback2_slot12
+    dq pulsec_rt_nativeCallback2_slot13
+    dq pulsec_rt_nativeCallback2_slot14
+    dq pulsec_rt_nativeCallback2_slot15
+    dq pulsec_rt_nativeCallback2_slot16
+rt_native_callback3_slots dd 16 dup(0)
+rt_native_callback3_entrypoints dq pulsec_rt_nativeCallback3_slot1
+    dq pulsec_rt_nativeCallback3_slot2
+    dq pulsec_rt_nativeCallback3_slot3
+    dq pulsec_rt_nativeCallback3_slot4
+    dq pulsec_rt_nativeCallback3_slot5
+    dq pulsec_rt_nativeCallback3_slot6
+    dq pulsec_rt_nativeCallback3_slot7
+    dq pulsec_rt_nativeCallback3_slot8
+    dq pulsec_rt_nativeCallback3_slot9
+    dq pulsec_rt_nativeCallback3_slot10
+    dq pulsec_rt_nativeCallback3_slot11
+    dq pulsec_rt_nativeCallback3_slot12
+    dq pulsec_rt_nativeCallback3_slot13
+    dq pulsec_rt_nativeCallback3_slot14
+    dq pulsec_rt_nativeCallback3_slot15
+    dq pulsec_rt_nativeCallback3_slot16
+rt_native_callback4_slots dd 16 dup(0)
+rt_native_callback4_entrypoints dq pulsec_rt_nativeCallback4_slot1
+    dq pulsec_rt_nativeCallback4_slot2
+    dq pulsec_rt_nativeCallback4_slot3
+    dq pulsec_rt_nativeCallback4_slot4
+    dq pulsec_rt_nativeCallback4_slot5
+    dq pulsec_rt_nativeCallback4_slot6
+    dq pulsec_rt_nativeCallback4_slot7
+    dq pulsec_rt_nativeCallback4_slot8
+    dq pulsec_rt_nativeCallback4_slot9
+    dq pulsec_rt_nativeCallback4_slot10
+    dq pulsec_rt_nativeCallback4_slot11
+    dq pulsec_rt_nativeCallback4_slot12
+    dq pulsec_rt_nativeCallback4_slot13
+    dq pulsec_rt_nativeCallback4_slot14
+    dq pulsec_rt_nativeCallback4_slot15
+    dq pulsec_rt_nativeCallback4_slot16
 rt_true db 't','r','u','e'
 rt_false db 'f','a','l','s','e'
 rt_newline db 13,10
@@ -127,6 +212,11 @@ rt_map_growth_err_len equ $ - rt_map_growth_err
 
 rt_stale_handle_err db 'S','t','a','l','e',' ','r','u','n','t','i','m','e',' ','h','a','n','d','l','e'
 rt_stale_handle_err_len equ $ - rt_stale_handle_err
+
+rt_native_callback_exhausted_err db 'N','a','t','i','v','e',' ','c','a','l','l','b','a','c','k',' ','s','l','o','t','s',' ','e','x','h','a','u','s','t','e','d'
+rt_native_callback_exhausted_err_len equ $ - rt_native_callback_exhausted_err
+rt_native_callback_invalid_err db 'I','n','v','a','l','i','d',' ','n','a','t','i','v','e',' ','c','a','l','l','b','a','c','k',' ','s','l','o','t'
+rt_native_callback_invalid_err_len equ $ - rt_native_callback_invalid_err
 
 rt_fp_int_min dq 0C1E0000000000000h
 rt_fp_long_min dq 0C3E0000000000000h
@@ -237,44 +327,54 @@ rt_arc_free_next textequ <rsi>
 
 rt_obj_class_name_1 db "app.runtime.Main"
 rt_obj_class_name_1_len equ 16
-rt_obj_class_name_2 db "pulse.lang.Appendable"
-rt_obj_class_name_2_len equ 21
-rt_obj_class_name_3 db "pulse.lang.CharSequence"
-rt_obj_class_name_3_len equ 23
-rt_obj_class_name_4 db "pulse.lang.Class"
-rt_obj_class_name_4_len equ 16
-rt_obj_class_name_5 db "pulse.lang.Comparable"
-rt_obj_class_name_5_len equ 21
-rt_obj_class_name_6 db "pulse.lang.Double"
-rt_obj_class_name_6_len equ 17
-rt_obj_class_name_7 db "pulse.lang.Exception"
-rt_obj_class_name_7_len equ 20
-rt_obj_class_name_8 db "pulse.lang.Float"
-rt_obj_class_name_8_len equ 16
-rt_obj_class_name_9 db "pulse.lang.IO"
-rt_obj_class_name_9_len equ 13
-rt_obj_class_name_10 db "pulse.lang.Integer"
-rt_obj_class_name_10_len equ 18
-rt_obj_class_name_11 db "pulse.lang.Long"
-rt_obj_class_name_11_len equ 15
-rt_obj_class_name_12 db "pulse.lang.NumberFormatException"
-rt_obj_class_name_12_len equ 32
-rt_obj_class_name_13 db "pulse.lang.Object"
-rt_obj_class_name_13_len equ 17
-rt_obj_class_name_14 db "pulse.lang.RuntimeException"
-rt_obj_class_name_14_len equ 27
-rt_obj_class_name_15 db "pulse.lang.String"
-rt_obj_class_name_15_len equ 17
-rt_obj_class_name_16 db "pulse.lang.StringBuilder"
-rt_obj_class_name_16_len equ 24
-rt_obj_class_name_17 db "pulse.lang.Throwable"
-rt_obj_class_name_17_len equ 20
-rt_obj_class_name_18 db "pulse.lang.UInteger"
-rt_obj_class_name_18_len equ 19
-rt_obj_class_name_19 db "pulse.lang.ULong"
-rt_obj_class_name_19_len equ 16
-rt_obj_class_name_20 db "pulse.rt.Intrinsics"
-rt_obj_class_name_20_len equ 19
+rt_obj_class_name_2 db "pulse.interop.NativeCallback0"
+rt_obj_class_name_2_len equ 29
+rt_obj_class_name_3 db "pulse.interop.NativeCallback1"
+rt_obj_class_name_3_len equ 29
+rt_obj_class_name_4 db "pulse.interop.NativeCallback2"
+rt_obj_class_name_4_len equ 29
+rt_obj_class_name_5 db "pulse.interop.NativeCallback3"
+rt_obj_class_name_5_len equ 29
+rt_obj_class_name_6 db "pulse.interop.NativeCallback4"
+rt_obj_class_name_6_len equ 29
+rt_obj_class_name_7 db "pulse.lang.Appendable"
+rt_obj_class_name_7_len equ 21
+rt_obj_class_name_8 db "pulse.lang.CharSequence"
+rt_obj_class_name_8_len equ 23
+rt_obj_class_name_9 db "pulse.lang.Class"
+rt_obj_class_name_9_len equ 16
+rt_obj_class_name_10 db "pulse.lang.Comparable"
+rt_obj_class_name_10_len equ 21
+rt_obj_class_name_11 db "pulse.lang.Double"
+rt_obj_class_name_11_len equ 17
+rt_obj_class_name_12 db "pulse.lang.Exception"
+rt_obj_class_name_12_len equ 20
+rt_obj_class_name_13 db "pulse.lang.Float"
+rt_obj_class_name_13_len equ 16
+rt_obj_class_name_14 db "pulse.lang.IO"
+rt_obj_class_name_14_len equ 13
+rt_obj_class_name_15 db "pulse.lang.Integer"
+rt_obj_class_name_15_len equ 18
+rt_obj_class_name_16 db "pulse.lang.Long"
+rt_obj_class_name_16_len equ 15
+rt_obj_class_name_17 db "pulse.lang.NumberFormatException"
+rt_obj_class_name_17_len equ 32
+rt_obj_class_name_18 db "pulse.lang.Object"
+rt_obj_class_name_18_len equ 17
+rt_obj_class_name_19 db "pulse.lang.RuntimeException"
+rt_obj_class_name_19_len equ 27
+rt_obj_class_name_20 db "pulse.lang.String"
+rt_obj_class_name_20_len equ 17
+rt_obj_class_name_21 db "pulse.lang.StringBuilder"
+rt_obj_class_name_21_len equ 24
+rt_obj_class_name_22 db "pulse.lang.Throwable"
+rt_obj_class_name_22_len equ 20
+rt_obj_class_name_23 db "pulse.lang.UInteger"
+rt_obj_class_name_23_len equ 19
+rt_obj_class_name_24 db "pulse.lang.ULong"
+rt_obj_class_name_24_len equ 16
+rt_obj_class_name_25 db "pulse.rt.Intrinsics"
+rt_obj_class_name_25_len equ 19
 
 .code
 pulsec_rt_init proc
@@ -561,7 +661,7 @@ pulsec_rt_objectClassId_plain:
     mov eax, dword ptr [rax+r10*4]
     ret
 pulsec_rt_objectClassId_string_kind:
-    mov eax, 15
+    mov eax, 20
     ret
 pulsec_rt_objectClassId_stale:
     lea rcx, rt_stale_handle_err
@@ -1140,6 +1240,16 @@ pulsec_rt_objectClassName proc
     je pulsec_rt_objectClassName_c19
     cmp eax, 20
     je pulsec_rt_objectClassName_c20
+    cmp eax, 21
+    je pulsec_rt_objectClassName_c21
+    cmp eax, 22
+    je pulsec_rt_objectClassName_c22
+    cmp eax, 23
+    je pulsec_rt_objectClassName_c23
+    cmp eax, 24
+    je pulsec_rt_objectClassName_c24
+    cmp eax, 25
+    je pulsec_rt_objectClassName_c25
     jmp pulsec_rt_objectClassName_invalid
 pulsec_rt_objectClassName_c1:
     lea rcx, rt_obj_class_name_1
@@ -1239,6 +1349,31 @@ pulsec_rt_objectClassName_c19:
 pulsec_rt_objectClassName_c20:
     lea rcx, rt_obj_class_name_20
     mov edx, rt_obj_class_name_20_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_objectClassName_done
+pulsec_rt_objectClassName_c21:
+    lea rcx, rt_obj_class_name_21
+    mov edx, rt_obj_class_name_21_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_objectClassName_done
+pulsec_rt_objectClassName_c22:
+    lea rcx, rt_obj_class_name_22
+    mov edx, rt_obj_class_name_22_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_objectClassName_done
+pulsec_rt_objectClassName_c23:
+    lea rcx, rt_obj_class_name_23
+    mov edx, rt_obj_class_name_23_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_objectClassName_done
+pulsec_rt_objectClassName_c24:
+    lea rcx, rt_obj_class_name_24
+    mov edx, rt_obj_class_name_24_len
+    call pulsec_rt_stringFromBytes
+    jmp pulsec_rt_objectClassName_done
+pulsec_rt_objectClassName_c25:
+    lea rcx, rt_obj_class_name_25
+    mov edx, rt_obj_class_name_25_len
     call pulsec_rt_stringFromBytes
     jmp pulsec_rt_objectClassName_done
 pulsec_rt_objectClassName_invalid:
@@ -2459,22 +2594,22 @@ pulsec_rt_arcTeardown proc
 pulsec_rt_arcTeardown_kind_object:
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+rcx*4]
-    cmp edx, 4
-    je pulsec_rt_arcTeardown_kind_object_c4
-    cmp edx, 16
-    je pulsec_rt_arcTeardown_kind_object_c16
-    cmp edx, 17
-    je pulsec_rt_arcTeardown_kind_object_c17
+    cmp edx, 9
+    je pulsec_rt_arcTeardown_kind_object_c9
+    cmp edx, 21
+    je pulsec_rt_arcTeardown_kind_object_c21
+    cmp edx, 22
+    je pulsec_rt_arcTeardown_kind_object_c22
     jmp pulsec_rt_arcTeardown_kind_object_unmatched
-pulsec_rt_arcTeardown_kind_object_c4:
+pulsec_rt_arcTeardown_kind_object_c9:
     call pulsec_fcap_pulse_lang_Class_arc_teardown
     mov ecx, dword ptr [rsp+32]
     jmp pulsec_rt_arcTeardown_kind_object_done
-pulsec_rt_arcTeardown_kind_object_c16:
+pulsec_rt_arcTeardown_kind_object_c21:
     call pulsec_fcap_pulse_lang_StringBuilder_arc_teardown
     mov ecx, dword ptr [rsp+32]
     jmp pulsec_rt_arcTeardown_kind_object_done
-pulsec_rt_arcTeardown_kind_object_c17:
+pulsec_rt_arcTeardown_kind_object_c22:
     call pulsec_fcap_pulse_lang_Throwable_arc_teardown
     mov ecx, dword ptr [rsp+32]
     jmp pulsec_rt_arcTeardown_kind_object_done
@@ -2779,22 +2914,22 @@ pulsec_rt_arcCycleFullPass_scan_edges_loop:
     je pulsec_rt_arcCycleFullPass_scan_edges_next
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+r8*4]
-    cmp edx, 4
-    je pulsec_rt_arcCycleFullPass_scan_edges_c4
-    cmp edx, 16
-    je pulsec_rt_arcCycleFullPass_scan_edges_c16
-    cmp edx, 17
-    je pulsec_rt_arcCycleFullPass_scan_edges_c17
+    cmp edx, 9
+    je pulsec_rt_arcCycleFullPass_scan_edges_c9
+    cmp edx, 21
+    je pulsec_rt_arcCycleFullPass_scan_edges_c21
+    cmp edx, 22
+    je pulsec_rt_arcCycleFullPass_scan_edges_c22
     jmp pulsec_rt_arcCycleFullPass_scan_edges_unmatched
-pulsec_rt_arcCycleFullPass_scan_edges_c4:
+pulsec_rt_arcCycleFullPass_scan_edges_c9:
     mov ecx, r8d
     call pulsec_fcap_pulse_lang_Class_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
-pulsec_rt_arcCycleFullPass_scan_edges_c16:
+pulsec_rt_arcCycleFullPass_scan_edges_c21:
     mov ecx, r8d
     call pulsec_fcap_pulse_lang_StringBuilder_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
-pulsec_rt_arcCycleFullPass_scan_edges_c17:
+pulsec_rt_arcCycleFullPass_scan_edges_c22:
     mov ecx, r8d
     call pulsec_fcap_pulse_lang_Throwable_arc_scan_edges
     jmp pulsec_rt_arcCycleFullPass_scan_edges_next
@@ -2838,22 +2973,22 @@ pulsec_rt_arcCycleFullPass_invalidate_loop:
     jne pulsec_rt_arcCycleFullPass_invalidate_next
     mov r10, qword ptr [pulsec_rt_obj_class_ids]
     mov edx, dword ptr [r10+r8*4]
-    cmp edx, 4
-    je pulsec_rt_arcCycleFullPass_invalidate_c4
-    cmp edx, 16
-    je pulsec_rt_arcCycleFullPass_invalidate_c16
-    cmp edx, 17
-    je pulsec_rt_arcCycleFullPass_invalidate_c17
+    cmp edx, 9
+    je pulsec_rt_arcCycleFullPass_invalidate_c9
+    cmp edx, 21
+    je pulsec_rt_arcCycleFullPass_invalidate_c21
+    cmp edx, 22
+    je pulsec_rt_arcCycleFullPass_invalidate_c22
     jmp pulsec_rt_arcCycleFullPass_invalidate_unmatched
-pulsec_rt_arcCycleFullPass_invalidate_c4:
+pulsec_rt_arcCycleFullPass_invalidate_c9:
     mov ecx, r8d
     call pulsec_fcap_pulse_lang_Class_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
-pulsec_rt_arcCycleFullPass_invalidate_c16:
+pulsec_rt_arcCycleFullPass_invalidate_c21:
     mov ecx, r8d
     call pulsec_fcap_pulse_lang_StringBuilder_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
-pulsec_rt_arcCycleFullPass_invalidate_c17:
+pulsec_rt_arcCycleFullPass_invalidate_c22:
     mov ecx, r8d
     call pulsec_fcap_pulse_lang_Throwable_arc_invalidate_edges
     jmp pulsec_rt_arcCycleFullPass_invalidate_next
@@ -4330,6 +4465,76 @@ pulsec_rt_hostFreeDynamicLibrary_done:
     ret
 pulsec_rt_hostFreeDynamicLibrary endp
 
+pulsec_rt_hostGetNativeCallbackAddress0 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostGetNativeCallbackAddress0_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostGetNativeCallbackAddress0_invalid
+    cmp dword ptr [rt_native_callback0_slots+rcx*4-4], 0
+    je pulsec_rt_hostGetNativeCallbackAddress0_invalid
+    mov rax, qword ptr [rt_native_callback0_entrypoints+rcx*8-8]
+    ret
+pulsec_rt_hostGetNativeCallbackAddress0_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostGetNativeCallbackAddress0 endp
+
+pulsec_rt_hostGetNativeCallbackAddress1 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostGetNativeCallbackAddress1_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostGetNativeCallbackAddress1_invalid
+    cmp dword ptr [rt_native_callback1_slots+rcx*4-4], 0
+    je pulsec_rt_hostGetNativeCallbackAddress1_invalid
+    mov rax, qword ptr [rt_native_callback1_entrypoints+rcx*8-8]
+    ret
+pulsec_rt_hostGetNativeCallbackAddress1_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostGetNativeCallbackAddress1 endp
+
+pulsec_rt_hostGetNativeCallbackAddress2 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostGetNativeCallbackAddress2_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostGetNativeCallbackAddress2_invalid
+    cmp dword ptr [rt_native_callback2_slots+rcx*4-4], 0
+    je pulsec_rt_hostGetNativeCallbackAddress2_invalid
+    mov rax, qword ptr [rt_native_callback2_entrypoints+rcx*8-8]
+    ret
+pulsec_rt_hostGetNativeCallbackAddress2_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostGetNativeCallbackAddress2 endp
+
+pulsec_rt_hostGetNativeCallbackAddress3 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostGetNativeCallbackAddress3_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostGetNativeCallbackAddress3_invalid
+    cmp dword ptr [rt_native_callback3_slots+rcx*4-4], 0
+    je pulsec_rt_hostGetNativeCallbackAddress3_invalid
+    mov rax, qword ptr [rt_native_callback3_entrypoints+rcx*8-8]
+    ret
+pulsec_rt_hostGetNativeCallbackAddress3_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostGetNativeCallbackAddress3 endp
+
+pulsec_rt_hostGetNativeCallbackAddress4 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostGetNativeCallbackAddress4_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostGetNativeCallbackAddress4_invalid
+    cmp dword ptr [rt_native_callback4_slots+rcx*4-4], 0
+    je pulsec_rt_hostGetNativeCallbackAddress4_invalid
+    mov rax, qword ptr [rt_native_callback4_entrypoints+rcx*8-8]
+    ret
+pulsec_rt_hostGetNativeCallbackAddress4_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostGetNativeCallbackAddress4 endp
+
 pulsec_rt_hostIsDirectory proc
     sub rsp, 56
     mov dword ptr [rsp+40], -1
@@ -4757,6 +4962,176 @@ pulsec_rt_hostReadLong_done:
     ret
 pulsec_rt_hostReadLong endp
 
+pulsec_rt_hostRegisterNativeCallback0 proc
+    test ecx, ecx
+    jz pulsec_rt_hostRegisterNativeCallback0_zero
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov edx, 1
+pulsec_rt_hostRegisterNativeCallback0_loop:
+    cmp edx, 16
+    ja pulsec_rt_hostRegisterNativeCallback0_exhausted
+    cmp dword ptr [rt_native_callback0_slots+rdx*4-4], 0
+    jne pulsec_rt_hostRegisterNativeCallback0_next
+    mov ecx, dword ptr [rsp+32]
+    call pulsec_rt_arcRetain
+    mov dword ptr [rt_native_callback0_slots+rdx*4-4], eax
+    mov eax, edx
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback0_next:
+    add edx, 1
+    jmp pulsec_rt_hostRegisterNativeCallback0_loop
+pulsec_rt_hostRegisterNativeCallback0_exhausted:
+    lea rcx, rt_native_callback_exhausted_err
+    mov edx, rt_native_callback_exhausted_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback0_zero:
+    xor eax, eax
+    ret
+pulsec_rt_hostRegisterNativeCallback0 endp
+
+pulsec_rt_hostRegisterNativeCallback1 proc
+    test ecx, ecx
+    jz pulsec_rt_hostRegisterNativeCallback1_zero
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov edx, 1
+pulsec_rt_hostRegisterNativeCallback1_loop:
+    cmp edx, 16
+    ja pulsec_rt_hostRegisterNativeCallback1_exhausted
+    cmp dword ptr [rt_native_callback1_slots+rdx*4-4], 0
+    jne pulsec_rt_hostRegisterNativeCallback1_next
+    mov ecx, dword ptr [rsp+32]
+    call pulsec_rt_arcRetain
+    mov dword ptr [rt_native_callback1_slots+rdx*4-4], eax
+    mov eax, edx
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback1_next:
+    add edx, 1
+    jmp pulsec_rt_hostRegisterNativeCallback1_loop
+pulsec_rt_hostRegisterNativeCallback1_exhausted:
+    lea rcx, rt_native_callback_exhausted_err
+    mov edx, rt_native_callback_exhausted_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback1_zero:
+    xor eax, eax
+    ret
+pulsec_rt_hostRegisterNativeCallback1 endp
+
+pulsec_rt_hostRegisterNativeCallback2 proc
+    test ecx, ecx
+    jz pulsec_rt_hostRegisterNativeCallback2_zero
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov edx, 1
+pulsec_rt_hostRegisterNativeCallback2_loop:
+    cmp edx, 16
+    ja pulsec_rt_hostRegisterNativeCallback2_exhausted
+    cmp dword ptr [rt_native_callback2_slots+rdx*4-4], 0
+    jne pulsec_rt_hostRegisterNativeCallback2_next
+    mov ecx, dword ptr [rsp+32]
+    call pulsec_rt_arcRetain
+    mov dword ptr [rt_native_callback2_slots+rdx*4-4], eax
+    mov eax, edx
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback2_next:
+    add edx, 1
+    jmp pulsec_rt_hostRegisterNativeCallback2_loop
+pulsec_rt_hostRegisterNativeCallback2_exhausted:
+    lea rcx, rt_native_callback_exhausted_err
+    mov edx, rt_native_callback_exhausted_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback2_zero:
+    xor eax, eax
+    ret
+pulsec_rt_hostRegisterNativeCallback2 endp
+
+pulsec_rt_hostRegisterNativeCallback3 proc
+    test ecx, ecx
+    jz pulsec_rt_hostRegisterNativeCallback3_zero
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov edx, 1
+pulsec_rt_hostRegisterNativeCallback3_loop:
+    cmp edx, 16
+    ja pulsec_rt_hostRegisterNativeCallback3_exhausted
+    cmp dword ptr [rt_native_callback3_slots+rdx*4-4], 0
+    jne pulsec_rt_hostRegisterNativeCallback3_next
+    mov ecx, dword ptr [rsp+32]
+    call pulsec_rt_arcRetain
+    mov dword ptr [rt_native_callback3_slots+rdx*4-4], eax
+    mov eax, edx
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback3_next:
+    add edx, 1
+    jmp pulsec_rt_hostRegisterNativeCallback3_loop
+pulsec_rt_hostRegisterNativeCallback3_exhausted:
+    lea rcx, rt_native_callback_exhausted_err
+    mov edx, rt_native_callback_exhausted_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback3_zero:
+    xor eax, eax
+    ret
+pulsec_rt_hostRegisterNativeCallback3 endp
+
+pulsec_rt_hostRegisterNativeCallback4 proc
+    test ecx, ecx
+    jz pulsec_rt_hostRegisterNativeCallback4_zero
+    sub rsp, 40
+    mov dword ptr [rsp+32], ecx
+    mov edx, 1
+pulsec_rt_hostRegisterNativeCallback4_loop:
+    cmp edx, 16
+    ja pulsec_rt_hostRegisterNativeCallback4_exhausted
+    cmp dword ptr [rt_native_callback4_slots+rdx*4-4], 0
+    jne pulsec_rt_hostRegisterNativeCallback4_next
+    mov ecx, dword ptr [rsp+32]
+    call pulsec_rt_arcRetain
+    mov dword ptr [rt_native_callback4_slots+rdx*4-4], eax
+    mov eax, edx
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback4_next:
+    add edx, 1
+    jmp pulsec_rt_hostRegisterNativeCallback4_loop
+pulsec_rt_hostRegisterNativeCallback4_exhausted:
+    lea rcx, rt_native_callback_exhausted_err
+    mov edx, rt_native_callback_exhausted_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    add rsp, 40
+    ret
+pulsec_rt_hostRegisterNativeCallback4_zero:
+    xor eax, eax
+    ret
+pulsec_rt_hostRegisterNativeCallback4 endp
+
 pulsec_rt_hostResolveDynamicSymbol proc
     sub rsp, 96
     mov qword ptr [rsp+56], rcx
@@ -5003,6 +5378,106 @@ pulsec_rt_hostStringUtf8Length_ok:
     mov eax, dword ptr [rax+rcx*4]
     ret
 pulsec_rt_hostStringUtf8Length endp
+
+pulsec_rt_hostUnregisterNativeCallback0 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostUnregisterNativeCallback0_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostUnregisterNativeCallback0_invalid
+    mov eax, dword ptr [rt_native_callback0_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_hostUnregisterNativeCallback0_invalid
+    mov dword ptr [rt_native_callback0_slots+rcx*4-4], 0
+    mov ecx, eax
+    sub rsp, 40
+    call pulsec_rt_arcRelease
+    add rsp, 40
+    mov eax, 1
+    ret
+pulsec_rt_hostUnregisterNativeCallback0_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostUnregisterNativeCallback0 endp
+
+pulsec_rt_hostUnregisterNativeCallback1 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostUnregisterNativeCallback1_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostUnregisterNativeCallback1_invalid
+    mov eax, dword ptr [rt_native_callback1_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_hostUnregisterNativeCallback1_invalid
+    mov dword ptr [rt_native_callback1_slots+rcx*4-4], 0
+    mov ecx, eax
+    sub rsp, 40
+    call pulsec_rt_arcRelease
+    add rsp, 40
+    mov eax, 1
+    ret
+pulsec_rt_hostUnregisterNativeCallback1_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostUnregisterNativeCallback1 endp
+
+pulsec_rt_hostUnregisterNativeCallback2 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostUnregisterNativeCallback2_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostUnregisterNativeCallback2_invalid
+    mov eax, dword ptr [rt_native_callback2_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_hostUnregisterNativeCallback2_invalid
+    mov dword ptr [rt_native_callback2_slots+rcx*4-4], 0
+    mov ecx, eax
+    sub rsp, 40
+    call pulsec_rt_arcRelease
+    add rsp, 40
+    mov eax, 1
+    ret
+pulsec_rt_hostUnregisterNativeCallback2_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostUnregisterNativeCallback2 endp
+
+pulsec_rt_hostUnregisterNativeCallback3 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostUnregisterNativeCallback3_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostUnregisterNativeCallback3_invalid
+    mov eax, dword ptr [rt_native_callback3_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_hostUnregisterNativeCallback3_invalid
+    mov dword ptr [rt_native_callback3_slots+rcx*4-4], 0
+    mov ecx, eax
+    sub rsp, 40
+    call pulsec_rt_arcRelease
+    add rsp, 40
+    mov eax, 1
+    ret
+pulsec_rt_hostUnregisterNativeCallback3_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostUnregisterNativeCallback3 endp
+
+pulsec_rt_hostUnregisterNativeCallback4 proc
+    cmp ecx, 1
+    jb pulsec_rt_hostUnregisterNativeCallback4_invalid
+    cmp ecx, 16
+    ja pulsec_rt_hostUnregisterNativeCallback4_invalid
+    mov eax, dword ptr [rt_native_callback4_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_hostUnregisterNativeCallback4_invalid
+    mov dword ptr [rt_native_callback4_slots+rcx*4-4], 0
+    mov ecx, eax
+    sub rsp, 40
+    call pulsec_rt_arcRelease
+    add rsp, 40
+    mov eax, 1
+    ret
+pulsec_rt_hostUnregisterNativeCallback4_invalid:
+    xor eax, eax
+    ret
+pulsec_rt_hostUnregisterNativeCallback4 endp
 
 pulsec_rt_hostWriteAllText proc
     sub rsp, 120
@@ -7589,4 +8064,1066 @@ pulsec_rt_weakNew_done:
     ret
 pulsec_rt_weakNew endp
 
+pulsec_rt_invokeNativeCallback0 proc
+    sub rsp, 40
+    cmp ecx, 1
+    jb pulsec_rt_invokeNativeCallback0_invalid
+    cmp ecx, 16
+    ja pulsec_rt_invokeNativeCallback0_invalid
+    mov eax, dword ptr [rt_native_callback0_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback0_invalid
+    mov dword ptr [rsp+16], eax
+    mov ecx, dword ptr [rsp+16]
+    call pulsec_rt_objectClassId
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback0_type
+    jmp pulsec_rt_invokeNativeCallback0_type
+pulsec_rt_invokeNativeCallback0_invalid:
+    lea rcx, rt_native_callback_invalid_err
+    mov edx, rt_native_callback_invalid_err_len
+    call pulsec_rt_stringFromBytes
+    add rsp, 40
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback0_type:
+    add rsp, 40
+    call pulsec_rt_dispatchInvalidTypePanic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback0 endp
+
+pulsec_rt_invokeNativeCallback1 proc
+    sub rsp, 56
+    mov qword ptr [rsp+40], rdx
+    cmp ecx, 1
+    jb pulsec_rt_invokeNativeCallback1_invalid
+    cmp ecx, 16
+    ja pulsec_rt_invokeNativeCallback1_invalid
+    mov eax, dword ptr [rt_native_callback1_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback1_invalid
+    mov dword ptr [rsp+16], eax
+    mov ecx, dword ptr [rsp+16]
+    call pulsec_rt_objectClassId
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback1_type
+    jmp pulsec_rt_invokeNativeCallback1_type
+pulsec_rt_invokeNativeCallback1_invalid:
+    lea rcx, rt_native_callback_invalid_err
+    mov edx, rt_native_callback_invalid_err_len
+    call pulsec_rt_stringFromBytes
+    add rsp, 56
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback1_type:
+    add rsp, 56
+    call pulsec_rt_dispatchInvalidTypePanic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback1 endp
+
+pulsec_rt_invokeNativeCallback2 proc
+    sub rsp, 56
+    mov qword ptr [rsp+40], rdx
+    mov qword ptr [rsp+48], r8
+    cmp ecx, 1
+    jb pulsec_rt_invokeNativeCallback2_invalid
+    cmp ecx, 16
+    ja pulsec_rt_invokeNativeCallback2_invalid
+    mov eax, dword ptr [rt_native_callback2_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback2_invalid
+    mov dword ptr [rsp+16], eax
+    mov ecx, dword ptr [rsp+16]
+    call pulsec_rt_objectClassId
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback2_type
+    jmp pulsec_rt_invokeNativeCallback2_type
+pulsec_rt_invokeNativeCallback2_invalid:
+    lea rcx, rt_native_callback_invalid_err
+    mov edx, rt_native_callback_invalid_err_len
+    call pulsec_rt_stringFromBytes
+    add rsp, 56
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback2_type:
+    add rsp, 56
+    call pulsec_rt_dispatchInvalidTypePanic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback2 endp
+
+pulsec_rt_invokeNativeCallback3 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rdx
+    mov qword ptr [rsp+48], r8
+    mov qword ptr [rsp+56], r9
+    cmp ecx, 1
+    jb pulsec_rt_invokeNativeCallback3_invalid
+    cmp ecx, 16
+    ja pulsec_rt_invokeNativeCallback3_invalid
+    mov eax, dword ptr [rt_native_callback3_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback3_invalid
+    mov dword ptr [rsp+16], eax
+    mov ecx, dword ptr [rsp+16]
+    call pulsec_rt_objectClassId
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback3_type
+    jmp pulsec_rt_invokeNativeCallback3_type
+pulsec_rt_invokeNativeCallback3_invalid:
+    lea rcx, rt_native_callback_invalid_err
+    mov edx, rt_native_callback_invalid_err_len
+    call pulsec_rt_stringFromBytes
+    add rsp, 72
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback3_type:
+    add rsp, 72
+    call pulsec_rt_dispatchInvalidTypePanic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback3 endp
+
+pulsec_rt_invokeNativeCallback4 proc
+    mov rax, qword ptr [rsp+40]
+    sub rsp, 72
+    mov qword ptr [rsp+40], rdx
+    mov qword ptr [rsp+48], r8
+    mov qword ptr [rsp+56], r9
+    mov qword ptr [rsp+64], rax
+    cmp ecx, 1
+    jb pulsec_rt_invokeNativeCallback4_invalid
+    cmp ecx, 16
+    ja pulsec_rt_invokeNativeCallback4_invalid
+    mov eax, dword ptr [rt_native_callback4_slots+rcx*4-4]
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback4_invalid
+    mov dword ptr [rsp+16], eax
+    mov ecx, dword ptr [rsp+16]
+    call pulsec_rt_objectClassId
+    test eax, eax
+    jz pulsec_rt_invokeNativeCallback4_type
+    jmp pulsec_rt_invokeNativeCallback4_type
+pulsec_rt_invokeNativeCallback4_invalid:
+    lea rcx, rt_native_callback_invalid_err
+    mov edx, rt_native_callback_invalid_err_len
+    call pulsec_rt_stringFromBytes
+    add rsp, 72
+    mov rcx, rax
+    call pulsec_rt_panic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback4_type:
+    add rsp, 72
+    call pulsec_rt_dispatchInvalidTypePanic
+    xor eax, eax
+    ret
+pulsec_rt_invokeNativeCallback4 endp
+
+pulsec_rt_nativeCallback0_slot1 proc
+    sub rsp, 40
+    mov ecx, 1
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot1 endp
+pulsec_rt_nativeCallback0_slot2 proc
+    sub rsp, 40
+    mov ecx, 2
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot2 endp
+pulsec_rt_nativeCallback0_slot3 proc
+    sub rsp, 40
+    mov ecx, 3
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot3 endp
+pulsec_rt_nativeCallback0_slot4 proc
+    sub rsp, 40
+    mov ecx, 4
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot4 endp
+pulsec_rt_nativeCallback0_slot5 proc
+    sub rsp, 40
+    mov ecx, 5
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot5 endp
+pulsec_rt_nativeCallback0_slot6 proc
+    sub rsp, 40
+    mov ecx, 6
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot6 endp
+pulsec_rt_nativeCallback0_slot7 proc
+    sub rsp, 40
+    mov ecx, 7
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot7 endp
+pulsec_rt_nativeCallback0_slot8 proc
+    sub rsp, 40
+    mov ecx, 8
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot8 endp
+pulsec_rt_nativeCallback0_slot9 proc
+    sub rsp, 40
+    mov ecx, 9
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot9 endp
+pulsec_rt_nativeCallback0_slot10 proc
+    sub rsp, 40
+    mov ecx, 10
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot10 endp
+pulsec_rt_nativeCallback0_slot11 proc
+    sub rsp, 40
+    mov ecx, 11
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot11 endp
+pulsec_rt_nativeCallback0_slot12 proc
+    sub rsp, 40
+    mov ecx, 12
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot12 endp
+pulsec_rt_nativeCallback0_slot13 proc
+    sub rsp, 40
+    mov ecx, 13
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot13 endp
+pulsec_rt_nativeCallback0_slot14 proc
+    sub rsp, 40
+    mov ecx, 14
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot14 endp
+pulsec_rt_nativeCallback0_slot15 proc
+    sub rsp, 40
+    mov ecx, 15
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot15 endp
+pulsec_rt_nativeCallback0_slot16 proc
+    sub rsp, 40
+    mov ecx, 16
+    call pulsec_rt_invokeNativeCallback0
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback0_slot16 endp
+pulsec_rt_nativeCallback1_slot1 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 1
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot1 endp
+pulsec_rt_nativeCallback1_slot2 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 2
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot2 endp
+pulsec_rt_nativeCallback1_slot3 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 3
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot3 endp
+pulsec_rt_nativeCallback1_slot4 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 4
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot4 endp
+pulsec_rt_nativeCallback1_slot5 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 5
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot5 endp
+pulsec_rt_nativeCallback1_slot6 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 6
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot6 endp
+pulsec_rt_nativeCallback1_slot7 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 7
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot7 endp
+pulsec_rt_nativeCallback1_slot8 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 8
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot8 endp
+pulsec_rt_nativeCallback1_slot9 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 9
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot9 endp
+pulsec_rt_nativeCallback1_slot10 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 10
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot10 endp
+pulsec_rt_nativeCallback1_slot11 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 11
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot11 endp
+pulsec_rt_nativeCallback1_slot12 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 12
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot12 endp
+pulsec_rt_nativeCallback1_slot13 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 13
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot13 endp
+pulsec_rt_nativeCallback1_slot14 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 14
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot14 endp
+pulsec_rt_nativeCallback1_slot15 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 15
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot15 endp
+pulsec_rt_nativeCallback1_slot16 proc
+    mov r10, rcx
+    sub rsp, 40
+    mov ecx, 16
+    mov rdx, r10
+    call pulsec_rt_invokeNativeCallback1
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback1_slot16 endp
+pulsec_rt_nativeCallback2_slot1 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 1
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot1 endp
+pulsec_rt_nativeCallback2_slot2 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 2
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot2 endp
+pulsec_rt_nativeCallback2_slot3 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 3
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot3 endp
+pulsec_rt_nativeCallback2_slot4 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 4
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot4 endp
+pulsec_rt_nativeCallback2_slot5 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 5
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot5 endp
+pulsec_rt_nativeCallback2_slot6 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 6
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot6 endp
+pulsec_rt_nativeCallback2_slot7 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 7
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot7 endp
+pulsec_rt_nativeCallback2_slot8 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 8
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot8 endp
+pulsec_rt_nativeCallback2_slot9 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 9
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot9 endp
+pulsec_rt_nativeCallback2_slot10 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 10
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot10 endp
+pulsec_rt_nativeCallback2_slot11 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 11
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot11 endp
+pulsec_rt_nativeCallback2_slot12 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 12
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot12 endp
+pulsec_rt_nativeCallback2_slot13 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 13
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot13 endp
+pulsec_rt_nativeCallback2_slot14 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 14
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot14 endp
+pulsec_rt_nativeCallback2_slot15 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 15
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot15 endp
+pulsec_rt_nativeCallback2_slot16 proc
+    mov r10, rcx
+    mov r11, rdx
+    sub rsp, 40
+    mov ecx, 16
+    mov rdx, r10
+    mov r8, r11
+    call pulsec_rt_invokeNativeCallback2
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback2_slot16 endp
+pulsec_rt_nativeCallback3_slot1 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 1
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot1 endp
+pulsec_rt_nativeCallback3_slot2 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 2
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot2 endp
+pulsec_rt_nativeCallback3_slot3 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 3
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot3 endp
+pulsec_rt_nativeCallback3_slot4 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 4
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot4 endp
+pulsec_rt_nativeCallback3_slot5 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 5
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot5 endp
+pulsec_rt_nativeCallback3_slot6 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 6
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot6 endp
+pulsec_rt_nativeCallback3_slot7 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 7
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot7 endp
+pulsec_rt_nativeCallback3_slot8 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 8
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot8 endp
+pulsec_rt_nativeCallback3_slot9 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 9
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot9 endp
+pulsec_rt_nativeCallback3_slot10 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 10
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot10 endp
+pulsec_rt_nativeCallback3_slot11 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 11
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot11 endp
+pulsec_rt_nativeCallback3_slot12 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 12
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot12 endp
+pulsec_rt_nativeCallback3_slot13 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 13
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot13 endp
+pulsec_rt_nativeCallback3_slot14 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 14
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot14 endp
+pulsec_rt_nativeCallback3_slot15 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 15
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot15 endp
+pulsec_rt_nativeCallback3_slot16 proc
+    mov r10, rcx
+    mov r11, rdx
+    mov rax, r8
+    sub rsp, 40
+    mov ecx, 16
+    mov rdx, r10
+    mov r8, r11
+    mov r9, rax
+    call pulsec_rt_invokeNativeCallback3
+    add rsp, 40
+    ret
+pulsec_rt_nativeCallback3_slot16 endp
+pulsec_rt_nativeCallback4_slot1 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 1
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot1 endp
+pulsec_rt_nativeCallback4_slot2 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 2
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot2 endp
+pulsec_rt_nativeCallback4_slot3 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 3
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot3 endp
+pulsec_rt_nativeCallback4_slot4 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 4
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot4 endp
+pulsec_rt_nativeCallback4_slot5 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 5
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot5 endp
+pulsec_rt_nativeCallback4_slot6 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 6
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot6 endp
+pulsec_rt_nativeCallback4_slot7 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 7
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot7 endp
+pulsec_rt_nativeCallback4_slot8 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 8
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot8 endp
+pulsec_rt_nativeCallback4_slot9 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 9
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot9 endp
+pulsec_rt_nativeCallback4_slot10 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 10
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot10 endp
+pulsec_rt_nativeCallback4_slot11 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 11
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot11 endp
+pulsec_rt_nativeCallback4_slot12 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 12
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot12 endp
+pulsec_rt_nativeCallback4_slot13 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 13
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot13 endp
+pulsec_rt_nativeCallback4_slot14 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 14
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot14 endp
+pulsec_rt_nativeCallback4_slot15 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 15
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot15 endp
+pulsec_rt_nativeCallback4_slot16 proc
+    sub rsp, 72
+    mov qword ptr [rsp+40], rcx
+    mov qword ptr [rsp+48], rdx
+    mov qword ptr [rsp+56], r8
+    mov qword ptr [rsp+64], r9
+    mov ecx, 16
+    mov rdx, qword ptr [rsp+40]
+    mov r8, qword ptr [rsp+48]
+    mov r9, qword ptr [rsp+56]
+    mov rax, qword ptr [rsp+64]
+    mov qword ptr [rsp+32], rax
+    call pulsec_rt_invokeNativeCallback4
+    add rsp, 72
+    ret
+pulsec_rt_nativeCallback4_slot16 endp
 end

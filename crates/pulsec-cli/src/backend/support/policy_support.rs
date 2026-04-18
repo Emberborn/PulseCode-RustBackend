@@ -106,6 +106,21 @@ pub(crate) fn windows_x64_backend_contract() -> BackendContract {
             "pulse.rt.Intrinsics.hostCallNative2",
             "pulse.rt.Intrinsics.hostCallNative3",
             "pulse.rt.Intrinsics.hostCallNative4",
+            "pulse.rt.Intrinsics.hostRegisterNativeCallback0",
+            "pulse.rt.Intrinsics.hostGetNativeCallbackAddress0",
+            "pulse.rt.Intrinsics.hostUnregisterNativeCallback0",
+            "pulse.rt.Intrinsics.hostRegisterNativeCallback1",
+            "pulse.rt.Intrinsics.hostGetNativeCallbackAddress1",
+            "pulse.rt.Intrinsics.hostUnregisterNativeCallback1",
+            "pulse.rt.Intrinsics.hostRegisterNativeCallback2",
+            "pulse.rt.Intrinsics.hostGetNativeCallbackAddress2",
+            "pulse.rt.Intrinsics.hostUnregisterNativeCallback2",
+            "pulse.rt.Intrinsics.hostRegisterNativeCallback3",
+            "pulse.rt.Intrinsics.hostGetNativeCallbackAddress3",
+            "pulse.rt.Intrinsics.hostUnregisterNativeCallback3",
+            "pulse.rt.Intrinsics.hostRegisterNativeCallback4",
+            "pulse.rt.Intrinsics.hostGetNativeCallbackAddress4",
+            "pulse.rt.Intrinsics.hostUnregisterNativeCallback4",
             "pulse.rt.Intrinsics.hostRunShellProcess",
             "pulse.memory.Memory.retain",
             "pulse.memory.Memory.release",
@@ -426,6 +441,66 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("Intrinsics".to_string(), "hostCallNative4".to_string()),
         "pulsec_rt_hostCallNative4".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostRegisterNativeCallback0".to_string()),
+        "pulsec_rt_hostRegisterNativeCallback0".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostGetNativeCallbackAddress0".to_string()),
+        "pulsec_rt_hostGetNativeCallbackAddress0".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostUnregisterNativeCallback0".to_string()),
+        "pulsec_rt_hostUnregisterNativeCallback0".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostRegisterNativeCallback1".to_string()),
+        "pulsec_rt_hostRegisterNativeCallback1".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostGetNativeCallbackAddress1".to_string()),
+        "pulsec_rt_hostGetNativeCallbackAddress1".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostUnregisterNativeCallback1".to_string()),
+        "pulsec_rt_hostUnregisterNativeCallback1".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostRegisterNativeCallback2".to_string()),
+        "pulsec_rt_hostRegisterNativeCallback2".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostGetNativeCallbackAddress2".to_string()),
+        "pulsec_rt_hostGetNativeCallbackAddress2".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostUnregisterNativeCallback2".to_string()),
+        "pulsec_rt_hostUnregisterNativeCallback2".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostRegisterNativeCallback3".to_string()),
+        "pulsec_rt_hostRegisterNativeCallback3".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostGetNativeCallbackAddress3".to_string()),
+        "pulsec_rt_hostGetNativeCallbackAddress3".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostUnregisterNativeCallback3".to_string()),
+        "pulsec_rt_hostUnregisterNativeCallback3".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostRegisterNativeCallback4".to_string()),
+        "pulsec_rt_hostRegisterNativeCallback4".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostGetNativeCallbackAddress4".to_string()),
+        "pulsec_rt_hostGetNativeCallbackAddress4".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostUnregisterNativeCallback4".to_string()),
+        "pulsec_rt_hostUnregisterNativeCallback4".to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "hostRunShellProcess".to_string()),

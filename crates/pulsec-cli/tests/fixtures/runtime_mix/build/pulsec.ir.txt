@@ -1,6 +1,16 @@
 # PulseCode IR Dump
 class app.runtime.Main
   method void main() blocks=1 values=4
+class pulse.interop.NativeCallback0
+  method long invoke() blocks=1 values=0
+class pulse.interop.NativeCallback1
+  method long invoke(long arg0) blocks=1 values=0
+class pulse.interop.NativeCallback2
+  method long invoke(long arg0, long arg1) blocks=1 values=0
+class pulse.interop.NativeCallback3
+  method long invoke(long arg0, long arg1, long arg2) blocks=1 values=0
+class pulse.interop.NativeCallback4
+  method long invoke(long arg0, long arg1, long arg2, long arg3) blocks=1 values=0
 class pulse.lang.Appendable
   method StringBuilder append(String text) blocks=1 values=0
   method StringBuilder append(char value) blocks=1 values=0
@@ -371,4 +381,19 @@ class pulse.rt.Intrinsics
   method long hostCallNative2(long functionAddress, long arg0, long arg1) blocks=1 values=2
   method long hostCallNative3(long functionAddress, long arg0, long arg1, long arg2) blocks=1 values=2
   method long hostCallNative4(long functionAddress, long arg0, long arg1, long arg2, long arg3) blocks=1 values=2
+  method int hostRegisterNativeCallback0(NativeCallback0 callback) blocks=1 values=1
+  method long hostGetNativeCallbackAddress0(int slot) blocks=1 values=2
+  method boolean hostUnregisterNativeCallback0(int slot) blocks=1 values=1
+  method int hostRegisterNativeCallback1(NativeCallback1 callback) blocks=1 values=1
+  method long hostGetNativeCallbackAddress1(int slot) blocks=1 values=2
+  method boolean hostUnregisterNativeCallback1(int slot) blocks=1 values=1
+  method int hostRegisterNativeCallback2(NativeCallback2 callback) blocks=1 values=1
+  method long hostGetNativeCallbackAddress2(int slot) blocks=1 values=2
+  method boolean hostUnregisterNativeCallback2(int slot) blocks=1 values=1
+  method int hostRegisterNativeCallback3(NativeCallback3 callback) blocks=1 values=1
+  method long hostGetNativeCallbackAddress3(int slot) blocks=1 values=2
+  method boolean hostUnregisterNativeCallback3(int slot) blocks=1 values=1
+  method int hostRegisterNativeCallback4(NativeCallback4 callback) blocks=1 values=1
+  method long hostGetNativeCallbackAddress4(int slot) blocks=1 values=2
+  method boolean hostUnregisterNativeCallback4(int slot) blocks=1 values=1
   method int hostRunShellProcess(String workingDirectory, String commandLine) blocks=1 values=2
