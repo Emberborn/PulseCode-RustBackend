@@ -27,10 +27,20 @@ Use this for low-level foreign entrypoints before converting the result into Pul
 Invokes one native symbol with one raw long/pointer argument and returns the raw 64-bit result.
 Use this for low-level foreign entrypoints before converting the result into Pulse-native semantics.
 
+### ``public static long callLong1(NativeSymbol symbol, NativePointer arg0)``
+
+Invokes one native symbol with one structured pointer argument and returns the raw 64-bit result.
+Use this when the foreign ABI expects one pointer while Pulse code should stay pointer-shaped instead of passing naked longs around.
+
 ### ``public static long callLong2(NativeSymbol symbol, long arg0, long arg1)``
 
 Invokes one native symbol with two raw long/pointer arguments and returns the raw 64-bit result.
 Use this for low-level foreign entrypoints before converting the result into Pulse-native semantics.
+
+### ``public static long callLong2(NativeSymbol symbol, NativePointer arg0, NativePointer arg1)``
+
+Invokes one native symbol with two structured pointer arguments and returns the raw 64-bit result.
+Use this when the foreign ABI expects pointer pairs under Pulse-owned pointer semantics.
 
 ### ``public static long callLong3(NativeSymbol symbol, long arg0, long arg1, long arg2)``
 
@@ -52,6 +62,11 @@ Use this for common Win32/C/Rust APIs that report 32-bit integer status or ident
 Invokes one native symbol with one raw argument and truncates the result to `int`.
 Use this for common Win32/C/Rust APIs that report 32-bit integer status or identifiers.
 
+### ``public static int callInt1(NativeSymbol symbol, NativePointer arg0)``
+
+Invokes one native symbol with one structured pointer argument and truncates the result to `int`.
+Use this for common pointer-taking Win32/C APIs that report 32-bit lengths or status values.
+
 ### ``public static int callInt2(NativeSymbol symbol, long arg0, long arg1)``
 
 Invokes one native symbol with two raw arguments and truncates the result to `int`.
@@ -66,6 +81,16 @@ Use this for common BOOL-style foreign APIs.
 
 Invokes one native symbol with one raw argument and interprets a non-zero result as `true`.
 Use this for common BOOL-style foreign APIs.
+
+### ``public static NativePointer callPointer1(NativeSymbol symbol, NativePointer arg0)``
+
+Invokes one native symbol with one structured pointer argument and wraps the raw result as one pointer.
+Use this for native APIs that return one pointer/handle result under Pulse-owned pointer semantics.
+
+### ``public static NativePointer callPointer2(``
+
+Invokes one native symbol with two structured pointer arguments and wraps the raw result as one pointer.
+Use this for native APIs that return one pointer/handle result under Pulse-owned pointer semantics.
 
 ### ``public static boolean callBoolean2(NativeSymbol symbol, long arg0, long arg1)``
 

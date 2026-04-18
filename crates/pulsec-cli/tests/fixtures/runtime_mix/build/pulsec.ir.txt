@@ -350,6 +350,17 @@ class pulse.rt.Intrinsics
   method boolean hostCreateDirectory(String path) blocks=1 values=1
   method boolean hostWriteAllText(String path, String value) blocks=1 values=1
   method boolean hostCopyFile(String sourcePath, String destinationPath) blocks=1 values=1
+  method long hostAllocBytes(int byteLength) blocks=1 values=2
+  method boolean hostFreeBytes(long address) blocks=1 values=1
+  method int hostReadByte(long address, int byteOffset) blocks=1 values=1
+  method void hostWriteByte(long address, int byteOffset, int value) blocks=1 values=0
+  method boolean hostCopyBytes(long sourceAddress, long destinationAddress, int byteLength) blocks=1 values=1
+  method long hostReadLong(long address, int byteOffset) blocks=1 values=2
+  method void hostWriteLong(long address, int byteOffset, long value) blocks=1 values=0
+  method int hostStringUtf8Length(String value) blocks=1 values=1
+  method long hostAllocUtf8Z(String value) blocks=1 values=2
+  method String hostStringFromUtf8(long address, int byteLength) blocks=1 values=1
+  method String hostStringFromUtf8Z(long address) blocks=1 values=1
   method long hostLoadDynamicLibrary(String source) blocks=1 values=2
   method boolean hostFreeDynamicLibrary(long handle) blocks=1 values=1
   method long hostResolveDynamicSymbol(long libraryHandle, String symbolName) blocks=1 values=2

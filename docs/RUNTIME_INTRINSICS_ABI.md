@@ -99,6 +99,17 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
 - `Intrinsics.hostCreateDirectory(String) -> boolean`
 - `Intrinsics.hostWriteAllText(String, String) -> boolean`
 - `Intrinsics.hostCopyFile(String, String) -> boolean`
+- `Intrinsics.hostAllocBytes(int) -> long`
+- `Intrinsics.hostFreeBytes(long) -> boolean`
+- `Intrinsics.hostReadByte(long, int) -> int`
+- `Intrinsics.hostWriteByte(long, int, int) -> void`
+- `Intrinsics.hostCopyBytes(long, long, int) -> boolean`
+- `Intrinsics.hostReadLong(long, int) -> long`
+- `Intrinsics.hostWriteLong(long, int, long) -> void`
+- `Intrinsics.hostStringUtf8Length(String) -> int`
+- `Intrinsics.hostAllocUtf8Z(String) -> long`
+- `Intrinsics.hostStringFromUtf8(long, int) -> String`
+- `Intrinsics.hostStringFromUtf8Z(long) -> String`
 - `Intrinsics.hostLoadDynamicLibrary(String) -> long`
 - `Intrinsics.hostFreeDynamicLibrary(long) -> boolean`
 - `Intrinsics.hostResolveDynamicSymbol(long, String) -> long`
@@ -184,6 +195,17 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
   - `pulsec_rt_hostCreateDirectory`
   - `pulsec_rt_hostWriteAllText`
   - `pulsec_rt_hostCopyFile`
+  - `pulsec_rt_hostAllocBytes`
+  - `pulsec_rt_hostFreeBytes`
+  - `pulsec_rt_hostReadByte`
+  - `pulsec_rt_hostWriteByte`
+  - `pulsec_rt_hostCopyBytes`
+  - `pulsec_rt_hostReadLong`
+  - `pulsec_rt_hostWriteLong`
+  - `pulsec_rt_hostStringUtf8Length`
+  - `pulsec_rt_hostAllocUtf8Z`
+  - `pulsec_rt_hostStringFromUtf8`
+  - `pulsec_rt_hostStringFromUtf8Z`
   - `pulsec_rt_hostLoadDynamicLibrary`
   - `pulsec_rt_hostFreeDynamicLibrary`
   - `pulsec_rt_hostResolveDynamicSymbol`

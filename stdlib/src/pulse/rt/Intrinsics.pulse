@@ -327,6 +327,92 @@ final class Intrinsics {
     }
 
     /**
+     * Allocates one native byte buffer on the host heap and returns the raw address.
+     * Returns `0` when allocation fails.
+     */
+    public static long hostAllocBytes(int byteLength) {
+        return 0;
+    }
+
+    /**
+     * Releases one native byte buffer previously allocated on the host heap.
+     * Returns `true` when the free succeeds.
+     */
+    public static boolean hostFreeBytes(long address) {
+        return false;
+    }
+
+    /**
+     * Reads one unsigned byte from the supplied native address and byte offset.
+     * Returns `0` when the address is null or the access is otherwise invalid.
+     */
+    public static int hostReadByte(long address, int byteOffset) {
+        return 0;
+    }
+
+    /**
+     * Writes one byte value to the supplied native address and byte offset.
+     * Invalid/null accesses are ignored.
+     */
+    public static void hostWriteByte(long address, int byteOffset, int value) {
+    }
+
+    /**
+     * Copies one byte range from the source native address into the destination native address.
+     * Returns `true` when the copy succeeds.
+     */
+    public static boolean hostCopyBytes(long sourceAddress, long destinationAddress, int byteLength) {
+        return false;
+    }
+
+    /**
+     * Reads one 64-bit value from the supplied native address and byte offset.
+     * Returns `0` when the address is null or the access is otherwise invalid.
+     */
+    public static long hostReadLong(long address, int byteOffset) {
+        return 0;
+    }
+
+    /**
+     * Writes one 64-bit value to the supplied native address and byte offset.
+     * Invalid/null accesses are ignored.
+     */
+    public static void hostWriteLong(long address, int byteOffset, long value) {
+    }
+
+    /**
+     * Returns the UTF-8 byte length of one Pulse string payload.
+     * Use this before allocating temporary native backing storage for foreign calls.
+     */
+    public static int hostStringUtf8Length(String value) {
+        return 0;
+    }
+
+    /**
+     * Allocates one native UTF-8 buffer with a trailing NUL terminator for the supplied Pulse string.
+     * Returns `0` when allocation fails.
+     */
+    public static long hostAllocUtf8Z(String value) {
+        return 0;
+    }
+
+    /**
+     * Decodes one explicit-length UTF-8 payload from a native address into a Pulse string.
+     * Returns `null` when the native address is null.
+     */
+    public static String hostStringFromUtf8(long address, int byteLength) {
+        return null;
+    }
+
+    /**
+     * Decodes one NUL-terminated UTF-8 payload from a native address into a Pulse string.
+     * Returns `null` when the native address is null.
+     */
+    public static String hostStringFromUtf8Z(long address) {
+        return null;
+    }
+
+    /**
      * Opens one dynamic library through the current host loader and returns the raw native handle.
      * Returns `0` when the host loader cannot open the requested library.
      */

@@ -1329,6 +1329,13 @@ Selected direction:
   - dynamic library load/unload
   - symbol lookup
   - raw 0-4 argument native calls
+  - structured native pointers
+  - owned native byte buffers
+  - borrowed byte spans/views
+  - owned temporary UTF-8+NUL backing storage
+  - byte reads/writes/copies
+  - pointer-sized reads/writes
+  - explicit-length and NUL-terminated UTF-8 decode
 - absorbed foreign-backed features should wrap that raw surface behind
   Pulse-native contracts instead of making Rust a privileged reachback path
 

@@ -85,6 +85,17 @@ pub(crate) fn windows_x64_backend_contract() -> BackendContract {
             "pulse.rt.Intrinsics.hostCreateDirectory",
             "pulse.rt.Intrinsics.hostWriteAllText",
             "pulse.rt.Intrinsics.hostCopyFile",
+            "pulse.rt.Intrinsics.hostAllocBytes",
+            "pulse.rt.Intrinsics.hostFreeBytes",
+            "pulse.rt.Intrinsics.hostReadByte",
+            "pulse.rt.Intrinsics.hostWriteByte",
+            "pulse.rt.Intrinsics.hostCopyBytes",
+            "pulse.rt.Intrinsics.hostReadLong",
+            "pulse.rt.Intrinsics.hostWriteLong",
+            "pulse.rt.Intrinsics.hostStringUtf8Length",
+            "pulse.rt.Intrinsics.hostAllocUtf8Z",
+            "pulse.rt.Intrinsics.hostStringFromUtf8",
+            "pulse.rt.Intrinsics.hostStringFromUtf8Z",
             "pulse.rt.Intrinsics.hostLoadDynamicLibrary",
             "pulse.rt.Intrinsics.hostFreeDynamicLibrary",
             "pulse.rt.Intrinsics.hostResolveDynamicSymbol",
@@ -329,6 +340,50 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("Intrinsics".to_string(), "hostCopyFile".to_string()),
         "pulsec_rt_hostCopyFile".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAllocBytes".to_string()),
+        "pulsec_rt_hostAllocBytes".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostFreeBytes".to_string()),
+        "pulsec_rt_hostFreeBytes".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostReadByte".to_string()),
+        "pulsec_rt_hostReadByte".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostWriteByte".to_string()),
+        "pulsec_rt_hostWriteByte".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCopyBytes".to_string()),
+        "pulsec_rt_hostCopyBytes".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostReadLong".to_string()),
+        "pulsec_rt_hostReadLong".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostWriteLong".to_string()),
+        "pulsec_rt_hostWriteLong".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostStringUtf8Length".to_string()),
+        "pulsec_rt_hostStringUtf8Length".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAllocUtf8Z".to_string()),
+        "pulsec_rt_hostAllocUtf8Z".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostStringFromUtf8".to_string()),
+        "pulsec_rt_hostStringFromUtf8".to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostStringFromUtf8Z".to_string()),
+        "pulsec_rt_hostStringFromUtf8Z".to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "hostLoadDynamicLibrary".to_string()),

@@ -3972,6 +3972,97 @@ pulsec_rt_dispatchNullReceiverPanic proc
     ret
 pulsec_rt_dispatchNullReceiverPanic endp
 
+pulsec_rt_hostAllocBytes proc
+    cmp ecx, 0
+    jle pulsec_rt_hostAllocBytes_done
+    sub rsp, 56
+    mov dword ptr [rsp+32], ecx
+    call GetProcessHeap
+    test rax, rax
+    jz pulsec_rt_hostAllocBytes_fail
+    mov rcx, rax
+    mov edx, 8
+    mov r8d, dword ptr [rsp+32]
+    call HeapAlloc
+    add rsp, 56
+    ret
+pulsec_rt_hostAllocBytes_fail:
+    add rsp, 56
+    xor eax, eax
+    ret
+pulsec_rt_hostAllocBytes_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostAllocBytes endp
+
+pulsec_rt_hostAllocUtf8Z proc
+    sub rsp, 56
+    test rcx, rcx
+    jz pulsec_rt_hostAllocUtf8Z_null_input
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_hostAllocUtf8Z_live_panic
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_hostAllocUtf8Z_live_panic
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_hostAllocUtf8Z_live
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_hostAllocUtf8Z_live_panic
+pulsec_rt_hostAllocUtf8Z_live:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je pulsec_rt_hostAllocUtf8Z_live_panic
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne pulsec_rt_hostAllocUtf8Z_live_panic
+    jmp pulsec_rt_hostAllocUtf8Z_ok
+pulsec_rt_hostAllocUtf8Z_live_panic:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+pulsec_rt_hostAllocUtf8Z_ok:
+    mov ecx, r10d
+    mov dword ptr [rsp+44], ecx
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov edx, dword ptr [rax+rcx*4]
+    mov dword ptr [rsp+48], edx
+    mov ecx, edx
+    add ecx, 1
+    call pulsec_rt_hostAllocBytes
+    test rax, rax
+    jz pulsec_rt_hostAllocUtf8Z_alloc_fail
+    mov r10, rax
+    mov ecx, dword ptr [rsp+44]
+    mov rax, qword ptr [rt_str_data_ptr]
+    mov r9, qword ptr [rax+rcx*8]
+    mov r8d, dword ptr [rsp+48]
+    xor ecx, ecx
+pulsec_rt_hostAllocUtf8Z_copy_loop:
+    cmp ecx, r8d
+    jae pulsec_rt_hostAllocUtf8Z_copy_done
+    mov al, byte ptr [r9+rcx]
+    mov byte ptr [r10+rcx], al
+    add ecx, 1
+    jmp pulsec_rt_hostAllocUtf8Z_copy_loop
+pulsec_rt_hostAllocUtf8Z_copy_done:
+    mov byte ptr [r10+rcx], 0
+    mov rax, r10
+    add rsp, 56
+    ret
+pulsec_rt_hostAllocUtf8Z_alloc_fail:
+    xor eax, eax
+    add rsp, 56
+    ret
+pulsec_rt_hostAllocUtf8Z_null_input:
+    xor eax, eax
+    add rsp, 56
+    ret
+pulsec_rt_hostAllocUtf8Z endp
+
 pulsec_rt_hostCallNative0 proc
     test rcx, rcx
     jz pulsec_rt_hostCallNative0_done
@@ -4046,6 +4137,51 @@ pulsec_rt_hostCallNative4_done:
     xor eax, eax
     ret
 pulsec_rt_hostCallNative4 endp
+
+pulsec_rt_hostCopyBytes proc
+    cmp r8d, 0
+    jl pulsec_rt_hostCopyBytes_done
+    cmp r8d, 0
+    je pulsec_rt_hostCopyBytes_success
+    test rcx, rcx
+    jz pulsec_rt_hostCopyBytes_done
+    test rdx, rdx
+    jz pulsec_rt_hostCopyBytes_done
+    mov r10, rcx
+    mov r11, rdx
+    cmp r11, r10
+    jbe pulsec_rt_hostCopyBytes_forward
+    mov eax, r8d
+    movsxd rax, eax
+    lea r9, [r10+rax]
+    cmp r11, r9
+    jae pulsec_rt_hostCopyBytes_forward
+pulsec_rt_hostCopyBytes_backward:
+    mov eax, r8d
+pulsec_rt_hostCopyBytes_backward_loop:
+    sub eax, 1
+    jl pulsec_rt_hostCopyBytes_success
+    movsxd r9, eax
+    mov dl, byte ptr [r10+r9]
+    mov byte ptr [r11+r9], dl
+    jmp pulsec_rt_hostCopyBytes_backward_loop
+pulsec_rt_hostCopyBytes_forward:
+    xor eax, eax
+pulsec_rt_hostCopyBytes_forward_loop:
+    cmp eax, r8d
+    jae pulsec_rt_hostCopyBytes_success
+    movsxd r9, eax
+    mov dl, byte ptr [r10+r9]
+    mov byte ptr [r11+r9], dl
+    add eax, 1
+    jmp pulsec_rt_hostCopyBytes_forward_loop
+pulsec_rt_hostCopyBytes_success:
+    mov eax, 1
+    ret
+pulsec_rt_hostCopyBytes_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostCopyBytes endp
 
 pulsec_rt_hostCopyFile proc
     sub rsp, 104
@@ -4164,6 +4300,22 @@ pulsec_rt_hostExists_done:
     add rsp, 56
     ret
 pulsec_rt_hostExists endp
+
+pulsec_rt_hostFreeBytes proc
+    test rcx, rcx
+    jz pulsec_rt_hostFreeBytes_done
+    mov r8, rcx
+    sub rsp, 40
+    call GetProcessHeap
+    mov rcx, rax
+    xor edx, edx
+    call HeapFree
+    add rsp, 40
+    ret
+pulsec_rt_hostFreeBytes_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostFreeBytes endp
 
 pulsec_rt_hostFreeDynamicLibrary proc
     test rcx, rcx
@@ -4544,6 +4696,32 @@ pulsec_rt_hostReadAllText_done:
     ret
 pulsec_rt_hostReadAllText endp
 
+pulsec_rt_hostReadByte proc
+    test rcx, rcx
+    jz pulsec_rt_hostReadByte_done
+    cmp edx, 0
+    jl pulsec_rt_hostReadByte_done
+    movsxd rax, edx
+    movzx eax, byte ptr [rcx+rax]
+    ret
+pulsec_rt_hostReadByte_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostReadByte endp
+
+pulsec_rt_hostReadLong proc
+    test rcx, rcx
+    jz pulsec_rt_hostReadLong_done
+    cmp edx, 0
+    jl pulsec_rt_hostReadLong_done
+    movsxd rax, edx
+    mov rax, qword ptr [rcx+rax]
+    ret
+pulsec_rt_hostReadLong_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostReadLong endp
+
 pulsec_rt_hostResolveDynamicSymbol proc
     sub rsp, 96
     mov qword ptr [rsp+56], rcx
@@ -4730,6 +4908,67 @@ pulsec_rt_hostRunShellProcess_done:
     ret
 pulsec_rt_hostRunShellProcess endp
 
+pulsec_rt_hostStringFromUtf8 proc
+    jmp pulsec_rt_stringFromBytes
+pulsec_rt_hostStringFromUtf8 endp
+
+pulsec_rt_hostStringFromUtf8Z proc
+    sub rsp, 56
+    test rcx, rcx
+    jz pulsec_rt_hostStringFromUtf8Z_null_input
+    mov qword ptr [rsp+32], rcx
+    xor edx, edx
+pulsec_rt_hostStringFromUtf8Z_scan:
+    movsxd rax, edx
+    mov al, byte ptr [rcx+rax]
+    test al, al
+    jz pulsec_rt_hostStringFromUtf8Z_done
+    add edx, 1
+    jmp pulsec_rt_hostStringFromUtf8Z_scan
+pulsec_rt_hostStringFromUtf8Z_done:
+    mov rcx, qword ptr [rsp+32]
+    call pulsec_rt_stringFromBytes
+    add rsp, 56
+    ret
+pulsec_rt_hostStringFromUtf8Z_null_input:
+    xor eax, eax
+    add rsp, 56
+    ret
+pulsec_rt_hostStringFromUtf8Z endp
+
+pulsec_rt_hostStringUtf8Length proc
+    mov r10d, ecx
+    cmp r10d, 1
+    jb pulsec_rt_hostStringUtf8Length_live_panic
+    cmp r10d, dword ptr [rt_slot_capacity]
+    ja pulsec_rt_hostStringUtf8Length_live_panic
+    mov r11, rcx
+    shr r11, 32
+    test r11d, r11d
+    jz pulsec_rt_hostStringUtf8Length_live
+    cmp r11d, dword ptr [rt_arc_generation+r10*4]
+    jne pulsec_rt_hostStringUtf8Length_live_panic
+pulsec_rt_hostStringUtf8Length_live:
+    mov eax, dword ptr [rt_arc_refcounts+r10*4]
+    cmp eax, 0
+    je pulsec_rt_hostStringUtf8Length_live_panic
+    mov eax, dword ptr [rt_arc_kinds+r10*4]
+    cmp eax, 3
+    jne pulsec_rt_hostStringUtf8Length_live_panic
+    jmp pulsec_rt_hostStringUtf8Length_ok
+pulsec_rt_hostStringUtf8Length_live_panic:
+    lea rcx, rt_stale_handle_err
+    mov edx, rt_stale_handle_err_len
+    call pulsec_rt_stringFromBytes
+    mov rcx, rax
+    call pulsec_rt_panic
+pulsec_rt_hostStringUtf8Length_ok:
+    mov ecx, r10d
+    mov rax, qword ptr [rt_str_lens_ptr]
+    mov eax, dword ptr [rax+rcx*4]
+    ret
+pulsec_rt_hostStringUtf8Length endp
+
 pulsec_rt_hostWriteAllText proc
     sub rsp, 120
     mov dword ptr [rsp+56], 0
@@ -4824,6 +5063,30 @@ pulsec_rt_hostWriteAllText_done:
     add rsp, 120
     ret
 pulsec_rt_hostWriteAllText endp
+
+pulsec_rt_hostWriteByte proc
+    test rcx, rcx
+    jz pulsec_rt_hostWriteByte_done
+    cmp edx, 0
+    jl pulsec_rt_hostWriteByte_done
+    movsxd rax, edx
+    mov byte ptr [rcx+rax], r8b
+pulsec_rt_hostWriteByte_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostWriteByte endp
+
+pulsec_rt_hostWriteLong proc
+    test rcx, rcx
+    jz pulsec_rt_hostWriteLong_done
+    cmp edx, 0
+    jl pulsec_rt_hostWriteLong_done
+    movsxd rax, edx
+    mov qword ptr [rcx+rax], r8
+pulsec_rt_hostWriteLong_done:
+    xor eax, eax
+    ret
+pulsec_rt_hostWriteLong endp
 
 pulsec_rt_listAddInt proc
     mov r10d, ecx

@@ -249,6 +249,10 @@ Current first executable slice:
 - `pulse.interop.NativeLibrary`
 - `pulse.interop.NativeSymbol`
 - `pulse.interop.NativeCalls`
+- `pulse.interop.NativePointer`
+- `pulse.interop.NativeBuffer`
+- `pulse.interop.NativeByteSpan`
+- `pulse.interop.NativeUtf8String`
 
 That surface is intentionally low-level. It exists so:
 

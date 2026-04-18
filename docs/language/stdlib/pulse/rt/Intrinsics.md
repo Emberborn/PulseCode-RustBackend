@@ -226,6 +226,61 @@ Returns `true` when the file write succeeds.
 Copies one host file from the source path to the destination path on the real filesystem.
 Returns `true` when the file copy succeeds.
 
+### ``public static long hostAllocBytes(int byteLength)``
+
+Allocates one native byte buffer on the host heap and returns the raw address.
+Returns `0` when allocation fails.
+
+### ``public static boolean hostFreeBytes(long address)``
+
+Releases one native byte buffer previously allocated on the host heap.
+Returns `true` when the free succeeds.
+
+### ``public static int hostReadByte(long address, int byteOffset)``
+
+Reads one unsigned byte from the supplied native address and byte offset.
+Returns `0` when the address is null or the access is otherwise invalid.
+
+### ``public static void hostWriteByte(long address, int byteOffset, int value)``
+
+Writes one byte value to the supplied native address and byte offset.
+Invalid/null accesses are ignored.
+
+### ``public static boolean hostCopyBytes(long sourceAddress, long destinationAddress, int byteLength)``
+
+Copies one byte range from the source native address into the destination native address.
+Returns `true` when the copy succeeds.
+
+### ``public static long hostReadLong(long address, int byteOffset)``
+
+Reads one 64-bit value from the supplied native address and byte offset.
+Returns `0` when the address is null or the access is otherwise invalid.
+
+### ``public static void hostWriteLong(long address, int byteOffset, long value)``
+
+Writes one 64-bit value to the supplied native address and byte offset.
+Invalid/null accesses are ignored.
+
+### ``public static int hostStringUtf8Length(String value)``
+
+Returns the UTF-8 byte length of one Pulse string payload.
+Use this before allocating temporary native backing storage for foreign calls.
+
+### ``public static long hostAllocUtf8Z(String value)``
+
+Allocates one native UTF-8 buffer with a trailing NUL terminator for the supplied Pulse string.
+Returns `0` when allocation fails.
+
+### ``public static String hostStringFromUtf8(long address, int byteLength)``
+
+Decodes one explicit-length UTF-8 payload from a native address into a Pulse string.
+Returns `null` when the native address is null.
+
+### ``public static String hostStringFromUtf8Z(long address)``
+
+Decodes one NUL-terminated UTF-8 payload from a native address into a Pulse string.
+Returns `null` when the native address is null.
+
 ### ``public static long hostLoadDynamicLibrary(String source)``
 
 Opens one dynamic library through the current host loader and returns the raw native handle.

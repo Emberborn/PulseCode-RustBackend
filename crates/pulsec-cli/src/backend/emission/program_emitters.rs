@@ -1233,6 +1233,17 @@ pub(crate) fn emit_masm_split_program_objects(
             "pulsec_rt_hostCreateDirectory" => emit_host_create_directory_proc(&mut std_src, &sym),
             "pulsec_rt_hostWriteAllText" => emit_host_write_all_text_proc(&mut std_src, &sym),
             "pulsec_rt_hostCopyFile" => emit_host_copy_file_proc(&mut std_src, &sym),
+            "pulsec_rt_hostAllocBytes" => emit_host_alloc_bytes_proc(&mut std_src, &sym),
+            "pulsec_rt_hostFreeBytes" => emit_host_free_bytes_proc(&mut std_src, &sym),
+            "pulsec_rt_hostReadByte" => emit_host_read_byte_proc(&mut std_src, &sym),
+            "pulsec_rt_hostWriteByte" => emit_host_write_byte_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCopyBytes" => emit_host_copy_bytes_proc(&mut std_src, &sym),
+            "pulsec_rt_hostReadLong" => emit_host_read_long_proc(&mut std_src, &sym),
+            "pulsec_rt_hostWriteLong" => emit_host_write_long_proc(&mut std_src, &sym),
+            "pulsec_rt_hostStringUtf8Length" => emit_host_string_utf8_length_proc(&mut std_src, &sym),
+            "pulsec_rt_hostAllocUtf8Z" => emit_host_alloc_utf8z_proc(&mut std_src, &sym),
+            "pulsec_rt_hostStringFromUtf8" => emit_host_string_from_utf8_proc(&mut std_src, &sym),
+            "pulsec_rt_hostStringFromUtf8Z" => emit_host_string_from_utf8z_proc(&mut std_src, &sym),
             "pulsec_rt_hostLoadDynamicLibrary" => {
                 emit_host_load_dynamic_library_proc(&mut std_src, &sym)
             }
@@ -1812,6 +1823,17 @@ pub(crate) fn emit_masm_full_program_object(
             "pulsec_rt_hostCreateDirectory" => emit_host_create_directory_proc(&mut source, &sym),
             "pulsec_rt_hostWriteAllText" => emit_host_write_all_text_proc(&mut source, &sym),
             "pulsec_rt_hostCopyFile" => emit_host_copy_file_proc(&mut source, &sym),
+            "pulsec_rt_hostAllocBytes" => emit_host_alloc_bytes_proc(&mut source, &sym),
+            "pulsec_rt_hostFreeBytes" => emit_host_free_bytes_proc(&mut source, &sym),
+            "pulsec_rt_hostReadByte" => emit_host_read_byte_proc(&mut source, &sym),
+            "pulsec_rt_hostWriteByte" => emit_host_write_byte_proc(&mut source, &sym),
+            "pulsec_rt_hostCopyBytes" => emit_host_copy_bytes_proc(&mut source, &sym),
+            "pulsec_rt_hostReadLong" => emit_host_read_long_proc(&mut source, &sym),
+            "pulsec_rt_hostWriteLong" => emit_host_write_long_proc(&mut source, &sym),
+            "pulsec_rt_hostStringUtf8Length" => emit_host_string_utf8_length_proc(&mut source, &sym),
+            "pulsec_rt_hostAllocUtf8Z" => emit_host_alloc_utf8z_proc(&mut source, &sym),
+            "pulsec_rt_hostStringFromUtf8" => emit_host_string_from_utf8_proc(&mut source, &sym),
+            "pulsec_rt_hostStringFromUtf8Z" => emit_host_string_from_utf8z_proc(&mut source, &sym),
             "pulsec_rt_hostLoadDynamicLibrary" => {
                 emit_host_load_dynamic_library_proc(&mut source, &sym)
             }

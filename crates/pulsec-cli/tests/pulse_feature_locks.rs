@@ -1354,3 +1354,123 @@ entry = "app/core/Main.pulse"
         stderr
     );
 }
+
+#[test]
+fn lock_pulse_feature_08_public_interop_memory_and_utf8_surface_executes_without_authorlib_opt_in() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "public-interop-memory"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.interop.NativeBuffer;
+        import pulse.interop.NativeByteSpan;
+        import pulse.interop.NativeCalls;
+        import pulse.interop.NativeLibrary;
+        import pulse.interop.NativePointer;
+        import pulse.interop.NativeSymbol;
+        import pulse.interop.NativeUtf8String;
+        import pulse.io.ResourceScope;
+
+        class Main {
+            public static void main() {
+                ResourceScope scope = new ResourceScope();
+                NativeLibrary kernel = NativeLibrary.openRequired("kernel32.dll");
+
+                NativeSymbol lstrlenA = kernel.resolveRequired("lstrlenA");
+                NativeSymbol lstrcpyA = kernel.resolveRequired("lstrcpyA");
+
+                NativeUtf8String text = NativeUtf8String.encode("interop_buffer_ok");
+                scope.add(text);
+
+                NativeBuffer buffer = NativeBuffer.allocate(text.byteLength() + 1);
+                NativeBuffer scratch = NativeBuffer.allocate(24);
+                scope.add(buffer);
+                scope.add(scratch);
+
+                int encodedLength = NativeCalls.callInt1(lstrlenA, text.pointer());
+                NativePointer copied = NativeCalls.callPointer2(
+                    lstrcpyA,
+                    buffer.pointer(),
+                    text.pointer()
+                );
+                String roundTrip = NativeUtf8String.decodeNullTerminated(buffer.pointer());
+                NativeByteSpan bytes = buffer.view(0, text.byteLength());
+                int firstByte = bytes.getByte(0);
+                String borrowedRoundTrip = bytes.decodeUtf8();
+
+                buffer.setByte(0, (int) 'I');
+                String mutated = NativeUtf8String.decodeNullTerminated(buffer.pointer());
+
+                scratch.pointer().writeLong(8, 123456789L);
+                long marker = scratch.pointer().readLong(8);
+
+                scope.close();
+                boolean closed = kernel.close();
+
+                if (encodedLength == text.byteLength()
+                    && !copied.isNull()
+                    && "interop_buffer_ok".equals(roundTrip)
+                    && "interop_buffer_ok".equals(borrowedRoundTrip)
+                    && firstByte == (int) 'i'
+                    && "Interop_buffer_ok".equals(mutated)
+                    && marker == 123456789L
+                    && closed) {
+                    pulse.lang.IO.println("interop_memory_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("interop_memory_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected public interop memory build success without authorlib opt-in\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("public-interop-memory-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected public interop memory exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("interop_memory_ok"),
+        "expected interop memory success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}

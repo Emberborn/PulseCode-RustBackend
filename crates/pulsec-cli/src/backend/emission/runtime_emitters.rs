@@ -3410,6 +3410,259 @@ pub(crate) fn emit_host_copy_file_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("{} endp\n", symbol));
 }
 
+pub(crate) fn emit_host_alloc_bytes_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let fail = format!("{}_fail", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 0\n");
+    out.push_str(&format!("    jle {}\n", done));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail));
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    mov edx, 8\n");
+    out.push_str("    mov r8d, dword ptr [rsp+32]\n");
+    out.push_str("    call HeapAlloc\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_free_bytes_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    mov r8, rcx\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetProcessHeap\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    call HeapFree\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_read_byte_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    cmp edx, 0\n");
+    out.push_str(&format!("    jl {}\n", done));
+    out.push_str("    movsxd rax, edx\n");
+    out.push_str("    movzx eax, byte ptr [rcx+rax]\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_write_byte_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    cmp edx, 0\n");
+    out.push_str(&format!("    jl {}\n", done));
+    out.push_str("    movsxd rax, edx\n");
+    out.push_str("    mov byte ptr [rcx+rax], r8b\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_copy_bytes_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let forward = format!("{}_forward", symbol);
+    let forward_loop = format!("{}_forward_loop", symbol);
+    let backward = format!("{}_backward", symbol);
+    let backward_loop = format!("{}_backward_loop", symbol);
+    let success = format!("{}_success", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp r8d, 0\n");
+    out.push_str(&format!("    jl {}\n", done));
+    out.push_str("    cmp r8d, 0\n");
+    out.push_str(&format!("    je {}\n", success));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    test rdx, rdx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    mov r10, rcx\n");
+    out.push_str("    mov r11, rdx\n");
+    out.push_str("    cmp r11, r10\n");
+    out.push_str(&format!("    jbe {}\n", forward));
+    out.push_str("    mov eax, r8d\n");
+    out.push_str("    movsxd rax, eax\n");
+    out.push_str("    lea r9, [r10+rax]\n");
+    out.push_str("    cmp r11, r9\n");
+    out.push_str(&format!("    jae {}\n", forward));
+    out.push_str(&format!("{}:\n", backward));
+    out.push_str("    mov eax, r8d\n");
+    out.push_str(&format!("{}:\n", backward_loop));
+    out.push_str("    sub eax, 1\n");
+    out.push_str(&format!("    jl {}\n", success));
+    out.push_str("    movsxd r9, eax\n");
+    out.push_str("    mov dl, byte ptr [r10+r9]\n");
+    out.push_str("    mov byte ptr [r11+r9], dl\n");
+    out.push_str(&format!("    jmp {}\n", backward_loop));
+    out.push_str(&format!("{}:\n", forward));
+    out.push_str("    xor eax, eax\n");
+    out.push_str(&format!("{}:\n", forward_loop));
+    out.push_str("    cmp eax, r8d\n");
+    out.push_str(&format!("    jae {}\n", success));
+    out.push_str("    movsxd r9, eax\n");
+    out.push_str("    mov dl, byte ptr [r10+r9]\n");
+    out.push_str("    mov byte ptr [r11+r9], dl\n");
+    out.push_str("    add eax, 1\n");
+    out.push_str(&format!("    jmp {}\n", forward_loop));
+    out.push_str(&format!("{}:\n", success));
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_read_long_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    cmp edx, 0\n");
+    out.push_str(&format!("    jl {}\n", done));
+    out.push_str("    movsxd rax, edx\n");
+    out.push_str("    mov rax, qword ptr [rcx+rax]\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_write_long_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    cmp edx, 0\n");
+    out.push_str(&format!("    jl {}\n", done));
+    out.push_str("    movsxd rax, edx\n");
+    out.push_str("    mov qword ptr [rcx+rax], r8\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_string_utf8_length_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_STRING), None);
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov eax, dword ptr [rax+rcx*4]\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_alloc_utf8z_proc(out: &mut String, symbol: &str) {
+    let null_input = format!("{}_null_input", symbol);
+    let alloc_fail = format!("{}_alloc_fail", symbol);
+    let copy_loop = format!("{}_copy_loop", symbol);
+    let copy_done = format!("{}_copy_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", null_input));
+    emit_stale_handle_kind_guard_ecx(out, symbol, Some(ARC_KIND_TAG_STRING), None);
+    out.push_str("    mov dword ptr [rsp+44], ecx\n");
+    out.push_str("    mov rax, qword ptr [rt_str_lens_ptr]\n");
+    out.push_str("    mov edx, dword ptr [rax+rcx*4]\n");
+    out.push_str("    mov dword ptr [rsp+48], edx\n");
+    out.push_str("    mov ecx, edx\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str("    call pulsec_rt_hostAllocBytes\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", alloc_fail));
+    out.push_str("    mov r10, rax\n");
+    out.push_str("    mov ecx, dword ptr [rsp+44]\n");
+    out.push_str("    mov rax, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    mov r9, qword ptr [rax+rcx*8]\n");
+    out.push_str("    mov r8d, dword ptr [rsp+48]\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str(&format!("{}:\n", copy_loop));
+    out.push_str("    cmp ecx, r8d\n");
+    out.push_str(&format!("    jae {}\n", copy_done));
+    out.push_str("    mov al, byte ptr [r9+rcx]\n");
+    out.push_str("    mov byte ptr [r10+rcx], al\n");
+    out.push_str("    add ecx, 1\n");
+    out.push_str(&format!("    jmp {}\n", copy_loop));
+    out.push_str(&format!("{}:\n", copy_done));
+    out.push_str("    mov byte ptr [r10+rcx], 0\n");
+    out.push_str("    mov rax, r10\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", alloc_fail));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", null_input));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_string_from_utf8_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    jmp pulsec_rt_stringFromBytes\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_string_from_utf8z_proc(out: &mut String, symbol: &str) {
+    let null_input = format!("{}_null_input", symbol);
+    let scan = format!("{}_scan", symbol);
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", null_input));
+    out.push_str("    mov qword ptr [rsp+32], rcx\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str(&format!("{}:\n", scan));
+    out.push_str("    movsxd rax, edx\n");
+    out.push_str("    mov al, byte ptr [rcx+rax]\n");
+    out.push_str("    test al, al\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    add edx, 1\n");
+    out.push_str(&format!("    jmp {}\n", scan));
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    call pulsec_rt_stringFromBytes\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", null_input));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
 pub(crate) fn emit_host_load_dynamic_library_proc(out: &mut String, symbol: &str) {
     const RESULT_OFFSET: i32 = 56;
     const SOURCE_PTR_OFFSET: i32 = 64;

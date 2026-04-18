@@ -648,12 +648,21 @@ The first executable public raw interop slice now exists under `pulse.interop.*`
 - `pulse.interop.NativeLibrary`
 - `pulse.interop.NativeSymbol`
 - `pulse.interop.NativeCalls`
+- `pulse.interop.NativePointer`
+- `pulse.interop.NativeBuffer`
+- `pulse.interop.NativeByteSpan`
+- `pulse.interop.NativeUtf8String`
 
 Current executable boundary:
 
 - dynamic library load/unload
 - symbol lookup
 - raw 0-4 argument native calls
+- owned native byte allocation/free
+- byte reads/writes/copies
+- pointer-sized reads/writes
+- owned temporary UTF-8+NUL backing storage
+- explicit-length and NUL-terminated UTF-8 decode
 
 Direction rule:
 

@@ -49,6 +49,10 @@ This surface is intentionally low-level:
 - dynamic library handles
 - symbol lookup
 - raw host-ABI calls
+- structured native pointers
+- owned native byte buffers
+- borrowed byte spans/views
+- owned temporary UTF-8 backing storage
 
 This gives ordinary users a standard interop path without forcing them into
 `author.*`.
@@ -71,10 +75,19 @@ The first executable interop slice is intentionally narrow:
 - public `pulse.interop.NativeLibrary`
 - public `pulse.interop.NativeSymbol`
 - public `pulse.interop.NativeCalls`
+- public `pulse.interop.NativePointer`
+- public `pulse.interop.NativeBuffer`
+- public `pulse.interop.NativeByteSpan`
+- public `pulse.interop.NativeUtf8String`
 - backend/runtime support for:
   - dynamic library load/unload
   - exported symbol resolution
   - raw 0-4 argument native calls
+  - owned native byte allocation/free
+  - byte reads/writes/copies
+  - pointer-sized reads/writes
+  - Pulse string -> owned UTF-8+NUL backing storage
+  - explicit-length and NUL-terminated UTF-8 decode
 
 This is enough to start wrapping:
 
@@ -85,12 +98,25 @@ This is enough to start wrapping:
 
 without keeping Rust as a privileged reachback path.
 
+## Current Memory/Marshalling Direction
+
+The next durable interop boundary is not just "more raw calls." It is
+ownership-safe marshalling:
+
+- `NativePointer` replaces naked `long` for pointer arithmetic and pointer-sized field access
+- `NativeBuffer` owns mutable native storage and closes deterministically
+- `NativeByteSpan` borrows subranges without taking ownership
+- `NativeUtf8String` owns temporary UTF-8+NUL call backing storage and decodes foreign UTF-8 back into Pulse strings
+
+This is the minimum substrate needed so absorbed foreign-backed features can
+borrow implementation without forcing raw pointer/heap semantics onto the rest
+of Pulse.
+
 ## Planned Expansion
 
 Follow-up interop growth should focus on the hard-to-add-later host boundary
 pieces while `F1-97` is still open:
 
-- string/buffer marshalling helpers
 - broader argument/return kind support
 - module/self/process symbol lookup helpers
 - structured native error capture where useful

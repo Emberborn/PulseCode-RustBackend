@@ -24,11 +24,31 @@ public final class NativeCalls {
     }
 
     /**
+     * Invokes one native symbol with one structured pointer argument and returns the raw 64-bit result.
+     * Use this when the foreign ABI expects one pointer while Pulse code should stay pointer-shaped instead of passing naked longs around.
+     */
+    public static long callLong1(NativeSymbol symbol, NativePointer arg0) {
+        return NativeCalls.callLong1(symbol, NativeCalls.pointerArgument(arg0));
+    }
+
+    /**
      * Invokes one native symbol with two raw long/pointer arguments and returns the raw 64-bit result.
      * Use this for low-level foreign entrypoints before converting the result into Pulse-native semantics.
      */
     public static long callLong2(NativeSymbol symbol, long arg0, long arg1) {
         return Intrinsics.hostCallNative2(NativeCalls.requireAddress(symbol), arg0, arg1);
+    }
+
+    /**
+     * Invokes one native symbol with two structured pointer arguments and returns the raw 64-bit result.
+     * Use this when the foreign ABI expects pointer pairs under Pulse-owned pointer semantics.
+     */
+    public static long callLong2(NativeSymbol symbol, NativePointer arg0, NativePointer arg1) {
+        return NativeCalls.callLong2(
+            symbol,
+            NativeCalls.pointerArgument(arg0),
+            NativeCalls.pointerArgument(arg1)
+        );
     }
 
     /**
@@ -64,6 +84,14 @@ public final class NativeCalls {
     }
 
     /**
+     * Invokes one native symbol with one structured pointer argument and truncates the result to `int`.
+     * Use this for common pointer-taking Win32/C APIs that report 32-bit lengths or status values.
+     */
+    public static int callInt1(NativeSymbol symbol, NativePointer arg0) {
+        return (int) NativeCalls.callLong1(symbol, arg0);
+    }
+
+    /**
      * Invokes one native symbol with two raw arguments and truncates the result to `int`.
      * Use this for common Win32/C/Rust APIs that report 32-bit integer status or identifiers.
      */
@@ -88,6 +116,26 @@ public final class NativeCalls {
     }
 
     /**
+     * Invokes one native symbol with one structured pointer argument and wraps the raw result as one pointer.
+     * Use this for native APIs that return one pointer/handle result under Pulse-owned pointer semantics.
+     */
+    public static NativePointer callPointer1(NativeSymbol symbol, NativePointer arg0) {
+        return NativePointer.fromRaw(NativeCalls.callLong1(symbol, arg0));
+    }
+
+    /**
+     * Invokes one native symbol with two structured pointer arguments and wraps the raw result as one pointer.
+     * Use this for native APIs that return one pointer/handle result under Pulse-owned pointer semantics.
+     */
+    public static NativePointer callPointer2(
+        NativeSymbol symbol,
+        NativePointer arg0,
+        NativePointer arg1
+    ) {
+        return NativePointer.fromRaw(NativeCalls.callLong2(symbol, arg0, arg1));
+    }
+
+    /**
      * Invokes one native symbol with two raw arguments and interprets a non-zero result as `true`.
      * Use this for common BOOL-style foreign APIs.
      */
@@ -100,5 +148,12 @@ public final class NativeCalls {
             Intrinsics.panic("Native call requires one resolved native symbol");
         }
         return symbol.address();
+    }
+
+    private static long pointerArgument(NativePointer pointer) {
+        if (pointer == null) {
+            return 0L;
+        }
+        return pointer.rawAddress();
     }
 }
