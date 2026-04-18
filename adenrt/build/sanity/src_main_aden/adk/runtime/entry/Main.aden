@@ -1,9 +1,0 @@
-package adk.runtime.entry;
-
-import aden.lang.IO;
-
-class Main {
-    public static void main() {
-        IO.println(RuntimeIdentity.banner());
-    }
-}

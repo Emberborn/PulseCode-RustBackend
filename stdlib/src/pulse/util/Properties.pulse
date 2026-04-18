@@ -1,0 +1,94 @@
+package pulse.util;
+
+import pulse.collections.HashMap;
+import pulse.collections.Set;
+import pulse.lang.String;
+
+/**
+ * Lightweight string-to-string property bag for configuration-style flows.
+ */
+public final class Properties {
+    private HashMap<String, String> values;
+
+    /**
+     * Creates an empty property bag.
+     * Use this for Java-like config assembly without dropping to raw maps.
+     */
+    public Properties() {
+        this.values = new HashMap<String, String>();
+    }
+
+    /**
+     * Returns the number of stored properties.
+     */
+    public int size() {
+        return this.values.size();
+    }
+
+    /**
+     * Reports whether the property bag is empty.
+     */
+    public boolean isEmpty() {
+        return this.values.isEmpty();
+    }
+
+    /**
+     * Removes all stored properties.
+     */
+    public void clear() {
+        this.values.clear();
+    }
+
+    /**
+     * Stores the supplied key/value pair and returns the prior value when present.
+     */
+    public String setProperty(String key, String value) {
+        return this.values.put(key, value);
+    }
+
+    /**
+     * Returns the value for the supplied key, or null when absent.
+     */
+    public String getProperty(String key) {
+        return this.values.get(key);
+    }
+
+    /**
+     * Returns the value for the supplied key, or the provided fallback when absent.
+     */
+    public String getProperty(String key, String defaultValue) {
+        String value = this.values.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    /**
+     * Reports whether the supplied property key is present.
+     */
+    public boolean containsKey(String key) {
+        return this.values.containsKey(key);
+    }
+
+    /**
+     * Removes the supplied property and returns the prior value when present.
+     */
+    public String remove(String key) {
+        return this.values.remove(key);
+    }
+
+    /**
+     * Returns the current property keys.
+     */
+    public Set<String> propertyNames() {
+        return this.values.keySet();
+    }
+
+    /**
+     * Returns a Java-like debug string for the current property contents.
+     */
+    public String toString() {
+        return this.values.toString();
+    }
+}

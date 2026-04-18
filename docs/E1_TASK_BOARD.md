@@ -100,4 +100,4 @@ E1 turns shared-library native output from scaffolding into a real product mode.
 | Milestone | Exit Criteria |
 |---|---|
 | E1 | Tasks `E1-01`..`E1-21` and gates `E1-G1`..`E1-G6` are all `Done (Locked)` |
-| E1 Deliverable | `adenc build` emits real runnable shared-library native outputs (`.exe` + `.dll`) with deterministic distribution layout |
+| E1 Deliverable | `pulsec build` emits real runnable shared-library native outputs (`.exe` + `.dll`) with deterministic distribution layout |

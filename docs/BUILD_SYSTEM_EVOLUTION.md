@@ -1,6 +1,6 @@
 # Build System Evolution Plan
 
-This document captures the forward-compatible architecture for moving from `adenc.toml` to a script-driven build DSL later, without rewriting executors.
+This document captures the forward-compatible architecture for moving from `pulsec.toml` to a script-driven build DSL later, without rewriting executors.
 
 ## Design Targets
 
@@ -14,7 +14,7 @@ This document captures the forward-compatible architecture for moving from `aden
    - Parses commands/flags and resolves user intent.
 2. `Config adapter layer`
    - Converts source config to normalized build model.
-   - Current adapter: `adenc.toml`.
+   - Current adapter: `pulsec.toml`.
    - Future adapter: script DSL.
 3. `Task graph layer`
    - Task definitions, dependencies, ordering, and reusable execution graph.

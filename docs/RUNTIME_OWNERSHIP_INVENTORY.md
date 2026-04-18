@@ -1,6 +1,6 @@
 # Runtime Ownership Inventory
 
-Schema intent: `adenc.runtime.ownership.inventory.v1`
+Schema intent: `pulsec.runtime.ownership.inventory.v1`
 
 This inventory locks the runtime-owned metadata and state surfaces that must live behind the shared runtime boundary for Phase E. It also records the current app-image couplings that block real `.dll` emission.
 
@@ -10,10 +10,10 @@ These surfaces are runtime-private and belong in the shared runtime image, not i
 
 ### Core Object Metadata
 
-- `adenc_rt_obj_counter`
-- `adenc_rt_obj_class_ids`
-- `adenc_rt_obj_class_ids_init`
-- `adenc_rt_obj_class_ids_heap_owned`
+- `pulsec_rt_obj_counter`
+- `pulsec_rt_obj_class_ids`
+- `pulsec_rt_obj_class_ids_init`
+- `pulsec_rt_obj_class_ids_heap_owned`
 
 Purpose:
 - global object slot count

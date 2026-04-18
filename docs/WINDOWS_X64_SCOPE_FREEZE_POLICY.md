@@ -3,9 +3,9 @@
 Status: Done (Locked)  
 Date locked: 2026-03-22
 
-This document is the source of truth for `RB-19` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-19` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
 
-It answers a narrower question than [WINDOWS_X64_ADAPTER_SCOPE.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_ADAPTER_SCOPE.md):
+It answers a narrower question than [WINDOWS_X64_ADAPTER_SCOPE.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_ADAPTER_SCOPE.md):
 
 - what Windows x64 support is still real and allowed to evolve
 - what Windows-only scope is frozen in place
@@ -38,10 +38,10 @@ Primary audited rows:
 
 Primary companion docs:
 
-- [WINDOWS_X64_ADAPTER_SCOPE.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_ADAPTER_SCOPE.md)
-- [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
-- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
-- [REBASE_VALIDATION_LAYERING.md](/D:/Programming/codex/Aden Lang/docs/REBASE_VALIDATION_LAYERING.md)
+- [WINDOWS_X64_ADAPTER_SCOPE.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_ADAPTER_SCOPE.md)
+- [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md)
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- [REBASE_VALIDATION_LAYERING.md](/D:/Programming/codex/PulseCode/docs/REBASE_VALIDATION_LAYERING.md)
 
 ## Retained Live Windows x64 Scope
 
@@ -74,7 +74,7 @@ The following Windows-specific scope is explicitly frozen or removed from compil
 - WiX integration
 - SignTool integration
 - installer/uninstall/repair/upgrade lifecycle orchestration
-- staged packaging trees owned by `adenc`
+- staged packaging trees owned by `pulsec`
 - Windows packaging metadata in scaffold defaults
 - Windows-first D/E productization docs as live strategic planning truth
 
@@ -84,7 +84,7 @@ These items are not “compatibility surfaces to preserve later.” They are exp
 
 The following re-entry paths are prohibited unless the rebase policy itself is deliberately reopened:
 
-- restoring `adenc package`
+- restoring `pulsec package`
 - restoring `--msi`, `--wix`, `--signtool`, `--packaging-mode`, or staging flags
 - restoring `[build].packaging_mode`, `[toolchain].wix`, `[toolchain].signtool`, or `[package.metadata]`
 - reseeding scaffolded Windows packaging defaults such as install scope or signing mode
@@ -114,23 +114,23 @@ Examples of acceptable growth:
 Examples of unacceptable growth:
 
 - new MSI-specific manifest keys
-- new signing hooks in `adenc build`
+- new signing hooks in `pulsec build`
 - new Windows installer milestones on the active rebase/F1 planning spine
-- using Windows parity evidence as proof that AdenOS or Linux execution is done
+- using Windows parity evidence as proof that PulseOS or Linux execution is done
 
 ## Relationship To Existing Windows Docs
 
-- [WINDOWS_X64_ADAPTER_SCOPE.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_X64_ADAPTER_SCOPE.md) defines what the adapter owns
+- [WINDOWS_X64_ADAPTER_SCOPE.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_X64_ADAPTER_SCOPE.md) defines what the adapter owns
 - this document defines what that owned scope is still allowed to evolve into and what remains frozen
-- [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/WINDOWS_TOOLCHAIN_MATRIX.md) remains support evidence for the retained Windows lane, not permission to add more Windows-only compiler scope
-- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md) remains the authoritative record that packaging was removed rather than merely hidden
+- [WINDOWS_TOOLCHAIN_MATRIX.md](/D:/Programming/codex/PulseCode/docs/WINDOWS_TOOLCHAIN_MATRIX.md) remains support evidence for the retained Windows lane, not permission to add more Windows-only compiler scope
+- [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md) remains the authoritative record that packaging was removed rather than merely hidden
 
 ## Validation Consequence
 
 `RB-18` remains a fixed input here:
 
 - Windows x64 executable/codegen/parity proof stays in Windows adapter validation homes
-- requested-target AdenOS contract proof stays separate
+- requested-target PulseOS contract proof stays separate
 - target-neutral suites do not absorb new Windows-only productization or adapter-specific scope by accident
 
 ## Locked Result For `RB-19`

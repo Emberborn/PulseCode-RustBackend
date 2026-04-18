@@ -1,10 +1,10 @@
-# Aden Lang Manifest Schema v1 (`adenc.toml`)
+# PulseCode Manifest Schema v1 (`pulsec.toml`)
 
 This document defines the current manifest schema.
 
 Rebase note (`RB-05`):
 
-- manifest v1 now accepts `windows-x64`, `adenos-x64`, `linux-x64`, and `macos-arm64`
+- manifest v1 now accepts `windows-x64`, `pulseos-x64`, `linux-x64`, and `macos-arm64`
 - `native-x64` has been removed from the public manifest surface
 
 Packaging removal note (`RB-17.1`):
@@ -14,7 +14,7 @@ Packaging removal note (`RB-17.1`):
 
 Primary example matrix:
 
-- [PULSEC_MANIFEST_EXAMPLES.md](/D:/Programming/codex/Aden Lang/docs/PULSEC_MANIFEST_EXAMPLES.md)
+- [PULSEC_MANIFEST_EXAMPLES.md](/D:/Programming/codex/PulseCode/docs/PULSEC_MANIFEST_EXAMPLES.md)
 
 ## Required Fields
 
@@ -27,19 +27,19 @@ Primary example matrix:
   - `name` (string)
   - `version` (string)
 - `[sources]`
-  - `root` (legacy compatibility alias; default `"src/main/aden"`)
-  - `main_aden` (string, default `"src/main/aden"`)
+  - `root` (legacy compatibility alias; default `"src/main/pulse"`)
+  - `main_pulse` (string, default `"src/main/pulse"`)
   - `main_resources` (string, default `"src/main/resources"`)
-  - `test_aden` (string, default `"src/test/aden"`)
+  - `test_pulse` (string, default `"src/test/pulse"`)
   - `test_resources` (string, default `"src/test/resources"`)
-  - `api_aden` (string, default `"src/api/aden"`)
+  - `api_pulse` (string, default `"src/api/pulse"`)
   - `api_resources` (string, default `"src/api/resources"`)
   - `docs` (string, default `"docs"`)
   - `libraries` (string, default `"libraries"`)
   - `entry` (string, optional)
 - `[build]`
   - `profile` (optional: `"debug"` or `"release"`)
-  - `target` (string, optional: `"windows-x64"`, `"adenos-x64"`, `"linux-x64"`, or `"macos-arm64"`)
+  - `target` (string, optional: `"windows-x64"`, `"pulseos-x64"`, `"linux-x64"`, or `"macos-arm64"`)
   - `output_mode` (optional: `"fat"` or `"shared"`; legacy aliases `"single_exe"` and `"exe_with_dlls"` are accepted)
   - `output_entry` (required when `output_mode = "shared"`)
   - `runtime_debug_allocator` (optional: `"on"` or `"off"`)
@@ -66,7 +66,7 @@ Primary example matrix:
 - `[workspace].members` must resolve to at least one member path
 - workspace member manifests cannot themselves declare `[workspace]`
 - `[build].profile` must be `debug` or `release` when present
-- `[build].target` must be one of `windows-x64`, `adenos-x64`, `linux-x64`, or `macos-arm64` when present
+- `[build].target` must be one of `windows-x64`, `pulseos-x64`, `linux-x64`, or `macos-arm64` when present
 - `[build].output_mode` must be `fat` or `shared` when present; legacy aliases are canonicalized
 - `[build].output_entry` is required when `[build].output_mode = "shared"`
 - runtime toggle keys must be `on` or `off` when present
@@ -82,15 +82,15 @@ name = "demo_app"
 version = "1.0.0"
 
 [sources]
-main_aden = "src/main/aden"
+main_pulse = "src/main/pulse"
 main_resources = "src/main/resources"
-test_aden = "src/test/aden"
+test_pulse = "src/test/pulse"
 test_resources = "src/test/resources"
-api_aden = "src/api/aden"
+api_pulse = "src/api/pulse"
 api_resources = "src/api/resources"
 docs = "docs"
 libraries = "libraries"
-entry = "app/main/Main.aden"
+entry = "app/main/Main.pulse"
 
 [build]
 profile = "release"
@@ -121,5 +121,5 @@ members = "apps/core, libs/util"
 
 ## Locked Proof Surface
 
-- unit validation in `crates/adenc-cli/src/cli/mod.rs`
-- CLI lock coverage in `crates/adenc-cli/tests/stage_locks_d.rs`
+- unit validation in `crates/pulsec-cli/src/cli/mod.rs`
+- CLI lock coverage in `crates/pulsec-cli/tests/stage_locks_d.rs`

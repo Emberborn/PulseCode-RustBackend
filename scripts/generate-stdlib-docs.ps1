@@ -102,15 +102,15 @@ function Normalize-Declaration {
 
 $stdlibRoot = Join-Path $RepoRoot "stdlib\src"
 $docsRoot = Join-Path $RepoRoot "docs\language\stdlib"
-$docsAdenRoot = Join-Path $docsRoot "aden"
+$docsPulseRoot = Join-Path $docsRoot "pulse"
 $docsAuthorRoot = Join-Path $docsRoot "author"
 $docsLegacyComRoot = Join-Path $docsRoot "com"
 
 # This generator is intentionally destructive for the generated stdlib subtree.
-# Each run rewrites the checked-in stdlib reference docs from current AdenDoc
+# Each run rewrites the checked-in stdlib reference docs from current PulseDoc
 # so the published language docs do not drift from the shipped source surface.
-if (Test-Path $docsAdenRoot) {
-    Remove-Item -Recurse -Force $docsAdenRoot
+if (Test-Path $docsPulseRoot) {
+    Remove-Item -Recurse -Force $docsPulseRoot
 }
 if (Test-Path $docsAuthorRoot) {
     Remove-Item -Recurse -Force $docsAuthorRoot
@@ -118,12 +118,12 @@ if (Test-Path $docsAuthorRoot) {
 if (Test-Path $docsLegacyComRoot) {
     Remove-Item -Recurse -Force $docsLegacyComRoot
 }
-New-Item -ItemType Directory -Force -Path $docsAdenRoot | Out-Null
+New-Item -ItemType Directory -Force -Path $docsPulseRoot | Out-Null
 New-Item -ItemType Directory -Force -Path $docsAuthorRoot | Out-Null
 
-$adenFiles = Get-ChildItem -Path $stdlibRoot -Recurse -File -Filter *.aden | Sort-Object FullName
+$pulseFiles = Get-ChildItem -Path $stdlibRoot -Recurse -File -Filter *.pulse | Sort-Object FullName
 
-foreach ($file in $adenFiles) {
+foreach ($file in $pulseFiles) {
     $relative = $file.FullName.Substring($stdlibRoot.Length).TrimStart('\')
     $relativeDoc = [System.IO.Path]::ChangeExtension($relative, ".md")
     $outPath = Join-Path $docsRoot $relativeDoc
@@ -187,7 +187,7 @@ foreach ($file in $adenFiles) {
     $content.Add("") | Out-Null
     $content.Add("## Declaration") | Out-Null
     $content.Add("") | Out-Null
-    $content.Add('```aden') | Out-Null
+    $content.Add('```pulse') | Out-Null
     $content.Add($typeDecl) | Out-Null
     $content.Add('```') | Out-Null
 

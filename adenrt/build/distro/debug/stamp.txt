@@ -1,5 +1,0 @@
-schema=pulsec.artifact.stamp.v1
-name=adenrt
-version=0.1.0
-profile=debug
-stamp=adenrt-0.1.0-debug

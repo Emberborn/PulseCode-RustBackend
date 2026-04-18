@@ -1,0 +1,87 @@
+package pulse.process;
+
+import pulse.collections.ArrayList;
+import pulse.collections.List;
+import pulse.lang.Object;
+import pulse.lang.String;
+import pulse.util.Objects;
+
+/**
+ * Explicit inherited-environment plus ordered override entries for host process execution.
+ */
+public final class ProcessEnvironment {
+    private final boolean inheritParentEnvironment;
+    private final List<ProcessEnvironmentVariable> overrides;
+
+    /**
+     * Captures one inherited-environment policy plus ordered override entries.
+     * Use this when a host process plan needs explicit environment execution rules.
+     */
+    public ProcessEnvironment(
+        boolean inheritParentEnvironment,
+        List<ProcessEnvironmentVariable> overrides
+    ) {
+        this.inheritParentEnvironment = inheritParentEnvironment;
+        Objects.requireNonNull(overrides, "overrides must not be null");
+        this.overrides = overrides;
+    }
+
+    /**
+     * Returns the default environment policy for host process execution.
+     * Use this when a process should inherit the parent environment with no explicit overrides.
+     */
+    public static ProcessEnvironment defaults() {
+        return new ProcessEnvironment(true, new ArrayList<ProcessEnvironmentVariable>());
+    }
+
+    /**
+     * Reports whether the parent process environment should be inherited.
+     * Use this when deciding how host process execution should begin before overrides are applied.
+     */
+    public boolean inheritParentEnvironment() { return this.inheritParentEnvironment; }
+
+    /**
+     * Returns the ordered environment override entries.
+     * Use this when rendering or inspecting the explicit override set for one process plan.
+     */
+    public List<ProcessEnvironmentVariable> overrides() { return this.overrides; }
+
+    /**
+     * Reports whether two process environment plans carry the same inherit/override policy.
+     * Use this for deterministic comparison of process execution plans.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof ProcessEnvironment)) {
+            return false;
+        }
+        ProcessEnvironment value = (ProcessEnvironment) other;
+        return this.inheritParentEnvironment == value.inheritParentEnvironment
+            && Objects.equals(this.overrides, value.overrides);
+    }
+
+    /**
+     * Returns the stable value hash for this process environment plan.
+     * Use this when process plans participate in hash-based collections.
+     */
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + (this.inheritParentEnvironment ? 1 : 0);
+        hash = (31 * hash) + Objects.hashCode(this.overrides);
+        return hash;
+    }
+
+    /**
+     * Returns a readable debug representation of this process environment plan.
+     * Use this for diagnostics and contract locks around host process execution.
+     */
+    public String toString() {
+        return "ProcessEnvironment[inheritParentEnvironment="
+            .concat(String.valueOf(this.inheritParentEnvironment))
+            .concat(", overrides=")
+            .concat(String.valueOf((Object) this.overrides))
+            .concat("]");
+    }
+}

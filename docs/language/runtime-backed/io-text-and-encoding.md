@@ -4,11 +4,11 @@ This page documents the current runtime-backed IO payload model.
 
 ## Current `F1-58` Shipped Baseline
 
-Aden Lang currently ships a text-first IO model.
+PulseCode currently ships a text-first IO model.
 
 That means:
 
-- `com.aden.io.Files`, `File`, `InputStream`, and `OutputStream` operate on `String` payloads, not byte buffers
+- `com.pulse.io.Files`, `File`, `InputStream`, and `OutputStream` operate on `String` payloads, not byte buffers
 - the current runtime-backed file store is text-backed and keeps file contents in one string payload per path
 - stream cursor operations such as `position()`, `seek(...)`, `rewind(...)`, `skip(...)`, `length()`, `truncate()`, and `size(...)` are defined in terms of the current text payload length, not a byte count
 - line-oriented helpers such as `readLines()`, `writeLines(...)`, `appendLines(...)`, and `readLine()` are part of the shipped baseline
@@ -17,7 +17,7 @@ That means:
 
 The current shipped F1 encoding contract is intentionally narrow:
 
-- Aden IO consumes and produces already-formed Aden `String` values
+- Pulse IO consumes and produces already-formed Pulse `String` values
 - there is no user-selectable charset API in the current baseline
 - there is no explicit UTF-8 / UTF-16 / ASCII encode-decode surface yet
 - the current runtime/file model therefore behaves as text storage and text cursor movement, not as a byte-oriented transcoding API
@@ -52,7 +52,7 @@ Those remain later work. The current F1 IO contract should be read as text-first
 
 - [Program Entry And Execution](./program-entry-and-execution.md)
 - [Exceptions And Failure](./exceptions-and-failure.md)
-- [com.aden.io.File](../stdlib/com/aden/io/File.md)
-- [com.aden.io.Files](../stdlib/com/aden/io/Files.md)
-- [com.aden.io.InputStream](../stdlib/com/aden/io/InputStream.md)
-- [com.aden.io.OutputStream](../stdlib/com/aden/io/OutputStream.md)
+- [com.pulse.io.File](../stdlib/com/pulse/io/File.md)
+- [com.pulse.io.Files](../stdlib/com/pulse/io/Files.md)
+- [com.pulse.io.InputStream](../stdlib/com/pulse/io/InputStream.md)
+- [com.pulse.io.OutputStream](../stdlib/com/pulse/io/OutputStream.md)

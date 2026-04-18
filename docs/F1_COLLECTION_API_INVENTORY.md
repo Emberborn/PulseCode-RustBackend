@@ -1,6 +1,6 @@
 # F1 Collection API Inventory
 
-This document is the `F1-48` inventory pass for the current `com.aden.collections` surface.
+This document is the `F1-48` inventory pass for the current `com.pulse.collections` surface.
 
 It does not define the final collection API. It records what is actually shipped now, what that means relative to Java-close expectations, and which later F1 tasks must close the remaining gaps.
 
@@ -8,19 +8,19 @@ It does not define the final collection API. It records what is actually shipped
 
 Current collection/stdlike types in F1:
 
-- `com.aden.collections.Array`
-- `com.aden.collections.Collection`
-- `com.aden.collections.List`
-- `com.aden.collections.ArrayList`
-- `com.aden.collections.LinkedList`
-- `com.aden.collections.Set`
-- `com.aden.collections.HashSet`
-- `com.aden.collections.Map`
-- `com.aden.collections.HashMap`
-- `com.aden.collections.Queue`
-- `com.aden.collections.Deque`
-- `com.aden.collections.Arrays`
-- `com.aden.collections.Collections`
+- `com.pulse.collections.Array`
+- `com.pulse.collections.Collection`
+- `com.pulse.collections.List`
+- `com.pulse.collections.ArrayList`
+- `com.pulse.collections.LinkedList`
+- `com.pulse.collections.Set`
+- `com.pulse.collections.HashSet`
+- `com.pulse.collections.Map`
+- `com.pulse.collections.HashMap`
+- `com.pulse.collections.Queue`
+- `com.pulse.collections.Deque`
+- `com.pulse.collections.Arrays`
+- `com.pulse.collections.Collections`
 
 ## Self-Host Readiness Snapshot
 
@@ -46,7 +46,7 @@ What is not yet a locked "fully complete" story:
 
 - no uniform primitive support across all collection families
 - no locked raw-object contract for boxed primitives beyond the currently shipped `Integer`-based compatibility slices
-- no broad helper surface for `long`, `boolean`, `char`, `float`, `double`, unsigned Aden primitives, or arbitrary boxed wrapper families
+- no broad helper surface for `long`, `boolean`, `char`, `float`, `double`, unsigned Pulse primitives, or arbitrary boxed wrapper families
 - no final typed iterator/view model
 - no full Java-style live map-view family; `keySet()` / `values()` are now live non-fail-fast views, while `entrySet()` remains copy-style rather than a live nested `Map.Entry` contract
 - direct `null` calls at overlapping `Object` / `String` overload sites remain compile-time ambiguous
@@ -63,7 +63,7 @@ This matrix is the truthful support summary for the current shipped collection f
 | boxed `Integer` via generic/reference path | Supported | `List<Integer>`, `Map<String, Integer>`, and `Queue<Integer>` are now executable without primitive-specific helper calls |
 | other boxed wrappers (`Long`, `Boolean`, `Character`, `Float`, `Double`, unsigned wrappers) | Not locked as collection-wide support | do not treat as complete collection support yet |
 | primitive `long` / `boolean` / `char` / `float` / `double` | Not collection-wide | no broad helper families or hardened raw-object behavior |
-| Aden unsigned primitives/wrappers | Not collection-wide | outside the current locked collection bridge |
+| Pulse unsigned primitives/wrappers | Not collection-wide | outside the current locked collection bridge |
 | `null` values / keys | Partially supported | raw-object presence flows are covered, but overlapping `Object` / `String` overload sites are still ambiguous for direct `null` calls |
 
 ## Shipped Contracts
@@ -95,7 +95,7 @@ Return point:
 
 Current shipped shape:
 
-- `Collection` now extends `com.aden.lang.Iterable`
+- `Collection` now extends `com.pulse.lang.Iterable`
 - `size()`
 - `isEmpty()`
 - `clear()`
@@ -159,7 +159,7 @@ Return point:
 
 Current shipped shape:
 
-- Aden-owned mutable list
+- Pulse-owned mutable list
 - implements `List`
 - inherits the shared `size()` / `isEmpty()` / `clear()` baseline through `Collection`
 - exposes the raw-object `List` bridge plus int/string compatibility overloads
@@ -254,7 +254,7 @@ Return point:
 Current shipped shape:
 
 - `Map` is the shared raw-object key/value interface
-- `HashMap` is the current Aden-owned raw-object concrete implementation
+- `HashMap` is the current Pulse-owned raw-object concrete implementation
 - `size()`
 - `isEmpty()`
 - `clear()`
@@ -295,7 +295,7 @@ Current limitation:
 - `F1-55` now locks self-bulk mutation determinism (`addAll(this)` / `putAll(this)` / `removeAll(this)` / `retainAll(this)`) instead of leaving those runtime paths implied
 - direct `null` calls against overlapping `Object` / `String` overload pairs remain compile-time ambiguous in the current baseline; use an explicit `Object`-typed local/reference when the raw-object path is intended
 - `keySet()` / `values()` now exist as live non-fail-fast map-backed views that reflect map mutation through the selected F1 baseline
-- `entrySet()` now exists as a copy-style `Set<MapEntry>` baseline through the top-level `com.aden.collections.MapEntry` value type rather than a live nested `Map.Entry` contract
+- `entrySet()` now exists as a copy-style `Set<MapEntry>` baseline through the top-level `com.pulse.collections.MapEntry` value type rather than a live nested `Map.Entry` contract
 - no broader live Java-close map semantics yet
 
 Return point:
@@ -393,7 +393,7 @@ Main gaps:
 
 - the generic collection story is now real and the value-kind closure is locked for self-host, but the final Java-shape closure is still incomplete
 - legacy lane-specific helpers still remain as compatibility seams and should not be treated as the preferred Java-like public model
-- the executable value-kind matrix is now much broader than the original `Integer` proof: object references, user classes, `String`, `null`, Java-style wrappers, and Aden unsigned wrappers all work through generic `List<T>` / `Map<K,V>` / `Queue<T>` flows on the real backend lane
+- the executable value-kind matrix is now much broader than the original `Integer` proof: object references, user classes, `String`, `null`, Java-style wrappers, and Pulse unsigned wrappers all work through generic `List<T>` / `Map<K,V>` / `Queue<T>` flows on the real backend lane
 - direct primitive insertion for int-widening lanes now resolves to the exact wrapper/generic path instead of being hijacked by the legacy `add(int)` / `offer(int)` compatibility seam
 - boxed-primitive use through raw-object storage still needs more runtime hardening
 - collection completeness today should be read as "generic self-host public surface plus explicit compatibility seams plus a broad executable wrapper/reference matrix", not "all primitives and wrappers are uniformly first-class across the family"
@@ -401,13 +401,13 @@ Main gaps:
 - current collection iteration is a non-fail-fast object-stream baseline, not the final typed/generic iterator model
 - list/set/map now have a raw-object membership/query baseline, but broader CRUD/query families are still incomplete
 - concrete classes now have a usable object-capable bridge, but that closure is not complete yet across the family
-- the current object-stream/key-iteration baseline now covers `Collection` / `List` / `Set`, `com.aden.collections.Array`, and map key traversal, but not yet a fuller map/view family
+- the current object-stream/key-iteration baseline now covers `Collection` / `List` / `Set`, `com.pulse.collections.Array`, and map key traversal, but not yet a fuller map/view family
 - current contracts do not yet expose the familiar Java utility and view families
 - `Arrays` / `Collections` now exist, but only as a deliberately small utility baseline rather than a broad Java-final utility surface
 - nullability/ownership/runtime behavior is now explicitly locked for the current pre-generic collection baseline, including deterministic self-bulk mutation behavior and the current live/copy split for map views
 - direct `null` at overlapping `Object` / `String` overload sites remains an explicit compile-time ambiguity rather than a hidden runtime rule
 - legacy `getInt` / `getString` / `putInt` style helpers should not be mistaken for the end-state public model
-- `com.aden.collections.Array` is now an explicitly limited fixed-length helper with `int` / `String` lanes plus object-stream iteration once a lane is established; it should not be read as the final generic Java-array replacement for self-host code
+- `com.pulse.collections.Array` is now an explicitly limited fixed-length helper with `int` / `String` lanes plus object-stream iteration once a lane is established; it should not be read as the final generic Java-array replacement for self-host code
 
 ## Required Return Tasks
 
@@ -435,6 +435,6 @@ Preferred Java-like direction:
 - treat primitive-specific helpers as compatibility seams until `F1-109` decides what survives into the final F1 surface
 - broad wrapper/reference traffic is now already validated end to end for `Byte`, `Short`, `Integer`, `Long`, `Boolean`, `Char`, `Float`, `Double`, `UByte`, `UShort`, `UInteger`, `ULong`, user classes, `String`, and `null`
 - direct primitive insertion for int-widening lanes is now validated through the generic wrapper path instead of widening into the legacy helper seam
-- `com.aden.collections.Array` remains intentionally narrower than generic collections: use it as the current runtime-backed fixed-length `int` / `String` helper, and prefer generic collections or native arrays when self-host code needs broader reference/value traffic
+- `com.pulse.collections.Array` remains intentionally narrower than generic collections: use it as the current runtime-backed fixed-length `int` / `String` helper, and prefer generic collections or native arrays when self-host code needs broader reference/value traffic
 
 That is intentional for the current phase, and this inventory is the reference point for the next collection workstream slices.

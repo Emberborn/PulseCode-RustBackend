@@ -2,20 +2,20 @@
 
 ## Purpose
 Define a stable boundary between:
-- Aden Lang stdlib surface APIs (implemented in `.aden` over time), and
+- PulseCode stdlib surface APIs (implemented in `.pulse` over time), and
 - thin native runtime shims needed for platform primitives.
 
-This keeps backend/platform details behind a narrow ABI while letting most runtime logic move into Aden Lang source.
+This keeps backend/platform details behind a narrow ABI while letting most runtime logic move into PulseCode source.
 
 ## RB-11 Runtime Partition Note
 
-This document now freezes the portable Aden/runtime bridge surface first.
+This document now freezes the portable Pulse/runtime bridge surface first.
 
 It does not treat raw OS imports, startup entry names, or one adapter's allocator/process/time hooks as portable runtime truth.
 
 Current partition source of truth:
 
-- [RUNTIME_INTRINSICS_PARTITION.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_INTRINSICS_PARTITION.md)
+- [RUNTIME_INTRINSICS_PARTITION.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_PARTITION.md)
 
 ## Portable Contract vs Adapter-Specific Service Glue
 
@@ -27,10 +27,10 @@ Portable contract in this document means:
 
 That portable contract currently includes:
 
-- `com.aden.rt.Intrinsics.*`
-- `com.aden.memory.Memory.*`
+- `com.pulse.rt.Intrinsics.*`
+- `com.pulse.memory.Memory.*`
 - stdlib-owned runtime-backed `System.currentTimeMillis()`, `System.nanoTime()`, and `System.exit(int)`
-- backend-private runtime procedures such as `adenc_rt_throw` and `adenc_rt_traceUpdateTop`
+- backend-private runtime procedures such as `pulsec_rt_throw` and `pulsec_rt_traceUpdateTop`
 
 Adapter-specific service glue means:
 
@@ -50,21 +50,21 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
 
 ## Current Status
 - Baseline intrinsic owner class is available in semantics/import system:
-  - `com.aden.rt.Intrinsics`
+  - `com.pulse.rt.Intrinsics`
 - Native backend maps intrinsic calls to runtime symbols.
 - Public console API surface now includes:
-  - `com.aden.lang.System.out.println(...)` / `print(...)`
-  - `com.aden.lang.IO.println(...)` / `print(...)` (alias convenience)
+  - `com.pulse.lang.System.out.println(...)` / `print(...)`
+  - `com.pulse.lang.IO.println(...)` / `print(...)` (alias convenience)
 - `System.out` is currently treated as a runtime-managed singleton handle in backend lowering.
-  - It is intentionally not initialized via Aden Lang source.
+  - It is intentionally not initialized via PulseCode source.
   - The language surface is locked as immutable (`public static final`) and semantic assignment to `System.out` is rejected.
-- `stdlib/src/com/aden/lang/IO.aden` and `PrintStream.aden` now delegate to `Intrinsics.consoleWrite*`.
-- `stdlib/src/com/aden/lang/System.aden` now exposes `System.in`, which delegates through `ConsoleReader` to `Intrinsics.consoleReadLine()`.
+- `stdlib/src/com/pulse/lang/IO.pulse` and `PrintStream.pulse` now delegate to `Intrinsics.consoleWrite*`.
+- `stdlib/src/com/pulse/lang/System.pulse` now exposes `System.in`, which delegates through `ConsoleReader` to `Intrinsics.consoleReadLine()`.
 - The shipped stdin policy is intentionally minimal and line-oriented:
   - blank lines return `""`
   - end-of-input before any bytes returns `null`
   - prompt behavior is stdlib-owned through `ConsoleReader.readLine(String prompt)` rather than a second runtime ABI symbol
- - `com.aden.lang.String` class surface exists and delegates to String intrinsics:
+ - `com.pulse.lang.String` class surface exists and delegates to String intrinsics:
    - `length()`
    - `concat(String)`
    - backend-private stdlib bridge methods:
@@ -72,9 +72,9 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
      - `runtimeConcat(String, String)`
    - `valueOf(int|boolean)` (static)
 - M3 coverage lock:
-  - `com.aden.collections` (`Array`, `ArrayList`, `LinkedList`, `HashSet`, `HashMap`, queue/deque adapters)
-  - `com.aden.io` (`File`, `Files`, `Path`, `InputStream`, `OutputStream`)
-  - `com.aden.math.Random`
+  - `com.pulse.collections` (`Array`, `ArrayList`, `LinkedList`, `HashSet`, `HashMap`, queue/deque adapters)
+  - `com.pulse.io` (`File`, `Files`, `Path`, `InputStream`, `OutputStream`)
+  - `com.pulse.math.Random`
   use the intrinsic set below (primarily `array*`, `list*`, `map*`, and String conversion/concat intrinsics).
   No additional native ABI symbols were introduced for these surfaces in C1.5.
 
@@ -120,19 +120,19 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
 - `Intrinsics.hostCallNative2(long, long, long) -> long`
 - `Intrinsics.hostCallNative3(long, long, long, long) -> long`
 - `Intrinsics.hostCallNative4(long, long, long, long, long) -> long`
-- `Intrinsics.hostRegisterNativeCallback0(aden.interop.NativeCallback0) -> int`
+- `Intrinsics.hostRegisterNativeCallback0(pulse.interop.NativeCallback0) -> int`
 - `Intrinsics.hostGetNativeCallbackAddress0(int) -> long`
 - `Intrinsics.hostUnregisterNativeCallback0(int) -> boolean`
-- `Intrinsics.hostRegisterNativeCallback1(aden.interop.NativeCallback1) -> int`
+- `Intrinsics.hostRegisterNativeCallback1(pulse.interop.NativeCallback1) -> int`
 - `Intrinsics.hostGetNativeCallbackAddress1(int) -> long`
 - `Intrinsics.hostUnregisterNativeCallback1(int) -> boolean`
-- `Intrinsics.hostRegisterNativeCallback2(aden.interop.NativeCallback2) -> int`
+- `Intrinsics.hostRegisterNativeCallback2(pulse.interop.NativeCallback2) -> int`
 - `Intrinsics.hostGetNativeCallbackAddress2(int) -> long`
 - `Intrinsics.hostUnregisterNativeCallback2(int) -> boolean`
-- `Intrinsics.hostRegisterNativeCallback3(aden.interop.NativeCallback3) -> int`
+- `Intrinsics.hostRegisterNativeCallback3(pulse.interop.NativeCallback3) -> int`
 - `Intrinsics.hostGetNativeCallbackAddress3(int) -> long`
 - `Intrinsics.hostUnregisterNativeCallback3(int) -> boolean`
-- `Intrinsics.hostRegisterNativeCallback4(aden.interop.NativeCallback4) -> int`
+- `Intrinsics.hostRegisterNativeCallback4(pulse.interop.NativeCallback4) -> int`
 - `Intrinsics.hostGetNativeCallbackAddress4(int) -> long`
 - `Intrinsics.hostUnregisterNativeCallback4(int) -> boolean`
 - `String.runtimeConcat(String, String) -> String`
@@ -183,81 +183,81 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
   - `Memory.weakClear(long) -> void`
 
 ## Native Symbols (Current)
-- `adenc_rt_consoleWrite`
-- `adenc_rt_consoleWriteLine`
-- `adenc_rt_consoleReadLine`
-- `adenc_rt_consoleErrorWrite`
-- `adenc_rt_consoleErrorWriteLine`
-- `adenc_rt_panic`
+- `pulsec_rt_consoleWrite`
+- `pulsec_rt_consoleWriteLine`
+- `pulsec_rt_consoleReadLine`
+- `pulsec_rt_consoleErrorWrite`
+- `pulsec_rt_consoleErrorWriteLine`
+- `pulsec_rt_panic`
 - Planned/locked naming for String bridge:
-  - `adenc_rt_stringConcat`
-  - `adenc_rt_stringLength`
-  - `adenc_rt_intToString`
-  - `adenc_rt_booleanToString`
-  - `adenc_rt_parseInt`
-  - `adenc_rt_parseBoolean`
-  - `adenc_rt_longToString`
-  - `adenc_rt_parseLong`
-  - `adenc_rt_uintToString`
-  - `adenc_rt_parseUInt`
-  - `adenc_rt_ulongToString`
-  - `adenc_rt_parseULong`
-  - `adenc_rt_objectClassName`
-  - `adenc_rt_objectHashCode`
-  - `adenc_rt_hostExists`
-  - `adenc_rt_hostIsFile`
-  - `adenc_rt_hostIsDirectory`
-  - `adenc_rt_hostReadAllText`
-  - `adenc_rt_hostListChildren`
-  - `adenc_rt_hostCreateDirectory`
-  - `adenc_rt_hostWriteAllText`
-  - `adenc_rt_hostCopyFile`
-  - `adenc_rt_hostAllocBytes`
-  - `adenc_rt_hostFreeBytes`
-  - `adenc_rt_hostReadByte`
-  - `adenc_rt_hostWriteByte`
-  - `adenc_rt_hostCopyBytes`
-  - `adenc_rt_hostReadLong`
-  - `adenc_rt_hostWriteLong`
-  - `adenc_rt_hostStringUtf8Length`
-  - `adenc_rt_hostAllocUtf8Z`
-  - `adenc_rt_hostStringFromUtf8`
-  - `adenc_rt_hostStringFromUtf8Z`
-  - `adenc_rt_hostLoadDynamicLibrary`
-  - `adenc_rt_hostLookupLoadedDynamicLibrary`
-  - `adenc_rt_hostLookupSelfDynamicLibrary`
-  - `adenc_rt_hostFreeDynamicLibrary`
-  - `adenc_rt_hostResolveDynamicSymbol`
-  - `adenc_rt_hostCallNative0`
-  - `adenc_rt_hostCallNative1`
-  - `adenc_rt_hostCallNative2`
-  - `adenc_rt_hostCallNative3`
-  - `adenc_rt_hostCallNative4`
-  - `adenc_rt_hostRegisterNativeCallback0`
-  - `adenc_rt_hostGetNativeCallbackAddress0`
-  - `adenc_rt_hostUnregisterNativeCallback0`
-  - `adenc_rt_hostRegisterNativeCallback1`
-  - `adenc_rt_hostGetNativeCallbackAddress1`
-  - `adenc_rt_hostUnregisterNativeCallback1`
-  - `adenc_rt_hostRegisterNativeCallback2`
-  - `adenc_rt_hostGetNativeCallbackAddress2`
-  - `adenc_rt_hostUnregisterNativeCallback2`
-  - `adenc_rt_hostRegisterNativeCallback3`
-  - `adenc_rt_hostGetNativeCallbackAddress3`
-  - `adenc_rt_hostUnregisterNativeCallback3`
-  - `adenc_rt_hostRegisterNativeCallback4`
-  - `adenc_rt_hostGetNativeCallbackAddress4`
-  - `adenc_rt_hostUnregisterNativeCallback4`
-  - `adenc_rt_hostPathAlloc`
-  - `adenc_rt_classSimpleName`
-  - `adenc_rt_classPackageName`
-  - `adenc_rt_stringCharAt`
-  - `adenc_rt_charToString`
-  - `adenc_rt_currentTimeMillis`
-  - `adenc_rt_nanoTime`
-  - `adenc_rt_systemExit`
+  - `pulsec_rt_stringConcat`
+  - `pulsec_rt_stringLength`
+  - `pulsec_rt_intToString`
+  - `pulsec_rt_booleanToString`
+  - `pulsec_rt_parseInt`
+  - `pulsec_rt_parseBoolean`
+  - `pulsec_rt_longToString`
+  - `pulsec_rt_parseLong`
+  - `pulsec_rt_uintToString`
+  - `pulsec_rt_parseUInt`
+  - `pulsec_rt_ulongToString`
+  - `pulsec_rt_parseULong`
+  - `pulsec_rt_objectClassName`
+  - `pulsec_rt_objectHashCode`
+  - `pulsec_rt_hostExists`
+  - `pulsec_rt_hostIsFile`
+  - `pulsec_rt_hostIsDirectory`
+  - `pulsec_rt_hostReadAllText`
+  - `pulsec_rt_hostListChildren`
+  - `pulsec_rt_hostCreateDirectory`
+  - `pulsec_rt_hostWriteAllText`
+  - `pulsec_rt_hostCopyFile`
+  - `pulsec_rt_hostAllocBytes`
+  - `pulsec_rt_hostFreeBytes`
+  - `pulsec_rt_hostReadByte`
+  - `pulsec_rt_hostWriteByte`
+  - `pulsec_rt_hostCopyBytes`
+  - `pulsec_rt_hostReadLong`
+  - `pulsec_rt_hostWriteLong`
+  - `pulsec_rt_hostStringUtf8Length`
+  - `pulsec_rt_hostAllocUtf8Z`
+  - `pulsec_rt_hostStringFromUtf8`
+  - `pulsec_rt_hostStringFromUtf8Z`
+  - `pulsec_rt_hostLoadDynamicLibrary`
+  - `pulsec_rt_hostLookupLoadedDynamicLibrary`
+  - `pulsec_rt_hostLookupSelfDynamicLibrary`
+  - `pulsec_rt_hostFreeDynamicLibrary`
+  - `pulsec_rt_hostResolveDynamicSymbol`
+  - `pulsec_rt_hostCallNative0`
+  - `pulsec_rt_hostCallNative1`
+  - `pulsec_rt_hostCallNative2`
+  - `pulsec_rt_hostCallNative3`
+  - `pulsec_rt_hostCallNative4`
+  - `pulsec_rt_hostRegisterNativeCallback0`
+  - `pulsec_rt_hostGetNativeCallbackAddress0`
+  - `pulsec_rt_hostUnregisterNativeCallback0`
+  - `pulsec_rt_hostRegisterNativeCallback1`
+  - `pulsec_rt_hostGetNativeCallbackAddress1`
+  - `pulsec_rt_hostUnregisterNativeCallback1`
+  - `pulsec_rt_hostRegisterNativeCallback2`
+  - `pulsec_rt_hostGetNativeCallbackAddress2`
+  - `pulsec_rt_hostUnregisterNativeCallback2`
+  - `pulsec_rt_hostRegisterNativeCallback3`
+  - `pulsec_rt_hostGetNativeCallbackAddress3`
+  - `pulsec_rt_hostUnregisterNativeCallback3`
+  - `pulsec_rt_hostRegisterNativeCallback4`
+  - `pulsec_rt_hostGetNativeCallbackAddress4`
+  - `pulsec_rt_hostUnregisterNativeCallback4`
+  - `pulsec_rt_hostPathAlloc`
+  - `pulsec_rt_classSimpleName`
+  - `pulsec_rt_classPackageName`
+  - `pulsec_rt_stringCharAt`
+  - `pulsec_rt_charToString`
+  - `pulsec_rt_currentTimeMillis`
+  - `pulsec_rt_nanoTime`
+  - `pulsec_rt_systemExit`
   - internal helper used by backend/runtime bridge:
-    - `adenc_rt_stringFromBytes`
+    - `pulsec_rt_stringFromBytes`
 
 System/process bridge:
 - `System.currentTimeMillis() -> long`
@@ -267,59 +267,59 @@ System/process bridge:
 These are shipped as stdlib-owned runtime-backed `System` methods, not as public fake helper APIs.
 
 Collections/array bridge:
-- `adenc_rt_arrayNew`
-- `adenc_rt_arrayNewMulti`
-- `adenc_rt_arrayLength`
-- `adenc_rt_arrayGetInt`
-- `adenc_rt_arraySetInt`
-- `adenc_rt_arrayGetLong`
-- `adenc_rt_arraySetLong`
-- `adenc_rt_arrayGetString`
-- `adenc_rt_arraySetString`
-- `adenc_rt_listNew`
-- `adenc_rt_listSize`
-- `adenc_rt_listKind`
-- `adenc_rt_listClear`
-- `adenc_rt_listAddInt`
-- `adenc_rt_listAddString`
-- `adenc_rt_listGetInt`
-- `adenc_rt_listGetString`
-- `adenc_rt_mapNew`
-- `adenc_rt_mapSize`
-- `adenc_rt_mapClear`
-- `adenc_rt_mapContainsKey`
-- `adenc_rt_mapPut`
-- `adenc_rt_mapPutInt`
-- `adenc_rt_mapGet`
-- `adenc_rt_mapGetInt`
-- `adenc_rt_arcRetain`
-- `adenc_rt_arcRelease`
-- `adenc_rt_arcCycleYoungPass`
-- `adenc_rt_arcCycleFullPass`
-- `adenc_rt_arcCycleTick`
-- `adenc_rt_weakNew`
-- `adenc_rt_weakGet`
-- `adenc_rt_weakClear`
+- `pulsec_rt_arrayNew`
+- `pulsec_rt_arrayNewMulti`
+- `pulsec_rt_arrayLength`
+- `pulsec_rt_arrayGetInt`
+- `pulsec_rt_arraySetInt`
+- `pulsec_rt_arrayGetLong`
+- `pulsec_rt_arraySetLong`
+- `pulsec_rt_arrayGetString`
+- `pulsec_rt_arraySetString`
+- `pulsec_rt_listNew`
+- `pulsec_rt_listSize`
+- `pulsec_rt_listKind`
+- `pulsec_rt_listClear`
+- `pulsec_rt_listAddInt`
+- `pulsec_rt_listAddString`
+- `pulsec_rt_listGetInt`
+- `pulsec_rt_listGetString`
+- `pulsec_rt_mapNew`
+- `pulsec_rt_mapSize`
+- `pulsec_rt_mapClear`
+- `pulsec_rt_mapContainsKey`
+- `pulsec_rt_mapPut`
+- `pulsec_rt_mapPutInt`
+- `pulsec_rt_mapGet`
+- `pulsec_rt_mapGetInt`
+- `pulsec_rt_arcRetain`
+- `pulsec_rt_arcRelease`
+- `pulsec_rt_arcCycleYoungPass`
+- `pulsec_rt_arcCycleFullPass`
+- `pulsec_rt_arcCycleTick`
+- `pulsec_rt_weakNew`
+- `pulsec_rt_weakGet`
+- `pulsec_rt_weakClear`
 
 F1 exception/runtime support surface:
-- `adenc_rt_throw`
-- `adenc_rt_traceUpdateTop`
+- `pulsec_rt_throw`
+- `pulsec_rt_traceUpdateTop`
 
 These two symbols are runtime-private backend targets, not stdlib-facing `Intrinsics` methods:
-- `adenc_rt_throw`
+- `pulsec_rt_throw`
   - consumes the current pending throwable handle and transfers control through the runtime exception-handler stack
   - if no handler is active, uncaught output falls back through the stdlib-owned `Throwable.panic()` path
-- `adenc_rt_traceUpdateTop`
+- `pulsec_rt_traceUpdateTop`
   - updates the top runtime trace frame before executable statement regions
   - powers source-aware uncaught stack traces in the shipped F1 model
 
 ## String Interop Lock (C1.2)
 Locked for current Phase C baseline:
-- Aden Lang `String` values are represented as opaque runtime handles in backend codegen.
+- PulseCode `String` values are represented as opaque runtime handles in backend codegen.
 - Current backend bridge passes/returns String handles through scalar integer register slots (Win64 ABI baseline).
-- String literals are materialized through runtime helper `adenc_rt_stringFromBytes(ptr, len) -> handle`.
+- String literals are materialized through runtime helper `pulsec_rt_stringFromBytes(ptr, len) -> handle`.
 - `null` lowers to zero handle.
-- All String high-level operations must route through the intrinsic ABI boundary (directly or through stdlib `com.aden.lang.String` methods):
+- All String high-level operations must route through the intrinsic ABI boundary (directly or through stdlib `com.pulse.lang.String` methods):
   - `Intrinsics.stringConcat`
   - `Intrinsics.stringLength`
   - `Intrinsics.intToString`
@@ -337,7 +337,7 @@ Contract stability notes:
 ## ARC Header Contract (C2-01)
 Locked ARC/header contract for runtime handles used by object/array/string/collection runtime paths:
 
-- Header schema id: `adenc.arc.header.v1`
+- Header schema id: `pulsec.arc.header.v1`
 - Handle representation:
   - kind: `u64-handle (slot32 + generation32)`
   - `null` handle: `0`
@@ -374,8 +374,8 @@ Locked ARC/header contract for runtime handles used by object/array/string/colle
 Build artifact lock:
 - `build/native.plan.json` must include `runtime.memory_model` with:
   - `strategy: "arc"`
-  - `header_schema: "adenc.arc.header.v1"`
-  - `allocator.schema: "adenc.alloc.policy.v1"`
+  - `header_schema: "pulsec.arc.header.v1"`
+  - `allocator.schema: "pulsec.alloc.policy.v1"`
   - current active Windows x64 host/bootstrap adapter metadata:
   - `allocator.backend: "win64-process-heap"`
   - full `arc_header` layout fields above
@@ -409,7 +409,7 @@ C2-08 heap/allocation hardening (completed and locked):
 - current Windows x64 host/bootstrap adapter implementation uses `GetProcessHeap` + `HeapAlloc`/`HeapFree` in native runtime shims.
 - alignment contract for array lanes: allocator-provided Win64 heap alignment (satisfies 4-byte element alignment for primitive int lanes and 8-byte alignment for handle lanes).
 - allocator policy lock (`runtime.memory_model.allocator`):
-  - `schema: "adenc.alloc.policy.v1"`
+  - `schema: "pulsec.alloc.policy.v1"`
   - current active Windows x64 host/bootstrap adapter metadata:
   - `backend: "win64-process-heap"`
   - `slot_capacity: 4294967295`
@@ -444,7 +444,7 @@ C2-23 threading model lock:
   - `runtime_thread_safety: "not-thread-safe"`
   - `container_thread_safety: "not-thread-safe"`
 - `native.plan.json` lock surface (`runtime.memory_model.threading`):
-  - `schema: "adenc.runtime.threading.v1"`
+  - `schema: "pulsec.runtime.threading.v1"`
   - fields above are required and must remain stable for C2.
 - boundary policy at current C2 scope:
   - no thread-safe/atomic ARC guarantees are provided.
@@ -454,7 +454,7 @@ C2-23 threading model lock:
 C2-24 runtime ABI compatibility lock:
 - runtime init now enforces ABI compatibility before allocator/runtime table initialization.
 - locked compatibility metadata is emitted under `native.plan.json`:
-  - `runtime.abi_compatibility.schema = "adenc.runtime.abi.v1"`
+  - `runtime.abi_compatibility.schema = "pulsec.runtime.abi.v1"`
   - `runtime.abi_compatibility.compiler_abi_version = 2`
   - `runtime.abi_compatibility.runtime_abi_version = <emitted runtime abi>`
   - `runtime.abi_compatibility.mismatch_policy = "deterministic-fail-fast"`
@@ -465,7 +465,7 @@ C2-24 runtime ABI compatibility lock:
 
 C3-01 object layout contract:
 - instance object layout schema id is locked:
-  - `runtime.object_model.schema: "adenc.object.layout.v1"`
+  - `runtime.object_model.schema: "pulsec.object.layout.v1"`
   - `runtime.object_model.layout_version: 1`
 - current deterministic instance layout lock (`runtime.object_model.instance_layout`):
   - `header_bytes: 16`
@@ -476,11 +476,11 @@ C3-01 object layout contract:
 - inherited placement policy meaning:
   - base-class instance fields occupy the leading field slots.
   - derived-class instance fields are appended after inherited slots in declaration order.
-  - future C3 object-allocation/runtime work may expand metadata surface, but this ordering contract is stable under schema `adenc.object.layout.v1`.
+  - future C3 object-allocation/runtime work may expand metadata surface, but this ordering contract is stable under schema `pulsec.object.layout.v1`.
 
 C3-02 static-field storage contract:
 - static storage schema is locked in native plan metadata:
-  - `runtime.object_model.static_storage.schema: "adenc.static.storage.v1"`
+  - `runtime.object_model.static_storage.schema: "pulsec.static.storage.v1"`
 - static storage owner/symbol model:
   - `owner_model: "class-owned"`
   - `symbol_model: "per-class-field-symbol"`
@@ -497,7 +497,7 @@ C3-02 static-field storage contract:
 
 C3-03 constructor invocation contract:
 - constructor model schema is locked in native plan metadata:
-  - `runtime.object_model.constructor_model.schema: "adenc.constructor.model.v1"`
+  - `runtime.object_model.constructor_model.schema: "pulsec.constructor.model.v1"`
 - constructor receiver/chaining lock:
   - `receiver_allocation: "allocated-before-body"`
   - `chaining: "explicit-this-super-unsupported"`
@@ -510,7 +510,7 @@ C3-03 constructor invocation contract:
 
 C3-04 class allocation metadata contract:
 - class allocation schema is locked in native plan metadata:
-  - `runtime.object_model.allocation.schema: "adenc.class.alloc.v1"`
+  - `runtime.object_model.allocation.schema: "pulsec.class.alloc.v1"`
 - class-size model lock:
   - `size_formula: "header_bytes + (instance_field_count * field_slot_bytes)"`
   - `allocator_integration: "slot-allocator-with-class-size-metadata"`
@@ -533,7 +533,7 @@ C3-05 object-model plan emission lock:
 
 C3-06 dispatch schema contract:
 - dispatch schema is locked in native plan metadata:
-  - `runtime.object_model.dispatch.schema: "adenc.dispatch.schema.v1"`
+  - `runtime.object_model.dispatch.schema: "pulsec.dispatch.schema.v1"`
 - slot assignment policy lock:
   - `slot_assignment: "deterministic-lexicographic-signature"`
   - `slot_table`: deterministic class/method slot map emitted in plan metadata
@@ -542,7 +542,7 @@ C3-06 dispatch schema contract:
 
 C3-07 runtime virtual dispatch contract:
 - instance calls must resolve by receiver runtime class identity, not static-owner direct binding.
-- runtime object allocation records receiver class id in runtime class-id table (`adenc_rt_obj_class_ids`) keyed by object id.
+- runtime object allocation records receiver class id in runtime class-id table (`pulsec_rt_obj_class_ids`) keyed by object id.
 - non-static class-hierarchy callsites compare runtime class id and route to the matching override symbol deterministically.
 - if no override class-id match exists, callsites deterministically fall back to the resolved owner-chain default symbol.
 
@@ -590,14 +590,14 @@ C3-11 runtime type-check boundary:
 
 C3-12 runtime type-id/class-id contract:
 - type-id schema is locked in native plan metadata:
-  - `runtime.object_model.type_ids.schema: "adenc.typeid.schema.v1"`
+  - `runtime.object_model.type_ids.schema: "pulsec.typeid.schema.v1"`
   - `class_id_width_bits: 32`
   - `source: "deterministic-class-order"`
   - `class_table`: deterministic class-id mapping entries
 - runtime consumption lock:
-  - virtual dispatch compares runtime object class-id loaded from `adenc_rt_obj_class_ids`.
-  - `instanceof` checks compare runtime object class-id loaded from `adenc_rt_obj_class_ids`.
-  - checked reference casts compare runtime object class-id loaded from `adenc_rt_obj_class_ids`.
+  - virtual dispatch compares runtime object class-id loaded from `pulsec_rt_obj_class_ids`.
+  - `instanceof` checks compare runtime object class-id loaded from `pulsec_rt_obj_class_ids`.
+  - checked reference casts compare runtime object class-id loaded from `pulsec_rt_obj_class_ids`.
 
 C3-13 dispatch-boundary null/type safety contract:
 - runtime instance dispatch guard behavior is deterministic:
@@ -607,7 +607,7 @@ C3-13 dispatch-boundary null/type safety contract:
 
 C3-14 object-model ABI compatibility contract:
 - object-model ABI schema is locked in native plan metadata:
-  - `runtime.object_model.abi_compatibility.schema: "adenc.object_model.abi.v1"`
+  - `runtime.object_model.abi_compatibility.schema: "pulsec.object_model.abi.v1"`
   - `version: 1`
   - `compiler_object_model_abi_version: 1`
   - `runtime_object_model_abi_version: <emitted runtime object-model ABI>`
@@ -624,7 +624,7 @@ C2-04 insertion-boundary lock:
   - call-argument boundaries (`retain` before call, `release` after call)
   - return boundary (`retain` of ARC-managed return handle before method exit)
 - lock evidence:
-  - `cargo test -p adenc --test stage_locks_c2`
+  - `cargo test -p pulsec --test stage_locks_c2`
   - `lock_c2_04_arc_insertion_boundaries_emit_retain_release_sequences` validates generated asm contains ARC calls and executable behavior remains deterministic.
 
 C2-11 container ownership lock:
@@ -635,7 +635,7 @@ C2-11 container ownership lock:
   - map insertions retain key handles (and retained String values for `mapPut`).
   - `mapClear` and map ARC teardown release owned key/value handles before lane cleanup.
 - lock evidence:
-  - `cargo test -p adenc --test stage_locks_c2`
+  - `cargo test -p pulsec --test stage_locks_c2`
   - `lock_c2_11_list_string_ownership_retain_and_clear_release`
   - `lock_c2_11_map_string_ownership_replace_and_clear_release`
 
@@ -645,7 +645,7 @@ C2-05 cycle-strategy lock:
   - `arcCycleFullPass()`: full-heap pass
   - `arcCycleTick()`: cadence entrypoint (young by default, full on fixed interval)
 - native plan lock (`runtime.memory_model.cycle_detector`):
-  - `schema: "adenc.arc.cycle.v1"`
+  - `schema: "pulsec.arc.cycle.v1"`
   - `strategy: "trial-deletion"`
   - `cadence.young_window: 64`
   - `cadence.full_interval_ticks: 8`
@@ -696,16 +696,16 @@ F1 language completion added runtime-backed exception and trace support beyond t
   - handler-frame installation/removal
   - pending-exception retrieval
   - real throw terminators
-- native runtime now maintains an exception-handler stack for Aden `throw` values
-- uncaught Aden throws now print source-aware stack frames in:
-  - `Class.method(File.aden:line)`
+- native runtime now maintains an exception-handler stack for Pulse `throw` values
+- uncaught Pulse throws now print source-aware stack frames in:
+  - `Class.method(File.pulse:line)`
 
 Current F1 runtime/ABI contract:
 - public stdlib-facing intrinsic growth remains intentionally narrow
 - exception propagation is implemented through backend/runtime-private symbols rather than new user-callable `Intrinsics.*` methods
 - shared/fat builds must both provide:
-  - `adenc_rt_throw`
-  - `adenc_rt_traceUpdateTop`
+  - `pulsec_rt_throw`
+  - `pulsec_rt_traceUpdateTop`
 - internal fallback helpers like `Throwable.panic()` are not part of the user-facing stack trace surface
 
 ## Next Steps

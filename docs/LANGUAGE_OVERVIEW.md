@@ -15,10 +15,10 @@
 - Entry point style: `public static void main()` or `public static void main(String[] args)`.
 
 ## Sample
-```aden
+```pulse
 package game.core;
 
-import com.aden.lang.System;
+import com.pulse.lang.System;
 
 class Player {
     private String name;

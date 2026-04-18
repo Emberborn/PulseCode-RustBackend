@@ -1,6 +1,6 @@
 # Lexer And Literals
 
-This page documents the current compiler-backed token and literal baseline that the Aden Lang frontend recognizes before later F1 semantic/runtime slices land.
+This page documents the current compiler-backed token and literal baseline that the PulseCode frontend recognizes before later F1 semantic/runtime slices land.
 
 ## Keyword Baseline
 

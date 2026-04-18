@@ -1,0 +1,118 @@
+package author.build;
+
+import pulse.lang.Object;
+import pulse.util.Objects;
+
+/**
+ * Resolved publication/materialization layout for one build output.
+ * This owns where published diagnostics, binaries, metadata, and stamped artifacts land.
+ */
+public final class BuildPublicationPlan {
+    private final String artifactBaseName;
+    private final String artifactStamp;
+    private final boolean publishProfileLayout;
+    private final boolean publishDebugDiagnostics;
+    private final boolean sharedProfileLayout;
+    private final String publishedIrPath;
+    private final String publishedNativePlanPath;
+    private final String publishedLinkReportPath;
+    private final String publishedObjectPath;
+    private final String publishedExecutablePath;
+    private final String publishedRuntimeLibraryPath;
+    private final String publishedRuntimeImportLibraryPath;
+    private final String publishedAssetsRoot;
+    private final String sharedLaunchMetadataPath;
+    private final String artifactStampPath;
+    private final String buildConfigPlanPath;
+
+    public BuildPublicationPlan(
+        String artifactBaseName,
+        String artifactStamp,
+        boolean publishProfileLayout,
+        boolean publishDebugDiagnostics,
+        boolean sharedProfileLayout,
+        String publishedIrPath,
+        String publishedNativePlanPath,
+        String publishedLinkReportPath,
+        String publishedObjectPath,
+        String publishedExecutablePath,
+        String publishedRuntimeLibraryPath,
+        String publishedRuntimeImportLibraryPath,
+        String publishedAssetsRoot,
+        String sharedLaunchMetadataPath,
+        String artifactStampPath,
+        String buildConfigPlanPath
+    ) {
+        this.artifactBaseName = (String) Objects.requireNonNull(
+            artifactBaseName,
+            "artifactBaseName must not be null"
+        );
+        this.artifactStamp = (String) Objects.requireNonNull(
+            artifactStamp,
+            "artifactStamp must not be null"
+        );
+        this.publishedIrPath = (String) Objects.requireNonNull(
+            publishedIrPath,
+            "publishedIrPath must not be null"
+        );
+        this.publishedNativePlanPath = (String) Objects.requireNonNull(
+            publishedNativePlanPath,
+            "publishedNativePlanPath must not be null"
+        );
+        this.publishedLinkReportPath = (String) Objects.requireNonNull(
+            publishedLinkReportPath,
+            "publishedLinkReportPath must not be null"
+        );
+        this.publishedObjectPath = (String) Objects.requireNonNull(
+            publishedObjectPath,
+            "publishedObjectPath must not be null"
+        );
+        this.artifactStampPath = (String) Objects.requireNonNull(
+            artifactStampPath,
+            "artifactStampPath must not be null"
+        );
+        this.buildConfigPlanPath = (String) Objects.requireNonNull(
+            buildConfigPlanPath,
+            "buildConfigPlanPath must not be null"
+        );
+        this.publishProfileLayout = publishProfileLayout;
+        this.publishDebugDiagnostics = publishDebugDiagnostics;
+        this.sharedProfileLayout = sharedProfileLayout;
+        this.publishedExecutablePath = publishedExecutablePath;
+        this.publishedRuntimeLibraryPath = publishedRuntimeLibraryPath;
+        this.publishedRuntimeImportLibraryPath = publishedRuntimeImportLibraryPath;
+        this.publishedAssetsRoot = publishedAssetsRoot;
+        this.sharedLaunchMetadataPath = sharedLaunchMetadataPath;
+    }
+
+    public String artifactBaseName() { return this.artifactBaseName; }
+    public String artifactStamp() { return this.artifactStamp; }
+    public boolean publishProfileLayout() { return this.publishProfileLayout; }
+    public boolean publishDebugDiagnostics() { return this.publishDebugDiagnostics; }
+    public boolean sharedProfileLayout() { return this.sharedProfileLayout; }
+    public String publishedIrPath() { return this.publishedIrPath; }
+    public String publishedNativePlanPath() { return this.publishedNativePlanPath; }
+    public String publishedLinkReportPath() { return this.publishedLinkReportPath; }
+    public String publishedObjectPath() { return this.publishedObjectPath; }
+    public String publishedExecutablePath() { return this.publishedExecutablePath; }
+    public String publishedRuntimeLibraryPath() { return this.publishedRuntimeLibraryPath; }
+    public String publishedRuntimeImportLibraryPath() { return this.publishedRuntimeImportLibraryPath; }
+    public String publishedAssetsRoot() { return this.publishedAssetsRoot; }
+    public String sharedLaunchMetadataPath() { return this.sharedLaunchMetadataPath; }
+    public String artifactStampPath() { return this.artifactStampPath; }
+    public String buildConfigPlanPath() { return this.buildConfigPlanPath; }
+
+    public String toString() {
+        return "BuildPublicationPlan[base="
+            .concat(this.artifactBaseName)
+            .concat(", stamp=")
+            .concat(this.artifactStamp)
+            .concat(", profileLayout=")
+            .concat(String.valueOf(this.publishProfileLayout))
+            .concat(", debugDiagnostics=")
+            .concat(String.valueOf(this.publishDebugDiagnostics))
+            .concat(", sharedProfileLayout=")
+            .concat(String.valueOf(this.sharedProfileLayout))
+            .concat("]");
+    }
+}

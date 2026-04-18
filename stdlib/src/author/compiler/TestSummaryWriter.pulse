@@ -1,0 +1,66 @@
+package author.compiler;
+
+/**
+ * Renders compiler-facing test discovery and summary text.
+ */
+public final class TestSummaryWriter {
+    public static String renderTestDiscoveryResult(TestDiscoveryResult result) {
+        if (result.workspaceMember()) {
+            return "Member test discovery: member="
+                .concat(result.memberRoot())
+                .concat(" tests_root=")
+                .concat(result.testsRoot())
+                .concat(" source_root=")
+                .concat(result.sourceRoot())
+                .concat(" count=")
+                .concat(String.valueOf(result.count()));
+        }
+        return "Test discovery: project_mode="
+            .concat(result.projectMode())
+            .concat(" project_root=")
+            .concat(result.projectRoot())
+            .concat(" tests_root=")
+            .concat(result.testsRoot())
+            .concat(" source_root=")
+            .concat(result.sourceRoot())
+            .concat(" count=")
+            .concat(String.valueOf(result.count()));
+    }
+
+    public static String renderTestResult(TestResult result) {
+        return "Test summary: mode="
+            .concat(result.mode())
+            .concat(" passed=")
+            .concat(String.valueOf(result.passed()))
+            .concat(" failed=")
+            .concat(String.valueOf(result.failed()))
+            .concat(" total=")
+            .concat(String.valueOf(result.total()));
+    }
+
+    public static String renderWorkspaceTestSummaryResult(WorkspaceTestResult result) {
+        return "Workspace test summary: mode="
+            .concat(result.mode())
+            .concat(" passed=")
+            .concat(String.valueOf(result.passed()))
+            .concat(" failed=")
+            .concat(String.valueOf(result.failed()))
+            .concat(" total=")
+            .concat(String.valueOf(result.total()));
+    }
+
+    public static String renderWorkspaceTestStart(String rootPath, int memberCount, String mode) {
+        return TestSummaryWriter.renderWorkspaceTestStartResult(
+            new WorkspaceTestResult(rootPath, memberCount, mode, 0, 0, 0)
+        );
+    }
+
+    public static String renderWorkspaceTestStartResult(WorkspaceTestResult result) {
+        return "Workspace test: root="
+            .concat(result.rootPath())
+            .concat(" members=")
+            .concat(String.valueOf(result.memberCount()))
+            .concat(" mode=")
+            .concat(result.mode());
+    }
+}

@@ -1,14 +1,14 @@
 # Selfhost Package Map
 
-This document defines the initial package map for the Aden-side compiler and
+This document defines the initial package map for the Pulse-side compiler and
 runtime projects.
 
-It exists so `adenc` and `adenrt` grow through real domain packages from
+It exists so `compiler` and `runtime` grow through real domain packages from
 the start instead of drifting into one-off scaffolding or large migration blobs.
 
 Reference rule set:
 
-- [SELFHOST_PORTING_RULES.md](/G:/Programming/Rust/Aden Lang/docs/SELFHOST_PORTING_RULES.md)
+- [SELFHOST_PORTING_RULES.md](/G:/Programming/Rust/PulseCode/docs/SELFHOST_PORTING_RULES.md)
 
 ## Direction
 
@@ -22,88 +22,72 @@ The package map is intentionally:
 It is not intended to predict the final full compiler/runtime package tree in
 one shot. It is the first honest structure that real subsystem slices should use.
 
-## Root Families
-
-The current root-family split is:
-
-- `aden.*`
-  - public language and standard library surface
-- `adk.*`
-  - Aden Development Kit surface for compiler/runtime/build/toolchain ownership
-- `adenx.*`
-  - experimental/incubating surface
-- `adenos.*`
-  - reserved future systems/OS surface
-
-The self-hosted compiler/runtime projects live inside the `adk.*` family, not a
-generic `compiler.*` / `runtime.*` family.
-
-## `adenc`
+## `compiler`
 
 Root package:
 
-- `adk.compiler.*`
+- `compiler.*`
 
 Initial package tree:
 
-- `adk.compiler.entry`
+- `compiler.entry`
   - program entrypoints
   - high-level stage identity
   - minimal top-level orchestration while the compiler program is still growing
-- `adk.compiler.frontend`
+- `compiler.frontend`
   - parser-facing and source-loading-facing compiler frontend slices
   - later split into narrower packages such as parsing/tokenization only if real
     code size requires it
-- `adk.compiler.semantics`
+- `compiler.semantics`
   - semantic analysis, resolution, and validation slices
-- `adk.compiler.lowering`
+- `compiler.lowering`
   - IR-facing lowering slices
-- `adk.compiler.backend`
+- `compiler.backend`
   - backend planning/emission slices
   - later expected to split into nested domains such as `backend.planning`,
     `backend.emission`, and target-specific emission packages
-- `adk.compiler.host`
+- `compiler.host`
   - temporary host/provider/bootstrap interaction surfaces needed while Rust
     still exists as retained bootstrap
-- `adk.compiler.tests`
+- `compiler.tests`
   - compiler behavior locks and focused test utilities
 
-Rules for `adenc`:
+Rules for `compiler`:
 
 - do not let `frontend`, `semantics`, `lowering`, or `backend` become mega-packages
 - split them further as soon as a slice stops being comfortably readable
 - do not mirror Rust mega-files one-to-one
 
-## `adenrt`
+## `runtime`
 
 Root package:
 
-- `adk.runtime.*`
+- `runtime.*`
 
 Initial package tree:
 
-- `adk.runtime.entry`
+- `runtime.entry`
   - runtime program entrypoints
   - stage identity
   - top-level startup wiring
-- `adk.runtime.startup`
+- `runtime.startup`
   - startup/shutdown/bootstrap-runtime flow
-- `adk.runtime.memory`
+- `runtime.memory`
   - ARC, cycle, weak, and explicit ownership/runtime memory support
-- `adk.runtime.handles`
+- `runtime.handles`
   - object/handle/runtime slot/state identity surfaces
-- `adk.runtime.strings`
+- `runtime.strings`
   - string representation, string helpers, and text-runtime support
-- `adk.runtime.interop`
+- `runtime.interop`
   - runtime-facing interop support and foreign-boundary helpers that belong to
-    the runtime program rather than the public `aden.interop.*` API shape
-- `adk.runtime.io`
+    the runtime program rather than the public `pulse.interop.*` API shape
+- `runtime.io`
   - runtime-owned file/process/console/service glue that belongs to the runtime
     program
-- `adk.runtime.tests`
+- `runtime.tests`
   - runtime behavior locks and focused test utilities
 
-Rules for `adenrt`:
+Rules for `runtime`:
 
 - keep runtime ownership/memory code just as readable as compiler code
 - low-level does not justify giant files
@@ -124,9 +108,9 @@ Do not dump code into `entry` just because it is already there.
 
 The current scaffolds should already follow this map:
 
-- `adk.compiler.entry.*`
-- `adk.runtime.entry.*`
-- `adk.compiler.tests.*`
-- `adk.runtime.tests.*`
+- `compiler.entry.*`
+- `runtime.entry.*`
+- `compiler.tests.*`
+- `runtime.tests.*`
 
 That keeps the first real code moves aligned with the intended long-term shape.

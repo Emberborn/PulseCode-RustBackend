@@ -16,14 +16,14 @@ Current primitive baseline:
 - `boolean`
 - `void`
 
-Aden extension unsigned primitives:
+Pulse extension unsigned primitives:
 
 - `ubyte`
 - `ushort`
 - `uint`
 - `ulong`
 
-Unsigned primitives and their wrapper classes are intentional Aden extensions. They are executable and documented parts of the language, but they are not part of the Java-close compatibility claim.
+Unsigned primitives and their wrapper classes are intentional Pulse extensions. They are executable and documented parts of the language, but they are not part of the Java-close compatibility claim.
 
 ## Reference Types
 
@@ -63,7 +63,7 @@ Current supported categories include:
 
 - boxing and unboxing between primitives and wrapper-style stdlib classes
 - implicit widening across the current signed primitive chain (`byte` / `short` / `char` -> `int` -> `long` -> `float` -> `double`)
-- implicit widening inside the current Aden unsigned chain (`ubyte` / `ushort` -> `uint` -> `ulong`)
+- implicit widening inside the current Pulse unsigned chain (`ubyte` / `ushort` -> `uint` -> `ulong`)
 - explicit primitive numeric casts across the current primitive numeric baseline
 - checked reference casts between compatible class/interface reference types
 - runtime-backed `instanceof` checks for class and interface targets
@@ -76,8 +76,8 @@ Current cast baseline:
 - integral arithmetic now follows the first Java-like promotion slice: smaller signed integral types promote to `int`, and mixed `int` / `long` expressions widen to `long`
 - floating arithmetic and comparison are now executable across the current signed primitive chain, including mixed integral/`float`/`double` expressions
 - unary `-` now preserves the operand numeric type instead of collapsing to `int`
-- Aden unsigned arithmetic now follows the current extension-specific promotion slice: `ubyte` / `ushort` promote to `uint`, and mixed `uint` / `ulong` expressions widen to `ulong`
-- mixed signed/unsigned widening now follows the current executable Aden slice:
+- Pulse unsigned arithmetic now follows the current extension-specific promotion slice: `ubyte` / `ushort` promote to `uint`, and mixed `uint` / `ulong` expressions widen to `ulong`
+- mixed signed/unsigned widening now follows the current executable Pulse slice:
   - `ubyte` widens into signed targets starting at `short`
   - `ushort` widens into signed targets starting at `int`
   - `uint` widens into signed targets starting at `long`
@@ -98,7 +98,7 @@ Current cast baseline:
   - compound assignment forms `&=`, `|=`, `^=`, `<<=`, `>>=`, `>>>=`
 - boolean `&`, `|`, and `^` now use real non-short-circuit Java-like boolean semantics
 - `&&` and `||` now lower through lazy conditional execution instead of eager boolean combination, so the logical and bitwise families are no longer conflated
-- shift result typing now follows the current Java-close/Aden integral promotion slice:
+- shift result typing now follows the current Java-close/Pulse integral promotion slice:
   - `byte` / `short` / `char` shift to `int`
   - `ubyte` / `ushort` shift to `uint`
   - `int` / `uint` remain 32-bit
@@ -166,7 +166,7 @@ Current pre-self-host local `var` baseline:
 - local variable declarations such as `var count = 3;`
 - `for` initializer locals such as `for (var i = 0; ... )`
 - `foreach` loop variables over native arrays such as `for (var value : values)`
-- `foreach` loop variables over the current `com.aden.lang.Iterable` baseline, which infer `Object`
+- `foreach` loop variables over the current `com.pulse.lang.Iterable` baseline, which infer `Object`
 
 Current rules:
 
@@ -175,7 +175,7 @@ Current rules:
 - `var` cannot infer from `null`
 - `var` cannot infer from a `void` expression
 - the inferred runtime type is the initializer expression type after the current F1 erasure/runtime mapping rules
-- `foreach (var item : source)` is currently supported for native arrays, the current `com.aden.lang.Iterable` object-stream baseline, and the current `com.aden.collections.Array` object-stream baseline once the array lane is established
+- `foreach (var item : source)` is currently supported for native arrays, the current `com.pulse.lang.Iterable` object-stream baseline, and the current `com.pulse.collections.Array` object-stream baseline once the array lane is established
 
 ## Type Checking
 

@@ -1,4 +1,4 @@
-# Milestone 1 Semantics Freeze (+ C1.5 Addendum)
+﻿# Milestone 1 Semantics Freeze (+ C1.5 Addendum)
 
 ## Status
 Frozen on March 9, 2026 for backend handoff stability.
@@ -13,7 +13,7 @@ This freeze defines the semantic contract that backend/IR work can rely on witho
 - Modifiers supported: `public`, `private`, `protected`, `static`, `async`.
 - Primitive/value types: `byte`, `short`, `int`, `long`, `float`, `double`, `char`, `boolean`, `void`.
 - Unsigned extensions: `ubyte`, `ushort`, `uint`, `ulong`.
-- `String` is class-based (`com.aden.lang.String`) and implicitly available via prelude resolution.
+- `String` is class-based (`com.pulse.lang.String`) and implicitly available via prelude resolution.
 - Statements: local declarations, assignment/compound assignment, return, expression statements, `if/else`, `while`, `do-while`, `for`, `switch/case/default`, `break`, `continue`.
 - Expressions: literals, names, `this`, member access, calls, unary (`!`, `-`), binary arithmetic/comparison/logical, prefix/postfix `++/--`, `null`.
 
@@ -51,7 +51,7 @@ Exactly one entry method must exist:
 - package-private (no modifier): same package only.
 
 ## Module and Import Contract (Frozen)
-- Multi-file `adenc check` resolves imports from disk with cycle detection.
+- Multi-file `pulsec check` resolves imports from disk with cycle detection.
 - Same-package class auto-loading under source root is supported.
 - Cross-package class usage requires import.
 - Duplicate import and ambiguous import diagnostics are enforced.
@@ -59,38 +59,38 @@ Exactly one entry method must exist:
   1. Same package
   2. Explicit class imports
   3. Wildcard imports
-  4. `com.aden` prelude class fallback
+  4. `com.pulse` prelude class fallback
 
 ## Standard Library Baseline (Frozen)
-Standard library namespace is `com.aden`.
+Standard library namespace is `com.pulse`.
 
 Baseline packages/classes:
-- `com.aden.lang.System`
-- `com.aden.lang.IO`
-- `com.aden.lang.PrintStream`
-- `com.aden.lang.ConsoleWriter`
-- `com.aden.lang.Object`
-- `com.aden.lang.Class`
-- `com.aden.lang.Comparable`
-- `com.aden.lang.Iterable`
-- `com.aden.lang.Iterator`
-- `com.aden.lang.StringBuilder`
-- `com.aden.lang.String`
-- `com.aden.lang.Strings`
+- `com.pulse.lang.System`
+- `com.pulse.lang.IO`
+- `com.pulse.lang.PrintStream`
+- `com.pulse.lang.ConsoleWriter`
+- `com.pulse.lang.Object`
+- `com.pulse.lang.Class`
+- `com.pulse.lang.Comparable`
+- `com.pulse.lang.Iterable`
+- `com.pulse.lang.Iterator`
+- `com.pulse.lang.StringBuilder`
+- `com.pulse.lang.String`
+- `com.pulse.lang.Strings`
 - wrappers: `Byte`, `Short`, `Integer`, `Long`, `Float`, `Double`, `Char`, `Boolean`, `UByte`, `UShort`, `UInteger`, `ULong`, `Void`
-- `com.aden.io.Console`
-- `com.aden.io.File`
-- `com.aden.math.Math`
-- `com.aden.collections.Array`
-- `com.aden.collections.List`
-- `com.aden.collections.Map`
-- `com.aden.rt.Intrinsics`
+- `com.pulse.io.Console`
+- `com.pulse.io.File`
+- `com.pulse.math.Math`
+- `com.pulse.collections.Array`
+- `com.pulse.collections.List`
+- `com.pulse.collections.Map`
+- `com.pulse.rt.Intrinsics`
 
 Import rules:
-- `com.aden` imports are validated against known baseline packages/classes.
-- Too-broad imports like `import com;` / `import com.aden;` are rejected.
-- Unknown `com.aden.*` imports are rejected.
-- Static imports from known `com.aden` classes are supported.
+- `com.pulse` imports are validated against known baseline packages/classes.
+- Too-broad imports like `import com;` / `import com.pulse;` are rejected.
+- Unknown `com.pulse.*` imports are rejected.
+- Static imports from known `com.pulse` classes are supported.
 
 Wrapper runtime API lock:
 - Wrapper class APIs include `valueOf`, `parse`, primitive extractors, `equals`, and `compare`.
@@ -107,8 +107,8 @@ Wrapper runtime API lock:
 
 ## Test Gate (Frozen)
 M1 is considered complete only if all are green:
-- `adenc-core` semantic/unit tests.
-- `adenc` CLI tests.
+- `pulsec-core` semantic/unit tests.
+- `pulsec` CLI tests.
 - Integration multi-file tests.
-- Real fixture projects under `crates/adenc-cli/tests/fixtures`.
+- Real fixture projects under `crates/pulsec-cli/tests/fixtures`.
 

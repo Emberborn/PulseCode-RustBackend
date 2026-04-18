@@ -1,0 +1,28 @@
+package author.compiler;
+
+import pulse.util.Objects;
+
+/**
+ * Structured authored test result contract for summary/failure rendering.
+ */
+public final class TestResult {
+    private final boolean workspace;
+    private final String mode;
+    private final int passed;
+    private final int failed;
+    private final int total;
+
+    public TestResult(boolean workspace, String mode, int passed, int failed, int total) {
+        this.workspace = workspace;
+        this.mode = (String) Objects.requireNonNull(mode, "mode must not be null");
+        this.passed = passed;
+        this.failed = failed;
+        this.total = total;
+    }
+
+    public boolean workspace() { return this.workspace; }
+    public String mode() { return this.mode; }
+    public int passed() { return this.passed; }
+    public int failed() { return this.failed; }
+    public int total() { return this.total; }
+}

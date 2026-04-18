@@ -1,10 +1,10 @@
 # Object Lifetime And GC
 
-This page documents the runtime-backed memory model currently used by Aden programs.
+This page documents the runtime-backed memory model currently used by Pulse programs.
 
 ## Current Model
 
-Aden currently uses ARC-backed runtime ownership with cycle-reclamation support.
+Pulse currently uses ARC-backed runtime ownership with cycle-reclamation support.
 
 That means:
 

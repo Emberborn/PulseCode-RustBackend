@@ -1,0 +1,28 @@
+package author.build;
+
+/**
+ * Structured provider-backed full build-pipeline execution result.
+ */
+public final class BuildPipelineExecutionResult {
+    private final boolean success;
+    private final String outputText;
+    private final String detail;
+
+    private BuildPipelineExecutionResult(boolean success, String outputText, String detail) {
+        this.success = success;
+        this.outputText = outputText;
+        this.detail = detail;
+    }
+
+    public static BuildPipelineExecutionResult success(String outputText) {
+        return new BuildPipelineExecutionResult(true, outputText, null);
+    }
+
+    public static BuildPipelineExecutionResult failure(String detail) {
+        return new BuildPipelineExecutionResult(false, null, detail == null ? "" : detail);
+    }
+
+    public boolean success() { return this.success; }
+    public String outputText() { return this.outputText; }
+    public String detail() { return this.detail; }
+}

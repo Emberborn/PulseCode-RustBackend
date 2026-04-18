@@ -1,10 +1,10 @@
 # Rebase Scope and Return-to-F1 Policy
 
-This document is the source of truth for `RB-00` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-00` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
 
 ## Purpose
 
-The rebase board exists to stop Aden Lang from quietly continuing down a Windows-first backend/product path after the project mission changed to a multi-target self-sustained direction: Windows x64 remains the current executable lane, while AdenOS, generic Linux, and later targets must fit preserved adapter/compiler boundaries instead of being blocked out by Windows-shaped assumptions.
+The rebase board exists to stop PulseCode from quietly continuing down a Windows-first backend/product path after the project mission changed to a multi-target self-sustained direction: Windows x64 remains the current executable lane, while PulseOS, generic Linux, and later targets must fit preserved adapter/compiler boundaries instead of being blocked out by Windows-shaped assumptions.
 
 This is not a rewrite of the whole project and it is not a pause on language work forever. It is a temporary execution lane that must make the backend/runtime/targeting spine honest before normal `F1` continuation resumes.
 
@@ -33,7 +33,7 @@ to:
 - a Rust-hosted bootstrap compiler above the target boundary
 - explicit target adapters below the target-neutral compiler/backend planning layer
 - an explicit Windows x64 target lane that also serves as the current host/bootstrap adapter
-- an explicit AdenOS target/runtime contract that remains independent from generic Linux
+- an explicit PulseOS target/runtime contract that remains independent from generic Linux
 - later target lanes such as generic Linux or macOS fitting the same preserved architecture when activated
 - a documented return path back to `F1`
 
@@ -46,19 +46,19 @@ This rebase is in scope for:
 - backend adapter boundaries and target selection seams
 - runtime/intrinsics ownership boundaries
 - Windows x64 target-lane scope policy and Windows-productization freeze policy
-- AdenOS first-slice runtime/startup/artifact/loading contracts
-- validation layering that separates target-neutral, Windows x64 adapter, AdenOS requested-target, and later target follow-on coverage
+- PulseOS first-slice runtime/startup/artifact/loading contracts
+- validation layering that separates target-neutral, Windows x64 adapter, PulseOS requested-target, and later target follow-on coverage
 - handoff/roadmap/contract updates needed so new agents enter the correct lane
-- explicit preservation of adapter/compiler boundaries so current Windows work does not block later Linux, macOS, or AdenOS integration
+- explicit preservation of adapter/compiler boundaries so current Windows work does not block later Linux, macOS, or PulseOS integration
 
 ## Strategic Non-Goals
 
 This rebase is explicitly not trying to:
 
-- finish Aden Lang as a Windows-first product before the multi-target architecture is made honest
+- finish PulseCode as a Windows-first product before the multi-target architecture is made honest
 - complete MSI/WiX/signing/distribution polish as if Windows productization were still the destination
 - replace the current Windows MASM/COFF path immediately with a full new backend before the architecture is clarified
-- claim a finished AdenOS ABI or later Linux/macOS ABI before the relevant first slice is honestly defined
+- claim a finished PulseOS ABI or later Linux/macOS ABI before the relevant first slice is honestly defined
 - supersede `F1`, `F2`, or `F-A` as the long-term language/stdlib/docs/library boards
 - reopen already-green language/frontend work unless it is directly affected by the backend/runtime/targeting rebase
 
@@ -91,15 +91,15 @@ The Windows x64 lane remains an immediate real target and the current host/boots
 
 While the rebase board is active:
 
-- [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md) is the active execution board
-- [F1_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/F1_TASK_BOARD.md) is paused as an execution lane
+- [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md) is the active execution board
+- [F1_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md) is paused as an execution lane
 - `F1`, `F2`, and `F-A` remain continuity/reference boards and should still shape design decisions
 - new work below the IR boundary should be judged against the target-adapter architecture, not against a Windows-product destination
-- current Windows work must preserve the adapter/compiler seams needed for later Linux, macOS, and AdenOS targets
+- current Windows work must preserve the adapter/compiler seams needed for later Linux, macOS, and PulseOS targets
 
 ## Return-to-F1 Policy
 
-`F1` does not resume just because the docs mention AdenOS. `F1` resumes only when the rebase board is honestly closed.
+`F1` does not resume just because the docs mention PulseOS. `F1` resumes only when the rebase board is honestly closed.
 
 That means all of the following must be true:
 
@@ -107,7 +107,7 @@ That means all of the following must be true:
 - `RB-G1`..`RB-G6` are green
 - the handoff, roadmap, backend contract, and rebase board all agree on the same active architecture
 - the Windows x64 lane is explicit as an immediate supported target and current host/bootstrap lane, while Windows-first productization extras are explicitly frozen or deferred
-- the AdenOS first-slice runtime/startup/artifact contract is explicit enough to guide implementation honestly
+- the PulseOS first-slice runtime/startup/artifact contract is explicit enough to guide implementation honestly
 - target selection/build-plan/runtime ownership surfaces no longer quietly assume one Windows-native path
 
 Closure note:
@@ -120,7 +120,7 @@ Closure note:
 
 Once the rebase board closes honestly, control returns to:
 
-- [F1_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/F1_TASK_BOARD.md)
+- [F1_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md)
 - `F1-51` `ArrayList` / `LinkedList` practical CRUD/iteration/query helpers
 
 That return point is already chosen so the rebase does not force the project to re-litigate where language/stdlib work resumes next.
@@ -129,13 +129,13 @@ That return point is already chosen so the rebase does not force the project to 
 
 When docs disagree during the rebase, use this order:
 
-1. [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md)
-2. [REBASE_SCOPE_AND_RETURN_POLICY.md](/D:/Programming/codex/Aden Lang/docs/REBASE_SCOPE_AND_RETURN_POLICY.md)
-3. [CODEX_HANDOFF_PHASE_F.md](/D:/Programming/codex/Aden Lang/docs/CODEX_HANDOFF_PHASE_F.md)
-4. [NATIVE_BACKEND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/NATIVE_BACKEND_CONTRACT.md)
-5. [PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md](/D:/Programming/codex/Aden Lang/docs/PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md)
-6. [STANDALONE_ROADMAP.md](/D:/Programming/codex/Aden Lang/docs/STANDALONE_ROADMAP.md)
-7. [F1_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/F1_TASK_BOARD.md) and the rest of the F1/F2/F-A continuity docs
+1. [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md)
+2. [REBASE_SCOPE_AND_RETURN_POLICY.md](/D:/Programming/codex/PulseCode/docs/REBASE_SCOPE_AND_RETURN_POLICY.md)
+3. [CODEX_HANDOFF_PHASE_F.md](/D:/Programming/codex/PulseCode/docs/CODEX_HANDOFF_PHASE_F.md)
+4. [NATIVE_BACKEND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/NATIVE_BACKEND_CONTRACT.md)
+5. [PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md](/D:/Programming/codex/PulseCode/docs/PULSEOS_LINUX_BACKED_TARGET_DIRECTION.md)
+6. [STANDALONE_ROADMAP.md](/D:/Programming/codex/PulseCode/docs/STANDALONE_ROADMAP.md)
+7. [F1_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/F1_TASK_BOARD.md) and the rest of the F1/F2/F-A continuity docs
 
 ## RB-00 Closure Evidence
 
@@ -148,14 +148,14 @@ When docs disagree during the rebase, use this order:
 
 `RB-G1` evidence is now complete through:
 
-- [REBASE_SCOPE_AND_RETURN_POLICY.md](/D:/Programming/codex/Aden Lang/docs/REBASE_SCOPE_AND_RETURN_POLICY.md)
-- [REBASE_WINDOWS_ASSUMPTION_INVENTORY.md](/D:/Programming/codex/Aden Lang/docs/REBASE_WINDOWS_ASSUMPTION_INVENTORY.md)
-- [REBASE_WINDOWS_ASSUMPTION_CLASSIFICATION.md](/D:/Programming/codex/Aden Lang/docs/REBASE_WINDOWS_ASSUMPTION_CLASSIFICATION.md)
+- [REBASE_SCOPE_AND_RETURN_POLICY.md](/D:/Programming/codex/PulseCode/docs/REBASE_SCOPE_AND_RETURN_POLICY.md)
+- [REBASE_WINDOWS_ASSUMPTION_INVENTORY.md](/D:/Programming/codex/PulseCode/docs/REBASE_WINDOWS_ASSUMPTION_INVENTORY.md)
+- [REBASE_WINDOWS_ASSUMPTION_CLASSIFICATION.md](/D:/Programming/codex/PulseCode/docs/REBASE_WINDOWS_ASSUMPTION_CLASSIFICATION.md)
 
 The `RB-01` inventory now lives at:
 
-- [REBASE_WINDOWS_ASSUMPTION_INVENTORY.md](/D:/Programming/codex/Aden Lang/docs/REBASE_WINDOWS_ASSUMPTION_INVENTORY.md)
+- [REBASE_WINDOWS_ASSUMPTION_INVENTORY.md](/D:/Programming/codex/PulseCode/docs/REBASE_WINDOWS_ASSUMPTION_INVENTORY.md)
 
 The `RB-02` classification matrix now lives at:
 
-- [REBASE_WINDOWS_ASSUMPTION_CLASSIFICATION.md](/D:/Programming/codex/Aden Lang/docs/REBASE_WINDOWS_ASSUMPTION_CLASSIFICATION.md)
+- [REBASE_WINDOWS_ASSUMPTION_CLASSIFICATION.md](/D:/Programming/codex/PulseCode/docs/REBASE_WINDOWS_ASSUMPTION_CLASSIFICATION.md)

@@ -1,4 +1,0 @@
-status=linked
-linker=link.exe
-entry_codegen=masm-split-stdlib
-exe=G:/Programming/Rust/PulseCode/crates/pulsec-cli/tests/fixtures/runtime_mix/build\main.exe

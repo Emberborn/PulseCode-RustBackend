@@ -1,0 +1,35 @@
+package author.toolchain;
+
+import pulse.lang.String;
+import pulse.process.ProcessResult;
+import pulse.util.Objects;
+
+/**
+ * Bridge serializer for toolchain process execution results.
+ */
+public final class ToolchainProcessResultBridge {
+    /**
+     * Renders one public process result into the current toolchain bridge transport format.
+     * Use this when Rust bootstrap code needs the Pulse-owned process execution result as plain text.
+     */
+    public static String toBridgeText(ProcessResult result) {
+        Objects.requireNonNull(result, "result must not be null");
+        return ToolchainProcessResultBridge.line("exitCode", String.valueOf(result.exitCode()))
+            .concat(ToolchainProcessResultBridge.line("stdoutText", result.stdoutText()))
+            .concat(ToolchainProcessResultBridge.line("stderrText", result.stderrText()));
+    }
+
+    private static String line(String key, String value) {
+        if (value == null) {
+            return key.concat("=0:\n");
+        }
+        return key
+            .concat("=1:")
+            .concat(ToolchainProcessResultBridge.escape(value))
+            .concat("\n");
+    }
+
+    private static String escape(String value) {
+        return value.replace("\\", "\\\\").replace("\r", "\\r").replace("\n", "\\n");
+    }
+}

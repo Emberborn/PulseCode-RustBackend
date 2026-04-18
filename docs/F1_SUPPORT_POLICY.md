@@ -22,7 +22,7 @@ Features in this bucket may stay out of scope for F1, but only if:
 - diagnostics or docs make the boundary obvious
 - no Java-close claim implies that the deferred feature already exists
 
-### Aden-Specific Intentional Differences
+### Pulse-Specific Intentional Differences
 
 These features may remain different from Java in F1 as long as:
 
@@ -37,7 +37,7 @@ Current required F1 categories:
 - close the core declaration/control-flow/expression gaps needed for mainstream Java-like application code
 - choose and honestly implement the F1 generics baseline
 - choose and honestly implement the F1 exception runtime model
-- materially expand `com.aden.lang`
+- materially expand `com.pulse.lang`
 - materially expand collections, io, math, time, and util baselines
 - publish the F1 support matrix and signature-level docs
 - land integrated validation across parser, semantics, backend/runtime, fixtures, packaging, and docs
@@ -69,13 +69,13 @@ Current explicit F1 deferrals:
 - URL/HTTP helper surface beyond the explicitly chosen networking baseline
 - external native binding/library-artifact ecosystem work (Phase F-A)
 
-## Aden-Specific Intentional Differences
+## Pulse-Specific Intentional Differences
 
-These remain allowed Aden-specific differences in F1 if documented honestly:
+These remain allowed Pulse-specific differences in F1 if documented honestly:
 
 - unsigned primitive and wrapper support
-  - `ubyte`, `ushort`, `uint`, `ulong` and their wrapper classes are retained Aden extensions, not part of the Java-close claim
-  - docs and compatibility notes must call them out explicitly as Aden-only surface
+  - `ubyte`, `ushort`, `uint`, `ulong` and their wrapper classes are retained Pulse extensions, not part of the Java-close claim
+  - docs and compatibility notes must call them out explicitly as Pulse-only surface
   - Java-close wording may describe the signed primitive/wrapper baseline, but it must not imply that unsigned types came from Java
 - current native packaging/build model
 - reflection-lite-only `Class`
@@ -104,4 +104,4 @@ At F1 closure:
 
 - everything claimed as Java-close must be backed by the shipped implementation and evidence
 - everything deferred must be clearly documented as deferred
-- everything Aden-specific must be called out as an intentional difference, not silent drift
+- everything Pulse-specific must be called out as an intentional difference, not silent drift

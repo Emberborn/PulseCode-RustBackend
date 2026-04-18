@@ -1,50 +1,50 @@
-# Adklib Enablement Contract
+# Authorlib Enablement Contract
 
-`adklib` is the privileged Aden-owned library surface for compiler,
+`authorlib` is the privileged Pulse-owned library surface for compiler,
 runtime, toolchain, build, OS, and other systems-level authoring work.
 
 ## Package Roots
 
-- ordinary public stdlib lives under `aden.*`
-- privileged authoring surface lives under `adk.*`
+- ordinary public stdlib lives under `pulse.*`
+- privileged authoring surface lives under `author.*`
 
 These roots are intentionally distinct:
 
-- `aden.*` is the default user-visible standard library
-- `adk.*` is elevated and must not be treated as ambient application API
+- `pulse.*` is the default user-visible standard library
+- `author.*` is elevated and must not be treated as ambient application API
 
 ## Enablement Rule
 
-`adk.*` imports follow an explicit opt-in rule for ordinary projects.
+`author.*` imports follow an explicit opt-in rule for ordinary projects.
 
 ### Ordinary user projects
 
-- `adk.*` is disabled by default
-- importing `adk.*` without opt-in is a usage error
+- `author.*` is disabled by default
+- importing `author.*` without opt-in is a usage error
 
 ### Opted-in user projects
 
-Enable `adklib` in `adenc.toml`:
+Enable `authorlib` in `pulsec.toml`:
 
 ```toml
-[adklib]
+[authorlib]
 enabled = true
 ```
 
-Once enabled, ordinary import rules apply for the shipped `adk.*` surface.
+Once enabled, ordinary import rules apply for the shipped `author.*` surface.
 
 ### Compiler/runtime/toolchain builds
 
-- `adk.*` must always be available to product-owned compiler/runtime builds
+- `author.*` must always be available to product-owned compiler/runtime builds
 - this availability is part of the bootstrap/self-sustained contract and is not
   optional for those builds
 
 ## Visibility and Tooling Policy
 
-- `adk.*` is privileged by package root and enablement, not by special
+- `author.*` is privileged by package root and enablement, not by special
   syntax
-- normal visibility modifiers still apply inside `adk.*`
-- user-facing tooling such as the later IDE should not surface `adk.*`
+- normal visibility modifiers still apply inside `author.*`
+- user-facing tooling such as the later IDE should not surface `author.*`
   package completions, browse lists, or suggested imports unless the current
   project has opted in
 
@@ -52,11 +52,11 @@ Once enabled, ordinary import rules apply for the shipped `adk.*` surface.
 
 The first real seeded package is:
 
-- `adk.project`
+- `author.project`
 
 Current proof class:
 
-- `adk.project.ProjectLayout`
+- `author.project.ProjectLayout`
 
 This exists to prove the root, import gating, docs generation, and stdlib
 package ownership path before larger manifest/workspace/project logic moves

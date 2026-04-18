@@ -1,0 +1,8 @@
+package pulse.lang;
+
+/**
+ * Placeholder wrapper used where a reference-shaped void value is needed.
+ */
+public final class Void {
+}
+

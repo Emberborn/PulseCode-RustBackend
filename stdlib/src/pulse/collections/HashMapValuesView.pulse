@@ -1,0 +1,134 @@
+package pulse.collections;
+
+import pulse.lang.Integer;
+import pulse.lang.Iterator;
+import pulse.lang.Object;
+import pulse.lang.UnsupportedOperationException;
+
+/**
+ * Live values view backed directly by the current hash map state.
+ */
+final class HashMapValuesView<T> implements Collection<T> {
+    private HashMap map;
+
+    /**
+     * Creates a live values view over the supplied map.
+     */
+    public HashMapValuesView(HashMap map) {
+        this.map = map;
+    }
+
+    private void failUnsupportedAdd() {
+        UnsupportedOperationException ex = new UnsupportedOperationException("HashMap values view does not support add");
+        ex.panic();
+    }
+
+    /**
+     * Returns the current number of values visible through this live view.
+     */
+    public int size() {
+        return this.map.size();
+    }
+
+    /**
+     * Reports whether this live view is currently empty.
+     */
+    public boolean isEmpty() {
+        return this.map.isEmpty();
+    }
+
+    /**
+     * Clears the backing map through this live values view.
+     */
+    public void clear() {
+        this.map.clear();
+    }
+
+    /**
+     * Rejects direct value insertion through the live values view.
+     */
+    public boolean add(T value) {
+        this.failUnsupportedAdd();
+        return false;
+    }
+
+    /**
+     * Reports whether the backing map currently stores the supplied value.
+     */
+    public boolean contains(T value) {
+        return this.map.containsValue(value);
+    }
+
+    /**
+     * Removes the first matching value from the backing map when present.
+     */
+    public boolean remove(T value) {
+        return this.map.removeValue(value);
+    }
+
+    /**
+     * Reports whether all supplied values are currently present.
+     */
+    public boolean containsAll(Collection<T> values) {
+        Iterator items = values.iterator();
+        while (items.hasNext()) {
+            if (!this.contains(items.next())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Rejects bulk insertion through the live values view.
+     */
+    public boolean addAll(Collection<T> values) {
+        this.failUnsupportedAdd();
+        return false;
+    }
+
+    /**
+     * Removes every matching supplied value from the backing map.
+     */
+    public boolean removeAll(Collection<T> values) {
+        boolean changed = false;
+        Iterator items = values.iterator();
+        while (items.hasNext()) {
+            Object value = items.next();
+            while (this.remove(value)) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Retains only the values also present in the supplied collection.
+     */
+    public boolean retainAll(Collection<T> values) {
+        ArrayList<T> current = new ArrayList();
+        Iterator items = this.iterator();
+        while (items.hasNext()) {
+            current.add(items.next());
+        }
+
+        boolean changed = false;
+        items = current.iterator();
+        while (items.hasNext()) {
+            Object value = items.next();
+            if (!values.contains(value)) {
+                if (this.remove(value)) {
+                    changed = true;
+                }
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Returns a live iterator over the current backing-map values.
+     */
+    public Iterator iterator() {
+        return new HashMapValueIterator(this.map);
+    }
+}

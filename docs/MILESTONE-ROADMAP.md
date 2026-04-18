@@ -6,10 +6,10 @@ For the authoritative detailed plan, use:
 
 ## Strategic Direction Note (2026-03-21)
 
-- Aden Lang is now being steered as a Rust-hosted bootstrap compiler for AdenOS
-- self-hosting is now the transition mechanism, while the stronger goal is self-sustained hosting on AdenOS rather than finishing a Windows-first Aden Lang product
+- PulseCode is now being steered as a Rust-hosted bootstrap compiler for PulseOS
+- self-hosting is now the transition mechanism, while the stronger goal is self-sustained hosting on PulseOS rather than finishing a Windows-first PulseCode product
 - Windows-native backend/product milestones below should be read as bootstrap/reference progress, not as the strategic destination
-- active work should keep advancing F1/F2/F-A language readiness while redefining backend/runtime milestones around a Rust-owned host path and a AdenOS target adapter
+- active work should keep advancing F1/F2/F-A language readiness while redefining backend/runtime milestones around a Rust-owned host path and a PulseOS target adapter
 
 ## Milestone 0: Bootstrap Frontend (Done)
 - Lexer/parser/AST foundation.
@@ -28,19 +28,19 @@ For the authoritative detailed plan, use:
 - Core semantics now accepts per-class package/import contexts (groundwork for package-qualified symbol identity). (Done baseline)
 - Duplicate class simple names across different packages now allowed; class lookup precedence baseline implemented (same-package > explicit import > wildcard). (Done baseline)
 - Declaration type canonicalization baseline complete (field/param/return/local) with ambiguity diagnostics for class type references. (Done baseline)
-- Standard library namespace repackaged to `com.aden.*` with baseline package/class validation and static import support. (Done)
+- Standard library namespace repackaged to `com.pulse.*` with baseline package/class validation and static import support. (Done)
 - Better flow typing of conditionals (baseline null-check narrowing). (Done)
 - Richer diagnostics and stricter semantic checks (baseline overload/constructor diagnostics). (Done)
-- Real fixture project suite added under `crates/adenc-cli/tests/fixtures` for multi-file behavior validation. (Done)
+- Real fixture project suite added under `crates/pulsec-cli/tests/fixtures` for multi-file behavior validation. (Done)
 - Milestone 1 semantics frozen in `docs/M1_SEMANTICS_FREEZE.md` for backend stability. (Done)
 
 ## Milestone 2: Native Backend (Done - Bootstrap Spike Frozen)
-- IR module foundation and AST-to-IR lowering baseline wired in `adenc-core`. (Done baseline)
+- IR module foundation and AST-to-IR lowering baseline wired in `pulsec-core`. (Done baseline)
 - Block-based method IR + control-flow lowering (`if/while/do-while/for/switch/break/continue/return`) added. (Done baseline)
 - Typed temp/value IR (`IrValueId` graph) and source mapping metadata baseline (`IrSourceLoc`) added. (Done baseline)
 - Backend adapter boundary introduced in CLI (`BackendAdapter` + no-op emitter). (Done baseline)
-- `adenc build` now performs check + IR lowering and emits IR summary. (Done baseline)
-- `adenc build` now also emits deterministic IR artifact (`build/adenc.ir.txt`) as backend handoff output. (Done baseline)
+- `pulsec build` now performs check + IR lowering and emits IR summary. (Done baseline)
+- `pulsec build` now also emits deterministic IR artifact (`build/pulsec.ir.txt`) as backend handoff output. (Done baseline)
 - Native backend contract baseline documented (`docs/NATIVE_BACKEND_CONTRACT.md`) and deterministic native plan artifact (`build/native.plan.json`) emitted. (Done baseline)
 - Fixture-based snapshot assertions added for build artifacts/schema fields. (Done baseline)
 - Windows COFF object scaffold emission added (`build/main.obj`) with fixture assertion on machine header bytes. (Done baseline)
@@ -77,16 +77,16 @@ For the authoritative detailed plan, use:
 
 Milestone 2 freeze note:
 - Phase B is frozen as a bootstrap backend spike baseline.
-- The Windows-native path remains useful for regression evidence, but new strategic backend work should now move toward target adapters and the AdenOS runtime boundary.
+- The Windows-native path remains useful for regression evidence, but new strategic backend work should now move toward target adapters and the PulseOS runtime boundary.
 
 ## Milestone 3: Runtime + Memory Model (In Progress)
-- Runtime library (`com.aden.lang.System`, `com.aden.lang.IO`, strings, arrays, core collections).
+- Runtime library (`com.pulse.lang.System`, `com.pulse.lang.IO`, strings, arrays, core collections).
 - Finalized automatic memory management strategy.
 - C1.5 is complete and verified; active execution focus is now C2 via `docs/C2_TASK_BOARD.md`.
 - C2-01 completed and locked:
-  - ARC header/handle contract documented (`adenc.arc.header.v1`)
+  - ARC header/handle contract documented (`pulsec.arc.header.v1`)
   - `native.plan.json` now emits locked ARC memory-model metadata
-  - lock test added: `cargo test -p adenc --test stage_locks_c2`
+  - lock test added: `cargo test -p pulsec --test stage_locks_c2`
 - C2-02 completed and locked:
   - ARC retain/release intrinsic surface added (`arcRetain`, `arcRelease`)
   - runtime fast-path no-op behavior for null/out-of-range handles validated in lock tests
@@ -113,7 +113,7 @@ Milestone 2 freeze note:
 - C2-08 completed and locked:
   - fixed-capacity array tables were removed; runtime allocates per-array heap-backed int/string lanes and frees them during ARC teardown
   - runtime handle-slot capacity now grows dynamically (`initial=63`, doubling) up to ABI v2 slot-mask max `4294967295`
-  - allocator policy/alignment contract is locked in docs and emitted in `native.plan.json` (`adenc.alloc.policy.v1`)
+  - allocator policy/alignment contract is locked in docs and emitted in `native.plan.json` (`pulsec.alloc.policy.v1`)
   - stage-lock coverage asserts allocator policy fields + heap-backed runtime emission behavior
 - C2-09 completed and locked:
   - list/map runtime storage now uses dynamic per-instance heap lanes with locked growth policy (`init=16`, `growth=2x`, `max=2147483647`)
@@ -121,7 +121,7 @@ Milestone 2 freeze note:
   - stage-lock coverage validates >init-capacity list/map growth execution without fallback
 - C2-10 completed and locked:
   - list/map clear paths now implement shrink with anti-thrashing hysteresis (`trigger_multiplier=4`)
-  - runtime ABI surface extended with `Intrinsics.mapClear(long)` / `adenc_rt_mapClear`
+  - runtime ABI surface extended with `Intrinsics.mapClear(long)` / `pulsec_rt_mapClear`
   - stage-lock coverage validates repeated grow/clear cycles and stable post-clear container state
 - C2-11 completed and locked:
   - runtime container ownership hooks now retain/release String/key handles across list/map mutation boundaries
@@ -161,11 +161,11 @@ Milestone 2 freeze note:
   - post-warmup peak working-set spread/drift thresholds are enforced (CI-tunable via `PULSEC_SOAK_TREND_*` env knobs)
   - `stage_locks_c2` and full `cargo test -q` are green
 - C2-23 completed and locked:
-  - threading model contract is now locked in ABI docs (`adenc.runtime.threading.v1`) as `single-threaded` + `non-atomic`
+  - threading model contract is now locked in ABI docs (`pulsec.runtime.threading.v1`) as `single-threaded` + `non-atomic`
   - native plan now emits `runtime.memory_model.threading` with fixed runtime/container thread-safety boundaries
   - lock coverage added for docs/plan/runtime-surface conformance; full `cargo test -q` is green
 - C2-24 completed and locked:
-  - runtime ABI compatibility metadata is now emitted in `native.plan.json` (`runtime.abi_compatibility`, schema `adenc.runtime.abi.v1`)
+  - runtime ABI compatibility metadata is now emitted in `native.plan.json` (`runtime.abi_compatibility`, schema `pulsec.runtime.abi.v1`)
   - runtime init now enforces compiler/runtime ABI match and fails fast on mismatch (`Runtime ABI mismatch`, non-zero exit)
   - lock coverage added for plan contract + mismatch executable path; full `cargo test -q` is green
 - C2-25 completed and locked:
@@ -173,30 +173,30 @@ Milestone 2 freeze note:
   - C2 closure evidence revalidated (`stage_locks_c2` + full workspace tests green)
   - C2 is now fully complete and locked (`C2-01`..`C2-25`, `C2-G1`..`C2-G12`)
 - C3-01 completed and locked:
-  - object layout ABI contract published in `docs/RUNTIME_INTRINSICS_ABI.md` (`adenc.object.layout.v1`)
+  - object layout ABI contract published in `docs/RUNTIME_INTRINSICS_ABI.md` (`pulsec.object.layout.v1`)
   - native build plan now emits locked object-model metadata under `runtime.object_model`
-  - C3 stage lock added: `cargo test -q -p adenc --test stage_locks_c3`
+  - C3 stage lock added: `cargo test -q -p pulsec --test stage_locks_c3`
 - C3-02 completed and locked:
-  - static-field storage ABI contract published (`adenc.static.storage.v1`)
+  - static-field storage ABI contract published (`pulsec.static.storage.v1`)
   - native build plan now emits `runtime.object_model.static_storage` with deterministic owner/symbol/init/access rules
   - C3 stage lock extended with deterministic static-field runtime-flow fixture coverage
 - C3-03 completed and locked:
-  - constructor invocation ABI contract published (`adenc.constructor.model.v1`)
+  - constructor invocation ABI contract published (`pulsec.constructor.model.v1`)
   - native plan now emits `runtime.object_model.constructor_model` with receiver/chaining/failure lock fields
   - C3 stage lock added for constructor contract + fixture build validation
 - C3-04 completed and locked:
-  - class allocation ABI contract published (`adenc.class.alloc.v1`)
+  - class allocation ABI contract published (`pulsec.class.alloc.v1`)
   - native plan now emits `runtime.object_model.allocation` including deterministic `class_size_table`
   - variable logical class sizes are lock-validated via differing instance-field-count fixture classes
 - C3-05 completed and locked:
   - `runtime.object_model.*` plan-emission completeness lock added (instance/static/constructor/allocation sections)
   - backend unit locks + C3 stage lock verify required object-model plan sub-sections
 - C3-06 completed and locked:
-  - dispatch schema ABI contract published (`adenc.dispatch.schema.v1`)
+  - dispatch schema ABI contract published (`pulsec.dispatch.schema.v1`)
   - native plan now emits deterministic dispatch slot-table metadata under `runtime.object_model.dispatch`
   - dispatch schema stage lock added (`lock_c3_06_dispatch_schema_is_documented_and_emitted`)
 - C3 metadata scaffolding started for later Workstream B/C tasks:
-  - object-model ABI compatibility metadata (`adenc.object_model.abi.v1`) emitted/locked at plan level
+  - object-model ABI compatibility metadata (`pulsec.object_model.abi.v1`) emitted/locked at plan level
 - C3-07 completed and locked:
   - runtime virtual dispatch now resolves non-static class-hierarchy calls by receiver runtime class-id (override targets selected at runtime)
   - backend call target resolution remains superclass-chain aware with unrelated cross-class fallback removed
@@ -230,7 +230,7 @@ Milestone 2 freeze note:
     - `lock_c3_11_checked_reference_cast_success_is_locked`
     - `lock_c3_11_checked_reference_cast_failure_is_locked`
 - C3-12 completed and locked:
-  - type-id/class-id schema lock remains emitted in native plan metadata (`adenc.typeid.schema.v1`)
+  - type-id/class-id schema lock remains emitted in native plan metadata (`pulsec.typeid.schema.v1`)
   - runtime class-id table consumption is now lock-covered in dispatch/type-check codegen paths
   - stage lock added:
     - `lock_c3_12_runtime_type_checks_consume_class_id_table`
@@ -271,35 +271,35 @@ Milestone 2 freeze note:
   - C3 board/roadmap/ABI references cross-linked and synchronized
 - C3-20 completed and locked:
   - closure verification run completed:
-    - `cargo test -q -p adenc --test stage_locks_c3`
+    - `cargo test -q -p pulsec --test stage_locks_c3`
     - `cargo test -q`
   - C3 now fully complete and locked (`C3-01`..`C3-20`, `C3-G1`..`C3-G8`)
 - C2-16 completed and locked:
   - ABI v2 lock fixtures now cover runtime marker/slot-mask invariants, forged generation mismatch stale panic, and growth beyond legacy 65535-slot thresholds
   - C2-G6 is now locked green on the C2 board
 - Runtime intrinsic ABI boundary baseline started:
-  - `com.aden.rt.Intrinsics` added to semantic/import surface
+  - `com.pulse.rt.Intrinsics` added to semantic/import surface
   - native backend symbol mapping routes intrinsic console write calls
   - ABI baseline documented in `docs/RUNTIME_INTRINSICS_ABI.md`
 - C1 implementation order locked:
-  - console API layering first (public API is `com.aden.lang.System.out` with `com.aden.lang.IO` alias, intrinsics remain backend/runtime boundary)
+  - console API layering first (public API is `com.pulse.lang.System.out` with `com.pulse.lang.IO` alias, intrinsics remain backend/runtime boundary)
   - then String runtime/interop
   - then arrays/collections runtime backing
   - then panic/exception baseline
 - C1 item 1 complete:
   - stdlib source facades added at `stdlib/src` for `System`, `IO`, `ConsoleWriter`, and `PrintStream`
-  - CLI/check import loading now resolves `com.aden.*` from stdlib source root when available
-  - `IO`/`PrintStream` facade method bodies now delegate to `com.aden.rt.Intrinsics`
+  - CLI/check import loading now resolves `com.pulse.*` from stdlib source root when available
+  - `IO`/`PrintStream` facade method bodies now delegate to `com.pulse.rt.Intrinsics`
   - `System.out` now uses `ConsoleWriter` interface contract; `PrintStream` implements it
   - `System.out` initialization model finalized as runtime-owned singleton (backend-managed) and immutable (`public static final` surface; assignment rejected semantically)
-  - legacy `com.aden.io.Io` compatibility alias removed; canonical console surface is now `System.out` + `IO`
+  - legacy `com.pulse.io.Io` compatibility alias removed; canonical console surface is now `System.out` + `IO`
   - String bridge baseline started: `Intrinsics` surface now includes `stringConcat`, `stringLength`, `intToString`, and `booleanToString`
   - String bridge backend baseline wired: native call routing now recognizes the new `Intrinsics` String symbols and emits temporary runtime stubs for linkable builds
   - String class migration baseline completed for C1.2:
-    - builtin class metadata now includes `com.aden.lang.String` with `length`, `isEmpty`, and `concat`
+    - builtin class metadata now includes `com.pulse.lang.String` with `length`, `isEmpty`, and `concat`
     - String-typed receiver member calls now typecheck against class metadata
-    - parser/lexer no longer treat `String` as keyword/builtin primitive; stdlib class source now lives at `stdlib/src/com/aden/lang/String.aden`
-    - `String` remains implicitly available through `com.aden.lang` prelude resolution (import optional), matching Java-style usage
+    - parser/lexer no longer treat `String` as keyword/builtin primitive; stdlib class source now lives at `stdlib/src/com/pulse/lang/String.pulse`
+    - `String` remains implicitly available through `com.pulse.lang` prelude resolution (import optional), matching Java-style usage
   - String interop ABI lock completed for C1.2:
     - String intrinsic symbol set and bridge behavior documented/locked in `docs/RUNTIME_INTRINSICS_ABI.md`
     - build fixture coverage now asserts String runtime symbols are present in emitted native plan
@@ -308,10 +308,10 @@ Milestone 2 freeze note:
     - stdlib `Array`/`List`/`ArrayList`/`Map` now use intrinsic-backed runtime wrappers
     - backend native shims implement collection handle operations for array/list/map intrinsics
     - executable fixture output validates cross-collection runtime behavior
-    - import validation and semantic builtin surface updated for `com.aden.collections.ArrayList`
+    - import validation and semantic builtin surface updated for `com.pulse.collections.ArrayList`
   - C1.4 panic baseline completed:
-    - `com.aden.rt.Intrinsics.panic(String)` added to stdlib + semantic/import surface
-    - backend runtime symbol `adenc_rt_panic` wired in split/full native emit paths
+    - `com.pulse.rt.Intrinsics.panic(String)` added to stdlib + semantic/import surface
+    - backend runtime symbol `pulsec_rt_panic` wired in split/full native emit paths
     - executable fixture validates panic output and non-zero process exit in split-native mode
 - Language keyword/inheritance baseline progress:
   - reserved keywords added: `extends`, `implements`, `abstract`, `final`, `super`, `synchronized`, `native`, `strictfp`, `transient`, `volatile`
@@ -320,7 +320,7 @@ Milestone 2 freeze note:
   - inheritance checks added: final-class extension rejection, override validation for final/return-type compatibility, inherited member lookup, abstract-class instantiation rejection
 - C1.5 M2 sprint-1 kickoff progress:
   - primitive-wrapper semantic map added (`byte/short/int/long/float/double/char/boolean/ubyte/ushort/uint/ulong/void` -> wrapper classes)
-  - wrapper stdlib skeleton classes added under `com.aden.lang`:
+  - wrapper stdlib skeleton classes added under `com.pulse.lang`:
     - `Byte`, `Short`, `Integer`, `Long`, `Float`, `Double`, `Char`, `Boolean`
     - `UByte`, `UShort`, `UInteger`, `ULong`
     - `Void`
@@ -367,10 +367,10 @@ Milestone 2 freeze note:
     - executable fixture coverage now verifies both happy-path CRUD output and non-zero bounds-failure behavior
   - M3-05 complete:
     - `LinkedList` stdlib class added as concrete `Collection`/`List` implementation
-    - semantic builtin metadata and CLI import validation updated for `com.aden.collections.LinkedList`
+    - semantic builtin metadata and CLI import validation updated for `com.pulse.collections.LinkedList`
     - semantic + executable fixture tests added for CRUD flow and deterministic bounds-failure behavior
   - M3-06 complete:
-    - `Set` contract and `HashSet` implementation added to stdlib (`com.aden.collections`)
+    - `Set` contract and `HashSet` implementation added to stdlib (`com.pulse.collections`)
     - semantic/import metadata aligned for set surface (`size`, `clear`, `add`, `contains`)
     - executable fixture coverage validates uniqueness and membership behavior
   - M3-07 complete:
@@ -382,15 +382,15 @@ Milestone 2 freeze note:
     - semantic/import metadata aligned for queue/deque operations (`offer/poll/isEmpty`, `addFirst/addLast/removeFirst/removeLast`)
     - executable fixture coverage validates FIFO queue and bidirectional deque behavior
   - M3-09 complete:
-    - stdlib source `com.aden.math.Math` added under `stdlib/src` with deterministic int-surface behavior (`abs`, `max`, `min`, `clamp`)
+    - stdlib source `com.pulse.math.Math` added under `stdlib/src` with deterministic int-surface behavior (`abs`, `max`, `min`, `clamp`)
     - semantic/import metadata + tests aligned for expanded math API usage
     - executable fixture coverage validates deterministic math edge outputs
   - M3-10 complete:
-    - stdlib source `com.aden.math.Random` added with deterministic seeded sequence behavior (`Random(int)`, `nextInt(int)`)
+    - stdlib source `com.pulse.math.Random` added with deterministic seeded sequence behavior (`Random(int)`, `nextInt(int)`)
     - semantic/import metadata + tests aligned for random class surface
     - executable fixture coverage validates reproducible seeded output sequences across instances
   - M3-11 complete:
-    - stdlib source `com.aden.io` contracts added for `File`, `Path`, and `Files`
+    - stdlib source `com.pulse.io` contracts added for `File`, `Path`, and `Files`
     - deterministic in-memory file semantics wired via existing runtime map intrinsics for build/runtime fixtures
     - semantic/import metadata + executable fixtures validate read/write/append/exists/Path.combine flow
   - M3-12 complete:
@@ -398,7 +398,7 @@ Milestone 2 freeze note:
     - semantic/import metadata aligned for stream constructor and read/write/append methods
     - executable fixture coverage validates stream read/write path behavior
   - M3-13 complete:
-    - stdlib source `com.aden.time.Instant` and `Duration` added with deterministic behavior for current C1.5 scope
+    - stdlib source `com.pulse.time.Instant` and `Duration` added with deterministic behavior for current C1.5 scope
     - semantic/import metadata aligned (`now`, `plusMillis`, `ofMillis`, `plus`, `minus`, `to*Millis`)
     - executable fixture coverage validates deterministic time API outputs
   - M3-14 complete:
@@ -406,14 +406,14 @@ Milestone 2 freeze note:
     - `docs/RUNTIME_INTRINSICS_ABI.md` updated with explicit M3 surface mapping and native symbol inventory
     - fixture plan assertions now verify required runtime intrinsic symbol presence in `native.plan.json`
   - M3-15 complete:
-    - added real multi-file fixture projects under `crates/adenc-cli/tests/fixtures`:
+    - added real multi-file fixture projects under `crates/pulsec-cli/tests/fixtures`:
       - `runtime_mix` (collections + io + time + math + object/interface mix)
       - `object_interface_mix` (object/interface + array/math/time/file mix)
-    - added integration coverage for both `adenc check` and executable `adenc build` flows with deterministic output assertions
+    - added integration coverage for both `pulsec check` and executable `pulsec build` flows with deterministic output assertions
   - M3-16 complete:
     - added `stress_soak` multi-file fixture for allocation churn, collection churn, bounded string churn, and loop-heavy paths
     - added repeated build+run integration coverage via `cli_build_executes_stress_soak_repeatedly` (iteration count configurable with `PULSEC_SOAK_ITERS`)
-    - validated stress gate in `cargo test -p adenc --test fixture_projects`
+    - validated stress gate in `cargo test -p pulsec --test fixture_projects`
   - M3-17 complete:
     - validated Windows linker path variants across default discovery, explicit `--linker`, and `PULSEC_LINKER` override flows
     - published matrix report at `docs/WINDOWS_TOOLCHAIN_MATRIX.md` with pass/fail outcomes
@@ -434,10 +434,10 @@ Milestone 2 freeze note:
 - MSI generation support.
 
 ## Milestone F-B: Self-Sustained Elevation Inventory
-- Inventory the whole compiler/runtime/tooling stack and classify what still needs to move from Rust into Aden.
-- Define the `stdlib` versus `adklib` split.
-- Lock the rule that compiler/runtime builds can always access `adklib` even when it is not enabled for ordinary user projects.
+- Inventory the whole compiler/runtime/tooling stack and classify what still needs to move from Rust into Pulse.
+- Define the `stdlib` versus `authorlib` split.
+- Lock the rule that compiler/runtime builds can always access `authorlib` even when it is not enabled for ordinary user projects.
 
 ## Milestone 5: Self-Sustained Hosting Transition
-- Compiler implemented in Aden Lang.
+- Compiler implemented in PulseCode.
 - Bootstrap chain and compiler equivalence validation.

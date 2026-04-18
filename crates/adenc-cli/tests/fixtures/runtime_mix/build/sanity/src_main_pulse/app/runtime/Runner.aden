@@ -1,7 +1,0 @@
-package app.runtime;
-
-class Runner implements Rank {
-    public int value() {
-        return 1;
-    }
-}

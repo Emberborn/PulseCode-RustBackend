@@ -1,6 +1,6 @@
-# Aden
+# PulseCode
 
-Aden is a new general-purpose, object-oriented language with strong typing, automatic memory handling, packages/imports, and game-focused standard capabilities.
+PulseCode is a new general-purpose, object-oriented language with strong typing, automatic memory handling, packages/imports, and game-focused standard capabilities.
 
 > **A note on language projects**
 >
@@ -8,19 +8,19 @@ Aden is a new general-purpose, object-oriented language with strong typing, auto
 > I wanted to acknowledge those efforts, because every attempt helped move things forward.
 
 ## Long-term Goal
-Aden becomes fully standalone and self-hosted:
-1. Aden compiler/runtime initially bootstrapped in Rust.
-2. Aden compiler rewritten in Aden.
-3. Aden toolchain ships as native binaries and installer packages.
+PulseCode becomes fully standalone and self-hosted:
+1. PulseCode compiler/runtime initially bootstrapped in Rust.
+2. PulseCode compiler rewritten in PulseCode.
+3. PulseCode toolchain ships as native binaries and installer packages.
 
 ## Phase 1 (Bootstrapping)
-- `adenc-core`: lexer/parser/AST + semantic checks.
-- `adenc`: CLI (`check`, `build`).
+- `pulsec-core`: lexer/parser/AST + semantic checks.
+- `pulsec`: CLI (`check`, `build`).
 - Initial backend target: native executable via LLVM in later milestones.
 
 ## Current Status
 This repository now includes:
-- Modularized frontend (`lexer`, `parser`, `semantics`) in `adenc-core`.
+- Modularized frontend (`lexer`, `parser`, `semantics`) in `pulsec-core`.
 - Method-body parsing + semantic type checking.
 - Control flow (`if/while/for`) and loop control (`break/continue`).
 - Operator typing and method call signature matching by argument types.
@@ -34,16 +34,16 @@ This repository now includes:
 
 ## Quick Start
 1. Install Rust (stable).
-2. Create a source root like `examples/src/app/core/Main.aden` with:
+2. Create a source root like `examples/src/app/core/Main.pulse` with:
 
-```aden
+```pulse
 package app.core;
 
-import aden.lang.IO;
+import pulse.lang.IO;
 
 class Main {
     public static void main(String[] args) {
-        IO.println("Aden online");
+        IO.println("PulseCode online");
     }
 }
 ```
@@ -51,11 +51,11 @@ class Main {
 3. Run:
 
 ```bash
-cargo run -p adenc --bin aden -- check examples/src/app/core/Main.aden --strict-package --source-root examples/src
+cargo run -p pulsec -- check examples/src/app/core/Main.pulse --strict-package --source-root examples/src
 ```
 
 ## Project Layout
-- `crates/adenc-core`: language front-end core.
-- `crates/adenc-cli`: command-line compiler driver.
+- `crates/pulsec-core`: language front-end core.
+- `crates/pulsec-cli`: command-line compiler driver.
 - `docs/`: language and roadmap docs.
 

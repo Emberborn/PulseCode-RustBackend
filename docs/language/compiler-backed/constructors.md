@@ -6,7 +6,7 @@ This page documents the compiler-backed constructor model.
 
 Constructors use the type name and do not declare a return type.
 
-```aden
+```pulse
 class Player {
     private String name;
 
@@ -20,7 +20,7 @@ class Player {
 
 Construction uses Java-like `new` syntax:
 
-```aden
+```pulse
 Player p = new Player("Nova");
 ```
 

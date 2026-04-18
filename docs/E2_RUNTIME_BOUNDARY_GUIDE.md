@@ -5,7 +5,7 @@ Date locked: 2026-03-12
 
 ## Purpose
 
-This guide summarizes the locked runtime-ownership and ABI boundary for shared Aden Lang builds.
+This guide summarizes the locked runtime-ownership and ABI boundary for shared PulseCode builds.
 
 ## Rebase Note (`RB-11`)
 
@@ -15,8 +15,8 @@ It is not the portable runtime intrinsic contract for all targets.
 
 Portable-vs-adapter runtime partitioning now lives in:
 
-- [RUNTIME_INTRINSICS_PARTITION.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_INTRINSICS_PARTITION.md)
-- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_INTRINSICS_ABI.md)
+- [RUNTIME_INTRINSICS_PARTITION.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_PARTITION.md)
+- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_ABI.md)
 
 ## Ownership Boundary
 
@@ -38,41 +38,41 @@ Locked rule:
 Executable imports are procedure-only.
 
 Representative required runtime procedures:
-- `adenc_rt_init`
-- `adenc_rt_shutdown`
-- `adenc_rt_objectNew`
-- `adenc_rt_objectClassId`
-- `adenc_rt_arcRetain`
-- `adenc_rt_arcRelease`
-- `adenc_rt_dispatchNullReceiverPanic`
-- `adenc_rt_dispatchInvalidTypePanic`
+- `pulsec_rt_init`
+- `pulsec_rt_shutdown`
+- `pulsec_rt_objectNew`
+- `pulsec_rt_objectClassId`
+- `pulsec_rt_arcRetain`
+- `pulsec_rt_arcRelease`
+- `pulsec_rt_dispatchNullReceiverPanic`
+- `pulsec_rt_dispatchInvalidTypePanic`
 
 Runtime exports are:
 - procedure-only
 - `minimal_versioned_abi`
-- versioned by `adenc_toolchain_semver`
+- versioned by `pulsec_toolchain_semver`
 
 Forbidden private export/import patterns:
 - `rt_*`
-- `adenc_rt_obj_*`
-- `adenc_rt_class_*`
+- `pulsec_rt_obj_*`
+- `pulsec_rt_class_*`
 
 ## Lowering Boundary
 
 Shared-mode app lowering now resolves runtime-owned object metadata through ABI procedures instead of same-image table access.
 
 Locked examples:
-- virtual dispatch resolves receiver class id through `adenc_rt_objectClassId`
-- `instanceof` resolves class id through `adenc_rt_objectClassId`
-- checked reference casts resolve class id through `adenc_rt_objectClassId`
+- virtual dispatch resolves receiver class id through `pulsec_rt_objectClassId`
+- `instanceof` resolves class id through `pulsec_rt_objectClassId`
+- checked reference casts resolve class id through `pulsec_rt_objectClassId`
 
 ## Init / Shutdown
 
 Locked shared startup sequence:
 - `mainCRTStartup`
-- `adenc_rt_init`
+- `pulsec_rt_init`
 - app entry
-- `adenc_rt_shutdown`
+- `pulsec_rt_shutdown`
 - `ExitProcess`
 
 Runtime init is:
@@ -109,9 +109,9 @@ Executable/shared evidence includes:
 
 ## Related Specs
 
-- [SHARED_RUNTIME_ABI.md](/D:/Programming/codex/Aden Lang/docs/SHARED_RUNTIME_ABI.md)
-- [RUNTIME_OWNERSHIP_INVENTORY.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_INVENTORY.md)
-- [RUNTIME_OWNERSHIP_POLICY.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_POLICY.md)
-- [SHARED_RUNTIME_STATE_LAYOUT.md](/D:/Programming/codex/Aden Lang/docs/SHARED_RUNTIME_STATE_LAYOUT.md)
-- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/CLI_COMMAND_CONTRACT.md)
-- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [SHARED_RUNTIME_ABI.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_ABI.md)
+- [RUNTIME_OWNERSHIP_INVENTORY.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_INVENTORY.md)
+- [RUNTIME_OWNERSHIP_POLICY.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_POLICY.md)
+- [SHARED_RUNTIME_STATE_LAYOUT.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_STATE_LAYOUT.md)
+- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
+- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)

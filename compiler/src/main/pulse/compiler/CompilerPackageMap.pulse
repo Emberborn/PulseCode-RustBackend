@@ -1,0 +1,37 @@
+package compiler;
+
+public final class CompilerPackageMap {
+    private CompilerPackageMap() {}
+
+    public static String rootPackage() {
+        return "compiler";
+    }
+
+    public static String entryPackage() {
+        return "compiler.entry";
+    }
+
+    public static String frontendPackage() {
+        return "compiler.frontend";
+    }
+
+    public static String semanticsPackage() {
+        return "compiler.semantics";
+    }
+
+    public static String loweringPackage() {
+        return "compiler.lowering";
+    }
+
+    public static String backendPackage() {
+        return "compiler.backend";
+    }
+
+    public static String hostPackage() {
+        return "compiler.host";
+    }
+
+    public static String testsPackage() {
+        return "compiler.tests";
+    }
+}

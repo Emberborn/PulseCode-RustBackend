@@ -5,28 +5,28 @@ Purpose:
 - Keep stage evidence executable and repeatable.
 
 Test targets:
-- `crates/adenc-cli/tests/stage_locks.rs`
-- `crates/adenc-cli/tests/stage_locks_casting.rs`
-- `crates/adenc-cli/tests/stage_locks_casting_failures.rs`
-- `crates/adenc-cli/tests/stage_locks_c2.rs`
+- `crates/pulsec-cli/tests/stage_locks.rs`
+- `crates/pulsec-cli/tests/stage_locks_casting.rs`
+- `crates/pulsec-cli/tests/stage_locks_casting_failures.rs`
+- `crates/pulsec-cli/tests/stage_locks_c2.rs`
 
 Run command:
 
 ```powershell
-cargo test -p adenc --test stage_locks
+cargo test -p pulsec --test stage_locks
 ```
 
 Casting lock commands (run separately to keep expected-failure output isolated):
 
 ```powershell
-cargo test -p adenc --test stage_locks_casting
-cargo test -p adenc --test stage_locks_casting_failures
+cargo test -p pulsec --test stage_locks_casting
+cargo test -p pulsec --test stage_locks_casting_failures
 ```
 
 C2 lock command:
 
 ```powershell
-cargo test -p adenc --test stage_locks_c2
+cargo test -p pulsec --test stage_locks_c2
 ```
 
 `stage_locks_c2.rs`:

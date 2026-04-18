@@ -1,0 +1,30 @@
+package pulse.lang;
+
+/**
+ * Signals that an operation is not supported by the target value.
+ */
+public class UnsupportedOperationException extends RuntimeException {
+    /**
+     * Creates an unsupported-operation exception with no message text.
+     * Use this for generic unsupported-operation failures.
+     */
+    public UnsupportedOperationException() {
+        this.initThrowableState("UnsupportedOperationException", null, null);
+    }
+
+    /**
+     * Creates an unsupported-operation exception with the supplied message text.
+     * Use this when reporting which unsupported path was requested.
+     */
+    public UnsupportedOperationException(String message) {
+        this.initThrowableState("UnsupportedOperationException", message, null);
+    }
+
+    /**
+     * Creates an unsupported-operation exception with both a message and a cause.
+     * Use this when surfacing unsupported-operation context plus the original failure.
+     */
+    public UnsupportedOperationException(String message, Throwable cause) {
+        this.initThrowableState("UnsupportedOperationException", message, cause);
+    }
+}

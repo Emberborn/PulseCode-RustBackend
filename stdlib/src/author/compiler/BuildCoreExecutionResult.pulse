@@ -1,0 +1,121 @@
+package author.compiler;
+
+import pulse.util.Objects;
+
+/**
+ * Structured provider-backed compiler core result for one build compile/emit run.
+ */
+public final class BuildCoreExecutionResult {
+    private final boolean success;
+    private final int filesLoaded;
+    private final int classes;
+    private final int methods;
+    private final int fields;
+    private final String irArtifactPath;
+    private final String nativePlanPath;
+    private final String objectPath;
+    private final String executablePath;
+    private final String runtimeLibraryPath;
+    private final String runtimeImportLibraryPath;
+    private final String linkReportPath;
+    private final String entryCodegen;
+    private final String detail;
+
+    private BuildCoreExecutionResult(
+        boolean success,
+        int filesLoaded,
+        int classes,
+        int methods,
+        int fields,
+        String irArtifactPath,
+        String nativePlanPath,
+        String objectPath,
+        String executablePath,
+        String runtimeLibraryPath,
+        String runtimeImportLibraryPath,
+        String linkReportPath,
+        String entryCodegen,
+        String detail
+    ) {
+        this.success = success;
+        this.filesLoaded = filesLoaded;
+        this.classes = classes;
+        this.methods = methods;
+        this.fields = fields;
+        this.irArtifactPath = irArtifactPath;
+        this.nativePlanPath = nativePlanPath;
+        this.objectPath = objectPath;
+        this.executablePath = executablePath;
+        this.runtimeLibraryPath = runtimeLibraryPath;
+        this.runtimeImportLibraryPath = runtimeImportLibraryPath;
+        this.linkReportPath = linkReportPath;
+        this.entryCodegen = entryCodegen;
+        this.detail = detail;
+    }
+
+    public static BuildCoreExecutionResult success(
+        int filesLoaded,
+        int classes,
+        int methods,
+        int fields,
+        String irArtifactPath,
+        String nativePlanPath,
+        String objectPath,
+        String executablePath,
+        String runtimeLibraryPath,
+        String runtimeImportLibraryPath,
+        String linkReportPath,
+        String entryCodegen
+    ) {
+        return new BuildCoreExecutionResult(
+            true,
+            filesLoaded,
+            classes,
+            methods,
+            fields,
+            (String) Objects.requireNonNull(irArtifactPath, "irArtifactPath must not be null"),
+            (String) Objects.requireNonNull(nativePlanPath, "nativePlanPath must not be null"),
+            (String) Objects.requireNonNull(objectPath, "objectPath must not be null"),
+            executablePath,
+            runtimeLibraryPath,
+            runtimeImportLibraryPath,
+            (String) Objects.requireNonNull(linkReportPath, "linkReportPath must not be null"),
+            (String) Objects.requireNonNull(entryCodegen, "entryCodegen must not be null"),
+            null
+        );
+    }
+
+    public static BuildCoreExecutionResult failure(String detail) {
+        return new BuildCoreExecutionResult(
+            false,
+            0,
+            0,
+            0,
+            0,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            detail == null ? "" : detail
+        );
+    }
+
+    public boolean success() { return this.success; }
+    public int filesLoaded() { return this.filesLoaded; }
+    public int classes() { return this.classes; }
+    public int methods() { return this.methods; }
+    public int fields() { return this.fields; }
+    public String irArtifactPath() { return this.irArtifactPath; }
+    public String nativePlanPath() { return this.nativePlanPath; }
+    public String objectPath() { return this.objectPath; }
+    public String executablePath() { return this.executablePath; }
+    public String runtimeLibraryPath() { return this.runtimeLibraryPath; }
+    public String runtimeImportLibraryPath() { return this.runtimeImportLibraryPath; }
+    public String linkReportPath() { return this.linkReportPath; }
+    public String entryCodegen() { return this.entryCodegen; }
+    public String detail() { return this.detail; }
+}

@@ -3,12 +3,12 @@
 This page documents the current compiler-owned annotation baseline.
 
 That compiler-owned behavior is a bootstrap contract, not the intended long-term ownership model.
-If an annotation workflow can eventually live in Aden stdlib plus a real processor/runtime/backend contract,
-that Aden-owned design is preferred over permanently growing Rust-only annotation semantics.
+If an annotation workflow can eventually live in Pulse stdlib plus a real processor/runtime/backend contract,
+that Pulse-owned design is preferred over permanently growing Rust-only annotation semantics.
 
 ## Frontend Annotation Model
 
-Aden Lang currently uses a compiler-backed annotation registry and validator for the shipped annotation set.
+PulseCode currently uses a compiler-backed annotation registry and validator for the shipped annotation set.
 
 That means:
 
@@ -21,9 +21,9 @@ This is not yet a general external annotation-processor or code-generation syste
 
 ## Annotation Declarations
 
-Aden now supports marker-style annotation declarations in source:
+Pulse now supports marker-style annotation declarations in source:
 
-```aden
+```pulse
 public @interface Marker {
 }
 ```
@@ -35,7 +35,7 @@ Current F1 boundary for declared annotations:
 - annotation members/elements are not supported yet
 - declared annotations do not automatically gain compiler semantics
 
-So the language can now declare annotations in Aden, but only the shipped compiler-owned annotations below have active semantic behavior in the current baseline.
+So the language can now declare annotations in Pulse, but only the shipped compiler-owned annotations below have active semantic behavior in the current baseline.
 That bootstrap ownership is expected to be revisited in Phase F-A once annotation processors become a real runtime/backend feature.
 
 ## Shipped Baseline
@@ -103,16 +103,16 @@ Not part of the current baseline:
 - code-generation annotations such as `@Getter` / `@Setter`
 - full runtime reflection-driven annotation access
 - annotation members/elements such as `String value()`
-- Aden-owned migration of the current built-in annotation semantics
+- Pulse-owned migration of the current built-in annotation semantics
 
 ## Migration Direction
 
 Planned direction:
 
-- keep annotation declarations in Aden stdlib
+- keep annotation declarations in Pulse stdlib
 - keep the current built-ins as bootstrap compiler-owned semantics only while F1 is still missing processor/runtime support
 - add a real annotation processor runtime/backend model in Phase F-A
-- then migrate the current built-ins and future workflows such as Lombok-style annotations toward Aden-owned implementations where practical
+- then migrate the current built-ins and future workflows such as Lombok-style annotations toward Pulse-owned implementations where practical
 
 ## Related
 

@@ -1,7 +1,0 @@
-package app.runtime;
-
-class GameLoop {
-    public static int tick() {
-        return 1;
-    }
-}

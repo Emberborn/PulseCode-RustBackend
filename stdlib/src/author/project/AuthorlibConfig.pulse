@@ -1,0 +1,63 @@
+package author.project;
+
+import pulse.lang.Object;
+import pulse.lang.String;
+
+/**
+ * Immutable authorlib enablement model for privileged project manifests.
+ */
+public final class AuthorlibConfig {
+    private final boolean enabled;
+
+    /**
+     * Creates one authorlib enablement value.
+     */
+    public AuthorlibConfig(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * Returns the disabled authorlib default.
+     */
+    public static AuthorlibConfig defaults() {
+        return new AuthorlibConfig(false);
+    }
+
+    /**
+     * Reports whether authorlib is enabled.
+     */
+    public boolean enabled() {
+        return this.enabled;
+    }
+
+    /**
+     * Compares authorlib enablement values.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof AuthorlibConfig)) {
+            return false;
+        }
+        AuthorlibConfig value = (AuthorlibConfig) other;
+        return this.enabled == value.enabled;
+    }
+
+    /**
+     * Returns a stable enablement hash.
+     */
+    public int hashCode() {
+        if (this.enabled) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Returns a concise debug representation.
+     */
+    public String toString() {
+        return "AuthorlibConfig[enabled=".concat(String.valueOf(this.enabled)).concat("]");
+    }
+}

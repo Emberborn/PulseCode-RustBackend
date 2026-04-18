@@ -66,22 +66,22 @@ C3 turns the current class model into a locked object-model contract suitable fo
 | Phase C Exit | C2 + C3 exit criteria complete and Phase C deliverable gates in roadmap are satisfied |
 
 C3-01 progress notes:
-- object layout schema lock added in runtime ABI docs (`adenc.object.layout.v1`).
+- object layout schema lock added in runtime ABI docs (`pulsec.object.layout.v1`).
 - native plan now emits `runtime.object_model` with locked instance layout fields (`header_bytes`, `field_slot_bytes`, `alignment_bytes`, deterministic field/inheritance ordering policy).
-- stage lock added: `cargo test -q -p adenc --test stage_locks_c3` (`lock_c3_01_object_layout_contract_is_documented_and_emitted`).
+- stage lock added: `cargo test -q -p pulsec --test stage_locks_c3` (`lock_c3_01_object_layout_contract_is_documented_and_emitted`).
 
 C3-02 progress notes:
-- static-storage schema lock added in runtime ABI docs (`adenc.static.storage.v1`).
+- static-storage schema lock added in runtime ABI docs (`pulsec.static.storage.v1`).
 - native plan now emits `runtime.object_model.static_storage` with owner/symbol model, init-order lock, and static access rules.
 - stage lock added: `lock_c3_02_static_field_storage_contract_and_runtime_flow_are_locked` (docs + plan + executable static-field flow).
 
 C3-03 progress notes:
-- constructor-model schema lock added in runtime ABI docs (`adenc.constructor.model.v1`).
+- constructor-model schema lock added in runtime ABI docs (`pulsec.constructor.model.v1`).
 - native plan now emits `runtime.object_model.constructor_model` with receiver-allocation, chaining, and failure-mode policy locks.
 - stage lock added: `lock_c3_03_constructor_invocation_contract_is_documented_and_emitted`.
 
 C3-04 progress notes:
-- class-allocation schema lock added in runtime ABI docs (`adenc.class.alloc.v1`).
+- class-allocation schema lock added in runtime ABI docs (`pulsec.class.alloc.v1`).
 - native plan now emits `runtime.object_model.allocation` with size-formula lock and deterministic `class_size_table` metadata rows.
 - stage lock added: `lock_c3_04_class_allocation_contract_emits_variable_class_sizes`.
 
@@ -91,7 +91,7 @@ C3-05 progress notes:
 - stage lock added: `lock_c3_05_object_model_plan_sections_are_complete`.
 
 C3-06 progress notes:
-- dispatch schema lock added in runtime ABI docs (`adenc.dispatch.schema.v1`).
+- dispatch schema lock added in runtime ABI docs (`pulsec.dispatch.schema.v1`).
 - native plan now emits `runtime.object_model.dispatch` with deterministic slot-assignment policy and slot-table metadata.
 - stage lock added: `lock_c3_06_dispatch_schema_is_documented_and_emitted`.
 
@@ -139,7 +139,7 @@ C3-11 progress notes:
   - `lock_c3_11_checked_reference_cast_failure_is_locked`
 
 C3-12 progress notes:
-- type-id metadata schema lock added in runtime ABI docs (`adenc.typeid.schema.v1`).
+- type-id metadata schema lock added in runtime ABI docs (`pulsec.typeid.schema.v1`).
 - native plan now emits `runtime.object_model.type_ids.class_table` with deterministic class-id ordering metadata.
 - stage lock added: `lock_c3_12_type_id_schema_is_documented_and_emitted`.
 - backend unit locks now assert class-id table consumption in:
@@ -157,7 +157,7 @@ C3-13 progress notes:
   - `lock_c3_13_null_interface_dispatch_receiver_panics_deterministically`
 
 C3-14 progress notes:
-- object-model ABI compatibility schema lock added in runtime ABI docs (`adenc.object_model.abi.v1`).
+- object-model ABI compatibility schema lock added in runtime ABI docs (`pulsec.object_model.abi.v1`).
 - native plan now emits `runtime.object_model.abi_compatibility` with compiler/runtime version lock fields.
 - runtime init now enforces object-model ABI mismatch fail-fast before runtime table initialization.
 - stage locks added:
@@ -199,7 +199,7 @@ C3-19 progress notes:
 
 C3-20 progress notes:
 - closure verification run completed:
-  - `cargo test -q -p adenc --test stage_locks_c3`
+  - `cargo test -q -p pulsec --test stage_locks_c3`
   - `cargo test -q`
 - C3 board/gates and milestone roadmap are now fully locked through C3-20.
 

@@ -7,14 +7,14 @@ Historical scope note:
 
 - packaging/install parity language below is retained as historical E3 closure context only
 - current live compiler scope is build/output/runtime parity, not compiler-owned package/install behavior
-- packaging removal policy is now defined by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
+- packaging removal policy is now defined by [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
 
 ## Purpose
 
 This document defines the supported parity surface between `fat` and `shared` native output modes.
 
 Parity in E3 means:
-- the same supported Aden Lang program is expected to produce the same user-visible behavior in both modes
+- the same supported PulseCode program is expected to produce the same user-visible behavior in both modes
 - output layout differences are allowed when they are required by the runtime/link model and documented here
 - failure behavior may differ in immediate cause, but not in determinism or support policy
 
@@ -30,8 +30,8 @@ Parity in E3 does not mean:
   - runtime payload is embedded into the executable output
 - `shared`
   - native executable plus runtime library publication model
-  - runtime payload is published as `adencore-<adenc-semver>.dll`
-  - app executable links through `adencore-<adenc-semver>.lib`
+  - runtime payload is published as `pulsecore-<pulsec-semver>.dll`
+  - app executable links through `pulsecore-<pulsec-semver>.lib`
 
 Both modes are first-class product modes.
 
@@ -39,7 +39,7 @@ Both modes are first-class product modes.
 
 The following behavior is in scope for parity claims:
 
-- language/runtime execution for supported Aden Lang applications
+- language/runtime execution for supported PulseCode applications
   - object construction
   - instance and static dispatch
   - interface dispatch
@@ -129,8 +129,8 @@ The following are not parity claims for E3:
 
 ## Related Specs
 
-- [E1_SHARED_BUILD_GUIDE.md](/D:/Programming/codex/Aden Lang/docs/E1_SHARED_BUILD_GUIDE.md)
-- [E2_RUNTIME_BOUNDARY_GUIDE.md](/D:/Programming/codex/Aden Lang/docs/E2_RUNTIME_BOUNDARY_GUIDE.md)
-- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/CLI_COMMAND_CONTRACT.md)
-- [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/Aden Lang/docs/PROJECT_LAYOUT_CONVENTIONS.md)
-- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/PACKAGING_PIPELINE_CONTRACT.md)
+- [E1_SHARED_BUILD_GUIDE.md](/D:/Programming/codex/PulseCode/docs/E1_SHARED_BUILD_GUIDE.md)
+- [E2_RUNTIME_BOUNDARY_GUIDE.md](/D:/Programming/codex/PulseCode/docs/E2_RUNTIME_BOUNDARY_GUIDE.md)
+- [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
+- [PROJECT_LAYOUT_CONVENTIONS.md](/D:/Programming/codex/PulseCode/docs/PROJECT_LAYOUT_CONVENTIONS.md)
+- [PACKAGING_PIPELINE_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/PACKAGING_PIPELINE_CONTRACT.md)

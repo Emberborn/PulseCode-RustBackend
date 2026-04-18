@@ -1,0 +1,272 @@
+package pulse.time;
+import pulse.lang.Comparable;
+import pulse.lang.Object;
+
+/**
+ * Point-in-time value backed by Unix epoch milliseconds.
+ */
+public final class Instant implements Comparable {
+    /**
+     * Unix epoch instant constant.
+     * Use this when code needs a named zero-timestamp anchor.
+     */
+    public static final Instant EPOCH = new Instant(0L);
+
+    private long epochMillis;
+
+    /**
+     * Creates an instant with the supplied epoch millisecond value.
+     * Use this when reconstructing an instant from stored time data.
+     */
+    public Instant(int epochMillis) {
+        this.epochMillis = (long) epochMillis;
+    }
+
+    /**
+     * Creates an instant with the supplied epoch millisecond value.
+     * Use this when reconstructing an instant from full-width time data.
+     */
+    public Instant(long epochMillis) {
+        this.epochMillis = epochMillis;
+    }
+
+    /**
+     * Returns the current runtime-backed instant value through the default UTC-style clock.
+     * Use this when code needs the current wall-clock instant without injecting a clock explicitly.
+     */
+    public static Instant now() {
+        return now(Clock.systemUTC());
+    }
+
+    /**
+     * Returns the current instant from the supplied clock.
+     * Use this when code needs explicit deterministic or injected clock behavior.
+     */
+    public static Instant now(Clock clock) {
+        TimeSupport.requireNonNull(clock, "Clock");
+        return clock.instant();
+    }
+
+    /**
+     * Creates an instant from Unix epoch milliseconds.
+     * Use this for named factory-style instant construction.
+     */
+    public static Instant ofEpochMillis(long epochMillis) {
+        return new Instant(epochMillis);
+    }
+
+    /**
+     * Creates an instant from whole Unix epoch seconds.
+     * Use this when code naturally works in second resolution.
+     */
+    public static Instant ofEpochSeconds(long epochSeconds) {
+        return new Instant(TimeSupport.safeMultiplyLong(epochSeconds, TimeSupport.MILLIS_PER_SECOND, "Instant epoch-second conversion"));
+    }
+
+    /**
+     * Parses an instant from ISO-style UTC-projected text `yyyy-MM-ddTHH:mm:ss.SSSZ`.
+     * Use this when instant values arrive from configuration, files, or human input in the selected UTC-style model.
+     */
+    public static Instant parse(String text) {
+        return TimeSupport.parseInstant(text);
+    }
+
+    /**
+     * Returns the stored epoch millisecond value.
+     * Use this when converting an instant back into a primitive timestamp.
+     */
+    public long toEpochMillis() {
+        return this.epochMillis;
+    }
+
+    /**
+     * Returns the stored whole epoch-second value.
+     * Use this when a wall-clock instant must be viewed at second resolution.
+     */
+    public long toEpochSeconds() {
+        return TimeSupport.floorDiv(this.epochMillis, TimeSupport.MILLIS_PER_SECOND);
+    }
+
+    /**
+     * Returns a new instant shifted forward by the supplied millisecond delta.
+     * Use this when computing derived timestamps from a base instant.
+     */
+    public Instant plusMillis(long delta) {
+        return new Instant(TimeSupport.safeAddLong(this.epochMillis, delta, "Instant arithmetic"));
+    }
+
+    /**
+     * Returns a new instant shifted forward by the supplied whole-second delta.
+     * Use this when timestamp arithmetic is naturally expressed in seconds.
+     */
+    public Instant plusSeconds(long deltaSeconds) {
+        return this.plusMillis(TimeSupport.safeMultiplyLong(deltaSeconds, TimeSupport.MILLIS_PER_SECOND, "Instant arithmetic"));
+    }
+
+    /**
+     * Returns a new instant shifted backward by the supplied millisecond delta.
+     * Use this when computing earlier timestamps from a base instant.
+     */
+    public Instant minusMillis(long delta) {
+        return new Instant(TimeSupport.safeSubtractLong(this.epochMillis, delta, "Instant arithmetic"));
+    }
+
+    /**
+     * Returns a new instant shifted backward by the supplied whole-second delta.
+     * Use this when timestamp arithmetic is naturally expressed in seconds.
+     */
+    public Instant minusSeconds(long deltaSeconds) {
+        return this.minusMillis(TimeSupport.safeMultiplyLong(deltaSeconds, TimeSupport.MILLIS_PER_SECOND, "Instant arithmetic"));
+    }
+
+    /**
+     * Returns a new instant shifted forward by the supplied duration.
+     * Use this when time arithmetic is already expressed as a `Duration`.
+     */
+    public Instant plus(Duration delta) {
+        TimeSupport.requireNonNull(delta, "Duration");
+        return this.plusMillis(delta.toMillis());
+    }
+
+    /**
+     * Returns a new instant shifted backward by the supplied duration.
+     * Use this when subtracting a `Duration` from a base instant.
+     */
+    public Instant minus(Duration delta) {
+        TimeSupport.requireNonNull(delta, "Duration");
+        return this.minusMillis(delta.toMillis());
+    }
+
+    /**
+     * Returns the duration from this instant until the supplied other instant.
+     * Use this when measuring elapsed or remaining wall-clock time.
+     */
+    public Duration durationUntil(Instant other) {
+        TimeSupport.requireNonNull(other, "Instant");
+        return Duration.ofMillis(TimeSupport.safeSubtractLong(other.epochMillis, this.epochMillis, "Instant duration"));
+    }
+
+    /**
+     * Reports whether this instant occurs before the supplied instant.
+     * Use this for clear time-order checks in ordinary code.
+     */
+    public boolean isBefore(Instant other) {
+        TimeSupport.requireNonNull(other, "Instant");
+        return this.epochMillis < other.epochMillis;
+    }
+
+    /**
+     * Reports whether this instant occurs after the supplied instant.
+     * Use this for clear time-order checks in ordinary code.
+     */
+    public boolean isAfter(Instant other) {
+        TimeSupport.requireNonNull(other, "Instant");
+        return this.epochMillis > other.epochMillis;
+    }
+
+    /**
+     * Projects this instant into the current UTC-style local date/time view.
+     * Use this when code needs calendar fields from an epoch timestamp.
+     */
+    public LocalDateTime toLocalDateTime() {
+        return LocalDateTime.ofEpochMillis(this.epochMillis);
+    }
+
+    /**
+     * Projects this instant into the current UTC-style local date view.
+     * Use this when code needs only the calendar date from an epoch timestamp.
+     */
+    public LocalDate toLocalDate() {
+        return this.toLocalDateTime().toLocalDate();
+    }
+
+    /**
+     * Projects this instant into the current UTC-style local time view.
+     * Use this when code needs only the time-of-day from an epoch timestamp.
+     */
+    public LocalTime toLocalTime() {
+        return this.toLocalDateTime().toLocalTime();
+    }
+
+    /**
+     * Returns an instant truncated down to the nearest whole second.
+     * Use this when code wants stable second-resolution wall-clock values.
+     */
+    public Instant truncatedToSeconds() {
+        return new Instant(this.toEpochSeconds() * TimeSupport.MILLIS_PER_SECOND);
+    }
+
+    /**
+     * Returns an instant truncated down to the nearest whole minute.
+     * Use this when code wants stable minute-resolution wall-clock values.
+     */
+    public Instant truncatedToMinutes() {
+        long remainder = TimeSupport.floorMod(this.epochMillis, TimeSupport.MILLIS_PER_MINUTE);
+        return new Instant(this.epochMillis - remainder);
+    }
+
+    /**
+     * Returns an instant truncated down to the nearest whole hour.
+     * Use this when code wants stable hour-resolution wall-clock values.
+     */
+    public Instant truncatedToHours() {
+        long remainder = TimeSupport.floorMod(this.epochMillis, TimeSupport.MILLIS_PER_HOUR);
+        return new Instant(this.epochMillis - remainder);
+    }
+
+    /**
+     * Returns an instant truncated down to the nearest whole day.
+     * Use this when code wants stable day-resolution wall-clock values in the current UTC-style model.
+     */
+    public Instant truncatedToDays() {
+        long remainder = TimeSupport.floorMod(this.epochMillis, TimeSupport.MILLIS_PER_DAY);
+        return new Instant(this.epochMillis - remainder);
+    }
+
+    /**
+     * Compares this instant to another instant by epoch millisecond order.
+     * Use this when code is typed against `Comparable`.
+     */
+    public int compareTo(Object other) {
+        if (!(other instanceof Instant)) {
+            pulse.rt.Intrinsics.panic("Instant.compareTo requires Instant");
+        }
+        Instant value = (Instant) other;
+        if (this.epochMillis < value.epochMillis) {
+            return -1;
+        }
+        if (this.epochMillis > value.epochMillis) {
+            return 1;
+        }
+        return 0;
+    }
+
+    /**
+     * Reports whether this instant has the same epoch millisecond value as the supplied object.
+     * Use this for Java-like value equality on instants.
+     */
+    public boolean equals(Object other) {
+        if (!(other instanceof Instant)) {
+            return false;
+        }
+        Instant value = (Instant) other;
+        return this.epochMillis == value.epochMillis;
+    }
+
+    /**
+     * Returns a stable hash code derived from the stored epoch millisecond value.
+     * Use this when instants participate in maps, sets, or other hashed structures.
+     */
+    public int hashCode() {
+        long mixed = this.epochMillis ^ (this.epochMillis >>> 32);
+        return (int) mixed;
+    }
+
+    /**
+     * Formats this instant using the current UTC-style projection baseline.
+     * Use this for diagnostics and human-readable timestamps in the selected no-time-zone F1 slice.
+     */
+    public String toString() {
+        return this.toLocalDateTime().toString().concat("Z");
+    }
+}

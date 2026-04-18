@@ -1,6 +1,6 @@
 # Host Bootstrap Runtime Contract (`RB-12`)
 
-This document is the source of truth for `RB-12` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-12` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
 
 It defines the minimum retained Rust-host bootstrap runtime contract needed to keep:
 
@@ -10,34 +10,34 @@ It defines the minimum retained Rust-host bootstrap runtime contract needed to k
 
 moving during the multi-target rebase.
 
-It does not define the first AdenOS runtime-service ABI. That is `RB-13`.
+It does not define the first PulseOS runtime-service ABI. That is `RB-13`.
 
 ## Relationship To `RB-11`
 
 `RB-11` partitioned:
 
-- portable Aden/runtime contract
+- portable Pulse/runtime contract
 - adapter-specific service glue
 
 `RB-12` now locks the smaller retained bootstrap runtime seam that still implements part of that portable contract today.
 
 Source partition reference:
 
-- [RUNTIME_INTRINSICS_PARTITION.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_INTRINSICS_PARTITION.md)
+- [RUNTIME_INTRINSICS_PARTITION.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_PARTITION.md)
 
 ## Current Code Source
 
 The current code-owned host bootstrap runtime contract is resolved in:
 
-- [runtime_contract.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/host_bootstrap/runtime_contract.rs)
+- [runtime_contract.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/host_bootstrap/runtime_contract.rs)
 
 and emitted into `native.plan.json` through:
 
-- [plan_rendering.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/analysis/plan_rendering.rs)
+- [plan_rendering.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/analysis/plan_rendering.rs)
 
 Schema id:
 
-- `adenc.host_bootstrap.runtime.v1`
+- `pulsec.host_bootstrap.runtime.v1`
 
 ## Minimum Retained Bootstrap Surface
 
@@ -47,31 +47,31 @@ The retained bootstrap runtime contract is intentionally organized by portable p
 
 These remain required so current startup/bootstrap paths can initialize and tear down runtime-owned state:
 
-- `adenc_rt_init`
-- `adenc_rt_shutdown`
+- `pulsec_rt_init`
+- `pulsec_rt_shutdown`
 
 ### 2. Core Runtime Bridge Procedures
 
 These remain required because current app/runtime lowering still depends on them for object identity and string/class bridging:
 
-- `adenc_rt_stringFromBytes`
-- `adenc_rt_objectNew`
-- `adenc_rt_objectClassId`
-- `adenc_rt_objectClassName`
-- `adenc_rt_objectHashCode`
+- `pulsec_rt_stringFromBytes`
+- `pulsec_rt_objectNew`
+- `pulsec_rt_objectClassId`
+- `pulsec_rt_objectClassName`
+- `pulsec_rt_objectHashCode`
 
 ### 3. Trace And Exception Procedures
 
 These remain required because the current executable proof surface includes tracing and real throw flow:
 
-- `adenc_rt_tracePush`
-- `adenc_rt_traceUpdateTop`
-- `adenc_rt_tracePop`
-- `adenc_rt_traceDump`
-- `adenc_rt_pushExceptionHandler`
-- `adenc_rt_popExceptionHandler`
-- `adenc_rt_takePendingException`
-- `adenc_rt_throw`
+- `pulsec_rt_tracePush`
+- `pulsec_rt_traceUpdateTop`
+- `pulsec_rt_tracePop`
+- `pulsec_rt_traceDump`
+- `pulsec_rt_pushExceptionHandler`
+- `pulsec_rt_popExceptionHandler`
+- `pulsec_rt_takePendingException`
+- `pulsec_rt_throw`
 
 ### 4. Portable Stdlib Bridge Procedures
 
@@ -114,5 +114,5 @@ This is intentionally temporary but explicit. The contract exists so later tasks
 
 ## Consequences For `RB-13` And `RB-14`
 
-- `RB-13` now defines the first AdenOS runtime-service ABI without inheriting the Windows adapter's raw imports or startup naming as defaults.
-- `RB-14` is now published at [RUNTIME_OWNERSHIP_REBASE.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_REBASE.md) and uses this retained-bootstrap contract to decide what can move into Aden stdlib/runtime code, what stays in Rust bootstrap for now, and what must stay adapter-owned.
+- `RB-13` now defines the first PulseOS runtime-service ABI without inheriting the Windows adapter's raw imports or startup naming as defaults.
+- `RB-14` is now published at [RUNTIME_OWNERSHIP_REBASE.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_REBASE.md) and uses this retained-bootstrap contract to decide what can move into Pulse stdlib/runtime code, what stays in Rust bootstrap for now, and what must stay adapter-owned.

@@ -1,12 +1,12 @@
 # F1 Collection Strategy
 
-This document is the `F1-49` strategy pass for `com.aden.collections`.
+This document is the `F1-49` strategy pass for `com.pulse.collections`.
 
 It defines how the current bootstrap collection surface relates to the later Java-close collection model, so the remaining F1 collection work does not drift between temporary lane-specific APIs and the final generic direction.
 
 ## Strategy Goal
 
-Aden needs collections that are useful before self-host and still compatible with the later Java-close direction.
+Pulse needs collections that are useful before self-host and still compatible with the later Java-close direction.
 
 That means:
 
@@ -49,7 +49,7 @@ Target direction:
 - `Queue<T>`
 - `Deque<T>`
 - `Map<K, V>`
-- `Array<T>` only if it remains a deliberate Aden container, not as a stand-in for native arrays
+- `Array<T>` only if it remains a deliberate Pulse container, not as a stand-in for native arrays
 
 Rules for this stage:
 
@@ -103,7 +103,7 @@ The current bootstrap APIs are allowed to exist before self-host, but only under
 - current lane-specific collection APIs are bootstrap, not final
 - the real target is generic public collection contracts
 - later collection expansion should be organized around that target instead of adding more ad hoc lane-specific APIs
-- `com.aden.collections.Array` must be revisited explicitly rather than silently treated as equivalent to both Java collections and native arrays
+- `com.pulse.collections.Array` must be revisited explicitly rather than silently treated as equivalent to both Java collections and native arrays
 
 ## Follow-On Tasks
 
@@ -119,7 +119,7 @@ The current bootstrap APIs are allowed to exist before self-host, but only under
 
 ## Honest Summary
 
-Before self-host, Aden keeps the current bootstrap collection surface because it is useful.
+Before self-host, Pulse keeps the current bootstrap collection surface because it is useful.
 
 But the locked strategy is now explicit:
 

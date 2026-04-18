@@ -1,6 +1,6 @@
 # Runtime-Backed Language Docs
 
-This directory is the canonical home for language-facing documentation about Aden Lang features
+This directory is the canonical home for language-facing documentation about PulseCode features
 whose behavior is primarily implemented by the runtime/native backend rather than by a stdlib
 class alone.
 

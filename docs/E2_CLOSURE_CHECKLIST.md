@@ -24,24 +24,24 @@ Date locked: 2026-03-12
 
 ## Closure Artifacts
 
-- [x] [E2_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/E2_TASK_BOARD.md)
-- [x] [SHARED_RUNTIME_ABI.md](/D:/Programming/codex/Aden Lang/docs/SHARED_RUNTIME_ABI.md)
-- [x] [RUNTIME_OWNERSHIP_INVENTORY.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_INVENTORY.md)
-- [x] [RUNTIME_OWNERSHIP_POLICY.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_OWNERSHIP_POLICY.md)
-- [x] [SHARED_RUNTIME_STATE_LAYOUT.md](/D:/Programming/codex/Aden Lang/docs/SHARED_RUNTIME_STATE_LAYOUT.md)
-- [x] [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/CLI_COMMAND_CONTRACT.md)
-- [x] [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md)
-- [x] [E2_EVIDENCE_INDEX.md](/D:/Programming/codex/Aden Lang/docs/E2_EVIDENCE_INDEX.md)
+- [x] [E2_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/E2_TASK_BOARD.md)
+- [x] [SHARED_RUNTIME_ABI.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_ABI.md)
+- [x] [RUNTIME_OWNERSHIP_INVENTORY.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_INVENTORY.md)
+- [x] [RUNTIME_OWNERSHIP_POLICY.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_OWNERSHIP_POLICY.md)
+- [x] [SHARED_RUNTIME_STATE_LAYOUT.md](/D:/Programming/codex/PulseCode/docs/SHARED_RUNTIME_STATE_LAYOUT.md)
+- [x] [CLI_COMMAND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/CLI_COMMAND_CONTRACT.md)
+- [x] [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md)
+- [x] [E2_EVIDENCE_INDEX.md](/D:/Programming/codex/PulseCode/docs/E2_EVIDENCE_INDEX.md)
 
 ## Validation Commands
 
-- `cargo test -q -p adenc --test fixture_projects`
-- `cargo test -q -p adenc --test stage_locks_c3`
-- `cargo test -q -p adenc --test stage_locks_d`
-- `cargo test -q -p adenc --test phase_d_cli`
-- `cargo test -q -p adenc`
+- `cargo test -q -p pulsec --test fixture_projects`
+- `cargo test -q -p pulsec --test stage_locks_c3`
+- `cargo test -q -p pulsec --test stage_locks_d`
+- `cargo test -q -p pulsec --test phase_d_cli`
+- `cargo test -q -p pulsec`
 
 ## Exit Decision
 
 - E2 is closed.
-- Tasks `E2-01`..`E2-19` and gates `E2-G1`..`E2-G6` are `Done (Locked)` in [E2_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/E2_TASK_BOARD.md).
+- Tasks `E2-01`..`E2-19` and gates `E2-G1`..`E2-G6` are `Done (Locked)` in [E2_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/E2_TASK_BOARD.md).

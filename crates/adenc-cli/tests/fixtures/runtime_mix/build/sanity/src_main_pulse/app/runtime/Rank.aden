@@ -1,5 +1,0 @@
-package app.runtime;
-
-interface Rank {
-    public int value();
-}

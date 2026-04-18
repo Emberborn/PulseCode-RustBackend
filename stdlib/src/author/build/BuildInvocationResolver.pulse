@@ -1,0 +1,277 @@
+package author.build;
+
+import author.project.ProjectDiscovery;
+import author.project.ProjectLayoutResolver;
+import author.project.ProjectManifest;
+import author.toolchain.ToolchainConfig;
+import author.toolchain.ToolchainConfigResolver;
+import pulse.io.Path;
+import pulse.lang.String;
+import pulse.util.Objects;
+
+/**
+ * Resolves build invocations from the current project surface and CLI-style override precedence.
+ */
+public final class BuildInvocationResolver {
+    /**
+     * Resolves one build invocation from the supplied start path and optional direct overrides.
+     */
+    public static BuildInvocation resolveBuildInvocation(
+        String startPath,
+        String projectRootOverride,
+        String sourceRootOverride,
+        String entryPathOverride,
+        String profileOverride,
+        String targetOverride,
+        String outputModeOverride,
+        String runtimeDebugAllocatorOverride,
+        String runtimeCycleCollectorOverride,
+        String outDirOverride,
+        String assemblerOverride,
+        String linkerOverride
+    ) {
+        String start = Path.normalize((String) Objects.requireNonNull(startPath, "startPath must not be null"));
+        String projectRoot = BuildInvocationResolver.normalizeOptional(projectRootOverride);
+        String sourceRoot = BuildInvocationResolver.normalizeOptional(sourceRootOverride);
+        String entryPath = BuildInvocationResolver.normalizeOptional(entryPathOverride);
+        String profile = BuildInvocationResolver.normalizeOptional(profileOverride);
+        String target = BuildInvocationResolver.normalizeOptional(targetOverride);
+        String outputMode = BuildInvocationResolver.normalizeOptional(outputModeOverride);
+        String runtimeDebugAllocator = BuildInvocationResolver.normalizeOptional(runtimeDebugAllocatorOverride);
+        String runtimeCycleCollector = BuildInvocationResolver.normalizeOptional(runtimeCycleCollectorOverride);
+        String outDir = BuildInvocationResolver.normalizeOptional(outDirOverride);
+        String assemblerOverrideValue = BuildInvocationResolver.normalizeOptional(assemblerOverride);
+        String linkerOverrideValue = BuildInvocationResolver.normalizeOptional(linkerOverride);
+
+        String discoveryStart = projectRoot;
+        if (discoveryStart == null) {
+            discoveryStart = start;
+        }
+        String manifestPath = ProjectDiscovery.findManifestPath(discoveryStart);
+        boolean usedManifest = manifestPath != null;
+        boolean authorlibEnabled = false;
+        ProjectManifest manifest = null;
+        String packageName = null;
+        String packageVersion = null;
+        if (usedManifest) {
+            manifest = ProjectDiscovery.loadManifest(manifestPath);
+            authorlibEnabled = manifest.authorlibEnabled();
+            projectRoot = Path.parent(manifestPath);
+            packageName = manifest.packageInfo().name();
+            packageVersion = manifest.packageInfo().version();
+            if (sourceRoot == null) {
+                sourceRoot = manifest.sources().mainPulseRoot();
+            }
+            if (entryPath == null) {
+                entryPath = Path.resolve(manifest.sources().mainPulseRoot(), manifest.sources().entry());
+            }
+            if (profile == null) {
+                profile = manifest.buildConfig().profile();
+            }
+            if (target == null) {
+                target = manifest.buildConfig().target();
+            }
+            if (outputMode == null) {
+                outputMode = manifest.buildConfig().outputMode();
+            }
+            String outputEntry = manifest.buildConfig().outputEntry();
+            if (runtimeDebugAllocator == null) {
+                runtimeDebugAllocator = manifest.buildConfig().runtimeDebugAllocator();
+            }
+            if (runtimeCycleCollector == null) {
+                runtimeCycleCollector = manifest.buildConfig().runtimeCycleCollector();
+            }
+            ToolchainConfig toolchain = ToolchainConfigResolver.resolve(
+                manifest.toolchain(),
+                assemblerOverrideValue,
+                linkerOverrideValue
+            );
+            ProjectLayoutResolver layoutResolver = new ProjectLayoutResolver(projectRoot);
+            BuildLayout layout = layoutResolver.buildLayout(manifest);
+            String effectiveProfile = BuildInvocationResolver.choose(profile, "release");
+            String effectiveTarget = BuildInvocationResolver.choose(target, "windows-x64");
+            String effectiveOutputMode = BuildInvocationResolver.chooseNormalizedOutputMode(outputMode);
+            String effectiveOutputEntry = BuildInvocationResolver.choose(outputEntry, "main");
+            String effectiveRuntimeDebugAllocator = BuildInvocationResolver.choose(runtimeDebugAllocator, "off");
+            String effectiveRuntimeCycleCollector = BuildInvocationResolver.choose(runtimeCycleCollector, "on");
+            String outputRoot = BuildInvocationResolver.resolveOutputRoot(
+                projectRoot,
+                BuildInvocationResolver.choose(outDir, manifest.buildConfig().outDir()),
+                manifest.build().distroRoot(),
+                effectiveProfile,
+                true,
+                profileOverride != null
+            );
+            return new BuildInvocation(
+                projectRoot,
+                BuildInvocationResolver.resolveEntryPath(entryPath, sourceRoot),
+                sourceRoot,
+                manifest.sources().mainPulseRoot(),
+                manifest.sources().mainResourcesRoot(),
+                outputRoot,
+                layout,
+                effectiveProfile,
+                effectiveTarget,
+                effectiveOutputMode,
+                effectiveOutputEntry,
+                effectiveRuntimeDebugAllocator,
+                effectiveRuntimeCycleCollector,
+                toolchain,
+                packageName,
+                packageVersion,
+                true,
+                authorlibEnabled
+            );
+        }
+
+        if (entryPath == null && Path.extension(start).equals("pulse")) {
+            entryPath = start;
+        }
+        if (sourceRoot == null && entryPath != null) {
+            sourceRoot = Path.parent(entryPath);
+        }
+        if (projectRoot == null) {
+            if (sourceRoot != null) {
+                projectRoot = BuildInvocationResolver.resolveDirectProjectRootFromSourceRoot(sourceRoot);
+            } else {
+                projectRoot = start;
+            }
+        }
+        if (sourceRoot == null) {
+            sourceRoot = Path.resolve(projectRoot, "src/main/pulse");
+        }
+        entryPath = BuildInvocationResolver.resolveEntryPath(entryPath, sourceRoot);
+        String effectiveProfile = BuildInvocationResolver.choose(profile, "release");
+        String effectiveTarget = BuildInvocationResolver.choose(target, "windows-x64");
+        String effectiveOutputMode = BuildInvocationResolver.chooseNormalizedOutputMode(outputMode);
+        String effectiveRuntimeDebugAllocator = BuildInvocationResolver.choose(runtimeDebugAllocator, "off");
+        String effectiveRuntimeCycleCollector = BuildInvocationResolver.choose(runtimeCycleCollector, "on");
+        String outputRoot = BuildInvocationResolver.resolveOutputRoot(
+            projectRoot,
+            outDir,
+            null,
+            effectiveProfile,
+            false,
+            profileOverride != null
+        );
+        BuildLayout layout = BuildLayout.defaults(projectRoot);
+        ToolchainConfig toolchain = ToolchainConfigResolver.resolve(
+            ToolchainConfig.defaults(),
+            assemblerOverrideValue,
+            linkerOverrideValue
+        );
+        return new BuildInvocation(
+            projectRoot,
+            entryPath,
+            sourceRoot,
+            sourceRoot,
+            Path.resolve(projectRoot, "src/main/resources"),
+            outputRoot,
+            layout,
+            effectiveProfile,
+            effectiveTarget,
+            effectiveOutputMode,
+            "main",
+            effectiveRuntimeDebugAllocator,
+            effectiveRuntimeCycleCollector,
+            toolchain,
+            null,
+            null,
+            false,
+            false
+        );
+    }
+
+    private static String resolveEntryPath(String entryPath, String sourceRoot) {
+        String resolvedEntry = entryPath;
+        if (resolvedEntry == null) {
+            resolvedEntry = ProjectDiscovery.discoverEntryPath(sourceRoot);
+        }
+        if (resolvedEntry == null) {
+            pulse.rt.Intrinsics.panic(
+                "Missing entry file for 'build'. Provide <entry.pulse> or set [sources].entry in pulsec.toml"
+            );
+        }
+        return resolvedEntry;
+    }
+
+    private static String resolveOutputRoot(
+        String projectRoot,
+        String outDirOverride,
+        String manifestDistroRoot,
+        String profile,
+        boolean usedManifest,
+        boolean profileOverridePresent
+    ) {
+        if (outDirOverride != null) {
+            if (Path.isAbsolute(outDirOverride)) {
+                return outDirOverride;
+            }
+            return Path.resolve(projectRoot, outDirOverride);
+        }
+        if (usedManifest || profileOverridePresent) {
+            if (manifestDistroRoot != null) {
+                return Path.resolve(manifestDistroRoot, profile);
+            }
+            return Path.resolve(projectRoot, "build/distro/".concat(profile));
+        }
+        return Path.resolve(projectRoot, "build");
+    }
+
+    private static String chooseNormalizedOutputMode(String value) {
+        String normalized = BuildInvocationResolver.normalizeOutputMode(BuildInvocationResolver.choose(value, "fat"));
+        if (normalized == null) {
+            pulse.rt.Intrinsics.panic("Build invocation error: output_mode must resolve to 'fat' or 'shared'");
+        }
+        return normalized;
+    }
+
+    private static String normalizeOutputMode(String value) {
+        if (value == null) {
+            return null;
+        }
+        if (value.equals("fat") || value.equals("single_exe")) {
+            return "fat";
+        }
+        if (value.equals("shared") || value.equals("exe_with_dlls")) {
+            return "shared";
+        }
+        return null;
+    }
+
+    private static String choose(String value, String fallback) {
+        if (value == null) {
+            return fallback;
+        }
+        return value;
+    }
+
+    private static String normalizeOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = Path.normalize(value);
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        return normalized;
+    }
+
+    private static String resolveDirectProjectRootFromSourceRoot(String sourceRoot) {
+        String normalized = Path.normalize(sourceRoot);
+        if (Path.endsWithPath("src/main/pulse", normalized)
+            || Path.endsWithPath("src/test/pulse", normalized)
+            || Path.endsWithPath("src/api/pulse", normalized)) {
+            String srcLeafRoot = Path.parent(Path.parent(normalized));
+            String projectRoot = Path.parent(srcLeafRoot);
+            if (projectRoot != null && !projectRoot.isEmpty()) {
+                return projectRoot;
+            }
+        }
+        String parent = Path.parent(normalized);
+        if (parent == null || parent.isEmpty()) {
+            return normalized;
+        }
+        return parent;
+    }
+}

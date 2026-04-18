@@ -1,7 +1,0 @@
-package app.mixed;
-
-class BoxShape extends BaseShape implements Shape {
-    public int sides() {
-        return 4;
-    }
-}

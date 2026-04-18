@@ -3,7 +3,7 @@
 Status: Done (Locked)  
 Date locked: 2026-03-22
 
-This document is the source of truth for `RB-20` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md).
+This document is the source of truth for `RB-20` on [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md).
 
 Its job is simple: make the live planning spine agree on the same architecture, the same active board, the same `F1` resume point, and the same stronger self-sustained-hosting destination.
 
@@ -16,7 +16,7 @@ The rebase planning spine must agree on all of the following:
 - the rebase board closes honestly before `F1` resumes
 - the backend is now a target-adapter architecture
 - Windows x64 remains a real target and the current host/bootstrap lane
-- AdenOS remains the first requested-target contract stack below Windows execution
+- PulseOS remains the first requested-target contract stack below Windows execution
 - Linux remains a later lane in the same model
 - compiler-owned packaging is gone and frozen against re-entry
 - the first `F1` return point after honest closure remains `F1-51`
@@ -26,11 +26,11 @@ The rebase planning spine must agree on all of the following:
 
 The live planning spine is:
 
-1. [REBASE_TAKS_BOARD.md](/D:/Programming/codex/Aden Lang/docs/REBASE_TAKS_BOARD.md)
-2. [REBASE_SCOPE_AND_RETURN_POLICY.md](/D:/Programming/codex/Aden Lang/docs/REBASE_SCOPE_AND_RETURN_POLICY.md)
-3. [CODEX_HANDOFF_PHASE_F.md](/D:/Programming/codex/Aden Lang/docs/CODEX_HANDOFF_PHASE_F.md)
-4. [NATIVE_BACKEND_CONTRACT.md](/D:/Programming/codex/Aden Lang/docs/NATIVE_BACKEND_CONTRACT.md)
-5. [STANDALONE_ROADMAP.md](/D:/Programming/codex/Aden Lang/docs/STANDALONE_ROADMAP.md)
+1. [REBASE_TAKS_BOARD.md](/D:/Programming/codex/PulseCode/docs/REBASE_TAKS_BOARD.md)
+2. [REBASE_SCOPE_AND_RETURN_POLICY.md](/D:/Programming/codex/PulseCode/docs/REBASE_SCOPE_AND_RETURN_POLICY.md)
+3. [CODEX_HANDOFF_PHASE_F.md](/D:/Programming/codex/PulseCode/docs/CODEX_HANDOFF_PHASE_F.md)
+4. [NATIVE_BACKEND_CONTRACT.md](/D:/Programming/codex/PulseCode/docs/NATIVE_BACKEND_CONTRACT.md)
+5. [STANDALONE_ROADMAP.md](/D:/Programming/codex/PulseCode/docs/STANDALONE_ROADMAP.md)
 
 These documents must tell the same story.
 

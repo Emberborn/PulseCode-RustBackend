@@ -1,4 +1,0 @@
-status=linked
-linker=link.exe
-entry_codegen=masm-split-stdlib
-exe=crates/pulsec-cli/tests/fixtures/stress_soak/build\main.exe

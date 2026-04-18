@@ -1,5 +1,0 @@
-package app.mixed;
-
-interface Shape {
-    public int sides();
-}

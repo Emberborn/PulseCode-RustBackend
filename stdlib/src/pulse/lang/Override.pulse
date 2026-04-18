@@ -1,0 +1,10 @@
+package pulse.lang;
+
+/**
+ * Marks a method as intentionally overriding a superclass or interface method.
+ *
+ * This annotation is compiler-backed in the current F1 baseline.
+ * The frontend validates that the annotated method really overrides a parent contract.
+ */
+public @interface Override {
+}

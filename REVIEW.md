@@ -15,8 +15,8 @@ Status legend:
 - `Not Explicitly Tracked`: should be called out before closure
 
 Phase legend:
-- `Before Self-Host`: needed to make the compiler/runtime rewrite into Aden realistic and maintainable
-- `After Self-Host`: useful for Java parity, but not required to get the compiler/runtime fully expressed in Aden
+- `Before Self-Host`: needed to make the compiler/runtime rewrite into Pulse realistic and maintainable
+- `After Self-Host`: useful for Java parity, but not required to get the compiler/runtime fully expressed in Pulse
 
 ## Summary
 
@@ -235,7 +235,7 @@ Modern JDK 25/26 feature references used for this section:
 
 ### After Self-Host
 
-These are good parity targets, but they do not need to block the Aden rewrite of the compiler/runtime.
+These are good parity targets, but they do not need to block the Pulse rewrite of the compiler/runtime.
 
 | Area | Status | Phase | Recommendation |
 |---|---|---|---|
@@ -257,11 +257,11 @@ These are good parity targets, but they do not need to block the Aden rewrite of
 | serialization / cloning policy | Not Explicitly Tracked | After Self-Host | Decide explicitly later |
 | NIO/channels/buffers/file watching | Not Explicitly Tracked | After Self-Host | Add later |
 | higher-level networking (`URL`, `URI`, HTTP clients/servers) | Not Explicitly Tracked | After Self-Host | Sockets-first can remain enough earlier |
-| desktop UI (`awt`, `swing`, or Aden-native UI`) | Not Explicitly Tracked | After Self-Host | Already intentionally deferred by policy |
+| desktop UI (`awt`, `swing`, or Pulse-native UI`) | Not Explicitly Tracked | After Self-Host | Already intentionally deferred by policy |
 
 ## Self-Host Readiness Answer
 
-### Is there enough Java by the end of F to express the compiler and runtime in Aden completely?
+### Is there enough Java by the end of F to express the compiler and runtime in Pulse completely?
 
 `Yes, if the tracked F1 work is actually completed and the "Before Self-Host" gaps above are handled explicitly.`
 

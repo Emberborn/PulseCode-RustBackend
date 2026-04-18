@@ -7,7 +7,7 @@
 - Runtime allocator: Win64 process heap (`HeapAlloc`/`HeapFree`).
 
 ## ARC Contract
-- Header schema: `adenc.arc.header.v1`.
+- Header schema: `pulsec.arc.header.v1`.
 - Words: `kind_tag`, `refcount`, `flags`, `meta_index`.
 - Refcount guard: `0xFFFF_FFFE` with deterministic fail-fast on saturation.
 - Stale handle policy: deterministic fatal (`Stale runtime handle`).
@@ -29,7 +29,7 @@
 - Detects invalid ARC retain/release paths (UAF/double-release style misuse) with non-zero exit.
 
 ## Compatibility/Threading
-- ABI compatibility schema: `adenc.runtime.abi.v1`.
+- ABI compatibility schema: `pulsec.runtime.abi.v1`.
 - Runtime init enforces compiler/runtime ABI match.
-- Threading contract schema: `adenc.runtime.threading.v1`.
+- Threading contract schema: `pulsec.runtime.threading.v1`.
 - Current model is locked single-threaded/non-atomic (not thread-safe).

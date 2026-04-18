@@ -1,0 +1,110 @@
+package pulse.io;
+
+import pulse.collections.ArrayList;
+import pulse.collections.List;
+import pulse.lang.AutoCloseable;
+import pulse.rt.Intrinsics;
+
+/**
+ * Manual resource scope for deterministic reverse-order closure before try-with-resources syntax is available.
+ */
+public final class ResourceScope implements AutoCloseable {
+    private List<AutoCloseable> resources;
+    private boolean closed;
+
+    /**
+     * Creates one open resource scope with no registered resources.
+     * Use this for manual multi-resource ownership in the current F1 lifecycle baseline.
+     */
+    public ResourceScope() {
+        this.resources = new ArrayList<AutoCloseable>();
+        this.closed = false;
+    }
+
+    /**
+     * Panics when the scope has already been closed.
+     * Use this to keep manual resource-scope ownership explicit.
+     */
+    private void ensureOpen() {
+        if (this.closed) {
+            Intrinsics.panic("ResourceScope is closed");
+        }
+    }
+
+    /**
+     * Registers one resource for reverse-order closure.
+     * `null` resources are ignored so optional ownership flows stay explicit but ergonomic.
+     */
+    public void add(AutoCloseable resource) {
+        this.ensureOpen();
+        if (resource == null) {
+            return;
+        }
+        this.resources.add(resource);
+    }
+
+    /**
+     * Drops every registered resource without closing it.
+     * Use this when ownership must be transferred or explicitly abandoned before the scope itself is closed.
+     */
+    public void clear() {
+        this.ensureOpen();
+        this.resources.clear();
+    }
+
+    /**
+     * Reports how many resources are currently registered.
+     * Use this for explicit ownership checks in the current lifecycle baseline.
+     */
+    public int size() {
+        return this.resources.size();
+    }
+
+    /**
+     * Closes one resource list in reverse order.
+     * `null` entries are ignored so optional ownership lists stay deterministic without extra guards.
+     */
+    public static void closeAll(List<AutoCloseable> resources) {
+        if (resources == null) {
+            return;
+        }
+
+        int index = resources.size() - 1;
+        while (index >= 0) {
+            AutoCloseable resource = resources.get(index);
+            if (resource != null) {
+                resource.close();
+            }
+            index = index - 1;
+        }
+    }
+
+    /**
+     * Reports whether this manual resource scope has been closed.
+     * Use this for explicit lifecycle checks on manual multi-resource ownership.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Reports whether this manual resource scope is currently open.
+     * Use this for explicit lifecycle checks without negating `isClosed()`.
+     */
+    public boolean isOpen() {
+        return !this.closed;
+    }
+
+    /**
+     * Closes every registered resource in reverse registration order.
+     * Closing is idempotent and only affects this scope and the resources it owns.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        ResourceScope.closeAll(this.resources);
+        this.resources.clear();
+        this.closed = true;
+    }
+}

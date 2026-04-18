@@ -1,15 +1,15 @@
 # Selfhost Porting Rules
 
-This document records the required code-shape rules for the Aden-authored
+This document records the required code-shape rules for the Pulse-authored
 compiler and runtime projects during `F1-97` and the later Phase G transition.
 
 These are not style suggestions. They are the operating rules for how
-`adenc`, `adenrt`, and later Aden-owned compiler/runtime code should be
+`compiler`, `runtime`, and later Pulse-owned compiler/runtime code should be
 structured.
 
 ## Purpose
 
-The Aden compiler/runtime port must stay:
+The Pulse compiler/runtime port must stay:
 
 - human-readable
 - human-navigable
@@ -24,7 +24,7 @@ becomes harder to maintain than the bootstrap it is supposed to replace.
 
 - use nested packages with real domain boundaries
 - package by enduring ownership and responsibility
-- do not mirror giant Rust files as giant Aden files
+- do not mirror giant Rust files as giant Pulse files
 - do not create vague catch-all homes just to move code faster
 
 Preferred direction:
@@ -38,7 +38,7 @@ Preferred direction:
 ### 2. No Mega Classes
 
 - large systems must be broken into smaller classes
-- avoid Aden equivalents of files like `masm_codegen.rs` as one massive unit
+- avoid Pulse equivalents of files like `masm_codegen.rs` as one massive unit
 - when a subsystem grows, split it into packages and focused classes early
 
 Example direction:
@@ -103,7 +103,7 @@ that awkward:
 - go back to the bootstrap, backend, or stdlib
 - fix the underlying limitation there
 
-Do not force an ugly Aden port shape just to push through a temporary language
+Do not force an ugly Pulse port shape just to push through a temporary language
 or runtime limitation.
 
 The rule is:
@@ -134,7 +134,7 @@ When bringing up compiler/runtime code:
 
 Do not do:
 
-- one giant import of a Rust subsystem into one Aden file
+- one giant import of a Rust subsystem into one Pulse file
 
 ---
 

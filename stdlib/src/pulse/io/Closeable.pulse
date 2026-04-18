@@ -1,0 +1,14 @@
+package pulse.io;
+
+import pulse.lang.AutoCloseable;
+
+/**
+ * IO-specific close contract aligned with the Java-close resource model.
+ */
+public interface Closeable extends AutoCloseable {
+    /**
+     * Releases the resource owned by this object.
+     * Use this when IO-backed resources should be closed through an IO-specific interface contract.
+     */
+    public void close();
+}

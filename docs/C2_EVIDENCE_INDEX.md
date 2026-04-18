@@ -1,19 +1,19 @@
 # C2 Evidence Index
 
 ## Primary Board
-- [C2_TASK_BOARD.md](/D:/Programming/codex/Aden Lang/docs/C2_TASK_BOARD.md)
+- [C2_TASK_BOARD.md](/D:/Programming/codex/PulseCode/docs/C2_TASK_BOARD.md)
 
 ## ABI/Runtime Contracts
-- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/Aden Lang/docs/RUNTIME_INTRINSICS_ABI.md)
-- [C2_MEMORY_ARC.md](/D:/Programming/codex/Aden Lang/docs/C2_MEMORY_ARC.md)
-- [C2_CYCLE_STRATEGY.md](/D:/Programming/codex/Aden Lang/docs/C2_CYCLE_STRATEGY.md)
+- [RUNTIME_INTRINSICS_ABI.md](/D:/Programming/codex/PulseCode/docs/RUNTIME_INTRINSICS_ABI.md)
+- [C2_MEMORY_ARC.md](/D:/Programming/codex/PulseCode/docs/C2_MEMORY_ARC.md)
+- [C2_CYCLE_STRATEGY.md](/D:/Programming/codex/PulseCode/docs/C2_CYCLE_STRATEGY.md)
 
 ## Closure/Execution
-- [C2_CLOSURE_CHECKLIST.md](/D:/Programming/codex/Aden Lang/docs/C2_CLOSURE_CHECKLIST.md)
-- [C2_CI_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/C2_CI_MATRIX.md)
+- [C2_CLOSURE_CHECKLIST.md](/D:/Programming/codex/PulseCode/docs/C2_CLOSURE_CHECKLIST.md)
+- [C2_CI_MATRIX.md](/D:/Programming/codex/PulseCode/docs/C2_CI_MATRIX.md)
 
 ## Lock Suites
-- `cargo test -q -p adenc --test stage_locks_c2`
+- `cargo test -q -p pulsec --test stage_locks_c2`
 - `cargo test -q`
 
 ## Key Lock Tests (non-exhaustive)

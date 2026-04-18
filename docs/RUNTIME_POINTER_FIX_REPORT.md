@@ -7,7 +7,7 @@ This report captures the runtime/backend debugging work that led from the earlie
 ### 1. Real root-cause fix: map capacity pointer dereference
 
 File:
-- [runtime_emitters.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/runtime_emitters.rs)
+- [runtime_emitters.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/runtime_emitters.rs)
 
 Area:
 - `emit_map_new_proc`
@@ -30,7 +30,7 @@ Result:
 ### 2. Earlier real fix kept as part of this debugging chain: stale ARC release helper
 
 File:
-- [masm_codegen.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/masm_codegen.rs)
+- [masm_codegen.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/masm_codegen.rs)
 
 Area:
 - `emit_arc_release_from_eax`
@@ -40,7 +40,7 @@ Problem:
 - this produced invalid ARC releases in queue-heavy paths under the debug allocator
 
 Fix:
-- the helper now passes the actual handle in `rax` to `adenc_rt_arcRelease`
+- the helper now passes the actual handle in `rax` to `pulsec_rt_arcRelease`
 
 Result:
 - the queue-only invalid ARC release failure was removed
@@ -51,7 +51,7 @@ Result:
 ### 1. Slot-capacity experiment
 
 File:
-- [mod.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/mod.rs)
+- [mod.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/mod.rs)
 
 Temporary change:
 - `HANDLE_SLOT_INITIAL_CAPACITY` was raised from `63` to `255`
@@ -68,7 +68,7 @@ This was only a probe and is not part of the shipped fix.
 ### 2. Caller-side ARC argument boundary experiment
 
 File:
-- [masm_codegen.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/masm_codegen.rs)
+- [masm_codegen.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/masm_codegen.rs)
 
 Temporary idea:
 - remove caller-side ARC retains/releases around method-call arguments
@@ -87,7 +87,7 @@ This was only a probe and is not part of the shipped fix.
 These were added only to narrow the bug and should be treated as debugging probes, not shipped language features.
 
 Probe roots created under:
-- [tmp_runtime_mix_probe](/D:/Programming/codex/Aden Lang/tmp_runtime_mix_probe)
+- [tmp_runtime_mix_probe](/D:/Programming/codex/PulseCode/tmp_runtime_mix_probe)
 
 Notable probe cases created during this debugging thread:
 - `object_only`
@@ -113,7 +113,7 @@ Purpose of these probes:
 ## Documentation Updates Made During This Fix
 
 File:
-- [CODEX_HANDOFF_PHASE_F.md](/D:/Programming/codex/Aden Lang/docs/CODEX_HANDOFF_PHASE_F.md)
+- [CODEX_HANDOFF_PHASE_F.md](/D:/Programming/codex/PulseCode/docs/CODEX_HANDOFF_PHASE_F.md)
 
 Change:
 - removed the stale “field-backed handle corruption” narrative
@@ -131,9 +131,9 @@ Change:
 Focused validation that passed:
 
 ```powershell
-cargo test -q -p adenc --bins --manifest-path "D:\Programming\codex\Aden Lang\Cargo.toml"
-cargo test -q -p adenc --test fixture_projects cli_build_executes_strict_stress_soak_with_repeated_fat_shared_parity --manifest-path "D:\Programming\codex\Aden Lang\Cargo.toml"
-cargo test -q -p adenc --test stage_locks lock_m3_16_stress_soak_fixture_check --manifest-path "D:\Programming\codex\Aden Lang\Cargo.toml" -- --exact --test-threads=1
+cargo test -q -p pulsec --bins --manifest-path "D:\Programming\codex\PulseCode\Cargo.toml"
+cargo test -q -p pulsec --test fixture_projects cli_build_executes_strict_stress_soak_with_repeated_fat_shared_parity --manifest-path "D:\Programming\codex\PulseCode\Cargo.toml"
+cargo test -q -p pulsec --test stage_locks lock_m3_16_stress_soak_fixture_check --manifest-path "D:\Programming\codex\PulseCode\Cargo.toml" -- --exact --test-threads=1
 ```
 
 User-run full test result after the fix:

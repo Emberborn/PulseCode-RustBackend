@@ -1,0 +1,140 @@
+package author.compiler;
+
+import pulse.util.Objects;
+
+/**
+ * Structured authored test discovery contract for success and failure shapes.
+ */
+public final class TestDiscoveryResult {
+    private final boolean workspaceMember;
+    private final boolean success;
+    private final boolean noTestsFound;
+    private final String projectMode;
+    private final String projectRoot;
+    private final String memberRoot;
+    private final String testsRoot;
+    private final String sourceRoot;
+    private final int count;
+    private final String detail;
+
+    private TestDiscoveryResult(
+        boolean workspaceMember,
+        boolean success,
+        boolean noTestsFound,
+        String projectMode,
+        String projectRoot,
+        String memberRoot,
+        String testsRoot,
+        String sourceRoot,
+        int count,
+        String detail
+    ) {
+        this.workspaceMember = workspaceMember;
+        this.success = success;
+        this.noTestsFound = noTestsFound;
+        this.projectMode = projectMode;
+        this.projectRoot = projectRoot;
+        this.memberRoot = memberRoot;
+        this.testsRoot = testsRoot;
+        this.sourceRoot = sourceRoot;
+        this.count = count;
+        this.detail = detail;
+    }
+
+    public static TestDiscoveryResult success(
+        String projectMode,
+        String projectRoot,
+        String testsRoot,
+        String sourceRoot,
+        int count
+    ) {
+        return new TestDiscoveryResult(
+            false,
+            true,
+            false,
+            (String) Objects.requireNonNull(projectMode, "projectMode must not be null"),
+            (String) Objects.requireNonNull(projectRoot, "projectRoot must not be null"),
+            null,
+            (String) Objects.requireNonNull(testsRoot, "testsRoot must not be null"),
+            (String) Objects.requireNonNull(sourceRoot, "sourceRoot must not be null"),
+            count,
+            null
+        );
+    }
+
+    public static TestDiscoveryResult workspaceMemberSuccess(
+        String memberRoot,
+        String testsRoot,
+        String sourceRoot,
+        int count
+    ) {
+        return new TestDiscoveryResult(
+            true,
+            true,
+            false,
+            null,
+            null,
+            (String) Objects.requireNonNull(memberRoot, "memberRoot must not be null"),
+            (String) Objects.requireNonNull(testsRoot, "testsRoot must not be null"),
+            (String) Objects.requireNonNull(sourceRoot, "sourceRoot must not be null"),
+            count,
+            null
+        );
+    }
+
+    public static TestDiscoveryResult failure(String detail) {
+        return new TestDiscoveryResult(
+            false,
+            false,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0,
+            (String) Objects.requireNonNull(detail, "detail must not be null")
+        );
+    }
+
+    public static TestDiscoveryResult noTestsFound(String testsRoot) {
+        return new TestDiscoveryResult(
+            false,
+            false,
+            true,
+            null,
+            null,
+            null,
+            (String) Objects.requireNonNull(testsRoot, "testsRoot must not be null"),
+            null,
+            0,
+            null
+        );
+    }
+
+    public static TestDiscoveryResult workspaceMemberNoTestsFound(String memberRoot, String testsRoot) {
+        return new TestDiscoveryResult(
+            true,
+            false,
+            true,
+            null,
+            null,
+            (String) Objects.requireNonNull(memberRoot, "memberRoot must not be null"),
+            (String) Objects.requireNonNull(testsRoot, "testsRoot must not be null"),
+            null,
+            0,
+            null
+        );
+    }
+
+    public boolean workspaceMember() { return this.workspaceMember; }
+    public boolean success() { return this.success; }
+    public boolean noTestsFound() { return this.noTestsFound; }
+    public String projectMode() { return this.projectMode; }
+    public String projectRoot() { return this.projectRoot; }
+    public String memberRoot() { return this.memberRoot; }
+    public String testsRoot() { return this.testsRoot; }
+    public String sourceRoot() { return this.sourceRoot; }
+    public int count() { return this.count; }
+    public String detail() { return this.detail; }
+}

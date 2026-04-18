@@ -1,0 +1,116 @@
+package author.project;
+
+import pulse.lang.Object;
+import pulse.lang.String;
+import pulse.util.Objects;
+
+/**
+ * Resolved test invocation view for compiler-facing authoring flows.
+ */
+public final class TestInvocation {
+    private final String projectRoot;
+    private final String sourceRoot;
+    private final String testsRoot;
+    private final boolean usedManifest;
+    private final boolean authorlibEnabled;
+
+    /**
+     * Creates one resolved test invocation.
+     */
+    public TestInvocation(
+        String projectRoot,
+        String sourceRoot,
+        String testsRoot,
+        boolean usedManifest,
+        boolean authorlibEnabled
+    ) {
+        this.projectRoot = (String) Objects.requireNonNull(projectRoot, "projectRoot must not be null");
+        this.sourceRoot = (String) Objects.requireNonNull(sourceRoot, "sourceRoot must not be null");
+        this.testsRoot = (String) Objects.requireNonNull(testsRoot, "testsRoot must not be null");
+        this.usedManifest = usedManifest;
+        this.authorlibEnabled = authorlibEnabled;
+    }
+
+    /**
+     * Returns the resolved project root.
+     */
+    public String projectRoot() {
+        return this.projectRoot;
+    }
+
+    /**
+     * Returns the resolved main source root.
+     */
+    public String sourceRoot() {
+        return this.sourceRoot;
+    }
+
+    /**
+     * Returns the resolved tests root.
+     */
+    public String testsRoot() {
+        return this.testsRoot;
+    }
+
+    /**
+     * Reports whether a manifest supplied the invocation.
+     */
+    public boolean usedManifest() {
+        return this.usedManifest;
+    }
+
+    /**
+     * Reports whether authorlib is enabled for the resolved invocation.
+     */
+    public boolean authorlibEnabled() {
+        return this.authorlibEnabled;
+    }
+
+    /**
+     * Compares test invocations.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof TestInvocation)) {
+            return false;
+        }
+        TestInvocation value = (TestInvocation) other;
+        return Objects.equals(this.projectRoot, value.projectRoot)
+            && Objects.equals(this.sourceRoot, value.sourceRoot)
+            && Objects.equals(this.testsRoot, value.testsRoot)
+            && this.usedManifest == value.usedManifest
+            && this.authorlibEnabled == value.authorlibEnabled;
+    }
+
+    /**
+     * Returns a stable invocation hash.
+     */
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + Objects.hashCode(this.projectRoot);
+        hash = (31 * hash) + Objects.hashCode(this.sourceRoot);
+        hash = (31 * hash) + Objects.hashCode(this.testsRoot);
+        hash = (31 * hash) + (this.usedManifest ? 1 : 0);
+        hash = (31 * hash) + (this.authorlibEnabled ? 1 : 0);
+        return hash;
+    }
+
+    /**
+     * Returns a concise debug representation.
+     */
+    public String toString() {
+        return "TestInvocation[projectRoot="
+            .concat(this.projectRoot)
+            .concat(", sourceRoot=")
+            .concat(this.sourceRoot)
+            .concat(", testsRoot=")
+            .concat(this.testsRoot)
+            .concat(", usedManifest=")
+            .concat(String.valueOf(this.usedManifest))
+            .concat(", authorlibEnabled=")
+            .concat(String.valueOf(this.authorlibEnabled))
+            .concat("]");
+    }
+}

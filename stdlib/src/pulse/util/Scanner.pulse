@@ -1,0 +1,304 @@
+package pulse.util;
+
+import pulse.io.InputStream;
+import pulse.lang.AutoCloseable;
+import pulse.lang.Boolean;
+import pulse.lang.Double;
+import pulse.lang.Float;
+import pulse.lang.Integer;
+import pulse.lang.Long;
+import pulse.lang.String;
+
+/**
+ * Practical token-and-line scanner over the current text-first string/input baseline.
+ */
+public final class Scanner implements AutoCloseable {
+    private String source;
+    private int cursor;
+    private String delimiter;
+    private boolean useWhitespaceDelimiter;
+    private boolean closed;
+
+    /**
+     * Creates a scanner over the supplied text using the default ASCII-whitespace delimiter policy.
+     * Use this for practical token scanning over already-available text.
+     */
+    public Scanner(String source) {
+        this.source = source;
+        this.cursor = 0;
+        this.delimiter = null;
+        this.useWhitespaceDelimiter = true;
+        this.closed = false;
+    }
+
+    /**
+     * Creates a scanner over the supplied input stream by reading its current full text payload.
+     * Use this for practical file-backed token scanning on the current text-first IO baseline.
+     */
+    public Scanner(InputStream input) {
+        String text = input.readAllOrDefault("");
+        this.source = text;
+        this.cursor = 0;
+        this.delimiter = null;
+        this.useWhitespaceDelimiter = true;
+        this.closed = false;
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            pulse.rt.Intrinsics.panic("Scanner is closed");
+        }
+    }
+
+    private boolean isWhitespace(char value) {
+        return value == ' ' || value == '\t' || value == '\n' || value == '\r';
+    }
+
+    private int skipDelimiters(int start) {
+        int index = start;
+        if (this.useWhitespaceDelimiter) {
+            while (index < this.source.length() && this.isWhitespace(this.source.charAt(index))) {
+                index = index + 1;
+            }
+            return index;
+        }
+
+        while (index < this.source.length()) {
+            String tail = this.source.substring(index);
+            boolean matchesDelimiter = tail.startsWith(this.delimiter);
+            if (!matchesDelimiter) {
+                return index;
+            }
+            index = index + this.delimiter.length();
+        }
+        return index;
+    }
+
+    private int findTokenEnd(int start) {
+        int index = start;
+        if (this.useWhitespaceDelimiter) {
+            while (index < this.source.length() && !this.isWhitespace(this.source.charAt(index))) {
+                index = index + 1;
+            }
+            return index;
+        }
+
+        while (index < this.source.length()) {
+            String tail = this.source.substring(index);
+            boolean matchesDelimiter = tail.startsWith(this.delimiter);
+            if (matchesDelimiter) {
+                return index;
+            }
+            index = index + 1;
+        }
+        return index;
+    }
+
+    /**
+     * Switches this scanner to use the supplied non-empty delimiter text for token scanning.
+     * Use this when tokens should be split by a literal separator instead of ASCII whitespace.
+     */
+    public Scanner useDelimiter(String delimiter) {
+        this.ensureOpen();
+        if (delimiter == null || delimiter.isEmpty()) {
+            pulse.rt.Intrinsics.panic("Scanner delimiter must be non-empty");
+        }
+        this.delimiter = delimiter;
+        this.useWhitespaceDelimiter = false;
+        return this;
+    }
+
+    /**
+     * Restores the default ASCII-whitespace delimiter policy.
+     * Use this when code wants to return from literal-delimiter scanning to ordinary token scanning.
+     */
+    public Scanner useWhitespaceDelimiter() {
+        this.ensureOpen();
+        this.delimiter = null;
+        this.useWhitespaceDelimiter = true;
+        return this;
+    }
+
+    /**
+     * Reports whether another token is available under the current delimiter policy.
+     * Use this before `next()` when code wants explicit token-availability checks.
+     */
+    public boolean hasNext() {
+        this.ensureOpen();
+        return this.skipDelimiters(this.cursor) < this.source.length();
+    }
+
+    /**
+     * Returns the next token under the current delimiter policy.
+     * Use this for practical left-to-right token scanning.
+     */
+    public String next() {
+        this.ensureOpen();
+        int start = this.skipDelimiters(this.cursor);
+        if (start >= this.source.length()) {
+            pulse.rt.Intrinsics.panic("Scanner has no more tokens");
+        }
+        int end = this.findTokenEnd(start);
+        this.cursor = end;
+        return this.source.substring(start, end);
+    }
+
+    /**
+     * Reports whether another line is available from the current cursor position.
+     * Use this before `nextLine()` when line-availability checks are preferable to exceptions.
+     */
+    public boolean hasNextLine() {
+        this.ensureOpen();
+        return this.cursor < this.source.length();
+    }
+
+    /**
+     * Returns the next line from the current cursor position.
+     * Use this for line-oriented scanning independent of the current token delimiter policy.
+     */
+    public String nextLine() {
+        this.ensureOpen();
+        if (this.cursor >= this.source.length()) {
+            pulse.rt.Intrinsics.panic("Scanner has no more lines");
+        }
+
+        int start = this.cursor;
+        int index = this.cursor;
+        while (index < this.source.length()) {
+            if (this.source.charAt(index) == '\n') {
+                int end = index;
+                if (end > start && this.source.charAt(end - 1) == '\r') {
+                    end = end - 1;
+                }
+                this.cursor = index + 1;
+                return this.source.substring(start, end);
+            }
+            index = index + 1;
+        }
+
+        this.cursor = this.source.length();
+        return this.source.substring(start);
+    }
+
+    /**
+     * Parses and returns the next token as an int.
+     * Use this for practical numeric token scanning without manual wrapper calls.
+     */
+    public int nextInt() {
+        String text = this.next();
+        Integer value = Integer.parse(text);
+        return Integer.intValue(value);
+    }
+
+    /**
+     * Parses and returns the next token as a boolean.
+     * Use this for practical boolean token scanning without manual wrapper calls.
+     */
+    public boolean nextBoolean() {
+        String text = this.next();
+        Boolean value = Boolean.parse(text);
+        return Boolean.booleanValue(value);
+    }
+
+    /**
+     * Parses and returns the next token as a float.
+     * Use this for practical single-precision numeric token scanning.
+     */
+    public float nextFloat() {
+        String text = this.next();
+        Float value = Float.parse(text);
+        return Float.floatValue(value);
+    }
+
+    /**
+     * Parses and returns the next token as a double.
+     * Use this for practical double-precision numeric token scanning.
+     */
+    public double nextDouble() {
+        String text = this.next();
+        Double value = Double.parse(text);
+        return Double.doubleValue(value);
+    }
+
+    /**
+     * Parses and returns the next token as a long.
+     * Use this for practical wide-integer token scanning without manual wrapper calls.
+     */
+    public long nextLong() {
+        String text = this.next();
+        Long value = Long.parse(text);
+        return Long.longValue(value);
+    }
+
+    /**
+     * Returns the next token when present, otherwise the supplied fallback.
+     * Use this when token reads should be deterministic instead of throwing at end-of-input.
+     */
+    public String nextOrDefault(String fallback) {
+        this.ensureOpen();
+        if (!this.hasNext()) {
+            return fallback;
+        }
+        return this.next();
+    }
+
+    /**
+     * Returns the next line when present, otherwise the supplied fallback.
+     * Use this when line reads should be deterministic instead of throwing at end-of-input.
+     */
+    public String nextLineOrDefault(String fallback) {
+        this.ensureOpen();
+        if (!this.hasNextLine()) {
+            return fallback;
+        }
+        return this.nextLine();
+    }
+
+    /**
+     * Returns the remaining unconsumed text from the current cursor position.
+     * Use this when higher-level parsing wants the unread tail without more token stepping.
+     */
+    public String remainingText() {
+        this.ensureOpen();
+        if (this.cursor >= this.source.length()) {
+            return "";
+        }
+        return this.source.substring(this.cursor);
+    }
+
+    /**
+     * Resets the scanner cursor to the start of the current source text.
+     * Use this when one scanner instance should be reused for another pass.
+     */
+    public void reset() {
+        this.ensureOpen();
+        this.cursor = 0;
+    }
+
+    /**
+     * Reports whether this scanner facade has been closed.
+     * Use this for explicit lifecycle checks.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Reports whether this scanner facade is currently open.
+     * Use this for explicit lifecycle checks without negating `isClosed()`.
+     */
+    public boolean isOpen() {
+        return !this.closed;
+    }
+
+    /**
+     * Closes this scanner facade.
+     * Closing is idempotent and only affects this stdlib wrapper state.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        this.closed = true;
+    }
+}

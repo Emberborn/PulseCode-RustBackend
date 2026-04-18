@@ -1,0 +1,94 @@
+package author.project;
+
+import pulse.io.Path;
+import pulse.lang.String;
+import pulse.util.Objects;
+
+/**
+ * Resolves compiler-facing check and test invocations from the current project surface.
+ */
+public final class ProjectInvocationResolver {
+    /**
+     * Resolves one check invocation from the supplied start path and optional direct overrides.
+     */
+    public static CheckInvocation resolveCheckInvocation(
+        String startPath,
+        String sourceRootOverride,
+        String entryPathOverride
+    ) {
+        String start = Path.normalize((String) Objects.requireNonNull(startPath, "startPath must not be null"));
+        String sourceRoot = ProjectInvocationResolver.normalizeOptional(sourceRootOverride);
+        String entryPath = ProjectInvocationResolver.normalizeOptional(entryPathOverride);
+        String manifestPath = ProjectDiscovery.findManifestPath(start);
+        boolean usedManifest = manifestPath != null;
+        boolean authorlibEnabled = false;
+
+        if (usedManifest) {
+            ProjectManifest manifest = ProjectDiscovery.loadManifest(manifestPath);
+            authorlibEnabled = manifest.authorlibEnabled();
+            if (sourceRoot == null) {
+                sourceRoot = manifest.sources().mainPulseRoot();
+            }
+            if (entryPath == null) {
+                entryPath = Path.resolve(manifest.sources().mainPulseRoot(), manifest.sources().entry());
+            }
+        }
+
+        if (entryPath == null && sourceRoot != null) {
+            entryPath = ProjectDiscovery.discoverEntryPath(sourceRoot);
+        }
+
+        if (entryPath == null) {
+            pulse.rt.Intrinsics.panic(
+                "Missing entry file for 'check'. Provide <entry.pulse> or set [sources].entry in pulsec.toml"
+            );
+        }
+
+        return new CheckInvocation(entryPath, sourceRoot, usedManifest, authorlibEnabled);
+    }
+
+    /**
+     * Resolves one test invocation from the supplied start path and optional source-root override.
+     */
+    public static TestInvocation resolveTestInvocation(
+        String startPath,
+        String sourceRootOverride
+    ) {
+        String start = Path.normalize((String) Objects.requireNonNull(startPath, "startPath must not be null"));
+        String sourceRoot = ProjectInvocationResolver.normalizeOptional(sourceRootOverride);
+        String manifestPath = ProjectDiscovery.findManifestPath(start);
+        boolean usedManifest = manifestPath != null;
+        boolean authorlibEnabled = false;
+        String projectRoot;
+        String testsRoot;
+
+        if (usedManifest) {
+            ProjectManifest manifest = ProjectDiscovery.loadManifest(manifestPath);
+            authorlibEnabled = manifest.authorlibEnabled();
+            projectRoot = Path.parent(manifestPath);
+            if (sourceRoot == null) {
+                sourceRoot = manifest.sources().mainPulseRoot();
+            }
+            testsRoot = manifest.sources().testPulseRoot();
+        } else {
+            projectRoot = start;
+            if (sourceRoot == null) {
+                sourceRoot = Path.resolve(projectRoot, "src/main/pulse");
+            }
+            testsRoot = Path.resolve(projectRoot, "tests");
+        }
+
+        return new TestInvocation(projectRoot, sourceRoot, testsRoot, usedManifest, authorlibEnabled);
+    }
+
+    private static String normalizeOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = Path.normalize(value);
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        return normalized;
+    }
+}

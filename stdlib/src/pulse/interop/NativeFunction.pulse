@@ -1,0 +1,124 @@
+package pulse.interop;
+
+import pulse.lang.Object;
+import pulse.lang.String;
+import pulse.util.Objects;
+
+/**
+ * Structured wrapper over one raw native function or callback pointer.
+ * Use this when Pulse code needs to invoke one foreign function directly or pass one callable address back into another foreign API.
+ */
+public final class NativeFunction {
+    private final NativeLibrary library;
+    private final String name;
+    private final long address;
+
+    private NativeFunction(NativeLibrary library, String name, long address) {
+        this.library = library;
+        this.name = name;
+        this.address = address;
+    }
+
+    /**
+     * Wraps one resolved native symbol as one callable function pointer.
+     * Returns `null` when the supplied symbol is missing or unresolved.
+     */
+    public static NativeFunction fromSymbol(NativeSymbol symbol) {
+        if (symbol == null || !symbol.isAvailable()) {
+            return null;
+        }
+        return new NativeFunction(symbol.library(), symbol.name(), symbol.address());
+    }
+
+    /**
+     * Wraps one raw function pointer address with one optional logical name.
+     * Use this when one foreign API returns a function pointer that should then be called or re-passed under Pulse-owned semantics.
+     */
+    public static NativeFunction fromPointer(NativePointer pointer, String name) {
+        if (pointer == null || pointer.isNull()) {
+            return null;
+        }
+        return new NativeFunction(null, name, pointer.rawAddress());
+    }
+
+    /**
+     * Wraps one raw function pointer address without any additional logical name.
+     * Use this when one foreign API returns a callback/function pointer and only the address matters.
+     */
+    public static NativeFunction fromPointer(NativePointer pointer) {
+        return NativeFunction.fromPointer(pointer, "<pointer>");
+    }
+
+    /**
+     * Returns the owning library wrapper when one named symbol produced this function pointer.
+     * Use this for diagnostics and backend inventory reporting.
+     */
+    public NativeLibrary library() { return this.library; }
+
+    /**
+     * Returns the logical function name when one was available.
+     * Use this for diagnostics around foreign-backed feature ownership.
+     */
+    public String name() { return this.name; }
+
+    /**
+     * Returns the raw native callable address.
+     * Use this only at the low-level call boundary or when another foreign API expects a callback/function pointer argument.
+     */
+    public long address() { return this.address; }
+
+    /**
+     * Returns this callable address as one structured pointer wrapper.
+     * Use this when one foreign API expects one pointer-shaped callback/function address.
+     */
+    public NativePointer pointer() { return NativePointer.fromRaw(this.address); }
+
+    /**
+     * Reports whether this wrapper currently points at one non-zero callable address.
+     * Use this before direct raw call sites and callback registration.
+     */
+    public boolean isAvailable() { return this.address != 0L; }
+
+    /**
+     * Reports whether two callable wrappers reference the same logical library/name/address triple.
+     * Use this for deterministic function-pointer comparison in tests and caches.
+     */
+    public boolean equals(Object other) {
+        if (((Object) this) == other) {
+            return true;
+        }
+        if (!(other instanceof NativeFunction)) {
+            return false;
+        }
+        NativeFunction value = (NativeFunction) other;
+        return this.address == value.address
+            && Objects.equals(this.library, value.library)
+            && Objects.equals(this.name, value.name);
+    }
+
+    /**
+     * Returns the stable value hash for this callable wrapper.
+     * Use this when foreign function pointers participate in hash-based Pulse caches.
+     */
+    public int hashCode() {
+        int hash = 17;
+        hash = (31 * hash) + Objects.hashCode(this.library);
+        hash = (31 * hash) + Objects.hashCode(this.name);
+        hash = (31 * hash) + (int) (this.address ^ (this.address >>> 32));
+        return hash;
+    }
+
+    /**
+     * Returns a readable debug representation of this callable wrapper.
+     * Use this for interop diagnostics and ownership tracing.
+     */
+    public String toString() {
+        return "NativeFunction[name="
+            .concat(String.valueOf(this.name))
+            .concat(", address=")
+            .concat(String.valueOf(this.address))
+            .concat(", library=")
+            .concat(String.valueOf((Object) this.library))
+            .concat("]");
+    }
+}

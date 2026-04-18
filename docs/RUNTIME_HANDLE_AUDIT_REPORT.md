@@ -20,7 +20,7 @@ was still present across ARC and collection runtime paths after the recent fix.
 ### 1. Pointer-root indexing in runtime emitters
 
 Searched for direct indexed access patterns against pointer-root globals in:
-- [runtime_emitters.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/runtime_emitters.rs)
+- [runtime_emitters.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/runtime_emitters.rs)
 - related backend support/codegen files
 
 Focus:
@@ -36,9 +36,9 @@ Result:
 ### 2. Width/layout checks (`dd` vs `dq`)
 
 Checked:
-- [masm_support.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/support/masm_support.rs)
-- [program_emitters.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/program_emitters.rs)
-- [masm_codegen.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/masm_codegen.rs)
+- [masm_support.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/support/masm_support.rs)
+- [program_emitters.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/program_emitters.rs)
+- [masm_codegen.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/masm_codegen.rs)
 
 Focus:
 - tables of scalar metadata use `dd`
@@ -56,7 +56,7 @@ Result:
 ### 3. ARC table access patterns
 
 Checked ARC runtime access in:
-- [runtime_emitters.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/runtime_emitters.rs)
+- [runtime_emitters.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/runtime_emitters.rs)
 
 Focus:
 - `rt_arc_refcounts`
@@ -78,7 +78,7 @@ Result:
 ### A. Map capacity pointer-root bug
 
 File:
-- [runtime_emitters.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/runtime_emitters.rs)
+- [runtime_emitters.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/runtime_emitters.rs)
 
 Status:
 - fixed
@@ -88,7 +88,7 @@ This was the actual remaining pointer-root bug in the collection runtime path.
 ### B. Stale ARC release helper bug
 
 File:
-- [masm_codegen.rs](/D:/Programming/codex/Aden Lang/crates/adenc-cli/src/backend/emission/masm_codegen.rs)
+- [masm_codegen.rs](/D:/Programming/codex/PulseCode/crates/pulsec-cli/src/backend/emission/masm_codegen.rs)
 
 Status:
 - fixed
@@ -109,7 +109,7 @@ So for the specific shortcut pattern you were worried about, the audited remaini
 There is still one separate runtime-model inconsistency worth calling out:
 
 - strings / arrays / lists / maps return generation-packed handles
-- object construction still returns the raw object slot from `adenc_rt_objectNew`
+- object construction still returns the raw object slot from `pulsec_rt_objectNew`
 
 That is not the same bug as the pointer-root mistake, and it was not required to fix the current crash.
 It is also not yet proven to be wrong in the current object model, because a large amount of object code still assumes slot-style object identity.

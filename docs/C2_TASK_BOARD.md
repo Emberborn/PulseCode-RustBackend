@@ -40,7 +40,7 @@ C2-08 progress notes:
 - current runtime handle-slot space uses ABI v2 `slot32` semantics: dynamic growth from `initial=63` up to the `u32` slot domain hard ceiling (`4294967295` slot-capacity value, with slot `0` reserved as null).
 - current runtime array max length is `2147483647` elements (`int` max); `arrayNew(2147483647)` is accepted by bounds and then governed by deterministic allocator/OOM behavior.
 - current runtime list/map max capacity is also `2147483647` elements/entries (`int` max) with deterministic exhaustion failure beyond that cap.
-- allocator policy/alignment contract is locked in docs + `native.plan.json` (`adenc.alloc.policy.v1`) and covered by C2 stage-lock tests.
+- allocator policy/alignment contract is locked in docs + `native.plan.json` (`pulsec.alloc.policy.v1`) and covered by C2 stage-lock tests.
 
 C2-12 progress notes:
 - deterministic array-allocation failure path is now runtime-enforced (`Array allocation failed`, non-zero exit).
@@ -73,7 +73,7 @@ C2-11 progress notes:
 | ID | Task | Depends On | Owner | Target | Status | Done When |
 |---|---|---|---|---|---|---|
 | C2-13 | Lock ABI v2 contract (`u64` handles, symbol/version policy, null/stale semantics, compatibility model) | C2-01 | Codex | 2026-03-10 | Done (Locked) | `RUNTIME_INTRINSICS_ABI.md` defines `abi_version=v2` + 64-bit handle schema with deterministic mismatch behavior |
-| C2-14 | Migrate compiler/stdlib intrinsic surface from handle-`int` to handle-`long` (semantic/typecheck + stdlib call sites) | C2-13 | Codex | 2026-03-10 | Done (Locked) | `com.aden.rt.Intrinsics` handle-bearing APIs are `long`-based and all `check/build` fixtures pass |
+| C2-14 | Migrate compiler/stdlib intrinsic surface from handle-`int` to handle-`long` (semantic/typecheck + stdlib call sites) | C2-13 | Codex | 2026-03-10 | Done (Locked) | `com.pulse.rt.Intrinsics` handle-bearing APIs are `long`-based and all `check/build` fixtures pass |
 | C2-15 | Migrate backend/runtime to 64-bit handle ops and dynamic metadata tables (remove fixed-slot ceiling behavior) | C2-13, C2-14 | Codex | 2026-03-10 | Done (Locked) | Runtime uses heap-backed growable metadata domains; handle ops are 64-bit end-to-end with deterministic OOM |
 | C2-16 | Add ABI v2 lock fixtures (compat mismatch, stale/generation checks, growth beyond legacy limits) | C2-15 | Codex | 2026-03-10 | Done (Locked) | Stage-lock fixtures prove v2 invariants (markers, stale/generation, growth > legacy limits); runtime mismatch fail-fast is now locked by C2-24 |
 | C2-16.1 | Finalize ABI v2 32/32 handle packing + low-capacity hardening (slot32 + high-32 generation) | C2-16 | Codex | 2026-03-10 | Done (Locked) | Runtime encode/decode paths use 32-bit slot + 32-bit generation packing consistently, bootstrap capacity is tuned to `initial=63`, low-capacity fixtures are validated (`>=1`), and full suite is green at tuned baseline |
@@ -85,9 +85,9 @@ C2-13 progress notes:
 - stage-lock/native-plan tests were updated to assert ABI version metadata presence.
 
 C2-14 progress notes:
-- stdlib `com.aden.rt.Intrinsics` handle-bearing APIs were migrated to `long` (`array*`, `list*`, `map*`, `arcRetain/arcRelease`, `weak*`).
+- stdlib `com.pulse.rt.Intrinsics` handle-bearing APIs were migrated to `long` (`array*`, `list*`, `map*`, `arcRetain/arcRelease`, `weak*`).
 - stdlib collection/io handle fields were migrated to `long` (`Array`, `ArrayList`, `LinkedList`, `Map`, `HashMap`, `HashSet`, `Files`).
-- semantic builtin metadata for `com.aden.rt.Intrinsics` was migrated to `long` signatures so typecheck aligns with stdlib surface.
+- semantic builtin metadata for `com.pulse.rt.Intrinsics` was migrated to `long` signatures so typecheck aligns with stdlib surface.
 - C2/core lock fixtures were updated for `long` handle usage; full `cargo test` is green.
 
 C2-15 progress notes:
@@ -101,7 +101,7 @@ C2-15 progress notes:
 - legacy fixed ceiling paths were lifted from 16-bit-era limits into ABI v2 32/32 slot/generation handling, removing hardcoded narrow-slot saturation behavior across backend/runtime emission.
 - weak allocator lock coverage now validates growth past early fixed-era slot ceilings without early exhaustion, while retaining emitted weak-exhaustion diagnostic symbols in runtime asm.
 - C2 lock suite and full workspace tests remain green after 64-bit propagation changes.
-- ARC metadata lanes now grow through `adenc_rt_ensureSlotCapacity` with heap-backed table swap/copy semantics (refcount/kind/flags/meta/generation/free-next).
+- ARC metadata lanes now grow through `pulsec_rt_ensureSlotCapacity` with heap-backed table swap/copy semantics (refcount/kind/flags/meta/generation/free-next).
 - Win64 call-site safety fixes were applied for slot-growth paths (shadow-space + volatile register preservation in `weakNew` and ARC slot alloc paths).
 - remaining C2-15 scope: migrate non-ARC metadata domains (`rt_arr_*`, `rt_list_*`, `rt_map_*`, `rt_weak_*`) from fixed static `dup(...)` tables to heap-backed growable tables, then remove the remaining configured ceiling.
 - migration inventory is now enumerated from backend emission surface (direct indexed table access hotspots):
@@ -109,15 +109,15 @@ C2-15 progress notes:
   - medium/low-frequency tables: `rt_arr_*`, `rt_arc_flags/meta/free_next`, `rt_weak_*`
   - trace arrays (`rt_trace_*`) remain static/non-slot domains and are out of no-ceiling slot-table scope.
 - weak-table migration chunk completed:
-  - runtime emits weak table pointer roots (`rt_weak_free_next_ptr`, `rt_weak_target_slot_ptr`, `rt_weak_target_gen_ptr`, `rt_weak_generation_ptr`) and initializes them in `adenc_rt_init`.
+  - runtime emits weak table pointer roots (`rt_weak_free_next_ptr`, `rt_weak_target_slot_ptr`, `rt_weak_target_gen_ptr`, `rt_weak_generation_ptr`) and initializes them in `pulsec_rt_init`.
   - `weakNew`, `weakGet`, and `weakClear` were switched from direct static-table indexing to pointer-based addressing via those roots.
-  - `adenc_rt_ensureSlotCapacity` now allocates/copies/swaps/frees weak metadata lanes alongside ARC lanes, with `rt_weak_heap_owned` tracking heap ownership for deterministic cleanup.
+  - `pulsec_rt_ensureSlotCapacity` now allocates/copies/swaps/frees weak metadata lanes alongside ARC lanes, with `rt_weak_heap_owned` tracking heap ownership for deterministic cleanup.
 - ARC table growth migration chunk completed:
-  - ARC table storage symbols were separated (`*_tbl`) and runtime code now accesses ARC lanes through register-based aliases (`rt_arc_refcounts/kinds/flags/meta/generation/free_next`) initialized in `adenc_rt_init`.
+  - ARC table storage symbols were separated (`*_tbl`) and runtime code now accesses ARC lanes through register-based aliases (`rt_arc_refcounts/kinds/flags/meta/generation/free_next`) initialized in `pulsec_rt_init`.
   - alias collisions were resolved by renaming the ARC generation overflow diagnostic symbol to `rt_arc_gen_overflow_err`.
-  - `adenc_rt_ensureSlotCapacity` now allocates/copies/swaps ARC table bases and updates runtime capacity deterministically.
+  - `pulsec_rt_ensureSlotCapacity` now allocates/copies/swaps ARC table bases and updates runtime capacity deterministically.
 - non-ARC metadata growth migration chunk completed:
-  - `adenc_rt_ensureSlotCapacity` now grows/copies/swaps/frees array/list/map metadata lanes via pointer roots (`rt_arr_*_ptr`, `rt_list_*_ptr`, `rt_map_*_ptr`) for both `dd` and `dq` lane types.
+  - `pulsec_rt_ensureSlotCapacity` now grows/copies/swaps/frees array/list/map metadata lanes via pointer roots (`rt_arr_*_ptr`, `rt_list_*_ptr`, `rt_map_*_ptr`) for both `dd` and `dq` lane types.
   - per-domain heap ownership flags (`rt_arr_heap_owned`, `rt_list_heap_owned`, `rt_map_heap_owned`) are now respected during growth and set once migration to heap-backed tables occurs.
   - lock and fixture evidence remained green after migration (`stage_locks_c2`, strict/repeated soak fixture executes, full `cargo test`).
 - fixed-ceiling removal completed for runtime handle slots:
@@ -136,8 +136,8 @@ C2-15 progress notes:
 - C2-16.1 hardening completed:
   - handle packing/unpacking now consistently uses ABI v2 `slot32 | (generation32 << 32)` across runtime encode/decode call paths.
   - stale-handle guards now validate generation from the high 32 bits deterministically.
-  - `adenc_rt_ensureSlotCapacity` now grows string metadata lanes alongside ARC/array/list/map/weak lanes.
-  - `adenc_rt_stringFromBytes` now preserves volatile source inputs across growth calls (prevents growth-boundary copy faults).
+  - `pulsec_rt_ensureSlotCapacity` now grows string metadata lanes alongside ARC/array/list/map/weak lanes.
+  - `pulsec_rt_stringFromBytes` now preserves volatile source inputs across growth calls (prevents growth-boundary copy faults).
   - object-instance field slot capacity is aligned with the runtime initial-capacity baseline.
   - low-capacity validation is complete: `1,3,7,15,31,63,127,255,511,1023` pass fixture gates; `0` fails as expected.
 - C2-16.2 hardening completed:
@@ -198,11 +198,11 @@ C2-22 progress notes:
   - `PULSEC_SOAK_TREND_ITERS` (default `8`, min `5`),
   - `PULSEC_SOAK_PEAK_SPREAD_BYTES` (default `12582912`),
   - `PULSEC_SOAK_PEAK_DRIFT_BYTES` (default `8388608`).
-- verification is green: `cargo test -q -p adenc --test stage_locks_c2` and full `cargo test -q`.
+- verification is green: `cargo test -q -p pulsec --test stage_locks_c2` and full `cargo test -q`.
 
 C2-23 progress notes:
 - runtime threading contract is now explicitly locked in `docs/RUNTIME_INTRINSICS_ABI.md` (`C2-23 threading model lock`):
-  - `schema: adenc.runtime.threading.v1`
+  - `schema: pulsec.runtime.threading.v1`
   - `model: single-threaded`
   - `arc_atomicity: non-atomic`
   - `runtime_thread_safety: not-thread-safe`
@@ -214,7 +214,7 @@ C2-23 progress notes:
 - full regression verification is green (`cargo test -q`).
 
 C2-24 progress notes:
-- runtime ABI compatibility contract is now locked in docs (`C2-24 runtime ABI compatibility lock`) with schema `adenc.runtime.abi.v1`.
+- runtime ABI compatibility contract is now locked in docs (`C2-24 runtime ABI compatibility lock`) with schema `pulsec.runtime.abi.v1`.
 - native plan now emits `runtime.abi_compatibility` fields:
   - `compiler_abi_version`
   - `runtime_abi_version`
@@ -227,13 +227,13 @@ C2-24 progress notes:
 
 C2-25 progress notes:
 - closure artifact package is now published and cross-linked:
-  - [C2_CLOSURE_CHECKLIST.md](/D:/Programming/codex/Aden Lang/docs/C2_CLOSURE_CHECKLIST.md)
-  - [C2_MEMORY_ARC.md](/D:/Programming/codex/Aden Lang/docs/C2_MEMORY_ARC.md)
-  - [C2_CYCLE_STRATEGY.md](/D:/Programming/codex/Aden Lang/docs/C2_CYCLE_STRATEGY.md)
-  - [C2_CI_MATRIX.md](/D:/Programming/codex/Aden Lang/docs/C2_CI_MATRIX.md)
-  - [C2_EVIDENCE_INDEX.md](/D:/Programming/codex/Aden Lang/docs/C2_EVIDENCE_INDEX.md)
+  - [C2_CLOSURE_CHECKLIST.md](/D:/Programming/codex/PulseCode/docs/C2_CLOSURE_CHECKLIST.md)
+  - [C2_MEMORY_ARC.md](/D:/Programming/codex/PulseCode/docs/C2_MEMORY_ARC.md)
+  - [C2_CYCLE_STRATEGY.md](/D:/Programming/codex/PulseCode/docs/C2_CYCLE_STRATEGY.md)
+  - [C2_CI_MATRIX.md](/D:/Programming/codex/PulseCode/docs/C2_CI_MATRIX.md)
+  - [C2_EVIDENCE_INDEX.md](/D:/Programming/codex/PulseCode/docs/C2_EVIDENCE_INDEX.md)
 - C2 closure evidence:
-  - `cargo test -q -p adenc --test stage_locks_c2` is green (`33/33`)
+  - `cargo test -q -p pulsec --test stage_locks_c2` is green (`33/33`)
   - `cargo test -q` is green (full workspace)
 - C2 tasks and gates are now fully locked (`C2-01`..`C2-25`, `C2-G1`..`C2-G12`).
 

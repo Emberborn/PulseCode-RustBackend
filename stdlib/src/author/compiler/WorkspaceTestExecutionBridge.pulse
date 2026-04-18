@@ -1,0 +1,100 @@
+package author.compiler;
+
+/**
+ * Bridge codec for provider-backed workspace-test execution results.
+ */
+public final class WorkspaceTestExecutionBridge {
+    public static String toBridgeText(WorkspaceTestExecutionResult result) {
+        return WorkspaceTestExecutionBridge.writeValue(String.valueOf(result.success()))
+            .concat(WorkspaceTestExecutionBridge.writeValue(result.outputText()))
+            .concat(WorkspaceTestExecutionBridge.writeValue(String.valueOf(result.passed())))
+            .concat(WorkspaceTestExecutionBridge.writeValue(String.valueOf(result.failed())))
+            .concat(WorkspaceTestExecutionBridge.writeValue(String.valueOf(result.total())))
+            .concat(WorkspaceTestExecutionBridge.writeValue(result.detail()));
+    }
+
+    public static WorkspaceTestExecutionResult fromBridgeText(String text) {
+        if ("true".equals(WorkspaceTestExecutionBridge.readValue(text, 0))) {
+            return WorkspaceTestExecutionResult.success(
+                WorkspaceTestExecutionBridge.readValue(text, 1),
+                WorkspaceTestExecutionBridge.parseCount(WorkspaceTestExecutionBridge.readValue(text, 2)),
+                WorkspaceTestExecutionBridge.parseCount(WorkspaceTestExecutionBridge.readValue(text, 3)),
+                WorkspaceTestExecutionBridge.parseCount(WorkspaceTestExecutionBridge.readValue(text, 4))
+            );
+        }
+        return WorkspaceTestExecutionResult.failure(
+            WorkspaceTestExecutionBridge.readValue(text, 5)
+        );
+    }
+
+    private static String writeValue(String value) {
+        if (value == null) {
+            return "0:\n";
+        }
+        return "1:"
+            .concat(WorkspaceTestExecutionBridge.escape(value))
+            .concat("\n");
+    }
+
+    private static String readValue(String text, int index) {
+        int lineIndex = 0;
+        int start = 0;
+        while (lineIndex < index) {
+            int next = text.indexOf('\n', start);
+            if (next < 0) {
+                return null;
+            }
+            start = next + 1;
+            lineIndex = lineIndex + 1;
+        }
+        int end = text.indexOf('\n', start);
+        String line = end < 0 ? text.substring(start) : text.substring(start, end);
+        int separator = line.indexOf(':');
+        if (separator < 0) {
+            return null;
+        }
+        if (line.substring(0, separator).equals("0")) {
+            return null;
+        }
+        return WorkspaceTestExecutionBridge.unescape(line.substring(separator + 1));
+    }
+
+    private static int parseCount(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0;
+        }
+        return Integer.parse(value);
+    }
+
+    private static String escape(String value) {
+        return value
+            .replace("\\", "\\\\")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r");
+    }
+
+    private static String unescape(String value) {
+        String out = "";
+        int index = 0;
+        while (index < value.length()) {
+            char ch = value.charAt(index);
+            if (ch != '\\' || index + 1 >= value.length()) {
+                out = out.concat(String.valueOf(ch));
+                index = index + 1;
+                continue;
+            }
+            char escaped = value.charAt(index + 1);
+            if (escaped == 'n') {
+                out = out.concat("\n");
+            } else if (escaped == 'r') {
+                out = out.concat("\r");
+            } else if (escaped == '\\') {
+                out = out.concat("\\");
+            } else {
+                out = out.concat("\\").concat(String.valueOf(escaped));
+            }
+            index = index + 2;
+        }
+        return out;
+    }
+}

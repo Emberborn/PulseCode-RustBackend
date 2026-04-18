@@ -1,5 +1,0 @@
-schema=pulsec.artifact.stamp.v1
-name=adenc
-version=0.1.0
-profile=debug
-stamp=adenc-0.1.0-debug

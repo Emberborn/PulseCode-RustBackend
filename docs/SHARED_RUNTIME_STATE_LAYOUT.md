@@ -1,6 +1,6 @@
 # Shared Runtime State Layout
 
-Schema intent: `adenc.shared_runtime.state_layout.v1`
+Schema intent: `pulsec.shared_runtime.state_layout.v1`
 
 This document locks where runtime-global metadata and allocator state live for shared builds.
 
@@ -10,10 +10,10 @@ Runtime-global metadata tables and allocator state live in runtime-owned library
 
 Current runtime-owned storage groups:
 - object metadata:
-  - `adenc_rt_obj_counter`
-  - `adenc_rt_obj_class_ids`
-  - `adenc_rt_obj_class_ids_init`
-  - `adenc_rt_obj_class_ids_heap_owned`
+  - `pulsec_rt_obj_counter`
+  - `pulsec_rt_obj_class_ids`
+  - `pulsec_rt_obj_class_ids_init`
+  - `pulsec_rt_obj_class_ids_heap_owned`
 - allocator / slot state:
   - `rt_handle_next`
   - `rt_slot_capacity`

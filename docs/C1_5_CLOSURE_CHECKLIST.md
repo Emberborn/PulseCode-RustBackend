@@ -26,12 +26,12 @@ Scope:
 - [x] Strict stress fixture exists and verifies deterministic checksum output.
 - [x] Windows toolchain matrix includes default discovery, explicit `--linker`, and `PULSEC_LINKER`.
 - [x] Integration fixture suite is green:
-  - `cargo test -p adenc --test fixture_projects`
+  - `cargo test -p pulsec --test fixture_projects`
 - [x] ABI lock tests are present and green:
-  - `cargo test -p adenc m3_14_`
+  - `cargo test -p pulsec m3_14_`
 - [x] Casting/literal conformance locks are present and split by intent:
-  - success-path suite: `cargo test -p adenc --test stage_locks_casting`
-  - expected-failure suite: `cargo test -p adenc --test stage_locks_casting_failures`
+  - success-path suite: `cargo test -p pulsec --test stage_locks_casting`
+  - expected-failure suite: `cargo test -p pulsec --test stage_locks_casting_failures`
   - includes truncation casts for negative float/double values and boxed literal mapping (`Long a = 20`)
 
 ## Closure Commands
@@ -39,15 +39,15 @@ Scope:
 Run to verify closure status:
 
 ```powershell
-cargo test -p adenc m3_14_
-cargo test -p adenc --test fixture_projects
+cargo test -p pulsec m3_14_
+cargo test -p pulsec --test fixture_projects
 ```
 
 Optional stronger soak pass:
 
 ```powershell
 $env:PULSEC_SOAK_ITERS=10
-cargo test -p adenc --test fixture_projects cli_build_executes_stress_soak_repeatedly -- --exact
+cargo test -p pulsec --test fixture_projects cli_build_executes_stress_soak_repeatedly -- --exact
 Remove-Item Env:PULSEC_SOAK_ITERS
 ```
 

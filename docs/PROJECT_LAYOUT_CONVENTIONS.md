@@ -1,4 +1,4 @@
-# Aden Lang Project Layout Conventions (D2-03)
+# PulseCode Project Layout Conventions (D2-03)
 
 Default project layout follows the Gradle-style structure below.
 
@@ -6,7 +6,7 @@ Default project layout follows the Gradle-style structure below.
 
 ```text
 <project-root>/
-  adenc.toml
+  pulsec.toml
   build/
     asm/
     generated/
@@ -19,13 +19,13 @@ Default project layout follows the Gradle-style structure below.
       libraries/
   src/
     main/
-      aden/
+      pulse/
       resources/
     test/
-      aden/
+      pulse/
       resources/
     api/
-      aden/
+      pulse/
       resources/
   docs/
   libraries/
@@ -44,7 +44,7 @@ Default project layout follows the Gradle-style structure below.
 - `src/main/resources` is copied into `build/assets` as content-only files/directories, not under an extra `resources/` wrapper.
 - For manifest/profile builds, those same resource contents are also published into `build/distro/<profile>` root so the runnable output includes its payload files/directories.
 - `build/distro/release` is deliverable-only: stamped executable plus published resources.
-- `build/distro/debug` includes the stamped executable/resources plus debug diagnostics (`*-build.config.plan.json`, `*-native.link.txt`, `*-native.plan.json`, `*-adenc.ir.txt`, `stamp.txt`).
+- `build/distro/debug` includes the stamped executable/resources plus debug diagnostics (`*-build.config.plan.json`, `*-native.link.txt`, `*-native.plan.json`, `*-pulsec.ir.txt`, `stamp.txt`).
 - Release/debug diagnostic internals that are not published to distro remain available under `build/tmp` for build/debug workflow support.
 - Shared-mode profile builds use a nested runnable layout:
   - `build/distro/<profile>/bin`
@@ -52,23 +52,23 @@ Default project layout follows the Gradle-style structure below.
     - published runtime payload/resources
     - `launch.txt` shared runtime lookup descriptor for shared mode
   - `build/distro/<profile>/lib`
-    - shared runtime library `adencore-<adenc-semver>.dll`
-    - shared import library `adencore-<adenc-semver>.lib`
+    - shared runtime library `pulsecore-<pulsec-semver>.dll`
+    - shared import library `pulsecore-<pulsec-semver>.lib`
   - `build/distro/debug/metadata`
-    - shared debug diagnostics (`*-build.config.plan.json`, `*-native.link.txt`, `*-native.plan.json`, `*-adenc.ir.txt`, `stamp.txt`)
+    - shared debug diagnostics (`*-build.config.plan.json`, `*-native.link.txt`, `*-native.plan.json`, `*-pulsec.ir.txt`, `stamp.txt`)
 - Shared-mode profile roots do not publish the executable or runtime libraries flat at `build/distro/<profile>`; runnable payload lives under `bin` and shared native artifacts live under `lib`.
 - Shared-mode profile publication rules are locked as:
   - `release`: runnable payload only (`bin/` + `lib/`), no debug metadata bucket
   - `debug`: same runnable payload shape plus `metadata/`
   - no `.pdb` or other sidecar symbol artifacts are currently published in either shared profile
 - Shared-mode `bin/launch.txt` resolves runtime payloads by relative sibling location:
-  - build output: `../lib/adencore-<adenc-semver>.dll`
+  - build output: `../lib/pulsecore-<pulsec-semver>.dll`
 
 ## Historical Packaging Note
 
 Older pre-rebase docs may still mention `build/staging` or `build/distro/package` as part of the old compiler-owned packaging pipeline.
 
-Those directories are no longer part of the live compiler contract after [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/Aden Lang/docs/COMPILER_PACKAGING_REMOVAL.md).
+Those directories are no longer part of the live compiler contract after [COMPILER_PACKAGING_REMOVAL.md](/D:/Programming/codex/PulseCode/docs/COMPILER_PACKAGING_REMOVAL.md).
 
 ## E3 Parity Layout Rule
 
@@ -80,14 +80,14 @@ Those directories are no longer part of the live compiler contract after [COMPIL
 
 ## Manifest override keys
 
-Use `[sources]` and `[build]` in `adenc.toml`:
+Use `[sources]` and `[build]` in `pulsec.toml`:
 
 - `[sources]`
-  - `main_aden`
+  - `main_pulse`
   - `main_resources`
-  - `test_aden`
+  - `test_pulse`
   - `test_resources`
-  - `api_aden`
+  - `api_pulse`
   - `api_resources`
   - `docs`
   - `libraries`

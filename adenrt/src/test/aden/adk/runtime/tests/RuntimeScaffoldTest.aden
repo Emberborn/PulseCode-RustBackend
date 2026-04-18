@@ -1,9 +1,0 @@
-package adk.runtime.tests;
-
-import aden.lang.IO;
-
-class RuntimeScaffoldTest {
-    public static void main() {
-        IO.println("runtime_scaffold_ok");
-    }
-}
