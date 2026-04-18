@@ -288,6 +288,9 @@ fn emit_build_invocation_bridge_source() -> String {
         import author.project.WorkspaceContext;
         import author.project.WorkspaceContextBridge;
                 import author.compiler.CheckResult;
+                import author.compiler.CheckExecutionBridge;
+                import author.compiler.CheckExecutionProvider;
+                import author.compiler.CheckExecutionResult;
                 import author.compiler.CheckSummaryWriter;
                 import author.compiler.TestDiagnosticWriter;
                 import author.compiler.TestDiscoveryResult;
@@ -787,6 +790,10 @@ fn emit_build_invocation_bridge_source() -> String {
                     IO.print(Main.renderCompilerCheckResult(Main.readLines(9)));
                     return;
                 }}
+                if (mode.equals("compiler-execute-check")) {{
+                    IO.print(Main.executeCompilerCheck(Main.readLines(5)));
+                    return;
+                }}
                 if (mode.equals("compiler-render-test-discovery")) {{
                     IO.print(Main.renderCompilerTestDiscoveryResult(Main.readLines(10)));
                     return;
@@ -853,6 +860,17 @@ fn emit_build_invocation_bridge_source() -> String {
                     );
                 }}
                 return CheckSummaryWriter.renderCheckResult(result);
+            }}
+
+            private static String executeCompilerCheck(String request) {{
+                CheckExecutionResult result = CheckExecutionProvider.execute(
+                    Main.readValue(request, 0),
+                    Main.readValue(request, 1),
+                    Main.readValue(request, 2),
+                    "true".equals(Main.readValue(request, 3)),
+                    "true".equals(Main.readValue(request, 4))
+                );
+                return CheckExecutionBridge.toBridgeText(result);
             }}
 
             private static String renderBuildWorkspaceStart(String request) {{

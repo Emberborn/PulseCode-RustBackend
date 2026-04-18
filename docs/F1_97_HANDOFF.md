@@ -379,6 +379,13 @@ Current immediate continuation inside that target:
     - `author.compiler.TestExecutionWriter`
   - Rust CLI check/test loops now prefer authored rendering for workspace-member check outcomes and single/workspace test pass/fail lines instead of assembling raw `[PASS]` / `[FAIL]` text inline
     - workspace check/test start/summary/failure rendering now routes through authored workspace result models instead of raw Rust counters and fixed strings
+  - `author.compiler.*` now also has the first real compiler execution slice:
+    - `author.compiler.CheckExecutionResult`
+    - `author.compiler.CheckExecutionBridge`
+    - `author.compiler.CheckExecutionProvider`
+  - single-project `pulsec check` now prefers authored compiler execution through the cached bridge
+    - Pulse owns the check-execution orchestration and calls the current `pulsec` binary as a host provider through `pulse.process.*`
+    - Rust still provides the parser/analysis implementation underneath that provider call, but it is no longer the only conductor of the hot-path single-project check flow
   - remaining Rust-owned build publication/materialization residue is now:
     - fallback/bootstrap publication-plan mirroring
     - fallback/bootstrap layout materialization mirroring

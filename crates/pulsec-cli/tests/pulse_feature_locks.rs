@@ -116,6 +116,9 @@ enabled = true
         import author.build.BuildPublicationWriter;
         import author.build.WorkspaceBuildMemberResult;
         import author.build.WorkspaceBuildResult;
+        import author.compiler.CheckExecutionBridge;
+        import author.compiler.CheckExecutionProvider;
+        import author.compiler.CheckExecutionResult;
         import author.compiler.CheckResult;
         import author.compiler.CheckSummaryWriter;
         import author.compiler.TestDiscoveryResult;
@@ -448,6 +451,16 @@ enabled = true
                         "workspace/demo/src/main/pulse"
                     )
                 );
+                CheckExecutionResult checkExecOk = CheckExecutionResult.success("demo", 2, 3, 4);
+                String checkExecBridge = CheckExecutionBridge.toBridgeText(checkExecOk);
+                CheckExecutionResult parsedCheckExec =
+                    CheckExecutionBridge.fromBridgeText(checkExecBridge);
+                CheckExecutionResult checkExecFail =
+                    CheckExecutionBridge.fromBridgeText(
+                        CheckExecutionBridge.toBridgeText(
+                            CheckExecutionResult.failure("compile exploded")
+                        )
+                    );
                 String workspaceCheckMemberPassText =
                     CheckSummaryWriter.renderWorkspaceCheckMemberResult(
                         WorkspaceCheckMemberResult.success("workspace/demo", "demo", 4)
@@ -870,6 +883,10 @@ enabled = true
                     && checkFailText.equals(
                         "Check FAILED: mode=strict entry=workspace/demo/src/main/pulse/app/core/Main.pulse source_root=workspace/demo/src/main/pulse"
                     )
+                    && parsedCheckExec.success()
+                    && parsedCheckExec.packageName().equals("demo")
+                    && parsedCheckExec.filesLoaded() == 4
+                    && checkExecFail.detail().equals("compile exploded")
                     && workspaceCheckStartText.equals(
                         "Workspace check: root=workspace members=2 mode=friendly"
                     )

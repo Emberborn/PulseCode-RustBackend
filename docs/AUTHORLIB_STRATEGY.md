@@ -95,6 +95,9 @@ The current target taxonomy is:
     - `author.compiler.WorkspaceTestResult` for structured workspace-test aggregation state
     - `author.compiler.TestSummaryWriter` for compiler-facing test/workspace-test discovery and summary rendering
     - `author.compiler.TestDiagnosticWriter` for compiler-facing test discovery/no-tests/aggregate-failure diagnostic text
+    - `author.compiler.CheckExecutionResult` for structured provider-backed compiler check execution state
+    - `author.compiler.CheckExecutionBridge` for bridge-safe provider-backed compiler check transport
+    - `author.compiler.CheckExecutionProvider` for Pulse-owned single-project check orchestration over the current host compiler provider
 - `author.runtime.*`
   - runtime-construction/runtime-service/runtime-object-model support APIs
 - `author.memory.*`

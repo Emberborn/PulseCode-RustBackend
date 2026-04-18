@@ -52,6 +52,7 @@ enum CliCommand {
     Check,
     Build,
     Test,
+    ProviderCheck,
     PrewarmAuthorBuildBridge,
     Help,
     Version,
@@ -112,6 +113,46 @@ pub(crate) fn run() {
                 process::exit(EXIT_COMMAND_FAILURE);
             }
         },
+        CliCommand::ProviderCheck => {
+            let entry_path = command_args.first().map(|value| value.as_str()).unwrap_or("");
+            let source_root = command_args
+                .get(1)
+                .map(|value| value.as_str())
+                .filter(|value| !value.is_empty());
+            let strict = matches!(command_args.get(2).map(|value| value.as_str()), Some("true"));
+            let authorlib_enabled =
+                matches!(command_args.get(3).map(|value| value.as_str()), Some("true"));
+            match check_project_with_authorlib(entry_path, source_root, strict, authorlib_enabled) {
+                Ok(result) => {
+                    print!(
+                        "{}",
+                        emit_provider_check_result_bridge_text(
+                            true,
+                            Some(&result.root.package.name),
+                            Some(result.root.imports.len()),
+                            Some(result.merged.classes.len()),
+                            Some(result.files_loaded),
+                            None,
+                        )
+                    );
+                    process::exit(EXIT_OK);
+                }
+                Err(err) => {
+                    print!(
+                        "{}",
+                        emit_provider_check_result_bridge_text(
+                            false,
+                            None,
+                            None,
+                            None,
+                            None,
+                            Some(&err),
+                        )
+                    );
+                    process::exit(EXIT_COMMAND_FAILURE);
+                }
+            }
+        }
         CliCommand::New => {
             if command_args
                 .iter()
@@ -276,19 +317,19 @@ pub(crate) fn run() {
             };
             let strict = cli_flags.strict_package && !cli_flags.friendly;
             let mode_label = if strict { "strict" } else { "friendly" };
-            match check_project_with_authorlib(
+            match execute_compiler_check(
                 &resolved.entry_path,
                 resolved.source_root.as_deref(),
                 strict,
                 resolved.authorlib_enabled,
             ) {
-                Ok(result) => {
+                Ok(result) if result.success => {
                     println!(
                         "{}",
                         render_check_success(
-                            &result.root.package.name,
-                            result.root.imports.len(),
-                            result.merged.classes.len(),
+                            result.package_name.as_deref().unwrap_or("<unknown>"),
+                            result.import_count,
+                            result.class_count,
                             result.files_loaded,
                             mode_label,
                             if resolved.used_manifest {
@@ -300,6 +341,27 @@ pub(crate) fn run() {
                             resolved.source_root.as_deref().unwrap_or("<none>")
                         )
                     );
+                }
+                Ok(result) => {
+                    eprintln!(
+                        "{}",
+                        render_check_failure(
+                            mode_label,
+                            &resolved.entry_path,
+                            resolved.source_root.as_deref().unwrap_or("<none>")
+                        )
+                    );
+                    emit_error(
+                        DIAG_CHECK,
+                        &format!(
+                            "Compile error: {}",
+                            result.detail.as_deref().unwrap_or("unknown compiler provider failure")
+                        ),
+                    );
+                    emit_hint(
+                        "re-run with '--friendly' for layout warnings or inspect imports/packages",
+                    );
+                    process::exit(EXIT_COMMAND_FAILURE);
                 }
                 Err(err) => {
                     eprintln!(
@@ -880,6 +942,178 @@ fn render_check_failure(mode: &str, entry_path: &str, source_root: &str) -> Stri
             mode, entry_path, source_root
         )
     })
+}
+
+#[derive(Debug, Clone)]
+struct CompilerCheckExecution {
+    success: bool,
+    package_name: Option<String>,
+    import_count: usize,
+    class_count: usize,
+    files_loaded: usize,
+    detail: Option<String>,
+}
+
+fn execute_compiler_check(
+    entry_path: &str,
+    source_root: Option<&str>,
+    strict_package: bool,
+    authorlib_enabled: bool,
+) -> Result<CompilerCheckExecution, String> {
+    if let Ok(result) = execute_compiler_check_via_authorlib_bridge(
+        entry_path,
+        source_root,
+        strict_package,
+        authorlib_enabled,
+    ) {
+        return Ok(result);
+    }
+    match check_project_with_authorlib(entry_path, source_root, strict_package, authorlib_enabled) {
+        Ok(result) => Ok(CompilerCheckExecution {
+            success: true,
+            package_name: Some(result.root.package.name),
+            import_count: result.root.imports.len(),
+            class_count: result.merged.classes.len(),
+            files_loaded: result.files_loaded,
+            detail: None,
+        }),
+        Err(err) => Ok(CompilerCheckExecution {
+            success: false,
+            package_name: None,
+            import_count: 0,
+            class_count: 0,
+            files_loaded: 0,
+            detail: Some(err),
+        }),
+    }
+}
+
+fn execute_compiler_check_via_authorlib_bridge(
+    entry_path: &str,
+    source_root: Option<&str>,
+    strict_package: bool,
+    authorlib_enabled: bool,
+) -> Result<CompilerCheckExecution, String> {
+    let current_exe = env::current_exe()
+        .map_err(|e| format!("Failed to resolve pulsec provider path: {e}"))?;
+    let strict_value = if strict_package { "true" } else { "false" };
+    let authorlib_value = if authorlib_enabled { "true" } else { "false" };
+    let request = emit_compiler_bridge_summary_request(
+        "compiler-execute-check",
+        &[
+            current_exe.to_str(),
+            Some(entry_path),
+            source_root,
+            Some(strict_value),
+            Some(authorlib_value),
+        ],
+    );
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_compiler_check_execution_output(&stdout)
+}
+
+fn parse_compiler_check_execution_output(text: &str) -> Result<CompilerCheckExecution, String> {
+    let values = parse_bridge_raw_values(text)?;
+    if values.len() < 6 {
+        return Err(format!(
+            "author compiler bridge returned {} values, expected at least 6",
+            values.len()
+        ));
+    }
+    let success = match values[0].as_deref() {
+        Some("true") => true,
+        Some("false") => false,
+        other => {
+            return Err(format!(
+                "author compiler bridge returned invalid success flag {:?}",
+                other
+            ));
+        }
+    };
+    Ok(CompilerCheckExecution {
+        success,
+        package_name: values[1].clone(),
+        import_count: parse_bridge_usize(values[2].as_deref(), "importCount")?,
+        class_count: parse_bridge_usize(values[3].as_deref(), "classCount")?,
+        files_loaded: parse_bridge_usize(values[4].as_deref(), "filesLoaded")?,
+        detail: values[5].clone(),
+    })
+}
+
+fn parse_bridge_raw_values(text: &str) -> Result<Vec<Option<String>>, String> {
+    let mut out = Vec::new();
+    for line in text.lines() {
+        let separator = line
+            .find(':')
+            .ok_or_else(|| format!("author compiler bridge line missing ':' separator: {line}"))?;
+        let present = &line[..separator];
+        let encoded = &line[(separator + 1)..];
+        let value = match present {
+            "0" => None,
+            "1" => Some(unescape_bridge_raw_value(encoded)?),
+            other => {
+                return Err(format!(
+                    "author compiler bridge line has invalid presence flag '{other}'"
+                ));
+            }
+        };
+        out.push(value);
+    }
+    Ok(out)
+}
+
+fn parse_bridge_usize(value: Option<&str>, key: &str) -> Result<usize, String> {
+    match value {
+        Some(raw) if !raw.is_empty() => raw
+            .parse::<usize>()
+            .map_err(|e| format!("author compiler bridge key '{key}' parse failed: {e}")),
+        _ => Ok(0),
+    }
+}
+
+fn unescape_bridge_raw_value(value: &str) -> Result<String, String> {
+    let mut out = String::new();
+    let mut chars = value.chars();
+    while let Some(ch) = chars.next() {
+        if ch != '\\' {
+            out.push(ch);
+            continue;
+        }
+        let escaped = chars
+            .next()
+            .ok_or_else(|| "author compiler bridge value ended in dangling escape".to_string())?;
+        match escaped {
+            'n' => out.push('\n'),
+            'r' => out.push('\r'),
+            '\\' => out.push('\\'),
+            other => {
+                out.push('\\');
+                out.push(other);
+            }
+        }
+    }
+    Ok(out)
+}
+
+fn emit_provider_check_result_bridge_text(
+    success: bool,
+    package_name: Option<&str>,
+    import_count: Option<usize>,
+    class_count: Option<usize>,
+    files_loaded: Option<usize>,
+    detail: Option<&str>,
+) -> String {
+    let import_count_owned = import_count.map(|value| value.to_string());
+    let class_count_owned = class_count.map(|value| value.to_string());
+    let files_loaded_owned = files_loaded.map(|value| value.to_string());
+    let mut out = String::new();
+    append_bridge_request_raw_value(&mut out, Some(if success { "true" } else { "false" }));
+    append_bridge_request_raw_value(&mut out, package_name);
+    append_bridge_request_raw_value(&mut out, import_count_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, class_count_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, files_loaded_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, detail);
+    out
 }
 
 fn render_test_discovery(

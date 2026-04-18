@@ -1265,6 +1265,14 @@ Bridge / tooling truths added during the current `F1-97` push:
     - `author.compiler.TestExecutionWriter`
   - Rust CLI check/test loops now prefer authored rendering for workspace-member check results and single/workspace test pass/fail lines instead of raw inline `[PASS]` / `[FAIL]` formatting
   - workspace check/test start/summary/failure rendering now routes through those authored workspace models instead of raw Rust counters and fixed strings
+  - `author.compiler.*` now also has the first real compiler execution slice through:
+    - `author.compiler.CheckExecutionResult`
+    - `author.compiler.CheckExecutionBridge`
+    - `author.compiler.CheckExecutionProvider`
+  - single-project `pulsec check` now prefers that authored execution path:
+    - the cached bridge executes a Pulse-owned compiler provider contract
+    - that Pulse contract uses the public `pulse.process.*` surface to invoke the current `pulsec` binary as a host compiler provider
+    - Rust still implements parser/semantic analysis underneath the provider call, but it is no longer the only owner of the single-project check orchestration path
   - the later authored compiler discovery lift also exposed a bridge-structure truth:
     - the generated cached bridge dispatcher had become too large to trust as one giant `bridge.internal.Main.main()` body
     - compiler render branches now dispatch through helper methods inside the generated bridge source instead of keeping all compiler render paths inline
