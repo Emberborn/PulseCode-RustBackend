@@ -11,6 +11,8 @@ pub(crate) fn parse_command(raw: &str) -> Option<CliCommand> {
         "build" => Some(CliCommand::Build),
         "test" => Some(CliCommand::Test),
         "__provider-check" => Some(CliCommand::ProviderCheck),
+        "__provider-test-file" => Some(CliCommand::ProviderTestFile),
+        "__provider-build-core" => Some(CliCommand::ProviderBuildCore),
         "__prewarm-author-build-bridge" => Some(CliCommand::PrewarmAuthorBuildBridge),
         "help" | "--help" | "-h" => Some(CliCommand::Help),
         "version" | "--version" | "-V" => Some(CliCommand::Version),

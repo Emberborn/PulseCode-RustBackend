@@ -1,5 +1,6 @@
 use super::*;
 use crate::backend::PlanTargetAdapterMetadata;
+use crate::backend::NativeLinkPlan;
 use crate::cli::config::{
     append_bridge_request_raw_value, append_bridge_request_value, run_author_build_bridge_request,
 };
@@ -55,14 +56,6 @@ pub(super) fn execute_build_pipeline(
     resolved: &BuildInvocation,
     flags: &CliFlags,
 ) -> Result<BuildRun, String> {
-    let result = check_project_with_authorlib(
-        &resolved.entry_path,
-        resolved.source_root.as_deref(),
-        true,
-        resolved.authorlib_enabled,
-    )?;
-    let ir =
-        lower_checked_project_to_ir(&result).map_err(|e| format!("IR lowering failed: {e}"))?;
     let publish_profile_layout = resolved.used_manifest || flags.profile.is_some();
     let backend_out_dir = if publish_profile_layout {
         let dir = resolved
@@ -82,16 +75,11 @@ pub(super) fn execute_build_pipeline(
     } else {
         resolved.build_root.clone()
     };
-    let backend = RustHostBootstrapBackend {
-        linker_override: resolved.linker.as_ref().map(PathBuf::from),
-        target_id: resolved.target.clone(),
-        output_mode: resolved.output_mode.clone(),
-        output_entry: resolved.output_entry.clone(),
-        emit_statement_trace_metadata: resolved.profile == "debug",
-    };
-    let artifact = backend
-        .emit(&ir, &backend_out_dir)
-        .map_err(|e| format!("backend emit failed: {e}"))?;
+    let (files_loaded, artifact) = execute_build_compiler_core(
+        resolved,
+        &backend_out_dir,
+        resolved.profile == "debug",
+    )?;
     let publish_debug_diagnostics = publish_profile_layout && resolved.profile == "debug";
     let (published_artifact, build_config_plan_path) = finalize_build_outputs(
         resolved,
@@ -112,10 +100,190 @@ pub(super) fn execute_build_pipeline(
     }
     Ok(BuildRun {
         resolved: resolved.clone(),
-        files_loaded: result.files_loaded,
+        files_loaded,
         artifact: published_artifact,
         build_config_plan_path,
     })
+}
+
+fn execute_build_compiler_core(
+    resolved: &BuildInvocation,
+    backend_out_dir: &Path,
+    emit_statement_trace_metadata: bool,
+) -> Result<(usize, BackendArtifact), String> {
+    if let Ok(result) = execute_build_compiler_core_via_authorlib_bridge(
+        resolved,
+        backend_out_dir,
+        emit_statement_trace_metadata,
+    ) {
+        return Ok(result);
+    }
+    let result = check_project_with_authorlib(
+        &resolved.entry_path,
+        resolved.source_root.as_deref(),
+        true,
+        resolved.authorlib_enabled,
+    )?;
+    let ir =
+        lower_checked_project_to_ir(&result).map_err(|e| format!("IR lowering failed: {e}"))?;
+    let backend = RustHostBootstrapBackend {
+        linker_override: resolved.linker.as_ref().map(PathBuf::from),
+        target_id: resolved.target.clone(),
+        output_mode: resolved.output_mode.clone(),
+        output_entry: resolved.output_entry.clone(),
+        emit_statement_trace_metadata,
+    };
+    let artifact = backend
+        .emit(&ir, backend_out_dir)
+        .map_err(|e| format!("backend emit failed: {e}"))?;
+    Ok((result.files_loaded, artifact))
+}
+
+fn execute_build_compiler_core_via_authorlib_bridge(
+    resolved: &BuildInvocation,
+    backend_out_dir: &Path,
+    emit_statement_trace_metadata: bool,
+) -> Result<(usize, BackendArtifact), String> {
+    let current_exe = env::current_exe()
+        .map_err(|e| format!("Failed to resolve pulsec provider path: {e}"))?;
+    let emit_trace_value = if emit_statement_trace_metadata {
+        "true"
+    } else {
+        "false"
+    };
+    let request = {
+        let mut out = String::new();
+        out.push_str("compiler-execute-build-core\n");
+        append_bridge_request_raw_value(&mut out, current_exe.to_str());
+        append_bridge_request_raw_value(&mut out, Some(&resolved.entry_path));
+        append_bridge_request_raw_value(&mut out, resolved.source_root.as_deref());
+        append_bridge_request_raw_value(
+            &mut out,
+            Some(if resolved.authorlib_enabled { "true" } else { "false" }),
+        );
+        append_bridge_request_raw_value(&mut out, Some(&resolved.target));
+        append_bridge_request_raw_value(&mut out, Some(&resolved.output_mode));
+        append_bridge_request_raw_value(&mut out, Some(&resolved.output_entry));
+        append_bridge_request_raw_value(&mut out, resolved.linker.as_deref());
+        append_bridge_request_raw_value(&mut out, Some(emit_trace_value));
+        append_bridge_request_raw_value(&mut out, backend_out_dir.to_str());
+        out
+    };
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_build_compiler_core_bridge_output(&stdout)
+}
+
+fn parse_build_compiler_core_bridge_output(text: &str) -> Result<(usize, BackendArtifact), String> {
+    let values = parse_build_compiler_core_bridge_values(text)?;
+    let success = match values.first().and_then(|value| value.as_deref()) {
+        Some("true") => true,
+        Some("false") => false,
+        other => {
+            return Err(format!(
+                "author compiler build bridge returned invalid success flag {:?}",
+                other
+            ));
+        }
+    };
+    if !success {
+        return Err(values
+            .get(13)
+            .and_then(|value| value.clone())
+            .unwrap_or_else(|| "unknown compiler build provider failure".to_string()));
+    }
+    let files_loaded = parse_build_core_usize(values.get(1).and_then(|v| v.as_deref()), "filesLoaded")?;
+    let classes = parse_build_core_usize(values.get(2).and_then(|v| v.as_deref()), "classes")?;
+    let methods = parse_build_core_usize(values.get(3).and_then(|v| v.as_deref()), "methods")?;
+    let fields = parse_build_core_usize(values.get(4).and_then(|v| v.as_deref()), "fields")?;
+    let artifact = BackendArtifact {
+        classes,
+        methods,
+        fields,
+        ir_artifact_path: PathBuf::from(required_build_core_value(&values, 5, "irArtifactPath")?),
+        native_plan_path: PathBuf::from(required_build_core_value(&values, 6, "nativePlanPath")?),
+        object_path: PathBuf::from(required_build_core_value(&values, 7, "objectPath")?),
+        exe_path: optional_build_core_path(&values, 8),
+        runtime_library_path: optional_build_core_path(&values, 9),
+        runtime_import_library_path: optional_build_core_path(&values, 10),
+        link_report_path: PathBuf::from(required_build_core_value(&values, 11, "linkReportPath")?),
+        entry_codegen: required_build_core_value(&values, 12, "entryCodegen")?,
+        link_plan: NativeLinkPlan::default(),
+    };
+    Ok((files_loaded, artifact))
+}
+
+fn parse_build_compiler_core_bridge_values(text: &str) -> Result<Vec<Option<String>>, String> {
+    let mut out = Vec::new();
+    for line in text.lines() {
+        let separator = line.find(':').ok_or_else(|| {
+            format!("author compiler build bridge line missing ':' separator: {line}")
+        })?;
+        let present = &line[..separator];
+        let encoded = &line[(separator + 1)..];
+        let value = match present {
+            "0" => None,
+            "1" => Some(unescape_build_core_value(encoded)?),
+            other => {
+                return Err(format!(
+                    "author compiler build bridge line has invalid presence flag '{other}'"
+                ));
+            }
+        };
+        out.push(value);
+    }
+    Ok(out)
+}
+
+fn required_build_core_value(
+    values: &[Option<String>],
+    index: usize,
+    key: &str,
+) -> Result<String, String> {
+    values
+        .get(index)
+        .and_then(|value| value.clone())
+        .ok_or_else(|| format!("author compiler build bridge missing '{key}'"))
+}
+
+fn optional_build_core_path(values: &[Option<String>], index: usize) -> Option<PathBuf> {
+    values
+        .get(index)
+        .and_then(|value| value.clone())
+        .filter(|value| !value.is_empty())
+        .map(PathBuf::from)
+}
+
+fn parse_build_core_usize(value: Option<&str>, key: &str) -> Result<usize, String> {
+    match value {
+        Some(raw) if !raw.is_empty() => raw
+            .parse::<usize>()
+            .map_err(|e| format!("author compiler build bridge key '{key}' parse failed: {e}")),
+        _ => Ok(0),
+    }
+}
+
+fn unescape_build_core_value(value: &str) -> Result<String, String> {
+    let mut out = String::new();
+    let mut chars = value.chars();
+    while let Some(ch) = chars.next() {
+        if ch != '\\' {
+            out.push(ch);
+            continue;
+        }
+        let escaped = chars.next().ok_or_else(|| {
+            "author compiler build bridge value ended in dangling escape".to_string()
+        })?;
+        match escaped {
+            'n' => out.push('\n'),
+            'r' => out.push('\r'),
+            '\\' => out.push('\\'),
+            other => {
+                out.push('\\');
+                out.push(other);
+            }
+        }
+    }
+    Ok(out)
 }
 
 fn finalize_build_outputs(

@@ -53,6 +53,8 @@ enum CliCommand {
     Build,
     Test,
     ProviderCheck,
+    ProviderTestFile,
+    ProviderBuildCore,
     PrewarmAuthorBuildBridge,
     Help,
     Version,
@@ -142,6 +144,115 @@ pub(crate) fn run() {
                         "{}",
                         emit_provider_check_result_bridge_text(
                             false,
+                            None,
+                            None,
+                            None,
+                            None,
+                            Some(&err),
+                        )
+                    );
+                    process::exit(EXIT_COMMAND_FAILURE);
+                }
+            }
+        }
+        CliCommand::ProviderTestFile => {
+            let entry_path = command_args.first().map(|value| value.as_str()).unwrap_or("");
+            let source_root = command_args
+                .get(1)
+                .map(|value| value.as_str())
+                .filter(|value| !value.is_empty());
+            let strict = matches!(command_args.get(2).map(|value| value.as_str()), Some("true"));
+            let authorlib_enabled =
+                matches!(command_args.get(3).map(|value| value.as_str()), Some("true"));
+            match check_project_with_authorlib(entry_path, source_root, strict, authorlib_enabled) {
+                Ok(result) => {
+                    print!(
+                        "{}",
+                        emit_provider_test_file_result_bridge_text(
+                            true,
+                            Some(result.files_loaded),
+                            None,
+                        )
+                    );
+                    process::exit(EXIT_OK);
+                }
+                Err(err) => {
+                    print!(
+                        "{}",
+                        emit_provider_test_file_result_bridge_text(false, None, Some(&err))
+                    );
+                    process::exit(EXIT_COMMAND_FAILURE);
+                }
+            }
+        }
+        CliCommand::ProviderBuildCore => {
+            let entry_path = command_args.first().map(|value| value.as_str()).unwrap_or("");
+            let source_root = command_args
+                .get(1)
+                .map(|value| value.as_str())
+                .filter(|value| !value.is_empty());
+            let authorlib_enabled =
+                matches!(command_args.get(2).map(|value| value.as_str()), Some("true"));
+            let target_id = command_args.get(3).map(|value| value.as_str()).unwrap_or("");
+            let output_mode = command_args.get(4).map(|value| value.as_str()).unwrap_or("");
+            let output_entry = command_args.get(5).map(|value| value.as_str()).unwrap_or("");
+            let linker_path = command_args
+                .get(6)
+                .map(|value| value.as_str())
+                .filter(|value| !value.is_empty());
+            let emit_statement_trace_metadata =
+                matches!(command_args.get(7).map(|value| value.as_str()), Some("true"));
+            let backend_out_dir = command_args.get(8).map(|value| value.as_str()).unwrap_or("");
+            match execute_build_compiler_core_inline(
+                entry_path,
+                source_root,
+                authorlib_enabled,
+                target_id,
+                output_mode,
+                output_entry,
+                linker_path,
+                emit_statement_trace_metadata,
+                backend_out_dir,
+            ) {
+                Ok(result) => {
+                    print!(
+                        "{}",
+                        emit_provider_build_core_result_bridge_text(
+                            true,
+                            Some(result.files_loaded),
+                            Some(result.artifact.classes),
+                            Some(result.artifact.methods),
+                            Some(result.artifact.fields),
+                            result.artifact.ir_artifact_path.to_str(),
+                            result.artifact.native_plan_path.to_str(),
+                            result.artifact.object_path.to_str(),
+                            result.artifact.exe_path.as_deref().and_then(Path::to_str),
+                            result.artifact.runtime_library_path.as_deref().and_then(Path::to_str),
+                            result
+                                .artifact
+                                .runtime_import_library_path
+                                .as_deref()
+                                .and_then(Path::to_str),
+                            result.artifact.link_report_path.to_str(),
+                            Some(&result.artifact.entry_codegen),
+                            None,
+                        )
+                    );
+                    process::exit(EXIT_OK);
+                }
+                Err(err) => {
+                    print!(
+                        "{}",
+                        emit_provider_build_core_result_bridge_text(
+                            false,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
                             None,
                             None,
                             None,
@@ -672,13 +783,14 @@ pub(crate) fn run() {
             let mut failed = 0usize;
             for test_file in &tests {
                 let display_name = display_test_name(&invocation.tests_root, test_file);
-                match check_project_with_authorlib(
+                match execute_test_file(
                     &test_file.display().to_string(),
                     Some(&invocation.source_root.display().to_string()),
                     strict,
                     invocation.authorlib_enabled,
                 ) {
-                    Ok(_) => {
+                    Ok(execution) => {
+                        let _ = execution.files_loaded;
                         passed += 1;
                         println!(
                             "{}",
@@ -954,6 +1066,12 @@ struct CompilerCheckExecution {
     detail: Option<String>,
 }
 
+#[derive(Debug, Clone)]
+struct CompilerBuildCoreExecution {
+    files_loaded: usize,
+    artifact: BackendArtifact,
+}
+
 fn execute_compiler_check(
     entry_path: &str,
     source_root: Option<&str>,
@@ -1112,6 +1230,87 @@ fn emit_provider_check_result_bridge_text(
     append_bridge_request_raw_value(&mut out, import_count_owned.as_deref());
     append_bridge_request_raw_value(&mut out, class_count_owned.as_deref());
     append_bridge_request_raw_value(&mut out, files_loaded_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, detail);
+    out
+}
+
+fn emit_provider_test_file_result_bridge_text(
+    success: bool,
+    files_loaded: Option<usize>,
+    detail: Option<&str>,
+) -> String {
+    let files_loaded_owned = files_loaded.map(|value| value.to_string());
+    let mut out = String::new();
+    append_bridge_request_raw_value(&mut out, Some(if success { "true" } else { "false" }));
+    append_bridge_request_raw_value(&mut out, files_loaded_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, detail);
+    out
+}
+
+fn execute_build_compiler_core_inline(
+    entry_path: &str,
+    source_root: Option<&str>,
+    authorlib_enabled: bool,
+    target_id: &str,
+    output_mode: &str,
+    output_entry: &str,
+    linker_path: Option<&str>,
+    emit_statement_trace_metadata: bool,
+    backend_out_dir: &str,
+) -> Result<CompilerBuildCoreExecution, String> {
+    let result = check_project_with_authorlib(entry_path, source_root, true, authorlib_enabled)?;
+    let ir =
+        lower_checked_project_to_ir(&result).map_err(|e| format!("IR lowering failed: {e}"))?;
+    let backend = RustHostBootstrapBackend {
+        linker_override: linker_path.map(PathBuf::from),
+        target_id: target_id.to_string(),
+        output_mode: output_mode.to_string(),
+        output_entry: output_entry.to_string(),
+        emit_statement_trace_metadata,
+    };
+    let artifact = backend
+        .emit(&ir, Path::new(backend_out_dir))
+        .map_err(|e| format!("backend emit failed: {e}"))?;
+    Ok(CompilerBuildCoreExecution {
+        files_loaded: result.files_loaded,
+        artifact,
+    })
+}
+
+fn emit_provider_build_core_result_bridge_text(
+    success: bool,
+    files_loaded: Option<usize>,
+    classes: Option<usize>,
+    methods: Option<usize>,
+    fields: Option<usize>,
+    ir_artifact_path: Option<&str>,
+    native_plan_path: Option<&str>,
+    object_path: Option<&str>,
+    executable_path: Option<&str>,
+    runtime_library_path: Option<&str>,
+    runtime_import_library_path: Option<&str>,
+    link_report_path: Option<&str>,
+    entry_codegen: Option<&str>,
+    detail: Option<&str>,
+) -> String {
+    let files_loaded_owned = files_loaded.map(|value| value.to_string());
+    let classes_owned = classes.map(|value| value.to_string());
+    let methods_owned = methods.map(|value| value.to_string());
+    let fields_owned = fields.map(|value| value.to_string());
+    let mut out = String::new();
+    append_bridge_request_raw_value(&mut out, Some(if success { "true" } else { "false" }));
+    append_bridge_request_raw_value(&mut out, files_loaded_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, classes_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, methods_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, fields_owned.as_deref());
+    append_bridge_request_raw_value(&mut out, ir_artifact_path);
+    append_bridge_request_raw_value(&mut out, native_plan_path);
+    append_bridge_request_raw_value(&mut out, object_path);
+    append_bridge_request_raw_value(&mut out, executable_path);
+    append_bridge_request_raw_value(&mut out, runtime_library_path);
+    append_bridge_request_raw_value(&mut out, runtime_import_library_path);
+    append_bridge_request_raw_value(&mut out, link_report_path);
+    append_bridge_request_raw_value(&mut out, entry_codegen);
     append_bridge_request_raw_value(&mut out, detail);
     out
 }

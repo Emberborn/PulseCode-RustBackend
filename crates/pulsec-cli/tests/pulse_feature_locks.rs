@@ -116,6 +116,9 @@ enabled = true
         import author.build.BuildPublicationWriter;
         import author.build.WorkspaceBuildMemberResult;
         import author.build.WorkspaceBuildResult;
+        import author.compiler.BuildCoreExecutionBridge;
+        import author.compiler.BuildCoreExecutionProvider;
+        import author.compiler.BuildCoreExecutionResult;
         import author.compiler.CheckExecutionBridge;
         import author.compiler.CheckExecutionProvider;
         import author.compiler.CheckExecutionResult;
@@ -124,6 +127,9 @@ enabled = true
         import author.compiler.TestDiscoveryResult;
         import author.compiler.TestExecutionResult;
         import author.compiler.TestExecutionWriter;
+        import author.compiler.TestFileExecutionBridge;
+        import author.compiler.TestFileExecutionProvider;
+        import author.compiler.TestFileExecutionResult;
         import author.compiler.TestResult;
         import author.compiler.TestDiagnosticWriter;
         import author.compiler.TestSummaryWriter;
@@ -459,6 +465,42 @@ enabled = true
                     CheckExecutionBridge.fromBridgeText(
                         CheckExecutionBridge.toBridgeText(
                             CheckExecutionResult.failure("compile exploded")
+                        )
+                    );
+                BuildCoreExecutionResult buildCoreOk = BuildCoreExecutionResult.success(
+                    4,
+                    3,
+                    10,
+                    2,
+                    "tmp/pulsec.ir.txt",
+                    "tmp/native.plan.json",
+                    "tmp/main.obj",
+                    "tmp/main.exe",
+                    "tmp/pulsecore.dll",
+                    "tmp/pulsecore.lib",
+                    "tmp/native.link.txt",
+                    "masm-split-stdlib"
+                );
+                BuildCoreExecutionResult parsedBuildCore =
+                    BuildCoreExecutionBridge.fromBridgeText(
+                        BuildCoreExecutionBridge.toBridgeText(buildCoreOk)
+                    );
+                BuildCoreExecutionResult buildCoreFail =
+                    BuildCoreExecutionBridge.fromBridgeText(
+                        BuildCoreExecutionBridge.toBridgeText(
+                            BuildCoreExecutionResult.failure("backend emit failed")
+                        )
+                    );
+                TestFileExecutionResult testFileExecOk =
+                    TestFileExecutionResult.success(5);
+                TestFileExecutionResult parsedTestFileExec =
+                    TestFileExecutionBridge.fromBridgeText(
+                        TestFileExecutionBridge.toBridgeText(testFileExecOk)
+                    );
+                TestFileExecutionResult testFileExecFail =
+                    TestFileExecutionBridge.fromBridgeText(
+                        TestFileExecutionBridge.toBridgeText(
+                            TestFileExecutionResult.failure("test compile exploded")
                         )
                     );
                 String workspaceCheckMemberPassText =
@@ -887,6 +929,14 @@ enabled = true
                     && parsedCheckExec.packageName().equals("demo")
                     && parsedCheckExec.filesLoaded() == 4
                     && checkExecFail.detail().equals("compile exploded")
+                    && parsedBuildCore.success()
+                    && parsedBuildCore.filesLoaded() == 4
+                    && parsedBuildCore.objectPath().equals("tmp/main.obj")
+                    && parsedBuildCore.entryCodegen().equals("masm-split-stdlib")
+                    && buildCoreFail.detail().equals("backend emit failed")
+                    && parsedTestFileExec.success()
+                    && parsedTestFileExec.filesLoaded() == 5
+                    && testFileExecFail.detail().equals("test compile exploded")
                     && workspaceCheckStartText.equals(
                         "Workspace check: root=workspace members=2 mode=friendly"
                     )

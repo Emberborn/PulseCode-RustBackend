@@ -1,6 +1,29 @@
 use super::*;
 use crate::ArrayInitExpr;
 
+fn collect_logical_operands<'a>(expr: &'a Expr, op: &BinaryOp) -> Vec<&'a Expr> {
+    let mut current = expr;
+    let mut tail = Vec::new();
+    loop {
+        match current {
+            Expr::Binary {
+                left,
+                op: current_op,
+                right,
+            } if current_op == op => {
+                tail.push(right.as_ref());
+                current = left.as_ref();
+            }
+            _ => break,
+        }
+    }
+    let mut out = vec![current];
+    while let Some(next) = tail.pop() {
+        out.push(next);
+    }
+    out
+}
+
 fn current_class_self_type(class: &ClassDecl, class_info: &ClassInfo) -> String {
     let fqcn = format!("{}.{}", class_info.package_name, class.name);
     if class_info.type_params.is_empty() {
@@ -831,6 +854,52 @@ fn collect_expr_checked_exceptions(
                 in_static_context,
             )? {
                 push_exception(&mut escaping, thrown);
+            }
+            Ok(escaping)
+        }
+        Expr::Binary {
+            op: BinaryOp::LogicalAnd,
+            ..
+        } => {
+            let mut escaping = Vec::new();
+            for operand in collect_logical_operands(expr, &BinaryOp::LogicalAnd) {
+                merge_exception_set(
+                    &mut escaping,
+                    collect_expr_checked_exceptions(
+                        operand,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?,
+                );
+            }
+            Ok(escaping)
+        }
+        Expr::Binary {
+            op: BinaryOp::LogicalOr,
+            ..
+        } => {
+            let mut escaping = Vec::new();
+            for operand in collect_logical_operands(expr, &BinaryOp::LogicalOr) {
+                merge_exception_set(
+                    &mut escaping,
+                    collect_expr_checked_exceptions(
+                        operand,
+                        class,
+                        class_info,
+                        class_names,
+                        class_index,
+                        fqcn_to_class,
+                        imports,
+                        locals,
+                        in_static_context,
+                    )?,
+                );
             }
             Ok(escaping)
         }

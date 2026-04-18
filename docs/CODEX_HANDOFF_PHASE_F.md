@@ -1273,6 +1273,22 @@ Bridge / tooling truths added during the current `F1-97` push:
     - the cached bridge executes a Pulse-owned compiler provider contract
     - that Pulse contract uses the public `pulse.process.*` surface to invoke the current `pulsec` binary as a host compiler provider
     - Rust still implements parser/semantic analysis underneath the provider call, but it is no longer the only owner of the single-project check orchestration path
+  - `author.compiler.*` now also has the first provider-backed build-core execution slice through:
+    - `author.compiler.BuildCoreExecutionResult`
+    - `author.compiler.BuildCoreExecutionBridge`
+    - `author.compiler.BuildCoreExecutionProvider`
+  - `cli/build/mod.rs` now prefers that authored build-core execution path before falling back to the older inline Rust compiler loop:
+    - the cached bridge executes a Pulse-owned build-core provider contract
+    - that Pulse contract uses the public `pulse.process.*` surface to invoke the current `pulsec` binary as a host compiler provider
+    - Rust still implements parse/analyze/lower/emit underneath the provider call, but it is no longer the only owner of the normal single-project build-core orchestration path
+  - `author.compiler.*` now also has the first provider-backed test-file execution slice through:
+    - `author.compiler.TestFileExecutionResult`
+    - `author.compiler.TestFileExecutionBridge`
+    - `author.compiler.TestFileExecutionProvider`
+  - single-project `pulsec test` now prefers that authored test-file execution path before falling back to the older direct Rust check loop:
+    - the cached bridge executes a Pulse-owned test-file provider contract
+    - that Pulse contract uses the public `pulse.process.*` surface to invoke the current `pulsec` binary as a host compiler provider
+    - Rust still implements parse/analyze underneath the provider call, but it is no longer the only owner of normal single-project test-file execution
   - the later authored compiler discovery lift also exposed a bridge-structure truth:
     - the generated cached bridge dispatcher had become too large to trust as one giant `bridge.internal.Main.main()` body
     - compiler render branches now dispatch through helper methods inside the generated bridge source instead of keeping all compiler render paths inline
@@ -1280,6 +1296,9 @@ Bridge / tooling truths added during the current `F1-97` push:
     - cold bridge prewarm can still fail transiently while another process is finishing the cached bridge build
     - the integration-test prewarm helper now retries `__prewarm-author-build-bridge` instead of treating the first transient cold-build failure as terminal
     - it also now captures transient failed prewarm output instead of leaking cold-build stderr into otherwise passing runs
+  - the widened authorlib feature lock exposed one more compiler truth:
+    - checked-exception analysis still had one remaining recursive `Expr::Binary` walk for long logical chains
+    - that path now flattens `&&` / `||` operands before analysis instead of overflowing the stack on large authored boolean locks
   - Rust `cli/build/mod.rs` now uses bridge-first author-build copy paths for:
     - published artifact file copies
     - published tree copies

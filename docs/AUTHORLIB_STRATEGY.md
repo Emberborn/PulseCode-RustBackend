@@ -98,6 +98,12 @@ The current target taxonomy is:
     - `author.compiler.CheckExecutionResult` for structured provider-backed compiler check execution state
     - `author.compiler.CheckExecutionBridge` for bridge-safe provider-backed compiler check transport
     - `author.compiler.CheckExecutionProvider` for Pulse-owned single-project check orchestration over the current host compiler provider
+    - `author.compiler.BuildCoreExecutionResult` for structured provider-backed compiler build-core execution state
+    - `author.compiler.BuildCoreExecutionBridge` for bridge-safe provider-backed compiler build-core transport
+    - `author.compiler.BuildCoreExecutionProvider` for Pulse-owned single-project build-core orchestration over the current host compiler provider
+    - `author.compiler.TestFileExecutionResult` for structured provider-backed compiler test-file execution state
+    - `author.compiler.TestFileExecutionBridge` for bridge-safe provider-backed compiler test-file transport
+    - `author.compiler.TestFileExecutionProvider` for Pulse-owned single-project test-file orchestration over the current host compiler provider
 - `author.runtime.*`
   - runtime-construction/runtime-service/runtime-object-model support APIs
 - `author.memory.*`

@@ -386,6 +386,20 @@ Current immediate continuation inside that target:
   - single-project `pulsec check` now prefers authored compiler execution through the cached bridge
     - Pulse owns the check-execution orchestration and calls the current `pulsec` binary as a host provider through `pulse.process.*`
     - Rust still provides the parser/analysis implementation underneath that provider call, but it is no longer the only conductor of the hot-path single-project check flow
+  - `author.compiler.*` now also owns the first provider-backed build-core execution slice:
+    - `author.compiler.BuildCoreExecutionResult`
+    - `author.compiler.BuildCoreExecutionBridge`
+    - `author.compiler.BuildCoreExecutionProvider`
+  - `cli/build/mod.rs` now prefers authored compiler-core execution through the cached bridge before falling back to the old inline Rust compiler loop
+    - Pulse owns the hot-path build-core orchestration and calls the current `pulsec` binary as a host provider through `pulse.process.*`
+    - Rust still performs parsing/analysis/lowering/backend emission underneath that provider call, but it is no longer the only conductor of the normal single-project build core path
+  - `author.compiler.*` now also owns the first provider-backed test-file execution slice:
+    - `author.compiler.TestFileExecutionResult`
+    - `author.compiler.TestFileExecutionBridge`
+    - `author.compiler.TestFileExecutionProvider`
+  - single-project `pulsec test` now prefers authored test-file execution through the cached bridge before falling back to the old direct Rust check loop
+    - Pulse owns the hot-path per-test compiler execution orchestration and calls the current `pulsec` binary as a host provider through `pulse.process.*`
+    - Rust still performs parsing/analysis underneath that provider call, but it is no longer the only conductor of normal single-project test-file execution
   - remaining Rust-owned build publication/materialization residue is now:
     - fallback/bootstrap publication-plan mirroring
     - fallback/bootstrap layout materialization mirroring
@@ -398,6 +412,8 @@ Important current compiler truth:
 - same-package eager file loading in the CLI project loader has been removed
 - importing one class no longer drags every sibling file in that package into the compile
 - same-package no-import resolution is now demand-driven instead
+- one remaining check-time stack-overflow path was in checked-exception analysis
+- long logical `&&` / `||` chains are now flattened there too instead of recursing one `Expr::Binary` frame per operand
 - the new env/process slice exposed and fixed two real compiler bugs:
   - IR lowering must preserve declared generic return types long enough to substitute owner type parameters during nested call inference; erasing `List<T>.get(int)` too early broke valid chains such as `values.get(index).name().toLowerCase()`
   - semantic/logical expression validation must not recurse one stack frame per `&&` / `||` node across long authorlib contract expressions; the logical-chain visitors in semantics/nullability/lowering are now flattened enough for the large authorlib surface lock to pass honestly

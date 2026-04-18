@@ -288,6 +288,9 @@ fn emit_build_invocation_bridge_source() -> String {
         import author.project.WorkspaceContext;
         import author.project.WorkspaceContextBridge;
                 import author.compiler.CheckResult;
+                import author.compiler.BuildCoreExecutionBridge;
+                import author.compiler.BuildCoreExecutionProvider;
+                import author.compiler.BuildCoreExecutionResult;
                 import author.compiler.CheckExecutionBridge;
                 import author.compiler.CheckExecutionProvider;
                 import author.compiler.CheckExecutionResult;
@@ -296,6 +299,9 @@ fn emit_build_invocation_bridge_source() -> String {
                 import author.compiler.TestDiscoveryResult;
                 import author.compiler.TestExecutionResult;
                 import author.compiler.TestExecutionWriter;
+                import author.compiler.TestFileExecutionBridge;
+                import author.compiler.TestFileExecutionProvider;
+                import author.compiler.TestFileExecutionResult;
                 import author.compiler.TestResult;
                 import author.compiler.TestSummaryWriter;
                 import author.compiler.WorkspaceCheckMemberResult;
@@ -794,6 +800,14 @@ fn emit_build_invocation_bridge_source() -> String {
                     IO.print(Main.executeCompilerCheck(Main.readLines(5)));
                     return;
                 }}
+                if (mode.equals("compiler-execute-build-core")) {{
+                    IO.print(Main.executeCompilerBuildCore(Main.readLines(10)));
+                    return;
+                }}
+                if (mode.equals("compiler-execute-test-file")) {{
+                    IO.print(Main.executeCompilerTestFile(Main.readLines(5)));
+                    return;
+                }}
                 if (mode.equals("compiler-render-test-discovery")) {{
                     IO.print(Main.renderCompilerTestDiscoveryResult(Main.readLines(10)));
                     return;
@@ -871,6 +885,33 @@ fn emit_build_invocation_bridge_source() -> String {
                     "true".equals(Main.readValue(request, 4))
                 );
                 return CheckExecutionBridge.toBridgeText(result);
+            }}
+
+            private static String executeCompilerBuildCore(String request) {{
+                BuildCoreExecutionResult result = BuildCoreExecutionProvider.execute(
+                    Main.readValue(request, 0),
+                    Main.readValue(request, 1),
+                    Main.readValue(request, 2),
+                    "true".equals(Main.readValue(request, 3)),
+                    Main.readValue(request, 4),
+                    Main.readValue(request, 5),
+                    Main.readValue(request, 6),
+                    Main.readValue(request, 7),
+                    "true".equals(Main.readValue(request, 8)),
+                    Main.readValue(request, 9)
+                );
+                return BuildCoreExecutionBridge.toBridgeText(result);
+            }}
+
+            private static String executeCompilerTestFile(String request) {{
+                TestFileExecutionResult result = TestFileExecutionProvider.execute(
+                    Main.readValue(request, 0),
+                    Main.readValue(request, 1),
+                    Main.readValue(request, 2),
+                    "true".equals(Main.readValue(request, 3)),
+                    "true".equals(Main.readValue(request, 4))
+                );
+                return TestFileExecutionBridge.toBridgeText(result);
             }}
 
             private static String renderBuildWorkspaceStart(String request) {{

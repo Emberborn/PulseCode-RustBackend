@@ -1,5 +1,9 @@
 use super::*;
 
+pub(super) struct TestFileExecution {
+    pub(super) files_loaded: usize,
+}
+
 pub(super) fn resolve_test_invocation(flags: &CliFlags) -> Result<TestInvocation, String> {
     if let Ok(invocation) = resolve_test_invocation_via_authorlib(flags) {
         return Ok(invocation);
@@ -109,6 +113,20 @@ pub(super) fn display_test_name(tests_root: &Path, file: &Path) -> String {
     }
 }
 
+pub(super) fn execute_test_file(
+    entry_path: &str,
+    source_root: Option<&str>,
+    strict_package: bool,
+    authorlib_enabled: bool,
+) -> Result<TestFileExecution, String> {
+    if let Ok(result) =
+        execute_test_file_via_authorlib_bridge(entry_path, source_root, strict_package, authorlib_enabled)
+    {
+        return Ok(result);
+    }
+    execute_test_file_fallback(entry_path, source_root, strict_package, authorlib_enabled)
+}
+
 fn emit_project_test_invocation_bridge_request(
     start_path: &str,
     source_root_override: Option<&str>,
@@ -117,6 +135,26 @@ fn emit_project_test_invocation_bridge_request(
     out.push_str("project-resolve-test-invocation\n");
     append_bridge_request_raw_value(&mut out, Some(start_path));
     append_bridge_request_raw_value(&mut out, source_root_override);
+    out
+}
+
+fn emit_compiler_test_file_bridge_request(
+    compiler_path: &str,
+    entry_path: &str,
+    source_root: Option<&str>,
+    strict_package: bool,
+    authorlib_enabled: bool,
+) -> String {
+    let mut out = String::new();
+    out.push_str("compiler-execute-test-file\n");
+    append_bridge_request_raw_value(&mut out, Some(compiler_path));
+    append_bridge_request_raw_value(&mut out, Some(entry_path));
+    append_bridge_request_raw_value(&mut out, source_root);
+    append_bridge_request_raw_value(&mut out, Some(if strict_package { "true" } else { "false" }));
+    append_bridge_request_raw_value(
+        &mut out,
+        Some(if authorlib_enabled { "true" } else { "false" }),
+    );
     out
 }
 
@@ -129,6 +167,117 @@ fn parse_test_invocation_bridge_output(text: &str) -> Result<TestInvocation, Str
         used_manifest: testing_parse_bridge_bool(&values, "usedManifest")?,
         authorlib_enabled: testing_parse_bridge_bool(&values, "authorlibEnabled")?,
     })
+}
+
+fn execute_test_file_via_authorlib_bridge(
+    entry_path: &str,
+    source_root: Option<&str>,
+    strict_package: bool,
+    authorlib_enabled: bool,
+) -> Result<TestFileExecution, String> {
+    let compiler_path = current_pulsec_executable_path()?;
+    let request = emit_compiler_test_file_bridge_request(
+        &compiler_path,
+        entry_path,
+        source_root,
+        strict_package,
+        authorlib_enabled,
+    );
+    let stdout = run_author_build_bridge_request(&request)?;
+    parse_test_file_execution_bridge_output(&stdout)
+}
+
+fn execute_test_file_fallback(
+    entry_path: &str,
+    source_root: Option<&str>,
+    strict_package: bool,
+    authorlib_enabled: bool,
+) -> Result<TestFileExecution, String> {
+    let result = check_project_with_authorlib(
+        entry_path,
+        source_root,
+        strict_package,
+        authorlib_enabled,
+    )?;
+    Ok(TestFileExecution {
+        files_loaded: result.files_loaded,
+    })
+}
+
+fn parse_test_file_execution_bridge_output(text: &str) -> Result<TestFileExecution, String> {
+    let values = parse_testing_raw_bridge_values(text)?;
+    let success = match values.first().and_then(|value| value.as_deref()) {
+        Some("true") => true,
+        Some("false") => false,
+        other => {
+            return Err(format!(
+                "author test-file bridge returned invalid success flag {:?}",
+                other
+            ))
+        }
+    };
+    if success {
+        let files_loaded = values
+            .get(1)
+            .and_then(|value| value.as_deref())
+            .ok_or_else(|| "author test-file bridge missing filesLoaded".to_string())?
+            .parse::<usize>()
+            .map_err(|e| format!("author test-file bridge filesLoaded parse failed: {e}"))?;
+        return Ok(TestFileExecution { files_loaded });
+    }
+    Err(values
+        .get(2)
+        .cloned()
+        .flatten()
+        .unwrap_or_else(|| "compiler test execution failed".to_string()))
+}
+
+fn parse_testing_raw_bridge_values(text: &str) -> Result<Vec<Option<String>>, String> {
+    let mut values = Vec::new();
+    for line in text.lines() {
+        if line.trim().is_empty() {
+            continue;
+        }
+        let (present, encoded) = line
+            .split_once(':')
+            .ok_or_else(|| format!("invalid author test bridge line '{}'", line))?;
+        let value = match present {
+            "0" => None,
+            "1" => Some(unescape_testing_raw_bridge_value(encoded)?),
+            other => {
+                return Err(format!(
+                    "invalid author test bridge presence tag '{}'",
+                    other
+                ))
+            }
+        };
+        values.push(value);
+    }
+    Ok(values)
+}
+
+fn unescape_testing_raw_bridge_value(encoded: &str) -> Result<String, String> {
+    let mut out = String::with_capacity(encoded.len());
+    let mut chars = encoded.chars();
+    while let Some(ch) = chars.next() {
+        if ch != '\\' {
+            out.push(ch);
+            continue;
+        }
+        let Some(escaped) = chars.next() else {
+            return Err("invalid trailing escape in author test bridge value".to_string());
+        };
+        match escaped {
+            'n' => out.push('\n'),
+            'r' => out.push('\r'),
+            '\\' => out.push('\\'),
+            other => {
+                out.push('\\');
+                out.push(other);
+            }
+        }
+    }
+    Ok(out)
 }
 
 fn parse_bridge_string_list_output(text: &str) -> Result<Vec<String>, String> {
@@ -153,6 +302,12 @@ fn testing_bridge_start_path(flags: &CliFlags) -> Result<String, String> {
     env::current_dir()
         .map(|path| path.display().to_string())
         .map_err(|e| format!("Failed to resolve current directory for author bridge: {e}"))
+}
+
+fn current_pulsec_executable_path() -> Result<String, String> {
+    env::current_exe()
+        .map(|path| path.display().to_string())
+        .map_err(|e| format!("Failed to resolve pulsec provider path: {e}"))
 }
 
 fn testing_required_bridge_value(
