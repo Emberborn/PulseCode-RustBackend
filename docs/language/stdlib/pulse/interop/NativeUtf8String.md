@@ -12,7 +12,7 @@ Use this when Pulse text must cross the foreign boundary as one native NUL-termi
 ## Declaration
 
 ```pulse
-public final class NativeUtf8String implements AutoCloseable
+public final class NativeUtf8String implements AutoCloseable, NativeManagedResource
 ```
 
 ## Members

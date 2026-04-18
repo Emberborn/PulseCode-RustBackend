@@ -1845,11 +1845,12 @@ pub(crate) fn emit_class_arc_teardown_proc(
     class_name: &str,
     fields: &[IrField],
 ) {
+    let needs_native_cleanup = class_requires_native_cleanup(package_name, class_name);
     let arc_fields = fields
         .iter()
         .filter(|field| !field.is_static && is_arc_managed_type_name(&field.ty))
         .collect::<Vec<_>>();
-    if arc_fields.is_empty() {
+    if arc_fields.is_empty() && !needs_native_cleanup {
         return;
     }
 
@@ -1862,6 +1863,12 @@ pub(crate) fn emit_class_arc_teardown_proc(
     out.push_str(&format!("    ja {}\n", done));
     out.push_str("    sub rsp, 40\n");
     out.push_str("    mov dword ptr [rsp+32], ecx\n");
+    if needs_native_cleanup {
+        out.push_str(&format!(
+            "    call {}\n",
+            mangle_class_native_cleanup_proc_symbol(package_name, class_name)
+        ));
+    }
     for (idx, field) in arc_fields.iter().enumerate() {
         let field_sym = mangle_field_symbol(package_name, class_name, &field.name);
         let skip = format!("{}_field_{}_skip", symbol, idx);
@@ -1887,15 +1894,22 @@ pub(crate) fn emit_class_arc_scan_edges_proc(
     class_name: &str,
     fields: &[IrField],
 ) {
+    let needs_native_cleanup = class_requires_native_cleanup(package_name, class_name);
     let arc_fields = fields
         .iter()
         .filter(|field| !field.is_static && is_arc_managed_type_name(&field.ty))
         .collect::<Vec<_>>();
-    if arc_fields.is_empty() {
+    if arc_fields.is_empty() && !needs_native_cleanup {
         return;
     }
 
     let symbol = mangle_class_arc_scan_edges_proc_symbol(package_name, class_name);
+    if arc_fields.is_empty() {
+        out.push_str(&format!("{} proc\n", symbol));
+        out.push_str("    ret\n");
+        out.push_str(&format!("{} endp\n", symbol));
+        return;
+    }
     let done = format!("{}_done", symbol);
     out.push_str(&format!("{} proc\n", symbol));
     out.push_str("    cmp ecx, 1\n");
@@ -1947,15 +1961,22 @@ pub(crate) fn emit_class_arc_invalidate_edges_proc(
     class_name: &str,
     fields: &[IrField],
 ) {
+    let needs_native_cleanup = class_requires_native_cleanup(package_name, class_name);
     let arc_fields = fields
         .iter()
         .filter(|field| !field.is_static && is_arc_managed_type_name(&field.ty))
         .collect::<Vec<_>>();
-    if arc_fields.is_empty() {
+    if arc_fields.is_empty() && !needs_native_cleanup {
         return;
     }
 
     let symbol = mangle_class_arc_invalidate_edges_proc_symbol(package_name, class_name);
+    if arc_fields.is_empty() {
+        out.push_str(&format!("{} proc\n", symbol));
+        out.push_str("    ret\n");
+        out.push_str(&format!("{} endp\n", symbol));
+        return;
+    }
     let done = format!("{}_done", symbol);
     out.push_str(&format!("{} proc\n", symbol));
     out.push_str("    cmp ecx, 1\n");
@@ -1998,12 +2019,86 @@ pub(crate) fn emit_class_arc_invalidate_edges_proc(
     out.push_str(&format!("{} endp\n", symbol));
 }
 
+pub(crate) fn emit_class_native_cleanup_proc(
+    out: &mut String,
+    package_name: &str,
+    class_name: &str,
+) {
+    if !class_requires_native_cleanup(package_name, class_name) {
+        return;
+    }
+
+    let symbol = mangle_class_native_cleanup_proc_symbol(package_name, class_name);
+    let done = format!("{}_done", symbol);
+    let ret_done = format!("{}_ret_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    cmp ecx, 1\n");
+    out.push_str(&format!("    jb {}\n", ret_done));
+    out.push_str("    cmp ecx, dword ptr [rt_slot_capacity]\n");
+    out.push_str(&format!("    ja {}\n", ret_done));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov dword ptr [rsp+32], ecx\n");
+
+    match (package_name, class_name) {
+        ("pulse.interop", "NativeBuffer") => {
+            let address_sym = mangle_field_symbol(package_name, class_name, "address");
+            let mode_sym = mangle_field_symbol(package_name, class_name, "ownershipMode");
+            let closed_sym = mangle_field_symbol(package_name, class_name, "closed");
+            let skip = format!("{}_skip", symbol);
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", closed_sym));
+            out.push_str("    cmp dword ptr [r10+rcx*4], 0\n");
+            out.push_str(&format!("    jne {}\n", done));
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", mode_sym));
+            out.push_str("    cmp dword ptr [r10+rcx*4], 1\n");
+            out.push_str(&format!("    jne {}\n", skip));
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", address_sym));
+            out.push_str("    mov rax, qword ptr [r10+rcx*8]\n");
+            out.push_str("    test rax, rax\n");
+            out.push_str(&format!("    jz {}\n", skip));
+            out.push_str("    mov rcx, rax\n");
+            out.push_str("    call pulsec_rt_hostFreeBytes\n");
+            out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+            out.push_str(&format!("{}:\n", skip));
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", address_sym));
+            out.push_str("    mov qword ptr [r10+rcx*8], 0\n");
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", closed_sym));
+            out.push_str("    mov dword ptr [r10+rcx*4], 1\n");
+        }
+        ("pulse.interop", "NativeLibrary") => {
+            let handle_sym = mangle_field_symbol(package_name, class_name, "handle");
+            let mode_sym = mangle_field_symbol(package_name, class_name, "ownershipMode");
+            let skip = format!("{}_skip", symbol);
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", handle_sym));
+            out.push_str("    mov rax, qword ptr [r10+rcx*8]\n");
+            out.push_str("    test rax, rax\n");
+            out.push_str(&format!("    jz {}\n", done));
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", mode_sym));
+            out.push_str("    cmp dword ptr [r10+rcx*4], 1\n");
+            out.push_str(&format!("    jne {}\n", skip));
+            out.push_str("    mov rcx, rax\n");
+            out.push_str("    call pulsec_rt_hostFreeDynamicLibrary\n");
+            out.push_str("    mov ecx, dword ptr [rsp+32]\n");
+            out.push_str(&format!("{}:\n", skip));
+            out.push_str(&format!("    mov r10, qword ptr [{}]\n", handle_sym));
+            out.push_str("    mov qword ptr [r10+rcx*8], 0\n");
+        }
+        _ => {}
+    }
+
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", ret_done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
 pub(crate) fn emit_class_arc_field_helpers(
     out: &mut String,
     package_name: &str,
     class_name: &str,
     fields: &[IrField],
 ) {
+    emit_class_native_cleanup_proc(out, package_name, class_name);
     emit_class_arc_teardown_proc(out, package_name, class_name, fields);
     emit_class_arc_scan_edges_proc(out, package_name, class_name, fields);
     emit_class_arc_invalidate_edges_proc(out, package_name, class_name, fields);

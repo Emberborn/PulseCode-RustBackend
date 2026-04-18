@@ -881,6 +881,7 @@ pub(crate) fn emit_masm_split_program_objects(
         let class_id_set_tables = take_class_id_set_tables();
         let mut local_helper_symbols = vec![
             mangle_class_field_capacity_proc_symbol(&class.package_name, &class.name),
+            mangle_class_native_cleanup_proc_symbol(&class.package_name, &class.name),
             mangle_class_arc_teardown_proc_symbol(&class.package_name, &class.name),
             mangle_class_arc_scan_edges_proc_symbol(&class.package_name, &class.name),
             mangle_class_arc_invalidate_edges_proc_symbol(&class.package_name, &class.name),

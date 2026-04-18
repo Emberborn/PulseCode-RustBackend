@@ -12,7 +12,7 @@ Use this as the raw library boundary when Pulse code needs to borrow foreign imp
 ## Declaration
 
 ```pulse
-public final class NativeLibrary
+public final class NativeLibrary implements NativeManagedResource
 ```
 
 ## Members
@@ -21,6 +21,16 @@ public final class NativeLibrary
 
 Opens one native library and returns `null` when the host loader cannot open it.
 Use this for optional interop where the caller wants to probe availability first.
+
+### ``public static NativeLibrary borrow(String source, long handle)``
+
+Wraps one loaded native library handle as borrowed ownership.
+Use this when the host or another subsystem owns the library lifetime.
+
+### ``public static NativeLibrary manual(String source, long handle)``
+
+Wraps one loaded native library handle under explicit manual-release policy.
+Use this when advanced code wants a structured library wrapper without automatic unload behavior.
 
 ### ``public static NativeLibrary openRequired(String source)``
 
@@ -36,6 +46,11 @@ Use this for diagnostics and wrapper ownership reporting.
 
 Returns the raw native library handle.
 Use this only for low-level interop glue that genuinely must pass the host handle onward.
+
+### ``public int ownershipMode() { return this.ownershipMode; }``
+
+Returns the ownership mode for this native library wrapper.
+Use this when wrapper layers need to branch on borrowed, adopted, or manual unload policy explicitly.
 
 ### ``public boolean isOpen() { return this.handle != 0L; }``
 

@@ -1336,6 +1336,8 @@ Selected direction:
   - byte reads/writes/copies
   - pointer-sized reads/writes
   - explicit-length and NUL-terminated UTF-8 decode
+  - explicit borrowed/adopted/manual ownership modes for interop-backed resources
+  - ARC-backed native cleanup for adopted `NativeBuffer` / `NativeLibrary` wrappers
 - absorbed foreign-backed features should wrap that raw surface behind
   Pulse-native contracts instead of making Rust a privileged reachback path
 

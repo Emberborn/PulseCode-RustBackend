@@ -652,6 +652,8 @@ The first executable public raw interop slice now exists under `pulse.interop.*`
 - `pulse.interop.NativeBuffer`
 - `pulse.interop.NativeByteSpan`
 - `pulse.interop.NativeUtf8String`
+- `pulse.interop.NativeOwnership`
+- `pulse.interop.NativeManagedResource`
 
 Current executable boundary:
 
@@ -663,6 +665,8 @@ Current executable boundary:
 - pointer-sized reads/writes
 - owned temporary UTF-8+NUL backing storage
 - explicit-length and NUL-terminated UTF-8 decode
+- explicit borrowed/adopted/manual ownership modes for interop-backed resources
+- ARC-backed native cleanup for adopted `NativeBuffer` / `NativeLibrary` wrappers on object teardown
 
 Direction rule:
 

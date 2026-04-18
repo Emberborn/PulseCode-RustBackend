@@ -9,9 +9,10 @@ import pulse.util.Objects;
  * One loaded native library handle owned through the public interop surface.
  * Use this as the raw library boundary when Pulse code needs to borrow foreign implementation without borrowing authority.
  */
-public final class NativeLibrary {
+public final class NativeLibrary implements NativeManagedResource {
     private long handle;
     private final String source;
+    private final int ownershipMode;
 
     /**
      * Opens one native library and returns `null` when the host loader cannot open it.
@@ -23,7 +24,31 @@ public final class NativeLibrary {
         if (handle == 0L) {
             return null;
         }
-        return new NativeLibrary(handle, source);
+        return new NativeLibrary(handle, source, NativeOwnership.ADOPTED);
+    }
+
+    /**
+     * Wraps one loaded native library handle as borrowed ownership.
+     * Use this when the host or another subsystem owns the library lifetime.
+     */
+    public static NativeLibrary borrow(String source, long handle) {
+        Objects.requireNonNull(source, "source must not be null");
+        if (handle == 0L) {
+            return null;
+        }
+        return new NativeLibrary(handle, source, NativeOwnership.BORROWED);
+    }
+
+    /**
+     * Wraps one loaded native library handle under explicit manual-release policy.
+     * Use this when advanced code wants a structured library wrapper without automatic unload behavior.
+     */
+    public static NativeLibrary manual(String source, long handle) {
+        Objects.requireNonNull(source, "source must not be null");
+        if (handle == 0L) {
+            return null;
+        }
+        return new NativeLibrary(handle, source, NativeOwnership.MANUAL);
     }
 
     /**
@@ -38,9 +63,10 @@ public final class NativeLibrary {
         return library;
     }
 
-    private NativeLibrary(long handle, String source) {
+    private NativeLibrary(long handle, String source, int ownershipMode) {
         this.handle = handle;
         this.source = source;
+        this.ownershipMode = ownershipMode;
     }
 
     /**
@@ -54,6 +80,12 @@ public final class NativeLibrary {
      * Use this only for low-level interop glue that genuinely must pass the host handle onward.
      */
     public long rawHandle() { return this.handle; }
+
+    /**
+     * Returns the ownership mode for this native library wrapper.
+     * Use this when wrapper layers need to branch on borrowed, adopted, or manual unload policy explicitly.
+     */
+    public int ownershipMode() { return this.ownershipMode; }
 
     /**
      * Reports whether this library still owns one live native handle.
@@ -105,6 +137,9 @@ public final class NativeLibrary {
         }
         long current = this.handle;
         this.handle = 0L;
+        if (this.ownershipMode != NativeOwnership.ADOPTED) {
+            return false;
+        }
         return Intrinsics.hostFreeDynamicLibrary(current);
     }
 
@@ -143,6 +178,8 @@ public final class NativeLibrary {
             .concat(this.source)
             .concat(", handle=")
             .concat(String.valueOf(this.handle))
+            .concat(", ownership=")
+            .concat(String.valueOf(this.ownershipMode))
             .concat("]");
     }
 }

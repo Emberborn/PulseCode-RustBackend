@@ -598,6 +598,13 @@ pub(crate) fn is_string_type_name(ty: &str) -> bool {
     ty == "String" || ty.ends_with(".String")
 }
 
+pub(crate) fn class_requires_native_cleanup(package: &str, class_name: &str) -> bool {
+    matches!(
+        (package, class_name),
+        ("pulse.interop", "NativeBuffer") | ("pulse.interop", "NativeLibrary")
+    )
+}
+
 pub(crate) fn is_handle_type_name(ty: &str) -> bool {
     is_arc_managed_type_name(ty)
 }

@@ -12,7 +12,7 @@ Use this for temporary foreign backing storage, mutable call buffers, and owners
 ## Declaration
 
 ```pulse
-public final class NativeBuffer implements AutoCloseable
+public final class NativeBuffer implements AutoCloseable, NativeManagedResource
 ```
 
 ## Members
@@ -21,6 +21,21 @@ public final class NativeBuffer implements AutoCloseable
 
 Allocates one owned native byte buffer of the supplied size.
 Use this for temporary foreign scratch storage or mutable call buffers.
+
+### ``public static NativeBuffer adopt(NativePointer pointer, int byteLength)``
+
+Wraps one foreign allocation and transfers release responsibility into Pulse.
+Use this when foreign code returned one allocation that should now be ARC-managed by the Pulse wrapper.
+
+### ``public static NativeBuffer borrow(NativePointer pointer, int byteLength)``
+
+Wraps one foreign allocation as borrowed memory.
+Use this when Pulse may inspect or mutate one native buffer but must not release it.
+
+### ``public static NativeBuffer manual(NativePointer pointer, int byteLength)``
+
+Wraps one foreign allocation under explicit manual-release policy.
+Use this when advanced interop code wants a structured Pulse wrapper without automatic release behavior.
 
 ### ``public boolean isOpen()``
 
@@ -31,6 +46,11 @@ Use this before dereference or transfer operations.
 
 Returns the number of owned bytes in this buffer.
 Use this for bounds checks and explicit native scratch-space accounting.
+
+### ``public int ownershipMode()``
+
+Returns the ownership mode for this native buffer wrapper.
+Use this when wrapper layers need to branch on borrowed, adopted, or manual release policy explicitly.
 
 ### ``public NativePointer pointer()``
 

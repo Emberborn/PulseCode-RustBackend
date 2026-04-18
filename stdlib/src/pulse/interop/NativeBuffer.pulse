@@ -9,14 +9,16 @@ import pulse.rt.Intrinsics;
  * Owned native byte buffer on the public interop surface.
  * Use this for temporary foreign backing storage, mutable call buffers, and ownership-safe native scratch space.
  */
-public final class NativeBuffer implements AutoCloseable {
+public final class NativeBuffer implements AutoCloseable, NativeManagedResource {
     private long address;
     private final int byteLength;
+    private final int ownershipMode;
     private boolean closed;
 
-    NativeBuffer(long address, int byteLength) {
+    NativeBuffer(long address, int byteLength, int ownershipMode) {
         this.address = address;
         this.byteLength = byteLength < 0 ? 0 : byteLength;
+        this.ownershipMode = ownershipMode;
         this.closed = false;
     }
 
@@ -27,13 +29,46 @@ public final class NativeBuffer implements AutoCloseable {
     public static NativeBuffer allocate(int byteLength) {
         int length = byteLength < 0 ? 0 : byteLength;
         if (length == 0) {
-            return new NativeBuffer(0L, 0);
+            return new NativeBuffer(0L, 0, NativeOwnership.ADOPTED);
         }
         long address = Intrinsics.hostAllocBytes(length);
         if (address == 0L) {
             Intrinsics.panic("Failed to allocate native buffer");
         }
-        return new NativeBuffer(address, length);
+        return new NativeBuffer(address, length, NativeOwnership.ADOPTED);
+    }
+
+    /**
+     * Wraps one foreign allocation and transfers release responsibility into Pulse.
+     * Use this when foreign code returned one allocation that should now be ARC-managed by the Pulse wrapper.
+     */
+    public static NativeBuffer adopt(NativePointer pointer, int byteLength) {
+        if (pointer == null || pointer.isNull()) {
+            return new NativeBuffer(0L, byteLength, NativeOwnership.ADOPTED);
+        }
+        return new NativeBuffer(pointer.rawAddress(), byteLength, NativeOwnership.ADOPTED);
+    }
+
+    /**
+     * Wraps one foreign allocation as borrowed memory.
+     * Use this when Pulse may inspect or mutate one native buffer but must not release it.
+     */
+    public static NativeBuffer borrow(NativePointer pointer, int byteLength) {
+        if (pointer == null || pointer.isNull()) {
+            return new NativeBuffer(0L, byteLength, NativeOwnership.BORROWED);
+        }
+        return new NativeBuffer(pointer.rawAddress(), byteLength, NativeOwnership.BORROWED);
+    }
+
+    /**
+     * Wraps one foreign allocation under explicit manual-release policy.
+     * Use this when advanced interop code wants a structured Pulse wrapper without automatic release behavior.
+     */
+    public static NativeBuffer manual(NativePointer pointer, int byteLength) {
+        if (pointer == null || pointer.isNull()) {
+            return new NativeBuffer(0L, byteLength, NativeOwnership.MANUAL);
+        }
+        return new NativeBuffer(pointer.rawAddress(), byteLength, NativeOwnership.MANUAL);
     }
 
     /**
@@ -50,6 +85,14 @@ public final class NativeBuffer implements AutoCloseable {
      */
     public int byteLength() {
         return this.byteLength;
+    }
+
+    /**
+     * Returns the ownership mode for this native buffer wrapper.
+     * Use this when wrapper layers need to branch on borrowed, adopted, or manual release policy explicitly.
+     */
+    public int ownershipMode() {
+        return this.ownershipMode;
     }
 
     /**
@@ -130,10 +173,10 @@ public final class NativeBuffer implements AutoCloseable {
         if (this.closed) {
             return;
         }
-        if (this.address != 0L) {
+        if (this.address != 0L && this.ownershipMode == NativeOwnership.ADOPTED) {
             Intrinsics.hostFreeBytes(this.address);
-            this.address = 0L;
         }
+        this.address = 0L;
         this.closed = true;
     }
 
@@ -144,6 +187,8 @@ public final class NativeBuffer implements AutoCloseable {
     public String toString() {
         return "NativeBuffer[length="
             .concat(String.valueOf(this.byteLength))
+            .concat(", ownership=")
+            .concat(String.valueOf(this.ownershipMode))
             .concat(", open=")
             .concat(String.valueOf(this.isOpen()))
             .concat("]");

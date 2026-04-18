@@ -9,7 +9,7 @@ import pulse.util.Objects;
  * Owned temporary UTF-8 backing storage for native interop.
  * Use this when Pulse text must cross the foreign boundary as one native NUL-terminated byte buffer.
  */
-public final class NativeUtf8String implements AutoCloseable {
+public final class NativeUtf8String implements AutoCloseable, NativeManagedResource {
     private NativeBuffer buffer;
     private final int byteLength;
 
@@ -29,7 +29,10 @@ public final class NativeUtf8String implements AutoCloseable {
         if (address == 0L) {
             Intrinsics.panic("Failed to allocate native UTF-8 string");
         }
-        return new NativeUtf8String(new NativeBuffer(address, byteLength + 1), byteLength);
+        return new NativeUtf8String(
+            new NativeBuffer(address, byteLength + 1, NativeOwnership.ADOPTED),
+            byteLength
+        );
     }
 
     /**

@@ -7577,6 +7577,7 @@ pub(crate) fn collect_object_arc_field_dispatch(ir: &IrProgram) -> BTreeMap<u32,
             .fields
             .iter()
             .any(|field| !field.is_static && is_arc_managed_type_name(&field.ty))
+            || class_requires_native_cleanup(&class.package_name, &class.name)
         {
             by_class_id.insert(
                 class_id,

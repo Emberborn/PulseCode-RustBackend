@@ -1474,3 +1474,113 @@ entry = "app/core/Main.pulse"
         stderr
     );
 }
+
+#[test]
+fn lock_pulse_feature_09_public_interop_ownership_modes_execute_without_authorlib_opt_in() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "public-interop-ownership"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.interop.NativeBuffer;
+        import pulse.interop.NativeLibrary;
+        import pulse.interop.NativeOwnership;
+        import pulse.interop.NativeUtf8String;
+        import pulse.io.ResourceScope;
+
+        class Main {
+            public static void main() {
+                ResourceScope scope = new ResourceScope();
+                NativeUtf8String text = NativeUtf8String.encode("ownership_ok");
+                scope.add(text);
+
+                NativeBuffer adopted = NativeBuffer.allocate(16);
+                NativeBuffer borrowed = NativeBuffer.borrow(text.pointer(), text.byteLength());
+                NativeBuffer manual = NativeBuffer.manual(text.pointer(), text.byteLength());
+                scope.add(adopted);
+
+                NativeLibrary kernel = NativeLibrary.openRequired("kernel32.dll");
+                NativeLibrary borrowedKernel = NativeLibrary.borrow("kernel32.dll", kernel.rawHandle());
+                NativeLibrary manualKernel = NativeLibrary.manual("kernel32.dll", kernel.rawHandle());
+
+                borrowed.close();
+                manual.close();
+
+                String roundTrip = NativeUtf8String.decodeNullTerminated(text.pointer());
+                boolean ok =
+                    adopted.ownershipMode() == NativeOwnership.ADOPTED
+                    && borrowed.ownershipMode() == NativeOwnership.BORROWED
+                    && manual.ownershipMode() == NativeOwnership.MANUAL
+                    && borrowed.isOpen() == false
+                    && manual.isOpen() == false
+                    && "ownership_ok".equals(roundTrip)
+                    && kernel.ownershipMode() == NativeOwnership.ADOPTED
+                    && borrowedKernel.ownershipMode() == NativeOwnership.BORROWED
+                    && manualKernel.ownershipMode() == NativeOwnership.MANUAL
+                    && borrowedKernel.close() == false
+                    && manualKernel.close() == false
+                    && kernel.isOpen();
+
+                scope.close();
+                boolean closed = kernel.close();
+
+                if (ok && closed) {
+                    pulse.lang.IO.println("interop_ownership_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("interop_ownership_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected public interop ownership build success without authorlib opt-in\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("public-interop-ownership-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected public interop ownership exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("interop_ownership_ok"),
+        "expected interop ownership success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}

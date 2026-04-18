@@ -152,6 +152,13 @@ pub(crate) fn mangle_class_arc_teardown_proc_symbol(package: &str, class_name: &
     ))
 }
 
+pub(crate) fn mangle_class_native_cleanup_proc_symbol(package: &str, class_name: &str) -> String {
+    shorten_identifier(format!(
+        "{}_native_cleanup",
+        mangle_class_field_capacity_symbol(package, class_name)
+    ))
+}
+
 pub(crate) fn mangle_class_arc_scan_edges_proc_symbol(package: &str, class_name: &str) -> String {
     shorten_identifier(format!(
         "{}_arc_scan_edges",
