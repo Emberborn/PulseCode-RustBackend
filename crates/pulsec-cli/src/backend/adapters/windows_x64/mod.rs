@@ -35,6 +35,18 @@ static WINDOWS_X64_RUNTIME_SERVICE_IMPORTS: &[&str] = &[
     "CreateProcessA",
     "WaitForSingleObject",
     "GetExitCodeProcess",
+    "Sleep",
+    "SwitchToThread",
+    "GetCurrentThreadId",
+    "CreateThread",
+    "CreateMutexA",
+    "ReleaseMutex",
+    "CreateEventA",
+    "SetEvent",
+    "ResetEvent",
+    "CloseHandle",
+    "CreateSemaphoreA",
+    "ReleaseSemaphore",
 ];
 static WINDOWS_X64_SHARED_COMPANION_ARTIFACT_KINDS: &[&str] = &[
     "runtime_library",

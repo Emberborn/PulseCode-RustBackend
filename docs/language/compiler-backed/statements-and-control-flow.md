@@ -90,16 +90,24 @@ Current execution model:
 
 Current `F1-20` policy:
 
-- `synchronized (...) { ... }` statements are explicitly fenced in the current F1 baseline
-- the parser emits a deterministic diagnostic instead of pretending monitor semantics exist
+- `synchronized (...) { ... }` statements are real in the current F1 baseline
+- method-level `synchronized` on concrete class methods is also real in the current F1 baseline
+- the compiler evaluates the monitor expression once, enters it before the body, and exits it in a `finally` path
+- the current shipped lowering targets the real `pulse.concurrent.Monitor` floor rather than pretending generic object-monitor semantics already exist
 
-Reason for the deferral:
+Current boundaries:
 
-- object-monitor mutual exclusion is not part of the current shipped runtime model
-- visibility/publication guarantees are later concurrency and memory-model work
-- real statement semantics belong with `F1-86`, `F1-89`, and `F1-93`
+- mutual exclusion and reentrancy are real through `Monitor.enter()` / `Monitor.exit()`
+- the first wait/notify coordination slice is also real through `Monitor.wait()`, `Monitor.wait(long)`, `Monitor.notify()`, and `Monitor.notifyAll()`
+- timeout waits release the current monitor ownership, block on the queued waiter event, and reacquire the monitor before returning
+- synchronized method lowering uses hidden class/instance monitor storage instead of pretending Java object-header monitors already exist
+- `return` through the lowering path is real and does not require manual user-code workarounds
+- Java-close visibility/publication guarantees are still later concurrency and memory-model work
+- real `Thread` lifecycle (`start`, `join`, cooperative interruption) now exists through `pulse.lang.Thread`
+- Java-close visibility/publication guarantees and higher-level executor closure still belong with `F1-86`, `F1-89`, and `F1-93`
 
 ## Related
 
+- [Concurrency And Memory Model](./concurrency-and-memory-model.md)
 - [Types And Conversions](./types-and-conversions.md)
 - [F1 task board](../../F1_TASK_BOARD.md)

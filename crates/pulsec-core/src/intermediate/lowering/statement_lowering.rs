@@ -42,7 +42,7 @@ impl IrBuilder {
                 self.lower_expr_stmt(expr, current, stmt_index, source_line)
             }
             Stmt::Return(value, ..) => {
-                self.lower_return(value.as_ref(), current, stmt_index, source_line)
+                self.lower_return(value.as_ref(), current, try_ctx, stmt_index, source_line)
             }
             Stmt::Break { .. } => {
                 self.lower_break_or_stop(loop_ctx, current, stmt_index, source_line)

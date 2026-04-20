@@ -51,10 +51,12 @@ Required feature families:
 - bitwise/shift operator family
 - `throw`
 - the chosen `try`/`catch`/`finally` baseline
+- `synchronized` statement/method baseline
 - `Scanner`
 - `Objects`
 - practical `String` / `StringBuilder` utility hardening in support of the util baseline
 - explicit concurrency/network policy
+- explicit memory/publication policy for the shipped concurrency baseline
 
 ## Allowed To Defer In F1
 
@@ -64,8 +66,8 @@ Current explicit F1 deferrals:
 - desktop UI families (`awt`, `swing`)
 - method references if not chosen as part of the F1 baseline
 - lambdas if not chosen as part of the F1 baseline
-- synchronized statements for the current F1 baseline; they stay fenced until the real monitor/threading/memory model lands
-- executor/semaphore depth beyond the explicitly chosen concurrency baseline
+- concurrent collections beyond the explicitly chosen concurrency baseline
+- higher-level executor/future depth beyond the explicitly chosen concurrency baseline
 - URL/HTTP helper surface beyond the explicitly chosen networking baseline
 - external native binding/library-artifact ecosystem work (Phase F-A)
 
@@ -86,12 +88,26 @@ These remain allowed Pulse-specific differences in F1 if documented honestly:
 
 The following must continue to be treated as fenced until they are actually implemented:
 
-- `synchronized`
 - `native`
 - `strictfp`
 - `transient`
 - `volatile`
 - `async`
+
+## F1 Memory / Publication Baseline
+
+The current F1 memory/publication contract is intentionally narrower than full Java:
+
+- `synchronized`/monitor coordination is real
+- `volatile` remains reserved and semantically rejected
+- `final` fields are real as compile-time immutability after initialization, not as Java-style safe-publication guarantees
+- `AtomicReference` is real for explicit shared-reference handoff/publication
+- ordinary unsynchronized object-field publication across threads is not part of the currently claimed F1 baseline
+
+Policy rule:
+
+- docs and tests must distinguish real coordination semantics from broader Java-close memory-model promises
+- unsupported visibility/order guarantees must remain fenced rather than implied
 
 Policy rule:
 

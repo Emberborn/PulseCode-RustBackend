@@ -76,6 +76,457 @@ pub(crate) fn emit_console_write_handle_proc(
     out.push_str(&format!("{} endp\n", symbol));
 }
 
+pub(crate) fn emit_thread_sleep_millis_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jns pulsec_rt_threadSleepMillis_nonneg\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("    jmp pulsec_rt_threadSleepMillis_call\n");
+    out.push_str("pulsec_rt_threadSleepMillis_nonneg:\n");
+    out.push_str("    mov rax, 4294967295\n");
+    out.push_str("    cmp rcx, rax\n");
+    out.push_str("    jbe pulsec_rt_threadSleepMillis_call\n");
+    out.push_str("    mov ecx, 4294967295\n");
+    out.push_str("pulsec_rt_threadSleepMillis_call:\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call Sleep\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_thread_yield_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call SwitchToThread\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    movzx eax, al\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_current_thread_id_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call GetCurrentThreadId\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    mov eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_start_thread_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    mov r8, rcx\n");
+    out.push_str("    mov r9, rdx\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov qword ptr [rsp+32], 0\n");
+    out.push_str("    mov qword ptr [rsp+40], 0\n");
+    out.push_str("    call CreateThread\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_create_mutex_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    xor r8d, r8d\n");
+    out.push_str("    call CreateMutexA\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_create_event_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    and ecx, 1\n");
+    out.push_str("    and edx, 1\n");
+    out.push_str("    mov r8d, edx\n");
+    out.push_str("    mov edx, ecx\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("    xor r9d, r9d\n");
+    out.push_str("    call CreateEventA\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_wait_handle_proc(out: &mut String, symbol: &str) {
+    let nonneg = format!("{}_nonneg", symbol);
+    let call = format!("{}_call", symbol);
+    let timeout = format!("{}_timeout", symbol);
+    let abandoned = format!("{}_abandoned", symbol);
+    let failed = format!("{}_failed", symbol);
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov r8, rdx\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str(&format!("    jns {}\n", nonneg));
+    out.push_str("    mov edx, 0FFFFFFFFh\n");
+    out.push_str(&format!("    jmp {}\n", call));
+    out.push_str(&format!("{}:\n", nonneg));
+    out.push_str("    mov rax, 4294967295\n");
+    out.push_str("    cmp r8, rax\n");
+    out.push_str(&format!("    jbe {}\n", call));
+    out.push_str("    mov edx, 0FFFFFFFFh\n");
+    out.push_str(&format!("    jmp {}\n", call));
+    out.push_str(&format!("{}:\n", call));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call WaitForSingleObject\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    cmp eax, 102h\n");
+    out.push_str(&format!("    je {}\n", timeout));
+    out.push_str("    cmp eax, 80h\n");
+    out.push_str(&format!("    je {}\n", abandoned));
+    out.push_str(&format!("    jmp {}\n", failed));
+    out.push_str(&format!("{}:\n", timeout));
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", abandoned));
+    out.push_str("    mov eax, 2\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", failed));
+    out.push_str("    mov eax, -1\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_release_mutex_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call ReleaseMutex\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    movzx eax, al\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_set_event_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call SetEvent\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    movzx eax, al\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_reset_event_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call ResetEvent\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    movzx eax, al\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_close_handle_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call CloseHandle\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    movzx eax, al\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_create_semaphore_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    xor r8d, r8d\n");
+    out.push_str("    mov r8d, edx\n");
+    out.push_str("    mov edx, ecx\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("    xor r9d, r9d\n");
+    out.push_str("    call CreateSemaphoreA\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_release_semaphore_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov r8, 0\n");
+    out.push_str("    call ReleaseSemaphore\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    movzx eax, al\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_load_int_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    mov eax, dword ptr [rcx]\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_store_int_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    xchg dword ptr [rcx], edx\n");
+    out.push_str("@@:\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_compare_exchange_int_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    mov eax, edx\n");
+    out.push_str("    lock cmpxchg dword ptr [rcx], r8d\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_exchange_int_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    xchg dword ptr [rcx], edx\n");
+    out.push_str("    mov eax, edx\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_fetch_add_int_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    lock xadd dword ptr [rcx], edx\n");
+    out.push_str("    mov eax, edx\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_load_long_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    mov rax, qword ptr [rcx]\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor rax, rax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_store_long_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    xchg qword ptr [rcx], rdx\n");
+    out.push_str("@@:\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_compare_exchange_long_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    mov rax, rdx\n");
+    out.push_str("    lock cmpxchg qword ptr [rcx], r8\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor rax, rax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_exchange_long_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    xchg qword ptr [rcx], rdx\n");
+    out.push_str("    mov rax, rdx\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor rax, rax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_fetch_add_long_proc(out: &mut String, symbol: &str) {
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    lock xadd qword ptr [rcx], rdx\n");
+    out.push_str("    mov rax, rdx\n");
+    out.push_str("    ret\n");
+    out.push_str("@@:\n");
+    out.push_str("    xor rax, rax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_load_reference_proc(out: &mut String, symbol: &str) {
+    let retry = format!("{}_retry", symbol);
+    let done_zero = format!("{}_done_zero", symbol);
+    let done = format!("{}_done", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done_zero));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    mov qword ptr [rsp+32], rcx\n");
+    out.push_str("    mov qword ptr [rsp+40], 0\n");
+    out.push_str(&format!("{}:\n", retry));
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    mov rax, qword ptr [rcx]\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    mov qword ptr [rsp+40], rax\n");
+    out.push_str("    mov rcx, rax\n");
+    out.push_str("    call pulsec_rt_arcRetain\n");
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+    out.push_str("    cmp qword ptr [rcx], rdx\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("    jmp {}\n", retry));
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    mov rax, qword ptr [rsp+40]\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done_zero));
+    out.push_str("    xor rax, rax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_store_reference_proc(out: &mut String, symbol: &str) {
+    let done = format!("{}_done", symbol);
+    let skip_retain = format!("{}_skip_retain", symbol);
+    let skip_release = format!("{}_skip_release", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    mov qword ptr [rsp+32], rcx\n");
+    out.push_str("    mov qword ptr [rsp+40], rdx\n");
+    out.push_str("    test rdx, rdx\n");
+    out.push_str(&format!("    jz {}\n", skip_retain));
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    call pulsec_rt_arcRetain\n");
+    out.push_str(&format!("{}:\n", skip_retain));
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+    out.push_str("    xchg qword ptr [rcx], rdx\n");
+    out.push_str("    test rdx, rdx\n");
+    out.push_str(&format!("    jz {}\n", skip_release));
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", skip_release));
+    out.push_str("    add rsp, 56\n");
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_compare_and_set_reference_proc(out: &mut String, symbol: &str) {
+    let done_false = format!("{}_done_false", symbol);
+    let done_true = format!("{}_done_true", symbol);
+    let skip_retain = format!("{}_skip_retain", symbol);
+    let skip_expected_release = format!("{}_skip_expected_release", symbol);
+    let skip_replacement_release = format!("{}_skip_replacement_release", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done_false));
+    out.push_str("    sub rsp, 72\n");
+    out.push_str("    mov qword ptr [rsp+32], rcx\n");
+    out.push_str("    mov qword ptr [rsp+40], rdx\n");
+    out.push_str("    mov qword ptr [rsp+48], r8\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str(&format!("    jz {}\n", skip_retain));
+    out.push_str("    mov rcx, r8\n");
+    out.push_str("    call pulsec_rt_arcRetain\n");
+    out.push_str(&format!("{}:\n", skip_retain));
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+    out.push_str("    mov r8, qword ptr [rsp+48]\n");
+    out.push_str("    mov rax, rdx\n");
+    out.push_str("    lock cmpxchg qword ptr [rcx], r8\n");
+    out.push_str(&format!("    jne {}\n", skip_expected_release));
+    out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+    out.push_str("    test rdx, rdx\n");
+    out.push_str(&format!("    jz {}\n", done_true));
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("    jmp {}\n", done_true));
+    out.push_str(&format!("{}:\n", skip_expected_release));
+    out.push_str("    mov rdx, qword ptr [rsp+48]\n");
+    out.push_str("    test rdx, rdx\n");
+    out.push_str(&format!("    jz {}\n", skip_replacement_release));
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    call pulsec_rt_arcRelease\n");
+    out.push_str(&format!("{}:\n", skip_replacement_release));
+    out.push_str("    add rsp, 72\n");
+    out.push_str(&format!("{}:\n", done_false));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done_true));
+    out.push_str("    add rsp, 72\n");
+    out.push_str("    mov eax, 1\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_host_atomic_exchange_reference_proc(out: &mut String, symbol: &str) {
+    let done_zero = format!("{}_done_zero", symbol);
+    let skip_retain = format!("{}_skip_retain", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", done_zero));
+    out.push_str("    sub rsp, 56\n");
+    out.push_str("    mov qword ptr [rsp+32], rcx\n");
+    out.push_str("    mov qword ptr [rsp+40], rdx\n");
+    out.push_str("    test rdx, rdx\n");
+    out.push_str(&format!("    jz {}\n", skip_retain));
+    out.push_str("    mov rcx, rdx\n");
+    out.push_str("    call pulsec_rt_arcRetain\n");
+    out.push_str(&format!("{}:\n", skip_retain));
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    mov rdx, qword ptr [rsp+40]\n");
+    out.push_str("    xchg qword ptr [rcx], rdx\n");
+    out.push_str("    mov rax, rdx\n");
+    out.push_str("    add rsp, 56\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", done_zero));
+    out.push_str("    xor rax, rax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
 pub(crate) fn emit_console_read_line_proc(out: &mut String, symbol: &str) {
     let l_loop = format!("{}_loop", symbol);
     let l_have_capacity = format!("{}_have_capacity", symbol);
@@ -462,12 +913,11 @@ pub(crate) fn emit_class_id_in_set_proc(out: &mut String, symbol: &str) {
 pub(crate) fn emit_arc_retain_proc(out: &mut String, symbol: &str) {
     let done = format!("{}_done", symbol);
     let valid = format!("{}_valid", symbol);
-    let skip_inc = format!("{}_skip_inc", symbol);
+    let retry = format!("{}_retry", symbol);
     let saturation = format!("{}_saturation", symbol);
     let debug_invalid = format!("{}_debug_invalid", symbol);
     let debug_skip = format!("{}_debug_skip", symbol);
     out.push_str(&format!("{} proc\n", symbol));
-    out.push_str("    mov rax, rcx\n");
     out.push_str("    cmp ecx, 0\n");
     out.push_str(&format!("    je {}\n", done));
     out.push_str("    mov r8d, ecx\n");
@@ -487,10 +937,18 @@ pub(crate) fn emit_arc_retain_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("    jz {}\n", debug_invalid));
     out.push_str(&format!("    cmp edx, {}\n", ARC_REFCOUNT_SATURATION_GUARD));
     out.push_str(&format!("    jae {}\n", saturation));
-    out.push_str("    add edx, 1\n");
-    out.push_str("    mov dword ptr [rt_arc_refcounts+r8*4], edx\n");
-    out.push_str(&format!("{}:\n", skip_inc));
+    out.push_str(&format!("{}:\n", retry));
+    out.push_str("    mov edx, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str("    test edx, edx\n");
+    out.push_str(&format!("    jz {}\n", debug_invalid));
+    out.push_str(&format!("    cmp edx, {}\n", ARC_REFCOUNT_SATURATION_GUARD));
+    out.push_str(&format!("    jae {}\n", saturation));
+    out.push_str("    lea r10d, [edx+1]\n");
+    out.push_str("    mov eax, edx\n");
+    out.push_str("    lock cmpxchg dword ptr [rt_arc_refcounts+r8*4], r10d\n");
+    out.push_str(&format!("    jne {}\n", retry));
     out.push_str(&format!("{}:\n", done));
+    out.push_str("    mov rax, rcx\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{}:\n", saturation));
     out.push_str("    sub rsp, 40\n");
@@ -1809,11 +2267,13 @@ pub(crate) fn emit_arc_release_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("    jne {}\n", debug_invalid));
     out.push_str(&format!("{}:\n", valid));
     out.push_str("    mov eax, dword ptr [rt_arc_refcounts+r8*4]\n");
+    out.push_str(&format!("{}_retry:\n", symbol));
     out.push_str("    test eax, eax\n");
     out.push_str(&format!("    jz {}\n", debug_invalid));
-    out.push_str("    sub eax, 1\n");
-    out.push_str("    mov dword ptr [rt_arc_refcounts+r8*4], eax\n");
-    out.push_str("    test eax, eax\n");
+    out.push_str("    lea edx, [eax-1]\n");
+    out.push_str("    lock cmpxchg dword ptr [rt_arc_refcounts+r8*4], edx\n");
+    out.push_str(&format!("    jne {}_retry\n", symbol));
+    out.push_str("    test edx, edx\n");
     out.push_str(&format!("    jnz {}\n", done));
     out.push_str("    mov ecx, r8d\n");
     out.push_str("    call pulsec_rt_arcTeardown\n");

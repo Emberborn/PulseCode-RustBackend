@@ -333,6 +333,220 @@ final class Intrinsics {
     }
 
     /**
+     * Suspends the current host thread for at least the supplied millisecond duration.
+     * Negative values should be treated the same as `0`.
+     */
+    public static void hostSleepMillis(long millis) {
+    }
+
+    /**
+     * Hints to the current host scheduler that the current thread is willing to yield.
+     * Returns `true` when the host reports that some other runnable thread was scheduled.
+     */
+    public static boolean hostYieldThread() {
+        return false;
+    }
+
+    /**
+     * Returns the identifier for the currently executing host thread.
+     * This is a diagnostic/runtime identity helper, not a full Java thread object model.
+     */
+    public static long hostCurrentThreadId() {
+        return 0L;
+    }
+
+    /**
+     * Starts one host thread at the supplied callback/function entry address with one raw parameter.
+     * Returns the raw host thread handle, or `0` when the host cannot create the thread.
+     */
+    public static long hostStartThread(long entryAddress, long parameter) {
+        return 0L;
+    }
+
+    /**
+     * Creates one unnamed host mutex and returns its raw handle.
+     * Returns `0` when the host cannot allocate the mutex.
+     */
+    public static long hostCreateMutex() {
+        return 0L;
+    }
+
+    /**
+     * Creates one unnamed host event and returns its raw handle.
+     * `manualReset` selects manual versus auto-reset behavior.
+     * Returns `0` when the host cannot allocate the event.
+     */
+    public static long hostCreateEvent(boolean manualReset, boolean initialState) {
+        return 0L;
+    }
+
+    /**
+     * Waits for one host handle to become signaled.
+     * Returns `0` for signaled, `1` for timeout, `2` for abandoned ownership, and `-1` for failure.
+     * Negative timeout values request an infinite wait.
+     */
+    public static int hostWaitHandle(long handle, long timeoutMillis) {
+        return -1;
+    }
+
+    /**
+     * Releases ownership of one host mutex handle.
+     * Returns `true` when the host reports success.
+     */
+    public static boolean hostReleaseMutex(long handle) {
+        return false;
+    }
+
+    /**
+     * Signals one host event handle.
+     * Returns `true` when the host reports success.
+     */
+    public static boolean hostSetEvent(long handle) {
+        return false;
+    }
+
+    /**
+     * Resets one manual-reset host event handle to the non-signaled state.
+     * Returns `true` when the host reports success.
+     */
+    public static boolean hostResetEvent(long handle) {
+        return false;
+    }
+
+    /**
+     * Closes one raw host handle.
+     * Returns `true` when the host reports success.
+     */
+    public static boolean hostCloseHandle(long handle) {
+        return false;
+    }
+
+    /**
+     * Creates one unnamed host semaphore and returns its raw handle.
+     * Returns `0` when the host cannot allocate the semaphore.
+     */
+    public static long hostCreateSemaphore(int initialCount, int maximumCount) {
+        return 0L;
+    }
+
+    /**
+     * Releases one or more permits back to the supplied host semaphore.
+     * Returns `true` when the host reports success.
+     */
+    public static boolean hostReleaseSemaphore(long handle, int releaseCount) {
+        return false;
+    }
+
+    /**
+     * Atomically loads one 32-bit value from the supplied native address.
+     * Returns `0` when the address is null.
+     */
+    public static int hostAtomicLoadInt(long address) {
+        return 0;
+    }
+
+    /**
+     * Atomically stores one 32-bit value at the supplied native address.
+     * Null addresses are ignored.
+     */
+    public static void hostAtomicStoreInt(long address, int value) {
+    }
+
+    /**
+     * Atomically compares one 32-bit value and, on match, writes the replacement value.
+     * Returns the previous value observed at the address.
+     */
+    public static int hostAtomicCompareExchangeInt(long address, int expected, int replacement) {
+        return 0;
+    }
+
+    /**
+     * Atomically swaps one 32-bit value at the supplied native address.
+     * Returns the previous value observed at the address.
+     */
+    public static int hostAtomicExchangeInt(long address, int value) {
+        return 0;
+    }
+
+    /**
+     * Atomically adds one 32-bit delta to the supplied native address.
+     * Returns the previous value observed at the address.
+     */
+    public static int hostAtomicFetchAddInt(long address, int delta) {
+        return 0;
+    }
+
+    /**
+     * Atomically loads one 64-bit value from the supplied native address.
+     * Returns `0` when the address is null.
+     */
+    public static long hostAtomicLoadLong(long address) {
+        return 0L;
+    }
+
+    /**
+     * Atomically stores one 64-bit value at the supplied native address.
+     * Null addresses are ignored.
+     */
+    public static void hostAtomicStoreLong(long address, long value) {
+    }
+
+    /**
+     * Atomically compares one 64-bit value and, on match, writes the replacement value.
+     * Returns the previous value observed at the address.
+     */
+    public static long hostAtomicCompareExchangeLong(long address, long expected, long replacement) {
+        return 0L;
+    }
+
+    /**
+     * Atomically swaps one 64-bit value at the supplied native address.
+     * Returns the previous value observed at the address.
+     */
+    public static long hostAtomicExchangeLong(long address, long value) {
+        return 0L;
+    }
+
+    /**
+     * Atomically adds one 64-bit delta to the supplied native address.
+     * Returns the previous value observed at the address.
+     */
+    public static long hostAtomicFetchAddLong(long address, long delta) {
+        return 0L;
+    }
+
+    /**
+     * Atomically loads one object reference from the supplied native address.
+     * Returns `null` when the address is null or when no value is currently published.
+     */
+    public static Object hostAtomicLoadReference(long address) {
+        return null;
+    }
+
+    /**
+     * Atomically stores one object reference at the supplied native address.
+     * The replacement is retained before publication and the displaced value is released.
+     */
+    public static void hostAtomicStoreReference(long address, Object value) {
+    }
+
+    /**
+     * Atomically compares one object reference and, on match, publishes the replacement.
+     * Returns `true` when the replacement wins and becomes the current published value.
+     */
+    public static boolean hostAtomicCompareAndSetReference(long address, Object expected, Object replacement) {
+        return false;
+    }
+
+    /**
+     * Atomically swaps one object reference at the supplied native address.
+     * Returns the previous published value retained for the caller.
+     */
+    public static Object hostAtomicExchangeReference(long address, Object value) {
+        return null;
+    }
+
+    /**
      * Allocates one native byte buffer on the host heap and returns the raw address.
      * Returns `0` when allocation fails.
      */
@@ -633,4 +847,3 @@ final class Intrinsics {
     }
 
 }
-

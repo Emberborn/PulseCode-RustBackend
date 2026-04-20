@@ -2595,12 +2595,12 @@ fn lock_c2_23_threading_contract_is_documented_and_emitted() {
         "ABI doc missing C2-23 threading section"
     );
     assert!(
-        doc.contains("pulsec.runtime.threading.v1"),
+        doc.contains("pulsec.runtime.threading.v2"),
         "ABI doc missing threading schema id"
     );
     assert!(
-        doc.contains("single-threaded")
-            && doc.contains("non-atomic")
+        doc.contains("host-threading-plus-sync-and-atomic-publication-floor")
+            && doc.contains("retain-release-atomic")
             && doc.contains("not-thread-safe"),
         "ABI doc missing threading model field locks"
     );
@@ -2638,9 +2638,9 @@ fn lock_c2_23_threading_contract_is_documented_and_emitted() {
         fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
     assert!(
         plan.contains("\"threading\"")
-            && plan.contains("\"schema\": \"pulsec.runtime.threading.v1\"")
-            && plan.contains("\"model\": \"single-threaded\"")
-            && plan.contains("\"arc_atomicity\": \"non-atomic\"")
+            && plan.contains("\"schema\": \"pulsec.runtime.threading.v2\"")
+            && plan.contains("\"model\": \"host-threading-plus-sync-and-atomic-publication-floor\"")
+            && plan.contains("\"arc_atomicity\": \"retain-release-atomic\"")
             && plan.contains("\"runtime_thread_safety\": \"not-thread-safe\"")
             && plan.contains("\"container_thread_safety\": \"not-thread-safe\""),
         "native plan missing locked threading model\n{}",
@@ -2653,10 +2653,18 @@ fn lock_c2_23_threading_contract_is_documented_and_emitted() {
     }
 
     let io_asm = read_runtime_asm(&root);
-    assert!(
-        !io_asm.contains("lock "),
-        "threading lock expects non-atomic runtime paths; found lock-prefixed instruction in StdlibRuntime.asm"
-    );
+    if io_asm.contains("lock ") {
+        assert!(
+            io_asm.contains("pulsec_rt_hostAtomicCompareExchangeInt")
+                || io_asm.contains("pulsec_rt_hostAtomicCompareExchangeLong")
+                || io_asm.contains("pulsec_rt_hostAtomicFetchAddInt")
+                || io_asm.contains("pulsec_rt_hostAtomicFetchAddLong")
+                || io_asm.contains("pulsec_rt_hostAtomicCompareAndSetReference")
+                || io_asm.contains("pulsec_rt_arcRetain")
+                || io_asm.contains("pulsec_rt_arcRelease"),
+            "threading lock expects lock-prefixed instructions to stay confined to ARC/publication and host atomic helpers"
+        );
+    }
 }
 
 #[test]

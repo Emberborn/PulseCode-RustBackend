@@ -1,0 +1,120 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalStateException;
+import pulse.rt.Intrinsics;
+
+/**
+ * Low-level host-backed atomic 32-bit cell.
+ *
+ * This is the first real atomic floor for later synchronized, executor, and future work.
+ */
+public final class AtomicInt implements AutoCloseable {
+    private long address;
+    private boolean closed;
+
+    private AtomicInt(long address) {
+        this.address = address;
+        this.closed = false;
+    }
+
+    /**
+     * Allocates a new atomic int with the requested initial value.
+     */
+    public static AtomicInt create(int initialValue) {
+        long address = Intrinsics.hostAllocBytes(8);
+        if (address == 0L) {
+            throw new IllegalStateException("failed to allocate atomic int storage");
+        }
+        Intrinsics.hostAtomicStoreInt(address, initialValue);
+        return new AtomicInt(address);
+    }
+
+    private void ensureOpen() {
+        if (this.closed || this.address == 0L) {
+            throw new IllegalStateException("atomic int is closed");
+        }
+    }
+
+    /**
+     * Returns whether this atomic cell has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Reads the current int value from the host-backed atomic cell.
+     */
+    public int get() {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicLoadInt(this.address);
+    }
+
+    /**
+     * Stores a new int value into the host-backed atomic cell.
+     */
+    public void set(int value) {
+        this.ensureOpen();
+        Intrinsics.hostAtomicStoreInt(this.address, value);
+    }
+
+    /**
+     * Performs a compare-and-set against the current int value.
+     */
+    public boolean compareAndSet(int expected, int replacement) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicCompareExchangeInt(this.address, expected, replacement) == expected;
+    }
+
+    /**
+     * Replaces the current int value and returns the previous value.
+     */
+    public int getAndSet(int value) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicExchangeInt(this.address, value);
+    }
+
+    /**
+     * Adds the requested delta and returns the previous value.
+     */
+    public int getAndAdd(int delta) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicFetchAddInt(this.address, delta);
+    }
+
+    /**
+     * Adds the requested delta and returns the updated value.
+     */
+    public int addAndGet(int delta) {
+        return this.getAndAdd(delta) + delta;
+    }
+
+    /**
+     * Increments by one and returns the updated value.
+     */
+    public int incrementAndGet() {
+        return this.addAndGet(1);
+    }
+
+    /**
+     * Increments by one and returns the previous value.
+     */
+    public int getAndIncrement() {
+        return this.getAndAdd(1);
+    }
+
+    /**
+     * Releases the host-backed storage for this atomic cell.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.address != 0L) {
+            Intrinsics.hostFreeBytes(this.address);
+        }
+        this.address = 0L;
+        this.closed = true;
+    }
+}

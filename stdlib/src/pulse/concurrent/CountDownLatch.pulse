@@ -1,0 +1,98 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+
+/**
+ * Latch built on the current host-sync and atomic floor.
+ *
+ * This is the first higher-level coordination primitive above events and atomics.
+ */
+public final class CountDownLatch implements AutoCloseable {
+    private AtomicInt count;
+    private Event ready;
+    private boolean closed;
+
+    private CountDownLatch(AtomicInt count, Event ready) {
+        this.count = count;
+        this.ready = ready;
+        this.closed = false;
+    }
+
+    /**
+     * Creates a latch with the requested initial count.
+     */
+    public static CountDownLatch create(int initialCount) {
+        if (initialCount < 0) {
+            throw new IllegalArgumentException("initialCount must be >= 0");
+        }
+        AtomicInt count = AtomicInt.create(initialCount);
+        Event ready = Event.createManualReset(initialCount == 0);
+        return new CountDownLatch(count, ready);
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("countdown latch is closed");
+        }
+    }
+
+    /**
+     * Returns whether this latch has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Returns the current remaining count.
+     */
+    public int currentCount() {
+        this.ensureOpen();
+        return this.count.get();
+    }
+
+    /**
+     * Decrements the latch count if it has not already reached zero.
+     */
+    public void countDown() {
+        this.ensureOpen();
+        int before = this.count.getAndAdd(-1);
+        if (before <= 0) {
+            this.count.compareAndSet(before - 1, 0);
+            return;
+        }
+        if (before == 1) {
+            this.ready.set();
+        }
+    }
+
+    /**
+     * Waits until the latch reaches zero.
+     */
+    public void await() {
+        this.ensureOpen();
+        this.ready.waitOne(-1L);
+    }
+
+    /**
+     * Waits until the latch reaches zero or the timeout expires.
+     */
+    public boolean await(long timeoutMillis) {
+        this.ensureOpen();
+        return this.ready.waitOne(timeoutMillis);
+    }
+
+    /**
+     * Releases the underlying coordination resources for this latch.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        this.ready.close();
+        this.count.close();
+        this.closed = true;
+    }
+}

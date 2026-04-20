@@ -122,6 +122,30 @@ pub(crate) fn windows_x64_backend_contract() -> BackendContract {
             "pulse.rt.Intrinsics.hostGetNativeCallbackAddress4",
             "pulse.rt.Intrinsics.hostUnregisterNativeCallback4",
             "pulse.rt.Intrinsics.hostRunShellProcess",
+            "pulse.rt.Intrinsics.hostStartThread",
+            "pulse.rt.Intrinsics.hostCreateMutex",
+            "pulse.rt.Intrinsics.hostCreateEvent",
+            "pulse.rt.Intrinsics.hostWaitHandle",
+            "pulse.rt.Intrinsics.hostReleaseMutex",
+            "pulse.rt.Intrinsics.hostSetEvent",
+            "pulse.rt.Intrinsics.hostResetEvent",
+            "pulse.rt.Intrinsics.hostCloseHandle",
+            "pulse.rt.Intrinsics.hostCreateSemaphore",
+            "pulse.rt.Intrinsics.hostReleaseSemaphore",
+            "pulse.rt.Intrinsics.hostAtomicLoadInt",
+            "pulse.rt.Intrinsics.hostAtomicStoreInt",
+            "pulse.rt.Intrinsics.hostAtomicCompareExchangeInt",
+            "pulse.rt.Intrinsics.hostAtomicExchangeInt",
+            "pulse.rt.Intrinsics.hostAtomicFetchAddInt",
+            "pulse.rt.Intrinsics.hostAtomicLoadLong",
+            "pulse.rt.Intrinsics.hostAtomicStoreLong",
+            "pulse.rt.Intrinsics.hostAtomicCompareExchangeLong",
+            "pulse.rt.Intrinsics.hostAtomicExchangeLong",
+            "pulse.rt.Intrinsics.hostAtomicFetchAddLong",
+            "pulse.rt.Intrinsics.hostAtomicLoadReference",
+            "pulse.rt.Intrinsics.hostAtomicStoreReference",
+            "pulse.rt.Intrinsics.hostAtomicCompareAndSetReference",
+            "pulse.rt.Intrinsics.hostAtomicExchangeReference",
             "pulse.memory.Memory.retain",
             "pulse.memory.Memory.release",
             "pulse.memory.Memory.cycleYoungPass",
@@ -133,6 +157,9 @@ pub(crate) fn windows_x64_backend_contract() -> BackendContract {
             "pulse.lang.System.currentTimeMillis",
             "pulse.lang.System.nanoTime",
             "pulse.lang.System.exit",
+            "pulse.lang.Thread.sleep",
+            "pulse.lang.Thread.yieldNow",
+            "pulse.lang.Thread.currentThreadId",
             "pulse.io.Console.writeLine",
             "pulse.io.File.readAllText",
         ],
@@ -225,6 +252,18 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
     out.insert(
         ("System".to_string(), "exit".to_string()),
         SYSTEM_EXIT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Thread".to_string(), "sleep".to_string()),
+        THREAD_SLEEP_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Thread".to_string(), "yieldNow".to_string()),
+        THREAD_YIELD_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Thread".to_string(), "currentThreadId".to_string()),
+        THREAD_CURRENT_ID_SYMBOL.to_string(),
     );
     out.insert(
         ("Intrinsics".to_string(), "arrayNew".to_string()),
@@ -507,6 +546,105 @@ pub(crate) fn default_stdlib_symbols() -> HashMap<(String, String), String> {
         "pulsec_rt_hostRunShellProcess".to_string(),
     );
     out.insert(
+        ("Intrinsics".to_string(), "hostStartThread".to_string()),
+        HOST_START_THREAD_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCreateMutex".to_string()),
+        HOST_CREATE_MUTEX_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCreateEvent".to_string()),
+        HOST_CREATE_EVENT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostWaitHandle".to_string()),
+        HOST_WAIT_HANDLE_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostReleaseMutex".to_string()),
+        HOST_RELEASE_MUTEX_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostSetEvent".to_string()),
+        HOST_SET_EVENT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostResetEvent".to_string()),
+        HOST_RESET_EVENT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCloseHandle".to_string()),
+        HOST_CLOSE_HANDLE_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostCreateSemaphore".to_string()),
+        HOST_CREATE_SEMAPHORE_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostReleaseSemaphore".to_string()),
+        HOST_RELEASE_SEMAPHORE_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicLoadInt".to_string()),
+        HOST_ATOMIC_LOAD_INT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicStoreInt".to_string()),
+        HOST_ATOMIC_STORE_INT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicCompareExchangeInt".to_string()),
+        HOST_ATOMIC_COMPARE_EXCHANGE_INT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicExchangeInt".to_string()),
+        HOST_ATOMIC_EXCHANGE_INT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicFetchAddInt".to_string()),
+        HOST_ATOMIC_FETCH_ADD_INT_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicLoadLong".to_string()),
+        HOST_ATOMIC_LOAD_LONG_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicStoreLong".to_string()),
+        HOST_ATOMIC_STORE_LONG_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicCompareExchangeLong".to_string()),
+        HOST_ATOMIC_COMPARE_EXCHANGE_LONG_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicExchangeLong".to_string()),
+        HOST_ATOMIC_EXCHANGE_LONG_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicFetchAddLong".to_string()),
+        HOST_ATOMIC_FETCH_ADD_LONG_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicLoadReference".to_string()),
+        HOST_ATOMIC_LOAD_REFERENCE_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicStoreReference".to_string()),
+        HOST_ATOMIC_STORE_REFERENCE_SYMBOL.to_string(),
+    );
+    out.insert(
+        (
+            "Intrinsics".to_string(),
+            "hostAtomicCompareAndSetReference".to_string(),
+        ),
+        HOST_ATOMIC_COMPARE_AND_SET_REFERENCE_SYMBOL.to_string(),
+    );
+    out.insert(
+        ("Intrinsics".to_string(), "hostAtomicExchangeReference".to_string()),
+        HOST_ATOMIC_EXCHANGE_REFERENCE_SYMBOL.to_string(),
+    );
+    out.insert(
         ("Memory".to_string(), "retain".to_string()),
         "pulsec_rt_arcRetain".to_string(),
     );
@@ -589,6 +727,8 @@ pub(crate) fn normalize_stdlib_owner(owner: &str) -> &str {
         "pulse.lang.IO" => "IO",
         "pulse.lang.Class" => "Class",
         "pulse.lang.String" => "String",
+        "pulse.lang.System" => "System",
+        "pulse.lang.Thread" => "Thread",
         "pulse.lang.Char" => "Char",
         "pulse.lang.Long" => "Long",
         "pulse.lang.UInteger" => "UInteger",

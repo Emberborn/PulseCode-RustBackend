@@ -1,0 +1,28 @@
+package pulse.lang;
+
+import pulse.interop.NativeCallback1;
+
+/**
+ * Host-thread entry thunk for the first Thread lifecycle floor.
+ */
+public final class ThreadStartThunk implements NativeCallback1 {
+    private Thread owner;
+
+    /**
+     * Creates a native callback thunk that forwards into the owning Thread wrapper.
+     */
+    public ThreadStartThunk(Thread owner) {
+        if (owner == null) {
+            throw new IllegalArgumentException("owner thread must not be null");
+        }
+        this.owner = owner;
+    }
+
+    /**
+     * Invokes the owned thread target from the native thread start callback.
+     */
+    public long invoke(long arg0) {
+        this.owner.runOwnedTarget();
+        return 0L;
+    }
+}

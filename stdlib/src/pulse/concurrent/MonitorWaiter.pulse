@@ -1,0 +1,76 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalStateException;
+
+/**
+ * One queued monitor waiter backed by an auto-reset host event.
+ *
+ * This stays package-private because it is an implementation detail of Monitor's
+ * current wait/notify floor rather than a public concurrency API.
+ */
+final class MonitorWaiter implements AutoCloseable {
+    private Event ready;
+    private AtomicInt signaled;
+    private boolean closed;
+
+    /**
+     * Creates one queued waiter backed by an auto-reset event.
+     */
+    public MonitorWaiter() {
+        this.ready = Event.createAutoReset(false);
+        this.signaled = AtomicInt.create(0);
+        this.closed = false;
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("monitor waiter is closed");
+        }
+    }
+
+    /**
+     * Signals this waiter.
+     */
+    public void signal() {
+        this.ensureOpen();
+        this.signaled.set(1);
+        this.ready.set();
+    }
+
+    /**
+     * Waits indefinitely for this waiter to be signaled.
+     */
+    public void await() {
+        this.ensureOpen();
+        this.ready.waitOne(-1L);
+    }
+
+    /**
+     * Waits for this waiter to be signaled or the timeout to expire.
+     */
+    public boolean await(long timeoutMillis) {
+        this.ensureOpen();
+        return this.ready.waitOne(timeoutMillis);
+    }
+
+    /**
+     * Returns whether this waiter has been signaled.
+     */
+    public boolean wasSignaled() {
+        this.ensureOpen();
+        return this.signaled.get() != 0;
+    }
+
+    /**
+     * Releases the resources for this queued waiter.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        this.ready.close();
+        this.signaled.close();
+        this.closed = true;
+    }
+}

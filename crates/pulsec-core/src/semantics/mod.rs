@@ -282,11 +282,15 @@ fn stmt_guarantees_return(stmt: &Stmt) -> bool {
                 }
             }
 
-            !catches.is_empty()
-                && block_guarantees_return(body)
-                && catches
-                    .iter()
-                    .all(|catch_clause| block_guarantees_return(&catch_clause.body))
+            let body_returns = block_guarantees_return(body);
+            if catches.is_empty() {
+                body_returns
+            } else {
+                body_returns
+                    && catches
+                        .iter()
+                        .all(|catch_clause| block_guarantees_return(&catch_clause.body))
+            }
         }
         Stmt::Assert { .. } => false,
         Stmt::ForEach { .. } => false,

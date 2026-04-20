@@ -1,0 +1,93 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalStateException;
+import pulse.rt.Intrinsics;
+
+/**
+ * Low-level host-backed atomic reference cell.
+ *
+ * This is the explicit shared-reference publication floor for the pre-self-sustained concurrency baseline.
+ */
+public final class AtomicReference<T> implements AutoCloseable {
+    private long address;
+    private boolean closed;
+
+    private AtomicReference(long address) {
+        this.address = address;
+        this.closed = false;
+    }
+
+    /**
+     * Allocates a new atomic reference cell with the requested initial published value.
+     */
+    public static AtomicReference create(Object initialValue) {
+        long address = Intrinsics.hostAllocBytes(8);
+        if (address == 0L) {
+            throw new IllegalStateException("failed to allocate atomic reference storage");
+        }
+        Intrinsics.hostWriteLong(address, 0, 0L);
+        Intrinsics.hostAtomicStoreReference(address, initialValue);
+        return new AtomicReference(address);
+    }
+
+    private void ensureOpen() {
+        if (this.closed || this.address == 0L) {
+            throw new IllegalStateException("atomic reference is closed");
+        }
+    }
+
+    /**
+     * Returns whether this atomic cell has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Reads the current published reference.
+     */
+    public T get() {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicLoadReference(this.address);
+    }
+
+    /**
+     * Publishes a new reference and releases the displaced value.
+     */
+    public void set(T value) {
+        this.ensureOpen();
+        Intrinsics.hostAtomicStoreReference(this.address, value);
+    }
+
+    /**
+     * Performs a compare-and-set against the currently published reference.
+     */
+    public boolean compareAndSet(T expected, T replacement) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicCompareAndSetReference(this.address, expected, replacement);
+    }
+
+    /**
+     * Replaces the current reference and returns the previous published value.
+     */
+    public T getAndSet(T value) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicExchangeReference(this.address, value);
+    }
+
+    /**
+     * Clears and releases the host-backed storage for this atomic reference cell.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.address != 0L) {
+            Intrinsics.hostAtomicStoreReference(this.address, null);
+            Intrinsics.hostFreeBytes(this.address);
+        }
+        this.address = 0L;
+        this.closed = true;
+    }
+}

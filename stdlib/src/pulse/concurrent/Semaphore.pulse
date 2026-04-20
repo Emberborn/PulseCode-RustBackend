@@ -1,0 +1,124 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.rt.Intrinsics;
+
+/**
+ * OS-backed counting semaphore for the early concurrency floor.
+ *
+ * This is the retained low-level permit primitive for executors, throttling, and later monitor work.
+ */
+public final class Semaphore implements AutoCloseable {
+    private long handle;
+    private int maximumCount;
+    private boolean closed;
+
+    private Semaphore(long handle, int maximumCount) {
+        this.handle = handle;
+        this.maximumCount = maximumCount;
+        this.closed = false;
+    }
+
+    /**
+     * Creates a host-backed semaphore with the requested initial and maximum counts.
+     */
+    public static Semaphore create(int initialCount, int maximumCount) {
+        if (initialCount < 0 || maximumCount <= 0 || initialCount > maximumCount) {
+            throw new IllegalArgumentException("invalid semaphore counts");
+        }
+        long handle = Intrinsics.hostCreateSemaphore(initialCount, maximumCount);
+        if (handle == 0L) {
+            throw new IllegalStateException("failed to create host semaphore");
+        }
+        return new Semaphore(handle, maximumCount);
+    }
+
+    private void ensureOpen() {
+        if (this.closed || this.handle == 0L) {
+            throw new IllegalStateException("semaphore is closed");
+        }
+    }
+
+    /**
+     * Returns whether this semaphore has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Returns the configured maximum permit count.
+     */
+    public int maximumCount() {
+        return this.maximumCount;
+    }
+
+    /**
+     * Acquires one permit, waiting until a permit is available.
+     */
+    public void acquire() {
+        this.ensureOpen();
+        int status = Intrinsics.hostWaitHandle(this.handle, -1L);
+        if (status == 0) {
+            return;
+        }
+        if (status == 2) {
+            throw new IllegalStateException("semaphore acquisition returned abandoned ownership");
+        }
+        throw new IllegalStateException("semaphore acquisition failed");
+    }
+
+    /**
+     * Attempts to acquire one permit before the timeout expires.
+     */
+    public boolean tryAcquire(long timeoutMillis) {
+        this.ensureOpen();
+        int status = Intrinsics.hostWaitHandle(this.handle, timeoutMillis);
+        if (status == 0) {
+            return true;
+        }
+        if (status == 1) {
+            return false;
+        }
+        if (status == 2) {
+            throw new IllegalStateException("semaphore acquisition returned abandoned ownership");
+        }
+        throw new IllegalStateException("semaphore acquisition failed");
+    }
+
+    /**
+     * Releases one permit back to the semaphore.
+     */
+    public void release() {
+        this.release(1);
+    }
+
+    /**
+     * Releases the requested number of permits back to the semaphore.
+     */
+    public void release(int permits) {
+        this.ensureOpen();
+        if (permits <= 0) {
+            throw new IllegalArgumentException("permits must be > 0");
+        }
+        if (!Intrinsics.hostReleaseSemaphore(this.handle, permits)) {
+            throw new IllegalStateException("failed to release host semaphore");
+        }
+    }
+
+    /**
+     * Closes the underlying host semaphore handle.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.handle != 0L && !Intrinsics.hostCloseHandle(this.handle)) {
+            throw new IllegalStateException("failed to close host semaphore");
+        }
+        this.handle = 0L;
+        this.closed = true;
+    }
+}

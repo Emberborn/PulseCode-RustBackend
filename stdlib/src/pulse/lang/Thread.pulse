@@ -1,0 +1,251 @@
+package pulse.lang;
+
+import pulse.concurrent.AtomicInt;
+import pulse.concurrent.AtomicLong;
+import pulse.concurrent.Event;
+import pulse.interop.NativeCallbackHandle;
+import pulse.rt.Intrinsics;
+
+/**
+ * First real host-thread object wrapper.
+ *
+ * This keeps lifecycle ownership explicit: one-shot start, join, and cooperative
+ * interruption are real now, while the broader Java-close thread model still remains later work.
+ */
+public final class Thread implements AutoCloseable {
+    private Runnable target;
+    private NativeCallbackHandle startCallback;
+    private long handle;
+    private Event interruptSignal;
+    private AtomicInt interruptRequested;
+    private AtomicInt started;
+    private AtomicInt completed;
+    private AtomicLong workerThreadId;
+    private boolean closed;
+
+    /**
+     * Creates a new thread wrapper around the given runnable target.
+     */
+    public Thread(Runnable target) {
+        if (target == null) {
+            throw new IllegalArgumentException("thread target must not be null");
+        }
+        this.target = target;
+        this.startCallback = null;
+        this.handle = 0L;
+        this.interruptSignal = Event.createManualReset(false);
+        this.interruptRequested = AtomicInt.create(0);
+        this.started = AtomicInt.create(0);
+        this.completed = AtomicInt.create(0);
+        this.workerThreadId = AtomicLong.create(0L);
+        this.closed = false;
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("thread is closed");
+        }
+    }
+
+    /**
+     * Returns whether this thread has already been started.
+     */
+    public boolean hasStarted() {
+        this.ensureOpen();
+        return this.started.get() != 0;
+    }
+
+    /**
+     * Returns whether the underlying host thread is still running.
+     */
+    public boolean isAlive() {
+        this.ensureOpen();
+        return this.started.get() != 0 && this.completed.get() == 0;
+    }
+
+    /**
+     * Returns whether cooperative interruption has been requested.
+     */
+    public boolean isInterrupted() {
+        this.ensureOpen();
+        return this.interruptRequested.get() != 0;
+    }
+
+    /**
+     * Returns the worker thread id after the thread has begun executing.
+     */
+    public long threadId() {
+        this.ensureOpen();
+        return this.workerThreadId.get();
+    }
+
+    /**
+     * Starts the underlying host thread exactly once.
+     */
+    public void start() {
+        this.ensureOpen();
+        if (!this.started.compareAndSet(0, 1)) {
+            throw new IllegalStateException("thread has already been started");
+        }
+        ThreadStartThunk thunk = new ThreadStartThunk(this);
+        NativeCallbackHandle callback = NativeCallbackHandle.create(thunk);
+        if (callback == null) {
+            this.started.set(0);
+            throw new IllegalStateException("failed to create thread start callback");
+        }
+        long handle = Intrinsics.hostStartThread(callback.address(), 0L);
+        if (handle == 0L) {
+            callback.close();
+            this.started.set(0);
+            throw new IllegalStateException("failed to create host thread");
+        }
+        this.startCallback = callback;
+        this.handle = handle;
+    }
+
+    void runOwnedTarget() {
+        this.workerThreadId.set(Thread.currentThreadId());
+        try {
+            this.target.run();
+        } finally {
+            this.completed.set(1);
+        }
+    }
+
+    private void cleanupCompletedResources() {
+        if (this.completed.get() == 0) {
+            return;
+        }
+        if (this.handle != 0L) {
+            Intrinsics.hostCloseHandle(this.handle);
+            this.handle = 0L;
+        }
+        if (this.startCallback != null) {
+            this.startCallback.close();
+            this.startCallback = null;
+        }
+    }
+
+    /**
+     * Waits indefinitely for the thread to complete.
+     */
+    public void join() {
+        this.ensureOpen();
+        if (this.started.get() == 0) {
+            return;
+        }
+        if (this.completed.get() == 0) {
+            int status = Intrinsics.hostWaitHandle(this.handle, -1L);
+            if (status != 0) {
+                throw new IllegalStateException("thread join failed");
+            }
+        }
+        this.cleanupCompletedResources();
+    }
+
+    /**
+     * Waits for the thread to complete or the timeout to expire.
+     */
+    public boolean join(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        if (this.started.get() == 0) {
+            return true;
+        }
+        if (this.completed.get() != 0) {
+            this.cleanupCompletedResources();
+            return true;
+        }
+        int status = Intrinsics.hostWaitHandle(this.handle, timeoutMillis);
+        if (status == 0) {
+            this.cleanupCompletedResources();
+            return true;
+        }
+        if (status == 1) {
+            return this.completed.get() != 0;
+        }
+        throw new IllegalStateException("thread join failed");
+    }
+
+    /**
+     * Requests cooperative interruption for this thread.
+     */
+    public void interrupt() {
+        this.ensureOpen();
+        this.interruptRequested.set(1);
+        this.interruptSignal.set();
+    }
+
+    /**
+     * Clears the cooperative interruption request.
+     */
+    public void clearInterrupt() {
+        this.ensureOpen();
+        this.interruptRequested.set(0);
+        this.interruptSignal.reset();
+    }
+
+    /**
+     * Waits until interruption has been requested.
+     */
+    public void awaitInterrupt() {
+        this.ensureOpen();
+        this.interruptSignal.waitOne(-1L);
+    }
+
+    /**
+     * Waits until interruption has been requested or the timeout expires.
+     */
+    public boolean awaitInterrupt(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        return this.interruptSignal.waitOne(timeoutMillis);
+    }
+
+    /**
+     * Releases thread-owned resources after the thread has stopped.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.isAlive()) {
+            throw new IllegalStateException("cannot close a running thread");
+        }
+        this.cleanupCompletedResources();
+        this.interruptSignal.close();
+        this.interruptRequested.close();
+        this.started.close();
+        this.completed.close();
+        this.workerThreadId.close();
+        this.closed = true;
+    }
+
+    /**
+     * Sleeps the current host thread for the requested duration.
+     */
+    public static void sleep(long millis) {
+        if (millis < 0L) {
+            throw new IllegalArgumentException("sleep duration must be >= 0");
+        }
+        Intrinsics.hostSleepMillis(millis);
+    }
+
+    /**
+     * Yields the current host thread, if the scheduler accepts the hint.
+     */
+    public static boolean yieldNow() {
+        return Intrinsics.hostYieldThread();
+    }
+
+    /**
+     * Returns the current host thread id.
+     */
+    public static long currentThreadId() {
+        return Intrinsics.hostCurrentThreadId();
+    }
+}

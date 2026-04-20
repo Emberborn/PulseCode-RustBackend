@@ -1371,6 +1371,7 @@ fn lock_f1_09_f1_13_and_f1_14_type_modifier_and_declaration_edges_are_explicit()
     .expect("read packages and imports doc");
 
     assert!(decls.contains("The following modifiers are intentionally fenced"));
+    assert!(decls.contains("method-level `synchronized` on concrete class methods"));
     assert!(decls.contains("nested type declarations are not part of the current shipped baseline"));
     assert!(types.contains("varargs parameter declarations such as `String... args`"));
     assert!(types.contains("entrypoint `main(String... args)` is accepted"));
@@ -3503,11 +3504,12 @@ fn lock_f1_16_try_catch_finally_baseline_is_documented_and_board_locked() {
     assert!(compiler_doc.contains("## `try` / `catch` / `finally`"));
     assert!(compiler_doc.contains("across method boundaries"));
     assert!(compiler_doc.contains("runtime panics from callees are not catchable"));
-    assert!(compiler_doc.contains("`return`, `break`, and `continue`"));
+    assert!(compiler_doc.contains("`return` through `try` / `catch` / `finally` is real"));
+    assert!(compiler_doc.contains("`break` and `continue` inside `try` / `catch` / `finally` are still fenced"));
     assert!(runtime_doc.contains("Current `try` / `catch` / `finally` Runtime Contract"));
     assert!(runtime_doc.contains("runtime-installed handler frames"));
     assert!(board.contains("| F1-16 |"));
-    assert!(board.contains("In Progress"));
+    assert!(board.contains("Done (Locked)"));
 }
 
 #[test]
@@ -3626,17 +3628,42 @@ fn lock_f1_20_synchronized_statement_policy_is_documented_and_board_staged() {
         .expect("read F1 support policy");
 
     assert!(doc.contains("## `synchronized`"));
-    assert!(doc.contains("statements are explicitly fenced"));
+    assert!(doc.contains("statements are real in the current F1 baseline"));
+    assert!(doc.contains("method-level `synchronized` on concrete class methods is also real"));
+    assert!(doc.contains("pulse.concurrent.Monitor"));
+    assert!(doc.contains("does not require manual user-code workarounds"));
     assert!(doc.contains("F1-86"));
     assert!(doc.contains("F1-89"));
     assert!(doc.contains("F1-93"));
-    assert!(policy.contains("synchronized statements for the current F1 baseline"));
+    assert!(policy.contains("`synchronized` statement/method baseline"));
     assert!(board.contains("| F1-20 |"));
-    assert!(board.contains("In Progress"));
+    assert!(board.contains("Done (Locked)"));
 }
 
 #[test]
-fn lock_f1_20_cli_check_rejects_synchronized_statement_baseline() {
+fn lock_f1_20_cli_check_accepts_synchronized_statement_baseline() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import pulse.concurrent.Monitor;
+
+        class Main {
+            public static void main() {
+                Monitor gate = Monitor.create();
+                synchronized (gate) {
+                }
+            }
+        }"#,
+    );
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_f1_20_cli_check_accepts_synchronized_method_baseline() {
     let root = unique_temp_root();
     let src_root = root.join("src");
     let entry = src_root.join("app/core/Main.pulse");
@@ -3645,18 +3672,212 @@ fn lock_f1_20_cli_check_rejects_synchronized_statement_baseline() {
         r#"
         package app.core;
 
+        class Counter {
+            private int value;
+
+            public synchronized int next() {
+                value = value + 1;
+                return value;
+            }
+        }
+
         class Main {
+            public static synchronized int id() {
+                return 7;
+            }
+
             public static void main() {
-                synchronized (new Main()) {
-                }
+                int value = new Counter().next();
+                int same = Main.id();
             }
         }"#,
     );
-    assert_check_fails(
+    assert_check_ok(&entry, &src_root);
+}
+
+#[test]
+fn lock_f1_86_monitor_wait_notify_floor_is_documented_on_board_and_language_surface() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("statements-and-control-flow.md"),
+    )
+    .expect("read statements and control flow doc");
+
+    assert!(board.contains("| F1-86 |"));
+    assert!(board.contains("Monitor.wait"));
+    assert!(board.contains("notifyAll"));
+    assert!(doc.contains("Monitor.wait()"));
+    assert!(doc.contains("Monitor.notify()"));
+    assert!(doc.contains("queued waiter event"));
+}
+
+#[test]
+fn lock_f1_89_memory_publication_baseline_is_documented_and_volatile_remains_fenced() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let policy = fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md"))
+        .expect("read F1 support policy");
+    let gap =
+        fs::read_to_string(root.join("docs").join("F1_GAP_MATRIX.md")).expect("read F1 gap matrix");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("concurrency-and-memory-model.md"),
+    )
+    .expect("read concurrency and memory model doc");
+
+    assert!(board.contains("| F1-89 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("`volatile` remains semantically rejected"));
+    assert!(board.contains("`final` fields are compile-time immutability"));
+    assert!(board.contains("`AtomicReference` now provides explicit supported reference handoff/publication"));
+    assert!(policy.contains("## F1 Memory / Publication Baseline"));
+    assert!(policy.contains("`AtomicReference` is real for explicit shared-reference handoff/publication"));
+    assert!(policy.contains("ordinary unsynchronized object-field publication across threads is not part of the currently claimed F1 baseline"));
+    assert!(gap.contains("| `volatile` modifier | Reserved/Fenced | Reserved, semantically rejected |"));
+    assert!(gap.contains("ordinary unsynchronized object-graph publication is out of scope"));
+    assert!(doc.contains("Current shipped concurrency behavior is intentionally narrower than the full Java Memory Model"));
+    assert!(doc.contains("`volatile` remains intentionally fenced in F1"));
+    assert!(doc.contains("compile-time immutability after initialization"));
+    assert!(doc.contains("use `AtomicReference` for explicit shared-reference handoff/publication"));
+    assert!(doc.contains("do not treat ordinary unsynchronized field reads/writes on arbitrary objects as a supported cross-thread publication model"));
+}
+
+#[test]
+fn lock_f1_89_cli_check_rejects_volatile_field_baseline() {
+    let root = unique_temp_root();
+    let src_root = root.join("src");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
         &entry,
-        &src_root,
-        "Synchronized statements are not supported in the current F1 baseline",
+        r#"
+        package app.core;
+
+        class Counter {
+            public volatile int value;
+        }
+
+        class Main {
+            public static void main() {
+                Counter counter = new Counter();
+            }
+        }"#,
     );
+
+    let output = run_pulsec(&[
+        "check",
+        entry.to_str().expect("entry str"),
+        "--source-root",
+        src_root.to_str().expect("src root str"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "expected volatile field check failure\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Modifier 'volatile' is reserved but not supported on field 'Counter.value' yet"));
+}
+
+#[test]
+fn lock_f1_91_atomic_policy_is_documented_and_reference_atomics_are_shipped_with_explicit_publication_boundary() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("concurrency-and-memory-model.md"),
+    )
+    .expect("read concurrency and memory model doc");
+
+    assert!(board.contains("| F1-91 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("AtomicBoolean"));
+    assert!(board.contains("AtomicReference"));
+    assert!(board.contains("explicit reference handoff/publication are in"));
+    assert!(doc.contains("## Supported Atomic Policy"));
+    assert!(doc.contains("`AtomicBoolean` is supported"));
+    assert!(doc.contains("`AtomicInt` is supported"));
+    assert!(doc.contains("`AtomicLong` is supported"));
+    assert!(doc.contains("`AtomicReference` is supported"));
+    assert!(!doc.contains("Why `AtomicReference` is still later:"));
+}
+
+#[test]
+fn lock_f1_90_concurrency_scope_is_documented_and_thread_stays_language_owned() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("concurrency-and-memory-model.md"),
+    )
+    .expect("read concurrency and memory model doc");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+
+    assert!(board.contains("| F1-90 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("`Mutex`, `Event`, `Semaphore`, `CountDownLatch`, `Monitor`, `AtomicBoolean`, `AtomicInt`, `AtomicLong`, and `AtomicReference`"));
+    assert!(board.contains("`Thread` remains `pulse.lang.Thread`"));
+    assert!(board.contains("`ConcurrentHashMap` / `CopyOnWriteArrayList` remain under `F1-92`"));
+    assert!(board.contains("higher-level executors/futures stay under `F1-103`"));
+
+    assert!(doc.contains("## `pulse.concurrent` Scope"));
+    assert!(doc.contains("Shipped in `pulse.concurrent` today:"));
+    assert!(doc.contains("`Thread` remains `pulse.lang.Thread`"));
+    assert!(doc.contains("`Runnable` remains `pulse.lang.Runnable`"));
+    assert!(doc.contains("`AtomicReference` is supported"));
+    assert!(doc.contains("ConcurrentHashMap"));
+    assert!(doc.contains("CopyOnWriteArrayList"));
+    assert!(doc.contains("CompletableFuture"));
+
+    assert!(roadmap.contains("locked `pulse.concurrent` scope"));
+    assert!(roadmap.contains("`Thread`/`Runnable` remaining language-owned"));
+    assert!(roadmap.contains("explicit reference publication now raised while concurrent collections/executors stay later"));
+}
+
+#[test]
+fn lock_f1_93_thread_lifecycle_floor_is_documented_on_board_and_language_surface() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("statements-and-control-flow.md"),
+    )
+    .expect("read statements and control flow doc");
+
+    assert!(board.contains("| F1-93 |"));
+    assert!(board.contains("real lifecycle/start/join semantics"));
+    assert!(board.contains("cooperative interruption"));
+    assert!(board.contains("cross-thread monitor wakeup validation"));
+    assert!(doc.contains("real `Thread` lifecycle (`start`, `join`, cooperative interruption)"));
+    assert!(doc.contains("higher-level executor closure"));
 }
 
 #[test]

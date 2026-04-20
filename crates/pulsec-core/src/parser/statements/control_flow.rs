@@ -6,7 +6,7 @@ impl Parser {
             if self.is_eof() {
                 return Err(self.error_here("Unterminated method body"));
             }
-            stmts.push(self.parse_statement()?);
+            stmts.extend(self.parse_statement_sequence()?);
         }
         self.expect_symbol("}")?;
         Ok(stmts)
@@ -74,9 +74,32 @@ impl Parser {
             && !self.check_keyword("case")
             && !self.check_keyword("default")
         {
-            body.push(self.parse_statement()?);
+            body.extend(self.parse_statement_sequence()?);
         }
         Ok(body)
+    }
+
+    pub(crate) fn parse_statement_sequence(&mut self) -> Result<Vec<Stmt>, ParseError> {
+        if self.check_keyword("synchronized") {
+            return self.parse_synchronized_statement();
+        }
+        Ok(vec![self.parse_statement()?])
+    }
+
+    pub(crate) fn parse_synchronized_statement(&mut self) -> Result<Vec<Stmt>, ParseError> {
+        let source_line = self.current_line();
+        self.expect_keyword("synchronized")?;
+        self.expect_symbol("(")?;
+        let monitor = self.parse_expression()?;
+        self.expect_symbol(")")?;
+        let body = self.parse_required_block("synchronized")?;
+        let monitor_local = self.next_synthetic_local_name("sync_monitor");
+        Ok(self.synchronized_wrapper_body(
+            monitor_local,
+            monitor,
+            body,
+            source_line,
+        ))
     }
 
     pub(crate) fn parse_statement(&mut self) -> Result<Stmt, ParseError> {

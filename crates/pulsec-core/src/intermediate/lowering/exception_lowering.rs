@@ -40,6 +40,51 @@ impl IrBuilder {
         let finally_entry = finally_block.map(|_| self.new_block());
         let dispatch_block = self.new_block();
         let rethrow_block = self.new_block();
+        let return_dispatch_block = finally_entry.map(|_| self.new_block());
+        let return_block = finally_entry.map(|_| self.new_block());
+        let pending_return_flag_local = format!("__try{}_returning", stmt_index);
+        let pending_return_value_local = self
+            .return_type
+            .as_ref()
+            .filter(|return_ty| return_ty.as_str() != "void")
+            .map(|_| format!("__try{}_return_value", stmt_index));
+
+        if finally_entry.is_some() {
+            self.emit(
+                current,
+                IrInstr::DeclareLocal {
+                    name: pending_return_flag_local.clone(),
+                    ty: "boolean".to_string(),
+                    source: source.clone(),
+                },
+            );
+            let false_value =
+                self.push_value("boolean".to_string(), IrValueKind::BoolLiteral(false), stmt_index);
+            self.emit(
+                current,
+                IrInstr::StoreLocal {
+                    name: pending_return_flag_local.clone(),
+                    value: false_value,
+                    source: source.clone(),
+                },
+            );
+            if let Some(return_local) = pending_return_value_local.as_ref() {
+                self.emit(
+                    current,
+                    IrInstr::DeclareLocal {
+                        name: return_local.clone(),
+                        ty: self.return_type.clone().unwrap_or_else(|| "unknown".to_string()),
+                        source: source.clone(),
+                    },
+                );
+            }
+        }
+
+        let current_try_ctx = finally_entry.map(|entry| TryContext {
+            finally_entry: entry,
+            pending_return_flag_local: pending_return_flag_local.clone(),
+            pending_return_value_local: pending_return_value_local.clone(),
+        });
 
         self.emit(
             current,
@@ -49,7 +94,12 @@ impl IrBuilder {
             },
         );
 
-        let body_end = self.lower_stmts(body, current, loop_ctx, Some(&TryContext));
+        let body_end = self.lower_stmts(
+            body,
+            current,
+            loop_ctx,
+            current_try_ctx.as_ref().or(parent_try_ctx),
+        );
         if !self.is_terminated(body_end) {
             self.emit(
                 body_end,
@@ -138,8 +188,12 @@ impl IrBuilder {
                     },
                 );
 
-                let catch_end =
-                    self.lower_stmts(&catch_clause.body, catch_block, loop_ctx, parent_try_ctx);
+                let catch_end = self.lower_stmts(
+                    &catch_clause.body,
+                    catch_block,
+                    loop_ctx,
+                    current_try_ctx.as_ref().or(parent_try_ctx),
+                );
                 if !self.is_terminated(catch_end) {
                     self.set_terminator(
                         catch_end,
@@ -196,11 +250,45 @@ impl IrBuilder {
                     IrTerminator::Branch {
                         condition: cond,
                         then_target: rethrow_block,
-                        else_target: after_block,
+                        else_target: return_dispatch_block.unwrap_or(after_block),
                         source: source.clone(),
                     },
                 );
             }
+        }
+
+        if let Some(return_dispatch_block) = return_dispatch_block {
+            let returning_value = self.push_value(
+                "boolean".to_string(),
+                IrValueKind::LocalRef(pending_return_flag_local.clone()),
+                stmt_index,
+            );
+            self.set_terminator(
+                return_dispatch_block,
+                IrTerminator::Branch {
+                    condition: returning_value,
+                    then_target: return_block.expect("return block"),
+                    else_target: after_block,
+                    source: source.clone(),
+                },
+            );
+        }
+
+        if let Some(return_block) = return_block {
+            let value = pending_return_value_local.as_ref().map(|return_local| {
+                self.push_value(
+                    self.return_type.clone().unwrap_or_else(|| "unknown".to_string()),
+                    IrValueKind::LocalRef(return_local.clone()),
+                    stmt_index,
+                )
+            });
+            self.set_terminator(
+                return_block,
+                IrTerminator::Return {
+                    value,
+                    source: source.clone(),
+                },
+            );
         }
 
         let pending_throwable = self.push_value(

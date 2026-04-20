@@ -213,6 +213,30 @@ fn expected_intrinsics_surface() -> Vec<&'static str> {
         "pulse.rt.Intrinsics.hostRegisterNativeCallback4",
         "pulse.rt.Intrinsics.hostGetNativeCallbackAddress4",
         "pulse.rt.Intrinsics.hostUnregisterNativeCallback4",
+        "pulse.rt.Intrinsics.hostCreateMutex",
+        "pulse.rt.Intrinsics.hostCreateEvent",
+        "pulse.rt.Intrinsics.hostWaitHandle",
+        "pulse.rt.Intrinsics.hostReleaseMutex",
+        "pulse.rt.Intrinsics.hostSetEvent",
+        "pulse.rt.Intrinsics.hostResetEvent",
+        "pulse.rt.Intrinsics.hostCloseHandle",
+        "pulse.rt.Intrinsics.hostCreateSemaphore",
+        "pulse.rt.Intrinsics.hostReleaseSemaphore",
+        "pulse.rt.Intrinsics.hostStartThread",
+        "pulse.rt.Intrinsics.hostAtomicLoadInt",
+        "pulse.rt.Intrinsics.hostAtomicStoreInt",
+        "pulse.rt.Intrinsics.hostAtomicCompareExchangeInt",
+        "pulse.rt.Intrinsics.hostAtomicExchangeInt",
+        "pulse.rt.Intrinsics.hostAtomicFetchAddInt",
+        "pulse.rt.Intrinsics.hostAtomicLoadLong",
+        "pulse.rt.Intrinsics.hostAtomicStoreLong",
+        "pulse.rt.Intrinsics.hostAtomicCompareExchangeLong",
+        "pulse.rt.Intrinsics.hostAtomicExchangeLong",
+        "pulse.rt.Intrinsics.hostAtomicFetchAddLong",
+        "pulse.rt.Intrinsics.hostAtomicLoadReference",
+        "pulse.rt.Intrinsics.hostAtomicStoreReference",
+        "pulse.rt.Intrinsics.hostAtomicCompareAndSetReference",
+        "pulse.rt.Intrinsics.hostAtomicExchangeReference",
         "pulse.memory.Memory.retain",
         "pulse.memory.Memory.release",
         "pulse.memory.Memory.cycleYoungPass",
@@ -221,6 +245,9 @@ fn expected_intrinsics_surface() -> Vec<&'static str> {
         "pulse.memory.Memory.weakNew",
         "pulse.memory.Memory.weakGet",
         "pulse.memory.Memory.weakClear",
+        "pulse.lang.Thread.sleep",
+        "pulse.lang.Thread.yieldNow",
+        "pulse.lang.Thread.currentThreadId",
     ]
 }
 
@@ -305,6 +332,30 @@ fn expected_native_runtime_symbols() -> Vec<&'static str> {
         "pulsec_rt_hostRegisterNativeCallback4",
         "pulsec_rt_hostGetNativeCallbackAddress4",
         "pulsec_rt_hostUnregisterNativeCallback4",
+        "pulsec_rt_hostCreateMutex",
+        "pulsec_rt_hostCreateEvent",
+        "pulsec_rt_hostWaitHandle",
+        "pulsec_rt_hostReleaseMutex",
+        "pulsec_rt_hostSetEvent",
+        "pulsec_rt_hostResetEvent",
+        "pulsec_rt_hostCloseHandle",
+        "pulsec_rt_hostCreateSemaphore",
+        "pulsec_rt_hostReleaseSemaphore",
+        "pulsec_rt_hostStartThread",
+        "pulsec_rt_hostAtomicLoadInt",
+        "pulsec_rt_hostAtomicStoreInt",
+        "pulsec_rt_hostAtomicCompareExchangeInt",
+        "pulsec_rt_hostAtomicExchangeInt",
+        "pulsec_rt_hostAtomicFetchAddInt",
+        "pulsec_rt_hostAtomicLoadLong",
+        "pulsec_rt_hostAtomicStoreLong",
+        "pulsec_rt_hostAtomicCompareExchangeLong",
+        "pulsec_rt_hostAtomicExchangeLong",
+        "pulsec_rt_hostAtomicFetchAddLong",
+        "pulsec_rt_hostAtomicLoadReference",
+        "pulsec_rt_hostAtomicStoreReference",
+        "pulsec_rt_hostAtomicCompareAndSetReference",
+        "pulsec_rt_hostAtomicExchangeReference",
         "pulsec_rt_arcRetain",
         "pulsec_rt_arcRelease",
         "pulsec_rt_arcCycleYoungPass",
@@ -313,6 +364,9 @@ fn expected_native_runtime_symbols() -> Vec<&'static str> {
         "pulsec_rt_weakNew",
         "pulsec_rt_weakGet",
         "pulsec_rt_weakClear",
+        "pulsec_rt_threadSleepMillis",
+        "pulsec_rt_threadYield",
+        "pulsec_rt_currentThreadId",
     ]
 }
 
@@ -561,7 +615,7 @@ fn rb_12_native_plan_emits_host_bootstrap_runtime_contract() {
         "\"core_runtime_procedures\": [\"pulsec_rt_stringFromBytes\", \"pulsec_rt_objectNew\", \"pulsec_rt_objectClassId\", \"pulsec_rt_objectClassName\", \"pulsec_rt_objectHashCode\"]",
         "\"trace_exception_procedures\": [\"pulsec_rt_tracePush\", \"pulsec_rt_traceUpdateTop\", \"pulsec_rt_tracePop\", \"pulsec_rt_traceDump\", \"pulsec_rt_pushExceptionHandler\", \"pulsec_rt_popExceptionHandler\", \"pulsec_rt_takePendingException\", \"pulsec_rt_throw\"]",
         "\"required_procedure_count\":",
-        "\"runtime_service_imports\": [\"GetStdHandle\", \"WriteFile\", \"ExitProcess\", \"GetProcessHeap\", \"HeapAlloc\", \"HeapFree\", \"GetSystemTimeAsFileTime\", \"LoadLibraryA\", \"GetModuleHandleA\", \"FreeLibrary\", \"GetProcAddress\", \"CreateProcessA\", \"WaitForSingleObject\", \"GetExitCodeProcess\"]",
+        "\"runtime_service_imports\": [\"GetStdHandle\", \"WriteFile\", \"ExitProcess\", \"GetProcessHeap\", \"HeapAlloc\", \"HeapFree\", \"GetSystemTimeAsFileTime\", \"LoadLibraryA\", \"GetModuleHandleA\", \"FreeLibrary\", \"GetProcAddress\", \"CreateProcessA\", \"WaitForSingleObject\", \"GetExitCodeProcess\", \"Sleep\", \"SwitchToThread\", \"GetCurrentThreadId\", \"CreateThread\", \"CreateMutexA\", \"ReleaseMutex\", \"CreateEventA\", \"SetEvent\", \"ResetEvent\", \"CloseHandle\", \"CreateSemaphoreA\", \"ReleaseSemaphore\"]",
         "\"startup_entry\": \"adapter-owned\"",
         "\"system_inputs\": \"adapter-owned\"",
     ] {
@@ -704,7 +758,7 @@ fn rb_14_native_plan_emits_runtime_ownership_model() {
         "\"retained_runtime_contract_schema\": \"pulsec.host_bootstrap.runtime.v1\"",
         "\"portable_bridge_families\": [\"console-io\", \"string-and-number-text\", \"time-and-process\", \"array-runtime\", \"list-runtime\", \"map-runtime\", \"memory-ownership\", \"math-helpers\"]",
         "\"runtime_private_state_families\": [\"object-and-class-id-metadata\", \"slot-allocator-state\", \"arc-and-cycle-state\", \"weak-reference-state\", \"container-registries\", \"trace-abi-and-scratch-state\"]",
-        "\"active_adapter_service_imports\": [\"GetStdHandle\", \"WriteFile\", \"ExitProcess\", \"GetProcessHeap\", \"HeapAlloc\", \"HeapFree\", \"GetSystemTimeAsFileTime\", \"LoadLibraryA\", \"GetModuleHandleA\", \"FreeLibrary\", \"GetProcAddress\", \"CreateProcessA\", \"WaitForSingleObject\", \"GetExitCodeProcess\"]",
+        "\"active_adapter_service_imports\": [\"GetStdHandle\", \"WriteFile\", \"ExitProcess\", \"GetProcessHeap\", \"HeapAlloc\", \"HeapFree\", \"GetSystemTimeAsFileTime\", \"LoadLibraryA\", \"GetModuleHandleA\", \"FreeLibrary\", \"GetProcAddress\", \"CreateProcessA\", \"WaitForSingleObject\", \"GetExitCodeProcess\", \"Sleep\", \"SwitchToThread\", \"GetCurrentThreadId\", \"CreateThread\", \"CreateMutexA\", \"ReleaseMutex\", \"CreateEventA\", \"SetEvent\", \"ResetEvent\", \"CloseHandle\", \"CreateSemaphoreA\", \"ReleaseSemaphore\"]",
         "\"requested_target_service_contract_schema\": \"pulsec.pulseos.runtime_service.v1\"",
         "\"requested_target_service_contract_status\": \"published-first-slice-contract\"",
         "\"startup_loader_publication\": \"adapter-owned\"",
@@ -1078,6 +1132,8 @@ fn m3_14_runtime_intrinsics_doc_mentions_locked_surface() {
         } else if let Some(method) = intrinsic.strip_prefix("pulse.lang.UInteger.") {
             method
         } else if let Some(method) = intrinsic.strip_prefix("pulse.lang.ULong.") {
+            method
+        } else if let Some(method) = intrinsic.strip_prefix("pulse.lang.Thread.") {
             method
         } else {
             panic!("intrinsic prefix");
@@ -1794,15 +1850,15 @@ fn c2_23_native_plan_contains_threading_contract() {
         "native plan missing threading contract section"
     );
     assert!(
-        plan.contains("\"schema\": \"pulsec.runtime.threading.v1\""),
+        plan.contains("\"schema\": \"pulsec.runtime.threading.v2\""),
         "native plan missing threading schema lock"
     );
     assert!(
-        plan.contains("\"model\": \"single-threaded\""),
+        plan.contains("\"model\": \"host-threading-plus-sync-and-atomic-publication-floor\""),
         "native plan missing threading model lock"
     );
     assert!(
-        plan.contains("\"arc_atomicity\": \"non-atomic\""),
+        plan.contains("\"arc_atomicity\": \"retain-release-atomic\""),
         "native plan missing ARC atomicity lock"
     );
     assert!(

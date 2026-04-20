@@ -135,6 +135,33 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
 - `Intrinsics.hostRegisterNativeCallback4(pulse.interop.NativeCallback4) -> int`
 - `Intrinsics.hostGetNativeCallbackAddress4(int) -> long`
 - `Intrinsics.hostUnregisterNativeCallback4(int) -> boolean`
+- `Intrinsics.hostCreateMutex() -> long`
+- `Intrinsics.hostCreateEvent(boolean, boolean) -> long`
+- `Intrinsics.hostWaitHandle(long, long) -> int`
+- `Intrinsics.hostReleaseMutex(long) -> boolean`
+- `Intrinsics.hostSetEvent(long) -> boolean`
+- `Intrinsics.hostResetEvent(long) -> boolean`
+- `Intrinsics.hostCloseHandle(long) -> boolean`
+- `Intrinsics.hostCreateSemaphore(int, int) -> long`
+- `Intrinsics.hostReleaseSemaphore(long, int) -> boolean`
+- `Intrinsics.hostStartThread(long, long) -> long`
+- `Intrinsics.hostAtomicLoadInt(long) -> int`
+- `Intrinsics.hostAtomicStoreInt(long, int) -> void`
+- `Intrinsics.hostAtomicCompareExchangeInt(long, int, int) -> int`
+- `Intrinsics.hostAtomicExchangeInt(long, int) -> int`
+- `Intrinsics.hostAtomicFetchAddInt(long, int) -> int`
+- `Intrinsics.hostAtomicLoadLong(long) -> long`
+- `Intrinsics.hostAtomicStoreLong(long, long) -> void`
+- `Intrinsics.hostAtomicCompareExchangeLong(long, long, long) -> long`
+- `Intrinsics.hostAtomicExchangeLong(long, long) -> long`
+- `Intrinsics.hostAtomicFetchAddLong(long, long) -> long`
+- `Intrinsics.hostAtomicLoadReference(long) -> Object`
+- `Intrinsics.hostAtomicStoreReference(long, Object) -> void`
+- `Intrinsics.hostAtomicCompareAndSetReference(long, Object, Object) -> boolean`
+- `Intrinsics.hostAtomicExchangeReference(long, Object) -> Object`
+- `Thread.sleep(long) -> void`
+- `Thread.yieldNow() -> boolean`
+- `Thread.currentThreadId() -> long`
 - `String.runtimeConcat(String, String) -> String`
 - `String.runtimeLength(String) -> int`
 - `String.runtimeCharAt(String, int) -> char`
@@ -256,6 +283,33 @@ Those details remain real for the current Windows x64 host/bootstrap adapter, bu
   - `pulsec_rt_currentTimeMillis`
   - `pulsec_rt_nanoTime`
   - `pulsec_rt_systemExit`
+  - `pulsec_rt_threadSleepMillis`
+  - `pulsec_rt_threadYield`
+  - `pulsec_rt_currentThreadId`
+  - `pulsec_rt_hostCreateMutex`
+  - `pulsec_rt_hostCreateEvent`
+  - `pulsec_rt_hostWaitHandle`
+  - `pulsec_rt_hostReleaseMutex`
+  - `pulsec_rt_hostSetEvent`
+  - `pulsec_rt_hostResetEvent`
+  - `pulsec_rt_hostCloseHandle`
+  - `pulsec_rt_hostCreateSemaphore`
+  - `pulsec_rt_hostReleaseSemaphore`
+  - `pulsec_rt_hostStartThread`
+  - `pulsec_rt_hostAtomicLoadInt`
+  - `pulsec_rt_hostAtomicStoreInt`
+  - `pulsec_rt_hostAtomicCompareExchangeInt`
+  - `pulsec_rt_hostAtomicExchangeInt`
+  - `pulsec_rt_hostAtomicFetchAddInt`
+  - `pulsec_rt_hostAtomicLoadLong`
+  - `pulsec_rt_hostAtomicStoreLong`
+  - `pulsec_rt_hostAtomicCompareExchangeLong`
+  - `pulsec_rt_hostAtomicExchangeLong`
+  - `pulsec_rt_hostAtomicFetchAddLong`
+  - `pulsec_rt_hostAtomicLoadReference`
+  - `pulsec_rt_hostAtomicStoreReference`
+  - `pulsec_rt_hostAtomicCompareAndSetReference`
+  - `pulsec_rt_hostAtomicExchangeReference`
   - internal helper used by backend/runtime bridge:
     - `pulsec_rt_stringFromBytes`
 
@@ -438,17 +492,18 @@ C2-08 heap/allocation hardening (completed and locked):
   - list/map slot-allocation exhaustion emits `List allocation failed` / `Map allocation failed` and exits non-zero.
 
 C2-23 threading model lock:
-- current runtime contract is explicitly single-threaded:
-  - `model: "single-threaded"`
-  - `arc_atomicity: "non-atomic"`
+- current runtime contract is explicitly still bootstrap-centered even though it now ships a host threading/sync/publication floor:
+  - `model: "host-threading-plus-sync-and-atomic-publication-floor"`
+  - `arc_atomicity: "retain-release-atomic"`
   - `runtime_thread_safety: "not-thread-safe"`
   - `container_thread_safety: "not-thread-safe"`
 - `native.plan.json` lock surface (`runtime.memory_model.threading`):
-  - `schema: "pulsec.runtime.threading.v1"`
+  - `schema: "pulsec.runtime.threading.v2"`
   - fields above are required and must remain stable for C2.
 - boundary policy at current C2 scope:
-  - no thread-safe/atomic ARC guarantees are provided.
+  - ARC retain/release and explicit `AtomicReference` publication are atomic under the shipped v2 schema.
   - runtime/container APIs are not safe for concurrent cross-thread mutation.
+  - the shipped thread/sync/atomic publication floor still does not upgrade the broader runtime/object/container publication contract silently.
   - future threading work must version this contract (do not silently change semantics under the same schema id).
 
 C2-24 runtime ABI compatibility lock:

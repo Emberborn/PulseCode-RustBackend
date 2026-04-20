@@ -1,0 +1,105 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.rt.Intrinsics;
+
+/**
+ * OS-backed mutex primitive for the early concurrency floor.
+ *
+ * This is a low-level ownership primitive intended to underpin later synchronized/monitor work.
+ */
+public final class Mutex implements AutoCloseable {
+    private long handle;
+    private boolean closed;
+
+    private Mutex(long handle) {
+        this.handle = handle;
+        this.closed = false;
+    }
+
+    /**
+     * Creates a new host-backed mutex.
+     */
+    public static Mutex create() {
+        long handle = Intrinsics.hostCreateMutex();
+        if (handle == 0L) {
+            throw new IllegalStateException("failed to create host mutex");
+        }
+        return new Mutex(handle);
+    }
+
+    private void ensureOpen() {
+        if (this.closed || this.handle == 0L) {
+            throw new IllegalStateException("mutex is closed");
+        }
+    }
+
+    /**
+     * Returns whether this mutex has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Acquires the mutex, waiting until ownership is available.
+     */
+    public void lock() {
+        this.ensureOpen();
+        int status = Intrinsics.hostWaitHandle(this.handle, -1L);
+        if (status == 0) {
+            return;
+        }
+        if (status == 2) {
+            throw new IllegalStateException("mutex acquisition returned abandoned ownership");
+        }
+        throw new IllegalStateException("mutex acquisition failed");
+    }
+
+    /**
+     * Attempts to acquire the mutex before the timeout expires.
+     */
+    public boolean tryLock(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        int status = Intrinsics.hostWaitHandle(this.handle, timeoutMillis);
+        if (status == 0) {
+            return true;
+        }
+        if (status == 1) {
+            return false;
+        }
+        if (status == 2) {
+            throw new IllegalStateException("mutex acquisition returned abandoned ownership");
+        }
+        throw new IllegalStateException("mutex acquisition failed");
+    }
+
+    /**
+     * Releases the mutex.
+     */
+    public void unlock() {
+        this.ensureOpen();
+        if (!Intrinsics.hostReleaseMutex(this.handle)) {
+            throw new IllegalStateException("failed to release host mutex");
+        }
+    }
+
+    /**
+     * Closes the underlying host mutex handle.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.handle != 0L && !Intrinsics.hostCloseHandle(this.handle)) {
+            throw new IllegalStateException("failed to close host mutex");
+        }
+        this.handle = 0L;
+        this.closed = true;
+    }
+}

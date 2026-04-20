@@ -589,9 +589,9 @@ Locked path for current Phase C implementation:
     - memory-trend gate enforces bounded post-warmup peak working-set spread/drift with CI-tunable thresholds
     - verification is green in `stage_locks_c2` and full `cargo test -q`
   - C2-23 completed and locked:
-    - threading contract is explicitly locked as single-threaded/non-atomic in `docs/RUNTIME_INTRINSICS_ABI.md` (`pulsec.runtime.threading.v1`)
+    - threading contract is explicitly locked as host-threading plus atomic reference publication in `docs/RUNTIME_INTRINSICS_ABI.md` (`pulsec.runtime.threading.v2`)
     - native plan now emits `runtime.memory_model.threading` with fixed atomicity/thread-safety boundaries
-    - lock tests validate docs + plan emission + non-atomic runtime asm surface and full suite remains green
+    - lock tests validate docs + plan emission + the retained `not-thread-safe` runtime/container boundary while ARC/publication helpers are atomic
   - C2-24 completed and locked:
     - runtime ABI compatibility metadata is now emitted in `native.plan.json` under `runtime.abi_compatibility` (`pulsec.runtime.abi.v1`)
     - runtime init enforces compiler/runtime ABI match before runtime-table initialization
@@ -771,7 +771,7 @@ Deliverable gate for Phase E:
 - generics baseline is explicitly chosen and documented rather than implied
 - exception runtime model is explicitly chosen and documented rather than implied
 - threading/memory-model baseline including `Thread`, `Runnable`, monitor semantics, `volatile`, `final` publication policy, atomics, and selected concurrent collections
-- selected concurrency/network baselines as explicitly documented F1 policy, including explicit executor/semaphore and networking-scope decisions
+- selected concurrency/network baselines as explicitly documented F1 policy, including a locked `pulse.concurrent` scope (`Mutex`, `Event`, `Semaphore`, `CountDownLatch`, `Monitor`, `AtomicBoolean`, `AtomicInt`, `AtomicLong`, `AtomicReference`), `Thread`/`Runnable` remaining language-owned, explicit reference publication now raised while concurrent collections/executors stay later, and explicit executor/semaphore plus networking-scope decisions
 - `Class` reflection-lite only in F1; full reflection/invocation deferred until after the self-sustained-hosting transition
 - game-oriented modules (timing, vectors, ECS helpers)
 - integrated conformance, backend/package validation, CI, and performance guardrails for the shipped F1 surface
@@ -943,8 +943,6 @@ Final gate:
 - IR design instability if language features outpace backend
 - import/package design drift without early multi-file support
 - installer pipeline complexity if build metadata format not stabilized
-
-
 
 
 

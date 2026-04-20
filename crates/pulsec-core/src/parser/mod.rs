@@ -28,6 +28,7 @@ struct Parser {
     current: usize,
     source_name: String,
     line_starts: Vec<usize>,
+    synthetic_local_counter: usize,
 }
 
 impl Parser {
@@ -37,6 +38,21 @@ impl Parser {
             current: 0,
             source_name,
             line_starts,
+            synthetic_local_counter: 0,
+        }
+    }
+
+    fn next_synthetic_local_name(&mut self, stem: &str) -> String {
+        loop {
+            let name = format!("__pulse_{}_{}", stem, self.synthetic_local_counter);
+            self.synthetic_local_counter += 1;
+            let collides = self
+                .tokens
+                .iter()
+                .any(|token| token.kind == TokenKind::Identifier && token.lexeme == name);
+            if !collides {
+                return name;
+            }
         }
     }
 }

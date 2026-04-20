@@ -281,22 +281,34 @@ fn parse_accepts_assert_statement_with_optional_message() {
 }
 
 #[test]
-fn parse_rejects_synchronized_statement_for_current_f1_baseline() {
+fn parse_accepts_synchronized_statement_via_monitor_desugaring() {
     let src = r#"
         package app.core;
+        import pulse.concurrent.Monitor;
 
         class Main {
             public static void main() {
-                synchronized (new Main()) {
+                Monitor gate = Monitor.create();
+                synchronized (gate) {
                 }
             }
         }
     "#;
 
-    let err = parse(src).expect_err("synchronized statement should stay fenced");
-    assert!(err
-        .to_string()
-        .contains("Synchronized statements are not supported in the current F1 baseline"));
+    let program = parse(src).expect("synchronized statement should desugar");
+    let method = match &program.classes[0].members[0] {
+        crate::ClassMember::Method(method) => method,
+        _ => panic!("expected method"),
+    };
+    assert!(matches!(method.body[1], crate::Stmt::VarDecl { ref ty, .. } if ty == "var"));
+    assert!(matches!(method.body[2], crate::Stmt::ExprStmt(..)));
+    assert!(matches!(
+        method.body[3],
+        crate::Stmt::Try {
+            ref finally_block,
+            ..
+        } if finally_block.is_some()
+    ));
 }
 
 #[test]
@@ -1122,12 +1134,12 @@ fn check_accepts_same_method_try_catch_finally_baseline() {
 }
 
 #[test]
-fn check_rejects_return_inside_try_regions_for_current_f1_16_baseline() {
+fn check_accepts_return_inside_try_finally_baseline() {
     let src = r#"
         package app.core;
 
         class Main {
-            public static int fail() {
+            public static int value() {
                 try {
                     return 1;
                 } finally {
@@ -1139,10 +1151,7 @@ fn check_rejects_return_inside_try_regions_for_current_f1_16_baseline() {
         }
     "#;
 
-    let err = check(src).expect_err("return in try should be fenced");
-    assert!(err
-        .to_string()
-        .contains("'return' is not supported inside try/catch/finally"));
+    check(src).expect("return in try/finally should typecheck");
 }
 
 #[test]
@@ -1490,21 +1499,23 @@ fn check_accepts_foundational_lang_interfaces_in_implements_and_usage() {
 }
 
 #[test]
-fn check_rejects_reserved_but_unsupported_modifier_usage() {
+fn check_accepts_synchronized_method_modifier_baseline() {
     let src = r#"
         package app.core;
 
         class Main {
-            public synchronized void tick() {
+            public synchronized int tick() {
+                return 1;
             }
 
             public static void main() {
+                Main main = new Main();
+                int value = main.tick();
             }
         }
     "#;
 
-    let err = check(src).expect_err("unsupported reserved modifier should fail");
-    assert!(err.to_string().contains("reserved but not supported"));
+    check(src).expect("synchronized method modifier should lower through monitor floor");
 }
 
 #[test]

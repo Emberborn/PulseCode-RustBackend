@@ -119,12 +119,13 @@ Current execution boundary:
 
 - explicit Pulse `throw` values can be routed into matching `catch` blocks across method boundaries
 - `finally` runs for normal completion and for propagated Pulse-throw paths, including callee-to-caller transfer
+- `return` through `try` / `catch` / `finally` is real and preserves the selected return value after `finally` executes
 - uncaught Pulse throws continue through active `finally` blocks and then fail fast
 
 Current intentional fences:
 
 - runtime panics from callees are not catchable by this baseline; only Pulse `throw` values participate in the structured exception model
-- `return`, `break`, and `continue` inside `try` / `catch` / `finally` are fenced for now
+- `break` and `continue` inside `try` / `catch` / `finally` are still fenced for now
 - Java-style `throw null` behavior is fenced for now
 
 This means the shipped F1 exception model now has real compile-time declaration/catch checking plus real cross-method runtime transfer for Pulse-thrown throwable values. The remaining work is throwable-detail and diagnostic hardening, not basic propagation.

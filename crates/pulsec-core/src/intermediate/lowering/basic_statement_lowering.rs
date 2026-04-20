@@ -225,9 +225,51 @@ impl IrBuilder {
         &mut self,
         value: Option<&Expr>,
         current: usize,
+        try_ctx: Option<&TryContext>,
         stmt_index: usize,
         source_line: usize,
     ) -> usize {
+        if let Some(try_ctx) = try_ctx {
+            if let (Some(expr), Some(return_local)) =
+                (value, try_ctx.pending_return_value_local.as_ref())
+            {
+                let lowered = self.lower_expr(expr, stmt_index);
+                let runtime_ty = self
+                    .return_type
+                    .clone()
+                    .unwrap_or_else(|| self.value_ty(lowered));
+                let lowered = self.coerce_runtime_value(lowered, &runtime_ty, stmt_index);
+                self.emit(
+                    current,
+                    IrInstr::StoreLocal {
+                        name: return_local.clone(),
+                        value: lowered,
+                        source: self.source_loc(stmt_index, source_line),
+                    },
+                );
+            }
+            let returning = self.push_value(
+                "boolean".to_string(),
+                IrValueKind::BoolLiteral(true),
+                stmt_index,
+            );
+            self.emit(
+                current,
+                IrInstr::StoreLocal {
+                    name: try_ctx.pending_return_flag_local.clone(),
+                    value: returning,
+                    source: self.source_loc(stmt_index, source_line),
+                },
+            );
+            self.set_terminator(
+                current,
+                IrTerminator::Goto {
+                    target: try_ctx.finally_entry,
+                    source: self.source_loc(stmt_index, source_line),
+                },
+            );
+            return current;
+        }
         let value_id = value.map(|v| {
             let lowered = self.lower_expr(v, stmt_index);
             if let Some(return_ty) = self.return_type.clone() {

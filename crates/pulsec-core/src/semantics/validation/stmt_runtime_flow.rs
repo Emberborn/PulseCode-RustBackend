@@ -559,14 +559,8 @@ pub(super) fn validate_return_stmt(
     null_state: &mut HashMap<String, NullState>,
     expected_return: &str,
     in_static_context: bool,
-    protected_try_depth: usize,
+    _protected_try_depth: usize,
 ) -> Result<bool, SemanticError> {
-    if protected_try_depth > 0 {
-        return Err(semantic_error(format!(
-            "'return' is not supported inside try/catch/finally in '{}.{}' for the current F1-16 baseline",
-            class.name, method.name
-        )));
-    }
     if method.is_constructor {
         if value.is_some() {
             return Err(semantic_error(format!(

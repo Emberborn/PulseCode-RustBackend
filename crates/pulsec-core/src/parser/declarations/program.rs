@@ -1,6 +1,199 @@
 use super::*;
 
 impl Parser {
+    pub(crate) fn synchronized_wrapper_body(
+        &self,
+        monitor_local: String,
+        monitor: Expr,
+        body: Vec<Stmt>,
+        source_line: usize,
+    ) -> Vec<Stmt> {
+        vec![
+            Stmt::VarDecl {
+                ty: "var".to_string(),
+                name: monitor_local.clone(),
+                init: Some(monitor),
+                source_line,
+            },
+            Stmt::ExprStmt(
+                Expr::Call {
+                    callee: Box::new(Expr::MemberAccess {
+                        object: Box::new(Expr::Var(monitor_local.clone())),
+                        member: "enter".to_string(),
+                    }),
+                    args: Vec::new(),
+                },
+                source_line,
+            ),
+            Stmt::Try {
+                resources: Vec::new(),
+                body,
+                catches: Vec::new(),
+                finally_block: Some(vec![Stmt::ExprStmt(
+                    Expr::Call {
+                        callee: Box::new(Expr::MemberAccess {
+                            object: Box::new(Expr::Var(monitor_local)),
+                            member: "exit".to_string(),
+                        }),
+                        args: Vec::new(),
+                    },
+                    source_line,
+                )]),
+                source_line,
+            },
+        ]
+    }
+
+    fn class_visibility_modifiers(&self, class_modifiers: &[Modifier]) -> Vec<Modifier> {
+        let mut visibility = Vec::new();
+        for modifier in [Modifier::Public, Modifier::Protected, Modifier::Private] {
+            if class_modifiers.contains(&modifier) {
+                visibility.push(modifier);
+            }
+        }
+        visibility
+    }
+
+    fn rewrite_synchronized_methods(
+        &mut self,
+        class_name: &str,
+        class_modifiers: &[Modifier],
+        members: &mut Vec<ClassMember>,
+    ) {
+        let has_instance_sync = members.iter().any(|member| {
+            matches!(
+                member,
+                ClassMember::Method(method)
+                    if method.has_body
+                        && !method.is_constructor
+                        && method.modifiers.contains(&Modifier::Synchronized)
+                        && !method.modifiers.contains(&Modifier::Static)
+            )
+        });
+        let has_static_sync = members.iter().any(|member| {
+            matches!(
+                member,
+                ClassMember::Method(method)
+                    if method.has_body
+                        && !method.is_constructor
+                        && method.modifiers.contains(&Modifier::Synchronized)
+                        && method.modifiers.contains(&Modifier::Static)
+            )
+        });
+        if !has_instance_sync && !has_static_sync {
+            return;
+        }
+
+        let instance_monitor_field = "__pulse_instance_sync_monitor".to_string();
+        let static_monitor_field = "__pulse_static_sync_monitor".to_string();
+
+        if has_static_sync {
+            members.insert(
+                0,
+                ClassMember::Field(FieldDecl {
+                    annotations: Vec::new(),
+                    modifiers: vec![Modifier::Private, Modifier::Static],
+                    ty: "pulse.concurrent.Monitor".to_string(),
+                    name: static_monitor_field.clone(),
+                    init: Some(Expr::NewObject {
+                        class_name: "pulse.concurrent.Monitor".to_string(),
+                        args: Vec::new(),
+                    }),
+                }),
+            );
+        }
+
+        if has_instance_sync {
+            members.insert(
+                0,
+                ClassMember::Field(FieldDecl {
+                    annotations: Vec::new(),
+                    modifiers: vec![Modifier::Private],
+                    ty: "pulse.concurrent.Monitor".to_string(),
+                    name: instance_monitor_field.clone(),
+                    init: None,
+                }),
+            );
+        }
+
+        for member in members.iter_mut() {
+            let ClassMember::Method(method) = member else {
+                continue;
+            };
+            if method.is_constructor && has_instance_sync {
+                let source_line = method.body.first().map(|stmt| stmt.source_line()).unwrap_or(0);
+                method.body.insert(
+                    0,
+                    Stmt::Assign {
+                        target: Expr::MemberAccess {
+                            object: Box::new(Expr::This),
+                            member: instance_monitor_field.clone(),
+                        },
+                        value: Expr::NewObject {
+                            class_name: "pulse.concurrent.Monitor".to_string(),
+                            args: Vec::new(),
+                        },
+                        source_line,
+                    },
+                );
+                continue;
+            }
+            if !method.has_body
+                || method.is_constructor
+                || !method.modifiers.contains(&Modifier::Synchronized)
+            {
+                continue;
+            }
+            method.modifiers.retain(|modifier| *modifier != Modifier::Synchronized);
+            let source_line = method.body.first().map(|stmt| stmt.source_line()).unwrap_or(0);
+            let monitor = if method.modifiers.contains(&Modifier::Static) {
+                Expr::Var(static_monitor_field.clone())
+            } else {
+                Expr::Var(instance_monitor_field.clone())
+            };
+            let monitor_local = self.next_synthetic_local_name("sync_monitor");
+            method.body = self.synchronized_wrapper_body(
+                monitor_local,
+                monitor,
+                method.body.clone(),
+                source_line,
+            );
+        }
+
+        if has_instance_sync
+            && !members.iter().any(|member| {
+                matches!(
+                    member,
+                    ClassMember::Method(method) if method.is_constructor
+                )
+            })
+        {
+            members.push(ClassMember::Method(MethodDecl {
+                annotations: Vec::new(),
+                modifiers: self.class_visibility_modifiers(class_modifiers),
+                name: class_name.to_string(),
+                source_file: self.source_name.clone(),
+                type_params: Vec::new(),
+                params: Vec::new(),
+                throws: Vec::new(),
+                return_type: None,
+                is_constructor: true,
+                has_body: true,
+                body: vec![Stmt::Assign {
+                    target: Expr::MemberAccess {
+                        object: Box::new(Expr::This),
+                        member: instance_monitor_field,
+                    },
+                    value: Expr::NewObject {
+                        class_name: "pulse.concurrent.Monitor".to_string(),
+                        args: Vec::new(),
+                    },
+                    source_line: 0,
+                }],
+            }));
+        }
+    }
+
     pub(crate) fn parse_program(&mut self) -> Result<Program, ParseError> {
         let package = self.parse_package_decl()?;
 
@@ -112,6 +305,7 @@ impl Parser {
         }
 
         self.expect_symbol("}")?;
+        self.rewrite_synchronized_methods(&name, &modifiers, &mut members);
         Ok(ClassDecl {
             annotations,
             modifiers,

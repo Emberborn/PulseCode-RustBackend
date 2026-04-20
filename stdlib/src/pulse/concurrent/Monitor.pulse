@@ -1,0 +1,247 @@
+package pulse.concurrent;
+
+import pulse.collections.ArrayList;
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Thread;
+
+/**
+ * Reentrant monitor ownership primitive built on the current mutex and atomic floor.
+ *
+ * This is the first truthful target for later synchronized lowering. It owns reentrant
+ * enter/exit semantics now, while wait/notify style coordination can layer on later.
+ */
+public final class Monitor implements AutoCloseable {
+    private Mutex gate;
+    private AtomicLong ownerThreadId;
+    private AtomicInt holdCount;
+    private ArrayList<MonitorWaiter> waiters;
+    private boolean closed;
+
+    /**
+     * Creates a new monitor backed by the current mutex and atomic floor.
+     */
+    public Monitor() {
+        this.gate = Mutex.create();
+        this.ownerThreadId = AtomicLong.create(0L);
+        this.holdCount = AtomicInt.create(0);
+        this.waiters = new ArrayList();
+        this.closed = false;
+    }
+
+    private Monitor(Mutex gate, AtomicLong ownerThreadId, AtomicInt holdCount, ArrayList<MonitorWaiter> waiters) {
+        this.gate = gate;
+        this.ownerThreadId = ownerThreadId;
+        this.holdCount = holdCount;
+        this.waiters = waiters;
+        this.closed = false;
+    }
+
+    /**
+     * Creates a new monitor instance.
+     */
+    public static Monitor create() {
+        return new Monitor();
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("monitor is closed");
+        }
+    }
+
+    private long currentThreadId() {
+        return Thread.currentThreadId();
+    }
+
+    /**
+     * Returns whether this monitor has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Returns whether the current thread owns the monitor.
+     */
+    public boolean isHeldByCurrentThread() {
+        this.ensureOpen();
+        long current = this.currentThreadId();
+        return current != 0L && this.ownerThreadId.get() == current;
+    }
+
+    /**
+     * Returns the current reentrant hold depth for the owning thread.
+     */
+    public int holdCount() {
+        this.ensureOpen();
+        return this.holdCount.get();
+    }
+
+    /**
+     * Returns the number of queued waiters currently attached to this monitor.
+     */
+    public int waitingCount() {
+        this.ensureOpen();
+        return this.waiters.size();
+    }
+
+    private long requireOwnerThreadId() {
+        long current = this.currentThreadId();
+        if (current == 0L || this.ownerThreadId.get() != current) {
+            throw new IllegalStateException("current thread does not own monitor");
+        }
+        return current;
+    }
+
+    /**
+     * Enters the monitor, blocking until ownership is available.
+     */
+    public void enter() {
+        this.ensureOpen();
+        long current = this.currentThreadId();
+        if (current == 0L) {
+            throw new IllegalStateException("current thread id is invalid");
+        }
+        if (this.ownerThreadId.get() == current) {
+            this.holdCount.incrementAndGet();
+            return;
+        }
+        this.gate.lock();
+        this.ownerThreadId.set(current);
+        this.holdCount.set(1);
+    }
+
+    /**
+     * Attempts to enter the monitor before the timeout expires.
+     */
+    public boolean tryEnter(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        long current = this.currentThreadId();
+        if (current == 0L) {
+            throw new IllegalStateException("current thread id is invalid");
+        }
+        if (this.ownerThreadId.get() == current) {
+            this.holdCount.incrementAndGet();
+            return true;
+        }
+        if (!this.gate.tryLock(timeoutMillis)) {
+            return false;
+        }
+        this.ownerThreadId.set(current);
+        this.holdCount.set(1);
+        return true;
+    }
+
+    /**
+     * Exits one reentrant ownership level from the monitor.
+     */
+    public void exit() {
+        this.ensureOpen();
+        long current = this.requireOwnerThreadId();
+        int remaining = this.holdCount.addAndGet(-1);
+        if (remaining < 0) {
+            this.holdCount.set(0);
+            this.ownerThreadId.set(0L);
+            throw new IllegalStateException("monitor hold count underflow");
+        }
+        if (remaining == 0) {
+            this.ownerThreadId.set(0L);
+            this.gate.unlock();
+        }
+    }
+
+    /**
+     * Waits indefinitely until this monitor is notified.
+     */
+    public void wait() {
+        this.waitInternal(-1L);
+    }
+
+    /**
+     * Waits until this monitor is notified or the timeout expires.
+     */
+    public boolean wait(long timeoutMillis) {
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        return this.waitInternal(timeoutMillis);
+    }
+
+    private boolean waitInternal(long timeoutMillis) {
+        this.ensureOpen();
+        long current = this.requireOwnerThreadId();
+        int heldDepth = this.holdCount.get();
+        MonitorWaiter waiter = new MonitorWaiter();
+        this.waiters.add(waiter);
+        this.ownerThreadId.set(0L);
+        this.holdCount.set(0);
+        this.gate.unlock();
+
+        try {
+            if (timeoutMillis < 0L) {
+                waiter.await();
+                return true;
+            }
+            boolean completed = waiter.await(timeoutMillis);
+            return completed || waiter.wasSignaled();
+        } finally {
+            this.gate.lock();
+            this.ownerThreadId.set(current);
+            this.holdCount.set(heldDepth);
+            if (!waiter.wasSignaled()) {
+                int index = this.waiters.indexOf(waiter);
+                if (index >= 0) {
+                    this.waiters.remove(index);
+                }
+            }
+            waiter.close();
+        }
+    }
+
+    /**
+     * Wakes one queued waiter, if present.
+     */
+    public void notify() {
+        this.ensureOpen();
+        this.requireOwnerThreadId();
+        if (this.waiters.isEmpty()) {
+            return;
+        }
+        MonitorWaiter waiter = this.waiters.remove(0);
+        waiter.signal();
+    }
+
+    /**
+     * Wakes all queued waiters.
+     */
+    public void notifyAll() {
+        this.ensureOpen();
+        this.requireOwnerThreadId();
+        while (!this.waiters.isEmpty()) {
+            MonitorWaiter waiter = this.waiters.remove(0);
+            waiter.signal();
+        }
+    }
+
+    /**
+     * Closes the monitor once no owner or queued waiter remains.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.holdCount.get() != 0 || this.ownerThreadId.get() != 0L || !this.waiters.isEmpty()) {
+            throw new IllegalStateException("cannot close monitor while owned or while waiters are queued");
+        }
+        this.gate.close();
+        this.ownerThreadId.close();
+        this.holdCount.close();
+        this.waiters.clear();
+        this.closed = true;
+    }
+}

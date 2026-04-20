@@ -24,12 +24,6 @@ impl Parser {
             });
         }
 
-        if self.matches_keyword("synchronized") {
-            return Err(self.error_here(
-                "Synchronized statements are not supported in the current F1 baseline",
-            ));
-        }
-
         if self.matches_keyword("continue") {
             self.expect_symbol(";")?;
             return Ok(Stmt::Continue { source_line });

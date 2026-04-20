@@ -609,6 +609,9 @@ pub(crate) fn emit_masm_split_program_objects(
         HashMap::new();
     let mut method_varargs_by_sig: HashMap<(String, String, Vec<String>), bool> = HashMap::new();
     let stdlib_symbols = default_stdlib_symbols();
+    for (owner_member, _) in &stdlib_symbols {
+        method_staticness.insert(owner_member.clone(), true);
+    }
 
     for class in &ir.classes {
         let class_owner = normalize_type_token(&class.name);
@@ -697,6 +700,18 @@ pub(crate) fn emit_masm_split_program_objects(
         source.push_str("extrn ExitProcess:proc\n");
         source.push_str("extrn GetSystemTimeAsFileTime:proc\n");
         source.push_str("extrn GetTickCount64:proc\n");
+        source.push_str("extrn Sleep:proc\n");
+        source.push_str("extrn SwitchToThread:proc\n");
+        source.push_str("extrn GetCurrentThreadId:proc\n");
+        source.push_str("extrn CreateThread:proc\n");
+        source.push_str("extrn CreateMutexA:proc\n");
+        source.push_str("extrn ReleaseMutex:proc\n");
+        source.push_str("extrn CreateEventA:proc\n");
+        source.push_str("extrn SetEvent:proc\n");
+        source.push_str("extrn ResetEvent:proc\n");
+        source.push_str("extrn CloseHandle:proc\n");
+        source.push_str("extrn CreateSemaphoreA:proc\n");
+        source.push_str("extrn ReleaseSemaphore:proc\n");
         source.push_str("extrn GetProcessHeap:proc\n");
         source.push_str("extrn HeapAlloc:proc\n");
         source.push_str("extrn HeapReAlloc:proc\n");
@@ -1307,6 +1322,18 @@ pub(crate) fn emit_masm_split_program_objects(
     std_src.push_str("extrn ExitProcess:proc\n\n");
     std_src.push_str("extrn GetSystemTimeAsFileTime:proc\n");
     std_src.push_str("extrn GetTickCount64:proc\n\n");
+    std_src.push_str("extrn Sleep:proc\n");
+    std_src.push_str("extrn SwitchToThread:proc\n");
+    std_src.push_str("extrn GetCurrentThreadId:proc\n");
+    std_src.push_str("extrn CreateThread:proc\n\n");
+    std_src.push_str("extrn CreateMutexA:proc\n");
+    std_src.push_str("extrn ReleaseMutex:proc\n");
+    std_src.push_str("extrn CreateEventA:proc\n");
+    std_src.push_str("extrn SetEvent:proc\n");
+    std_src.push_str("extrn ResetEvent:proc\n");
+    std_src.push_str("extrn CloseHandle:proc\n\n");
+    std_src.push_str("extrn CreateSemaphoreA:proc\n");
+    std_src.push_str("extrn ReleaseSemaphore:proc\n\n");
     std_src.push_str("extrn GetProcessHeap:proc\n");
     std_src.push_str("extrn GetFileAttributesA:proc\n");
     std_src.push_str("extrn CreateDirectoryA:proc\n");
@@ -1561,6 +1588,59 @@ pub(crate) fn emit_masm_split_program_objects(
             "pulsec_rt_weakNew" => emit_weak_new_proc(&mut std_src, &sym),
             "pulsec_rt_weakGet" => emit_weak_get_proc(&mut std_src, &sym),
             "pulsec_rt_weakClear" => emit_weak_clear_proc(&mut std_src, &sym),
+            "pulsec_rt_threadSleepMillis" => emit_thread_sleep_millis_proc(&mut std_src, &sym),
+            "pulsec_rt_threadYield" => emit_thread_yield_proc(&mut std_src, &sym),
+            "pulsec_rt_currentThreadId" => emit_current_thread_id_proc(&mut std_src, &sym),
+            "pulsec_rt_hostStartThread" => emit_host_start_thread_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCreateMutex" => emit_host_create_mutex_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCreateEvent" => emit_host_create_event_proc(&mut std_src, &sym),
+            "pulsec_rt_hostWaitHandle" => emit_host_wait_handle_proc(&mut std_src, &sym),
+            "pulsec_rt_hostReleaseMutex" => emit_host_release_mutex_proc(&mut std_src, &sym),
+            "pulsec_rt_hostSetEvent" => emit_host_set_event_proc(&mut std_src, &sym),
+            "pulsec_rt_hostResetEvent" => emit_host_reset_event_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCloseHandle" => emit_host_close_handle_proc(&mut std_src, &sym),
+            "pulsec_rt_hostCreateSemaphore" => emit_host_create_semaphore_proc(&mut std_src, &sym),
+            "pulsec_rt_hostReleaseSemaphore" => {
+                emit_host_release_semaphore_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicLoadInt" => emit_host_atomic_load_int_proc(&mut std_src, &sym),
+            "pulsec_rt_hostAtomicStoreInt" => emit_host_atomic_store_int_proc(&mut std_src, &sym),
+            "pulsec_rt_hostAtomicCompareExchangeInt" => {
+                emit_host_atomic_compare_exchange_int_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicExchangeInt" => {
+                emit_host_atomic_exchange_int_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicFetchAddInt" => {
+                emit_host_atomic_fetch_add_int_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicLoadLong" => {
+                emit_host_atomic_load_long_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicStoreLong" => {
+                emit_host_atomic_store_long_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicCompareExchangeLong" => {
+                emit_host_atomic_compare_exchange_long_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicExchangeLong" => {
+                emit_host_atomic_exchange_long_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicFetchAddLong" => {
+                emit_host_atomic_fetch_add_long_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicLoadReference" => {
+                emit_host_atomic_load_reference_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicStoreReference" => {
+                emit_host_atomic_store_reference_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicCompareAndSetReference" => {
+                emit_host_atomic_compare_and_set_reference_proc(&mut std_src, &sym)
+            }
+            "pulsec_rt_hostAtomicExchangeReference" => {
+                emit_host_atomic_exchange_reference_proc(&mut std_src, &sym)
+            }
             "pulsec_std_com_pulse_math_Math_abs" => emit_math_abs_proc(&mut std_src, &sym),
             "pulsec_std_com_pulse_math_Math_max" => emit_math_max_proc(&mut std_src, &sym),
             _ => emit_stub_return_zero_proc(&mut std_src, &sym),
@@ -1703,6 +1783,9 @@ pub(crate) fn emit_masm_full_program_object(
     let mut method_trace_labels: HashMap<String, String> = HashMap::new();
     let mut method_trace_literals: Vec<(String, String)> = Vec::new();
     let stdlib_symbols = default_stdlib_symbols();
+    for (owner_member, _) in &stdlib_symbols {
+        method_staticness.insert(owner_member.clone(), true);
+    }
     let mut entry_symbol: Option<String> = None;
 
     for class in &ir.classes {
@@ -1790,6 +1873,18 @@ pub(crate) fn emit_masm_full_program_object(
     source.push_str("extrn ExitProcess:proc\n\n");
     source.push_str("extrn GetSystemTimeAsFileTime:proc\n");
     source.push_str("extrn GetTickCount64:proc\n\n");
+    source.push_str("extrn Sleep:proc\n");
+    source.push_str("extrn SwitchToThread:proc\n");
+    source.push_str("extrn GetCurrentThreadId:proc\n");
+    source.push_str("extrn CreateThread:proc\n\n");
+    source.push_str("extrn CreateMutexA:proc\n");
+    source.push_str("extrn ReleaseMutex:proc\n");
+    source.push_str("extrn CreateEventA:proc\n");
+    source.push_str("extrn SetEvent:proc\n");
+    source.push_str("extrn ResetEvent:proc\n");
+    source.push_str("extrn CloseHandle:proc\n\n");
+    source.push_str("extrn CreateSemaphoreA:proc\n");
+    source.push_str("extrn ReleaseSemaphore:proc\n\n");
     source.push_str("extrn GetProcessHeap:proc\n");
     source.push_str("extrn GetFileAttributesA:proc\n");
     source.push_str("extrn CreateDirectoryA:proc\n");
@@ -2207,6 +2302,59 @@ pub(crate) fn emit_masm_full_program_object(
             "pulsec_rt_weakNew" => emit_weak_new_proc(&mut source, &sym),
             "pulsec_rt_weakGet" => emit_weak_get_proc(&mut source, &sym),
             "pulsec_rt_weakClear" => emit_weak_clear_proc(&mut source, &sym),
+            "pulsec_rt_threadSleepMillis" => emit_thread_sleep_millis_proc(&mut source, &sym),
+            "pulsec_rt_threadYield" => emit_thread_yield_proc(&mut source, &sym),
+            "pulsec_rt_currentThreadId" => emit_current_thread_id_proc(&mut source, &sym),
+            "pulsec_rt_hostStartThread" => emit_host_start_thread_proc(&mut source, &sym),
+            "pulsec_rt_hostCreateMutex" => emit_host_create_mutex_proc(&mut source, &sym),
+            "pulsec_rt_hostCreateEvent" => emit_host_create_event_proc(&mut source, &sym),
+            "pulsec_rt_hostWaitHandle" => emit_host_wait_handle_proc(&mut source, &sym),
+            "pulsec_rt_hostReleaseMutex" => emit_host_release_mutex_proc(&mut source, &sym),
+            "pulsec_rt_hostSetEvent" => emit_host_set_event_proc(&mut source, &sym),
+            "pulsec_rt_hostResetEvent" => emit_host_reset_event_proc(&mut source, &sym),
+            "pulsec_rt_hostCloseHandle" => emit_host_close_handle_proc(&mut source, &sym),
+            "pulsec_rt_hostCreateSemaphore" => emit_host_create_semaphore_proc(&mut source, &sym),
+            "pulsec_rt_hostReleaseSemaphore" => {
+                emit_host_release_semaphore_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicLoadInt" => emit_host_atomic_load_int_proc(&mut source, &sym),
+            "pulsec_rt_hostAtomicStoreInt" => emit_host_atomic_store_int_proc(&mut source, &sym),
+            "pulsec_rt_hostAtomicCompareExchangeInt" => {
+                emit_host_atomic_compare_exchange_int_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicExchangeInt" => {
+                emit_host_atomic_exchange_int_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicFetchAddInt" => {
+                emit_host_atomic_fetch_add_int_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicLoadLong" => {
+                emit_host_atomic_load_long_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicStoreLong" => {
+                emit_host_atomic_store_long_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicCompareExchangeLong" => {
+                emit_host_atomic_compare_exchange_long_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicExchangeLong" => {
+                emit_host_atomic_exchange_long_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicFetchAddLong" => {
+                emit_host_atomic_fetch_add_long_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicLoadReference" => {
+                emit_host_atomic_load_reference_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicStoreReference" => {
+                emit_host_atomic_store_reference_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicCompareAndSetReference" => {
+                emit_host_atomic_compare_and_set_reference_proc(&mut source, &sym)
+            }
+            "pulsec_rt_hostAtomicExchangeReference" => {
+                emit_host_atomic_exchange_reference_proc(&mut source, &sym)
+            }
             "pulsec_std_com_pulse_math_Math_abs" => emit_math_abs_proc(&mut source, &sym),
             "pulsec_std_com_pulse_math_Math_max" => emit_math_max_proc(&mut source, &sym),
             _ => emit_stub_return_zero_proc(&mut source, &sym),
@@ -2306,6 +2454,10 @@ pub(crate) fn build_masm_print_entry_source(lines: &[String]) -> String {
     src.push_str("extrn ExitProcess:proc\n\n");
     src.push_str("extrn GetSystemTimeAsFileTime:proc\n");
     src.push_str("extrn GetTickCount64:proc\n\n");
+    src.push_str("extrn Sleep:proc\n");
+    src.push_str("extrn SwitchToThread:proc\n");
+    src.push_str("extrn GetCurrentThreadId:proc\n");
+    src.push_str("extrn CreateThread:proc\n\n");
     src.push_str(".data\n");
     src.push_str("written dq 0\n");
     for (i, line) in lines.iter().enumerate() {

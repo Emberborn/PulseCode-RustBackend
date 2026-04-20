@@ -1,0 +1,107 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalStateException;
+import pulse.rt.Intrinsics;
+
+/**
+ * Low-level host-backed atomic boolean cell.
+ *
+ * This is the first flag-oriented atomic on the shipped host floor. It is intentionally
+ * implemented over the existing 32-bit atomic lane rather than pretending a wider
+ * Java-close VarHandle memory surface already exists.
+ */
+public final class AtomicBoolean implements AutoCloseable {
+    private long address;
+    private boolean closed;
+
+    private AtomicBoolean(long address) {
+        this.address = address;
+        this.closed = false;
+    }
+
+    /**
+     * Allocates a new atomic boolean with the requested initial value.
+     */
+    public static AtomicBoolean create(boolean initialValue) {
+        long address = Intrinsics.hostAllocBytes(8);
+        if (address == 0L) {
+            throw new IllegalStateException("failed to allocate atomic boolean storage");
+        }
+        Intrinsics.hostAtomicStoreInt(address, initialValue ? 1 : 0);
+        return new AtomicBoolean(address);
+    }
+
+    private void ensureOpen() {
+        if (this.closed || this.address == 0L) {
+            throw new IllegalStateException("atomic boolean is closed");
+        }
+    }
+
+    private static boolean decode(int raw) {
+        return raw != 0;
+    }
+
+    private static int encode(boolean value) {
+        return value ? 1 : 0;
+    }
+
+    /**
+     * Returns whether this atomic cell has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Reads the current boolean value from the host-backed atomic cell.
+     */
+    public boolean get() {
+        this.ensureOpen();
+        return AtomicBoolean.decode(Intrinsics.hostAtomicLoadInt(this.address));
+    }
+
+    /**
+     * Stores a new boolean value into the host-backed atomic cell.
+     */
+    public void set(boolean value) {
+        this.ensureOpen();
+        Intrinsics.hostAtomicStoreInt(this.address, AtomicBoolean.encode(value));
+    }
+
+    /**
+     * Performs a compare-and-set against the current boolean value.
+     */
+    public boolean compareAndSet(boolean expected, boolean replacement) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicCompareExchangeInt(
+            this.address,
+            AtomicBoolean.encode(expected),
+            AtomicBoolean.encode(replacement)
+        ) == AtomicBoolean.encode(expected);
+    }
+
+    /**
+     * Replaces the current boolean value and returns the previous value.
+     */
+    public boolean getAndSet(boolean value) {
+        this.ensureOpen();
+        return AtomicBoolean.decode(
+            Intrinsics.hostAtomicExchangeInt(this.address, AtomicBoolean.encode(value))
+        );
+    }
+
+    /**
+     * Releases the host-backed storage for this atomic cell.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.address != 0L) {
+            Intrinsics.hostFreeBytes(this.address);
+        }
+        this.address = 0L;
+        this.closed = true;
+    }
+}

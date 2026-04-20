@@ -1119,6 +1119,430 @@ enabled = true
 }
 
 #[test]
+fn lock_pulse_feature_13_thread_utility_floor_executes_without_full_thread_lifecycle() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "thread-utility-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        class Main {
+            public static void main() {
+                Thread.sleep(1L);
+                boolean yielded = Thread.yieldNow();
+                long threadId = Thread.currentThreadId();
+                if (threadId <= 0L) {
+                    System.exit(7);
+                }
+                if (yielded) {
+                    Thread.sleep(0L);
+                } else {
+                    Thread.sleep(0L);
+                }
+                System.exit(0);
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&["build", "--project-root", root.to_str().expect("root str")]);
+    assert!(
+        build.status.success(),
+        "expected build success, stderr={}",
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("thread-utility-floor-0.1.0.exe");
+    let run = run_exe(&exe);
+    assert!(
+        run.status.success(),
+        "expected run success, stderr={}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+}
+
+#[test]
+fn lock_pulse_feature_14_host_sync_floor_executes_without_full_monitor_language_support() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "host-sync-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.Event;
+        import pulse.concurrent.Mutex;
+
+        class Main {
+            public static void main() {
+                Event ready = Event.createManualReset(false);
+                if (ready.waitOne(0L)) {
+                    System.exit(10);
+                }
+                ready.set();
+                if (!ready.waitOne(0L)) {
+                    System.exit(11);
+                }
+                ready.reset();
+                if (ready.waitOne(0L)) {
+                    System.exit(12);
+                }
+
+                Mutex gate = Mutex.create();
+                if (!gate.tryLock(0L)) {
+                    System.exit(13);
+                }
+                gate.unlock();
+                gate.lock();
+                gate.unlock();
+
+                ready.close();
+                gate.close();
+                System.exit(0);
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&["build", "--project-root", root.to_str().expect("root str")]);
+    assert!(
+        build.status.success(),
+        "expected build success, stderr={}",
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("host-sync-floor-0.1.0.exe");
+    let run = run_exe(&exe);
+    assert!(
+        run.status.success(),
+        "expected run success, stderr={}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+}
+
+#[test]
+fn lock_pulse_feature_15_host_atomic_floor_executes_without_full_memory_model_keywords() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "host-atomic-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.AtomicInt;
+        import pulse.concurrent.AtomicLong;
+
+        class Main {
+            public static void main() {
+                AtomicInt ai = AtomicInt.create(7);
+                if (ai.get() != 7) {
+                    System.exit(20);
+                }
+                if (ai.compareAndSet(8, 1)) {
+                    System.exit(21);
+                }
+                if (!ai.compareAndSet(7, 9)) {
+                    System.exit(22);
+                }
+                if (ai.getAndAdd(5) != 9) {
+                    System.exit(23);
+                }
+                if (ai.addAndGet(2) != 16) {
+                    System.exit(24);
+                }
+                if (ai.getAndSet(3) != 16) {
+                    System.exit(25);
+                }
+                if (ai.incrementAndGet() != 4) {
+                    System.exit(26);
+                }
+
+                AtomicLong al = AtomicLong.create(100L);
+                if (al.get() != 100L) {
+                    System.exit(27);
+                }
+                if (al.compareAndSet(101L, 1L)) {
+                    System.exit(28);
+                }
+                if (!al.compareAndSet(100L, 120L)) {
+                    System.exit(29);
+                }
+                if (al.getAndAdd(5L) != 120L) {
+                    System.exit(30);
+                }
+                if (al.addAndGet(7L) != 132L) {
+                    System.exit(31);
+                }
+                if (al.getAndSet(1L) != 132L) {
+                    System.exit(32);
+                }
+                if (al.incrementAndGet() != 2L) {
+                    System.exit(33);
+                }
+
+                ai.close();
+                al.close();
+                System.exit(0);
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&["build", "--project-root", root.to_str().expect("root str")]);
+    assert!(
+        build.status.success(),
+        "expected build success, stderr={}",
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("host-atomic-floor-0.1.0.exe");
+    let run = run_exe(&exe);
+    assert!(
+        run.status.success(),
+        "expected run success, stderr={}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+}
+
+#[test]
+fn lock_pulse_feature_16_host_permit_and_latch_floor_executes_without_monitor_keywords() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "host-permit-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.CountDownLatch;
+        import pulse.concurrent.Semaphore;
+
+        class Main {
+            public static void main() {
+                Semaphore permits = Semaphore.create(0, 3);
+                if (permits.tryAcquire(0L)) {
+                    System.exit(40);
+                }
+                permits.release(2);
+                if (!permits.tryAcquire(0L)) {
+                    System.exit(41);
+                }
+                if (!permits.tryAcquire(0L)) {
+                    System.exit(42);
+                }
+                if (permits.tryAcquire(0L)) {
+                    System.exit(43);
+                }
+
+                CountDownLatch latch = CountDownLatch.create(2);
+                if (latch.await(0L)) {
+                    System.exit(44);
+                }
+                latch.countDown();
+                if (latch.await(0L)) {
+                    System.exit(45);
+                }
+                latch.countDown();
+                if (!latch.await(0L)) {
+                    System.exit(46);
+                }
+                if (latch.currentCount() != 0) {
+                    System.exit(47);
+                }
+
+                permits.close();
+                latch.close();
+                System.exit(0);
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&["build", "--project-root", root.to_str().expect("root str")]);
+    assert!(
+        build.status.success(),
+        "expected build success, stderr={}",
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("host-permit-floor-0.1.0.exe");
+    let run = run_exe(&exe);
+    assert!(
+        run.status.success(),
+        "expected run success, stderr={}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+}
+
+#[test]
+fn lock_pulse_feature_17_monitor_ownership_floor_executes_before_synchronized_lowering_exists() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "monitor-ownership-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.Monitor;
+
+        class Main {
+            public static void main() {
+                Monitor gate = Monitor.create();
+                if (gate.isHeldByCurrentThread()) {
+                    System.exit(50);
+                }
+                if (gate.holdCount() != 0) {
+                    System.exit(51);
+                }
+
+                gate.enter();
+                if (!gate.isHeldByCurrentThread()) {
+                    System.exit(52);
+                }
+                if (gate.holdCount() != 1) {
+                    System.exit(53);
+                }
+
+                if (!gate.tryEnter(0L)) {
+                    System.exit(54);
+                }
+                if (gate.holdCount() != 2) {
+                    System.exit(55);
+                }
+
+                gate.exit();
+                if (gate.holdCount() != 1) {
+                    System.exit(56);
+                }
+                if (!gate.isHeldByCurrentThread()) {
+                    System.exit(57);
+                }
+
+                gate.exit();
+                if (gate.isHeldByCurrentThread()) {
+                    System.exit(58);
+                }
+                if (gate.holdCount() != 0) {
+                    System.exit(59);
+                }
+
+                if (!gate.tryEnter(0L)) {
+                    System.exit(60);
+                }
+                if (gate.holdCount() != 1) {
+                    System.exit(61);
+                }
+                gate.exit();
+
+                gate.close();
+                System.exit(0);
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&["build", "--project-root", root.to_str().expect("root str")]);
+    assert!(
+        build.status.success(),
+        "expected build success, stderr={}",
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("monitor-ownership-floor-0.1.0.exe");
+    let run = run_exe(&exe);
+    assert!(
+        run.status.success(),
+        "expected run success, stderr={}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+}
+
+#[test]
 fn lock_pulse_feature_04_authorlib_project_models_require_opt_in() {
     let root = unique_temp_root();
     let src_root = root.join("src").join("main").join("pulse");
@@ -2013,6 +2437,733 @@ entry = "app/core/Main.pulse"
     assert!(
         stdout.contains("interop_callback_ok"),
         "expected interop callback success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_18_synchronized_statement_executes_via_monitor_floor() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "synchronized-monitor-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.Monitor;
+
+        class Main {
+            public static void main() {
+                Monitor gate = Monitor.create();
+                boolean ok = false;
+                boolean broken = false;
+
+                synchronized (gate) {
+                    if (!gate.isHeldByCurrentThread() || gate.holdCount() != 1) {
+                        broken = true;
+                    }
+
+                    synchronized (gate) {
+                        if (!gate.isHeldByCurrentThread() || gate.holdCount() != 2) {
+                            broken = true;
+                        }
+                    }
+
+                    ok =
+                        !broken
+                        && gate.isHeldByCurrentThread()
+                        && gate.holdCount() == 1;
+                }
+
+                if (!broken && ok && !gate.isHeldByCurrentThread() && gate.holdCount() == 0) {
+                    pulse.lang.IO.println("sync_ok");
+                    gate.close();
+                    return;
+                }
+
+                pulse.lang.IO.println("sync_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected synchronized monitor-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("synchronized-monitor-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected synchronized monitor-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("sync_ok"),
+        "expected synchronized monitor-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_19_synchronized_methods_execute_without_return_workarounds() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "synchronized-method-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        class Counter {
+            private int value;
+
+            public Counter() {
+                this.value = 0;
+            }
+
+            public synchronized int next() {
+                this.value = this.value + 1;
+                return this.value;
+            }
+        }
+
+        class Singleton {
+            private static Singleton instance = null;
+
+            public static synchronized Singleton getInstance() {
+                if (Singleton.instance == null) {
+                    Singleton.instance = new Singleton();
+                }
+                return Singleton.instance;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Counter counter = new Counter();
+                int first = counter.next();
+                int second = counter.next();
+                Singleton left = Singleton.getInstance();
+                Singleton right = Singleton.getInstance();
+
+                if (first == 1 && second == 2 && left == right) {
+                    pulse.lang.IO.println("sync_method_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("sync_method_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected synchronized method-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("synchronized-method-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected synchronized method-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("sync_method_ok"),
+        "expected synchronized method-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_20_monitor_wait_notify_floor_releases_and_reacquires_without_thread_object_model() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "monitor-wait-notify-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import pulse.concurrent.Monitor;
+
+        class Main {
+            public static void main() {
+                Monitor gate = Monitor.create();
+
+                gate.enter();
+                gate.enter();
+                if (!gate.isHeldByCurrentThread() || gate.holdCount() != 2) {
+                    System.exit(80);
+                }
+                if (gate.waitingCount() != 0) {
+                    System.exit(81);
+                }
+
+                boolean notified = gate.wait(0L);
+                if (notified) {
+                    System.exit(82);
+                }
+                if (!gate.isHeldByCurrentThread() || gate.holdCount() != 2) {
+                    System.exit(83);
+                }
+                if (gate.waitingCount() != 0) {
+                    System.exit(84);
+                }
+
+                gate.notify();
+                gate.notifyAll();
+
+                gate.exit();
+                gate.exit();
+                if (gate.isHeldByCurrentThread() || gate.holdCount() != 0) {
+                    System.exit(85);
+                }
+
+                gate.close();
+                pulse.lang.IO.println("monitor_wait_notify_ok");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_string_lossy().as_ref(),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected monitor-wait-notify-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("monitor-wait-notify-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected monitor-wait-notify-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("monitor_wait_notify_ok"),
+        "expected monitor-wait-notify-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_21_thread_lifecycle_floor_executes_start_join_and_cooperative_interrupt() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "thread-lifecycle-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import pulse.concurrent.AtomicInt;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+
+        class InterruptWorker implements Runnable {
+            public Thread owner;
+            private AtomicInt seen;
+
+            public InterruptWorker(AtomicInt seen) {
+                this.owner = null;
+                this.seen = seen;
+            }
+
+            public void run() {
+                this.seen.set(1);
+                while (!this.owner.isInterrupted()) {
+                    Thread.sleep(1L);
+                }
+                this.seen.set(2);
+            }
+        }
+
+        class Main {
+            public static void main() {
+                AtomicInt seen = AtomicInt.create(0);
+                InterruptWorker worker = new InterruptWorker(seen);
+                Thread thread = new Thread(worker);
+                worker.owner = thread;
+
+                thread.start();
+                int spins = 0;
+                while (seen.get() != 1 && spins < 200) {
+                    Thread.sleep(1L);
+                    spins = spins + 1;
+                }
+                if (seen.get() != 1 || !thread.hasStarted() || !thread.isAlive()) {
+                    System.exit(90);
+                }
+
+                thread.interrupt();
+                if (!thread.join(2000L)) {
+                    System.exit(91);
+                }
+                if (thread.isAlive() || seen.get() != 2 || thread.threadId() <= 0L) {
+                    System.exit(92);
+                }
+
+                thread.close();
+                seen.close();
+                pulse.lang.IO.println("thread_lifecycle_ok");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_string_lossy().as_ref(),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected thread-lifecycle-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("thread-lifecycle-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected thread-lifecycle-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("thread_lifecycle_ok"),
+        "expected thread-lifecycle-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_22_cross_thread_monitor_notify_wakes_waiting_thread() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "cross-thread-monitor-notify"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import pulse.concurrent.AtomicInt;
+        import pulse.concurrent.Monitor;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+
+        class Notifier implements Runnable {
+            private Monitor gate;
+            private AtomicInt state;
+
+            public Notifier(Monitor gate, AtomicInt state) {
+                this.gate = gate;
+                this.state = state;
+            }
+
+            public void run() {
+                Thread.sleep(10L);
+                synchronized (this.gate) {
+                    this.state.set(1);
+                    this.gate.notifyAll();
+                }
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Monitor gate = Monitor.create();
+                AtomicInt state = AtomicInt.create(0);
+                Thread notifier = new Thread(new Notifier(gate, state));
+
+                notifier.start();
+                synchronized (gate) {
+                    while (state.get() == 0) {
+                        boolean woke = gate.wait(2000L);
+                        if (!woke && state.get() == 0) {
+                            System.exit(100);
+                        }
+                    }
+                }
+
+                if (state.get() != 1) {
+                    System.exit(101);
+                }
+                if (!notifier.join(2000L)) {
+                    System.exit(102);
+                }
+
+                notifier.close();
+                state.close();
+                gate.close();
+                pulse.lang.IO.println("cross_thread_notify_ok");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_string_lossy().as_ref(),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected cross-thread-monitor-notify build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("cross-thread-monitor-notify-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected cross-thread-monitor-notify exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("cross_thread_notify_ok"),
+        "expected cross-thread-monitor-notify success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_23_atomic_boolean_floor_executes_without_reference_atomic_claims() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "atomic-boolean-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import pulse.concurrent.AtomicBoolean;
+
+        class Main {
+            public static void main() {
+                AtomicBoolean flag = AtomicBoolean.create(false);
+                if (flag.get()) {
+                    System.exit(110);
+                }
+                if (!flag.compareAndSet(false, true)) {
+                    System.exit(111);
+                }
+                if (!flag.get()) {
+                    System.exit(112);
+                }
+                if (flag.compareAndSet(false, true)) {
+                    System.exit(113);
+                }
+                if (!flag.getAndSet(false)) {
+                    System.exit(114);
+                }
+                if (flag.get()) {
+                    System.exit(115);
+                }
+
+                flag.close();
+                pulse.lang.IO.println("atomic_boolean_ok");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_string_lossy().as_ref(),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected atomic-boolean-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("atomic-boolean-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected atomic-boolean-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("atomic_boolean_ok"),
+        "expected atomic-boolean-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_24_atomic_reference_publication_floor_executes_with_explicit_reference_handoff() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "atomic-reference-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+        import pulse.concurrent.AtomicReference;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+
+        class BoxValue {
+            public int value;
+
+            public BoxValue(int value) {
+                this.value = value;
+            }
+        }
+
+        class Publisher implements Runnable {
+            private AtomicReference<BoxValue> slot;
+
+            public Publisher(AtomicReference<BoxValue> slot) {
+                this.slot = slot;
+            }
+
+            public void run() {
+                this.slot.set(new BoxValue(77));
+            }
+        }
+
+        class Main {
+            public static void main() {
+                AtomicReference<BoxValue> slot = AtomicReference.create(null);
+                Thread publisher = new Thread(new Publisher(slot));
+                publisher.start();
+
+                BoxValue seen = null;
+                int spins = 0;
+                while (seen == null && spins < 500) {
+                    seen = slot.get();
+                    if (seen == null) {
+                        Thread.sleep(1L);
+                        spins = spins + 1;
+                    }
+                }
+                publisher.join(2000L);
+                if (seen == null || seen.value != 77) {
+                    System.exit(120);
+                }
+
+                BoxValue previous = slot.getAndSet(new BoxValue(88));
+                if (previous == null || previous.value != 77) {
+                    System.exit(121);
+                }
+
+                BoxValue current = slot.get();
+                if (current == null || current.value != 88) {
+                    System.exit(122);
+                }
+
+                if (!slot.compareAndSet(current, new BoxValue(99))) {
+                    System.exit(123);
+                }
+
+                current = slot.get();
+                if (current == null || current.value != 99) {
+                    System.exit(124);
+                }
+
+                slot.close();
+                pulse.lang.IO.println("atomic_reference_ok");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_string_lossy().as_ref(),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected atomic-reference-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("atomic-reference-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected atomic-reference-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("atomic_reference_ok"),
+        "expected atomic-reference-floor success output\nstdout:\n{}\nstderr:\n{}",
         stdout,
         stderr
     );

@@ -405,7 +405,11 @@ pub(crate) struct LoopContext {
     pub(super) continue_target: usize,
 }
 
-pub(crate) struct TryContext;
+pub(crate) struct TryContext {
+    pub(super) finally_entry: usize,
+    pub(super) pending_return_flag_local: String,
+    pub(super) pending_return_value_local: Option<String>,
+}
 
 pub(crate) struct IrBuilder {
     pub(super) class_name: String,

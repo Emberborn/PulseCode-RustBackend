@@ -1810,6 +1810,15 @@ fn ensure_author_build_bridge_runner(cache_root: &Path) -> Result<PathBuf, Strin
         return Ok(exe_path);
     }
 
+    if build_dir.exists() {
+        fs::remove_dir_all(&build_dir).map_err(|e| {
+            format!(
+                "Failed to clear stale author bridge build dir '{}': {e}",
+                build_dir.display()
+            )
+        })?;
+    }
+
     let src_root = cache_root.join("src");
     let entry = src_root.join("bridge/internal/Main.pulse");
     fs::create_dir_all(

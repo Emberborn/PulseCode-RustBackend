@@ -52,15 +52,21 @@ Current support is intentionally Java-like, but legality is declaration-specific
 - `abstract`
 - `final`
 - `static` on members
+- method-level `synchronized` on concrete class methods, lowered through the shipped `pulse.concurrent.Monitor` floor
 
 The following modifiers are intentionally fenced for later F1/runtime work and fail with deterministic diagnostics when used outside currently supported locations:
 
-- `synchronized`
 - `native`
 - `strictfp`
 - `transient`
 - `volatile`
 - `async`
+
+Memory/publication note:
+
+- `final` fields are real as compile-time immutability after initialization
+- `volatile` remains fenced
+- Java-style final-field safe-publication guarantees are not claimed in the current F1 baseline
 
 Examples:
 
@@ -131,6 +137,7 @@ That work is part of later library/binding phases, not the current F1 language b
 ## Related
 
 - [Constructors](./constructors.md)
+- [Concurrency And Memory Model](./concurrency-and-memory-model.md)
 - [Enums](./enums.md)
 - [Generics](./generics.md)
 - [Packages And Imports](./packages-and-imports.md)

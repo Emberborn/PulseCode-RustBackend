@@ -1,0 +1,116 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalStateException;
+import pulse.rt.Intrinsics;
+
+/**
+ * OS-backed event primitive for the early concurrency floor.
+ *
+ * This is a low-level signaling object, not the final language-level monitor or future model.
+ */
+public final class Event implements AutoCloseable {
+    private long handle;
+    private boolean manualReset;
+    private boolean closed;
+
+    private Event(long handle, boolean manualReset) {
+        this.handle = handle;
+        this.manualReset = manualReset;
+        this.closed = false;
+    }
+
+    /**
+     * Creates a manual-reset event with the requested initial state.
+     */
+    public static Event createManualReset(boolean initialState) {
+        long handle = Intrinsics.hostCreateEvent(true, initialState);
+        if (handle == 0L) {
+            throw new IllegalStateException("failed to create host event");
+        }
+        return new Event(handle, true);
+    }
+
+    /**
+     * Creates an auto-reset event with the requested initial state.
+     */
+    public static Event createAutoReset(boolean initialState) {
+        long handle = Intrinsics.hostCreateEvent(false, initialState);
+        if (handle == 0L) {
+            throw new IllegalStateException("failed to create host event");
+        }
+        return new Event(handle, false);
+    }
+
+    private void ensureOpen() {
+        if (this.closed || this.handle == 0L) {
+            throw new IllegalStateException("event is closed");
+        }
+    }
+
+    /**
+     * Returns whether this event stays signaled until explicitly reset.
+     */
+    public boolean isManualReset() {
+        return this.manualReset;
+    }
+
+    /**
+     * Returns whether this event has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Waits for the event to become signaled.
+     */
+    public boolean waitOne(long timeoutMillis) {
+        this.ensureOpen();
+        int status = Intrinsics.hostWaitHandle(this.handle, timeoutMillis);
+        if (status == 0) {
+            return true;
+        }
+        if (status == 1) {
+            return false;
+        }
+        if (status == 2) {
+            throw new IllegalStateException("event wait returned abandoned ownership");
+        }
+        throw new IllegalStateException("event wait failed");
+    }
+
+    /**
+     * Signals the event.
+     */
+    public void set() {
+        this.ensureOpen();
+        if (!Intrinsics.hostSetEvent(this.handle)) {
+            throw new IllegalStateException("failed to signal host event");
+        }
+    }
+
+    /**
+     * Resets the event to the non-signaled state.
+     */
+    public void reset() {
+        this.ensureOpen();
+        if (!Intrinsics.hostResetEvent(this.handle)) {
+            throw new IllegalStateException("failed to reset host event");
+        }
+    }
+
+    /**
+     * Closes the underlying host event handle.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.handle != 0L && !Intrinsics.hostCloseHandle(this.handle)) {
+            throw new IllegalStateException("failed to close host event");
+        }
+        this.handle = 0L;
+        this.closed = true;
+    }
+}

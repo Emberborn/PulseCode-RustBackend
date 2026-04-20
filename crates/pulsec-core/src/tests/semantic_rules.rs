@@ -2359,3 +2359,56 @@ fn allows_constructor_initialization_of_final_instance_fields() {
 
     check(src).expect("constructor should be allowed to initialize final instance fields");
 }
+
+#[test]
+fn rejects_reassignment_of_final_instance_field_after_constructor_initialization() {
+    let src = r#"
+        package app.core;
+
+        class Box {
+            public final int value;
+
+            public Box(int value) {
+                this.value = value;
+            }
+
+            public void rewrite(int value) {
+                this.value = value;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Box box = new Box(1);
+                box.rewrite(2);
+            }
+        }
+    "#;
+
+    let err = check(src).expect_err("reassigning final field should fail");
+    assert!(err
+        .to_string()
+        .contains("Cannot assign to final field 'Box.value'"));
+}
+
+#[test]
+fn rejects_volatile_field_modifier_in_current_f1_baseline() {
+    let src = r#"
+        package app.core;
+
+        class Box {
+            public volatile int value;
+        }
+
+        class Main {
+            public static void main() {
+                Box box = new Box();
+            }
+        }
+    "#;
+
+    let err = check(src).expect_err("volatile field should remain fenced");
+    assert!(err
+        .to_string()
+        .contains("Modifier 'volatile' is reserved but not supported on field 'Box.value' yet"));
+}

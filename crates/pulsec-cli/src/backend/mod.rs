@@ -72,6 +72,34 @@ const OBJECT_HASH_CODE_SYMBOL: &str = "pulsec_rt_objectHashCode";
 const SYSTEM_CURRENT_TIME_MILLIS_SYMBOL: &str = "pulsec_rt_currentTimeMillis";
 const SYSTEM_NANO_TIME_SYMBOL: &str = "pulsec_rt_nanoTime";
 const SYSTEM_EXIT_SYMBOL: &str = "pulsec_rt_systemExit";
+const THREAD_SLEEP_SYMBOL: &str = "pulsec_rt_threadSleepMillis";
+const THREAD_YIELD_SYMBOL: &str = "pulsec_rt_threadYield";
+const THREAD_CURRENT_ID_SYMBOL: &str = "pulsec_rt_currentThreadId";
+const HOST_START_THREAD_SYMBOL: &str = "pulsec_rt_hostStartThread";
+const HOST_CREATE_MUTEX_SYMBOL: &str = "pulsec_rt_hostCreateMutex";
+const HOST_CREATE_EVENT_SYMBOL: &str = "pulsec_rt_hostCreateEvent";
+const HOST_WAIT_HANDLE_SYMBOL: &str = "pulsec_rt_hostWaitHandle";
+const HOST_RELEASE_MUTEX_SYMBOL: &str = "pulsec_rt_hostReleaseMutex";
+const HOST_SET_EVENT_SYMBOL: &str = "pulsec_rt_hostSetEvent";
+const HOST_RESET_EVENT_SYMBOL: &str = "pulsec_rt_hostResetEvent";
+const HOST_CLOSE_HANDLE_SYMBOL: &str = "pulsec_rt_hostCloseHandle";
+const HOST_CREATE_SEMAPHORE_SYMBOL: &str = "pulsec_rt_hostCreateSemaphore";
+const HOST_RELEASE_SEMAPHORE_SYMBOL: &str = "pulsec_rt_hostReleaseSemaphore";
+const HOST_ATOMIC_LOAD_INT_SYMBOL: &str = "pulsec_rt_hostAtomicLoadInt";
+const HOST_ATOMIC_STORE_INT_SYMBOL: &str = "pulsec_rt_hostAtomicStoreInt";
+const HOST_ATOMIC_COMPARE_EXCHANGE_INT_SYMBOL: &str = "pulsec_rt_hostAtomicCompareExchangeInt";
+const HOST_ATOMIC_EXCHANGE_INT_SYMBOL: &str = "pulsec_rt_hostAtomicExchangeInt";
+const HOST_ATOMIC_FETCH_ADD_INT_SYMBOL: &str = "pulsec_rt_hostAtomicFetchAddInt";
+const HOST_ATOMIC_LOAD_LONG_SYMBOL: &str = "pulsec_rt_hostAtomicLoadLong";
+const HOST_ATOMIC_STORE_LONG_SYMBOL: &str = "pulsec_rt_hostAtomicStoreLong";
+const HOST_ATOMIC_COMPARE_EXCHANGE_LONG_SYMBOL: &str = "pulsec_rt_hostAtomicCompareExchangeLong";
+const HOST_ATOMIC_EXCHANGE_LONG_SYMBOL: &str = "pulsec_rt_hostAtomicExchangeLong";
+const HOST_ATOMIC_FETCH_ADD_LONG_SYMBOL: &str = "pulsec_rt_hostAtomicFetchAddLong";
+const HOST_ATOMIC_LOAD_REFERENCE_SYMBOL: &str = "pulsec_rt_hostAtomicLoadReference";
+const HOST_ATOMIC_STORE_REFERENCE_SYMBOL: &str = "pulsec_rt_hostAtomicStoreReference";
+const HOST_ATOMIC_COMPARE_AND_SET_REFERENCE_SYMBOL: &str =
+    "pulsec_rt_hostAtomicCompareAndSetReference";
+const HOST_ATOMIC_EXCHANGE_REFERENCE_SYMBOL: &str = "pulsec_rt_hostAtomicExchangeReference";
 const STRING_CHAR_AT_SYMBOL: &str = "pulsec_rt_stringCharAt";
 const CHAR_TO_STRING_SYMBOL: &str = "pulsec_rt_charToString";
 const DISPATCH_NULL_PANIC_SYMBOL: &str = "pulsec_rt_dispatchNullReceiverPanic";
@@ -86,9 +114,9 @@ const FRAME_BUDGET_WARN_BYTES: usize = 1024;
 const FRAME_BUDGET_FAIL_BYTES: usize = 4096;
 const ARC_HANDLE_SLOT_MASK: u32 = 0xFFFF_FFFF;
 const ARC_HANDLE_GEN_SHIFT: u32 = 32;
-const THREADING_MODEL_SCHEMA: &str = "pulsec.runtime.threading.v1";
-const THREADING_MODEL: &str = "single-threaded";
-const ARC_ATOMICITY: &str = "non-atomic";
+const THREADING_MODEL_SCHEMA: &str = "pulsec.runtime.threading.v2";
+const THREADING_MODEL: &str = "host-threading-plus-sync-and-atomic-publication-floor";
+const ARC_ATOMICITY: &str = "retain-release-atomic";
 
 #[derive(Clone, Debug)]
 pub struct BackendArtifact {

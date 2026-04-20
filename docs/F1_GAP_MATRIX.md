@@ -41,11 +41,11 @@ Status legend:
 | `switch` | Real | Current literal case baseline is real |
 | `break` / `continue` | Real | Real semantic baseline |
 | `return` | Real | Real semantic baseline |
-| `throw` | Missing | Exception-flow syntax not implemented |
-| `try` / `catch` / `finally` | Missing | Exception-flow syntax not implemented |
+| `throw` | Real | The current Pulse throwable/runtime transfer model is executable end to end |
+| `try` / `catch` / `finally` | Real | Structured exception flow is real, including caller-visible catch/finally execution and return-through-finally lowering |
 | try-with-resources | Real | Declaration-form resources are implemented on the shipped `AutoCloseable` lifecycle model; later Java-shape tightening can still return for effectively-final external operands or suppressed-exception parity |
-| `assert` | Missing | Not implemented |
-| `synchronized` statement | Missing | Not implemented as a real statement/runtime feature |
+| `assert` | Real | Assertion statement/runtime failure surface is shipped end to end |
+| `synchronized` statement | Real | Statement lowering is now real against the shipped `pulse.concurrent.Monitor` floor; the narrower F1 memory/publication boundary is now explicit instead of implied |
 
 ## Expressions And Operators
 
@@ -76,7 +76,7 @@ Status legend:
 | `static` | Real | Current baseline exists |
 | `abstract` | Real | Current baseline exists |
 | `final` | Real | Current baseline exists |
-| `synchronized` modifier | Reserved/Fenced | Reserved, semantically rejected |
+| `synchronized` modifier | Partial | Method-level synchronized lowering is real against `pulse.concurrent.Monitor`; fuller Java-close visibility/publication semantics still remain later memory-model work |
 | `native` modifier | Reserved/Fenced | Reserved, semantically rejected |
 | `strictfp` modifier | Reserved/Fenced | Reserved, semantically rejected |
 | `transient` modifier | Reserved/Fenced | Reserved, semantically rejected |
@@ -92,8 +92,8 @@ Status legend:
 | checked/unchecked exception model | Missing | Not implemented |
 | reflection-lite `Class` | Real | Runtime-backed minimal type identity exists |
 | full reflection/invocation | Missing | Explicitly deferred |
-| threading / memory model | Missing | Explicitly not a current real language/runtime feature |
-| concurrency library baseline | Missing | Explicitly future F1 work |
+| threading / memory model | Partial | Real monitor/atomic/thread utility floor exists, including wait/notify, real thread lifecycle, and explicit `AtomicReference` handoff/publication, but the locked F1 contract is still intentionally narrower than the full Java Memory Model: `volatile` remains fenced, `final` publication is not claimed, and ordinary unsynchronized object-graph publication is out of scope |
+| concurrency library baseline | Partial | `pulse.concurrent` now has a locked shipped scope: monitor, mutex, event, semaphore, latch, wait/notify coordination, and boolean/int/long/reference atomic floor types are in; `Thread` stays in `pulse.lang`; executors/futures and concurrent collections are still later work |
 | networking baseline | Missing | Explicitly future F1 work |
 
 ## Stdlib Families
@@ -105,8 +105,8 @@ Status legend:
 | io | Partial | Real, narrow text-centric baseline |
 | math | Partial | Real, small baseline |
 | time | Partial | Real, small baseline |
-| util | Missing | Not shipped yet |
-| concurrent | Missing | Not shipped yet |
+| util | Partial | High-value utility baseline is shipped, with deeper breadth still later |
+| concurrent | Partial | Low-level concurrency floor is shipped; executors/futures/collections remain later work |
 | net | Missing | Not shipped yet |
 
 ## Execution And Toolchain
@@ -123,7 +123,7 @@ Status legend:
 The most important F1 truths from this matrix are:
 
 1. F1 is not starting from zero. Core class/interface/OOP/control-flow/native execution already exist.
-2. Several Java-looking keywords are currently only reserved/fenced and must not be treated as “half done”.
+2. Several Java-looking keywords are currently only reserved/fenced and must not be treated as “half done”; where a surface is only partially real, the remaining boundary still has to stay explicit.
 3. The biggest ambiguity risks are still:
    - generics
    - exception runtime model

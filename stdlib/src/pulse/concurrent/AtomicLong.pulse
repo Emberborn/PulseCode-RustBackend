@@ -1,0 +1,120 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalStateException;
+import pulse.rt.Intrinsics;
+
+/**
+ * Low-level host-backed atomic 64-bit cell.
+ *
+ * This is the retained 64-bit primitive for future runtime ownership, scheduling, and futures.
+ */
+public final class AtomicLong implements AutoCloseable {
+    private long address;
+    private boolean closed;
+
+    private AtomicLong(long address) {
+        this.address = address;
+        this.closed = false;
+    }
+
+    /**
+     * Allocates a new atomic long with the requested initial value.
+     */
+    public static AtomicLong create(long initialValue) {
+        long address = Intrinsics.hostAllocBytes(8);
+        if (address == 0L) {
+            throw new IllegalStateException("failed to allocate atomic long storage");
+        }
+        Intrinsics.hostAtomicStoreLong(address, initialValue);
+        return new AtomicLong(address);
+    }
+
+    private void ensureOpen() {
+        if (this.closed || this.address == 0L) {
+            throw new IllegalStateException("atomic long is closed");
+        }
+    }
+
+    /**
+     * Returns whether this atomic cell has already been closed.
+     */
+    public boolean isClosed() {
+        return this.closed;
+    }
+
+    /**
+     * Reads the current long value from the host-backed atomic cell.
+     */
+    public long get() {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicLoadLong(this.address);
+    }
+
+    /**
+     * Stores a new long value into the host-backed atomic cell.
+     */
+    public void set(long value) {
+        this.ensureOpen();
+        Intrinsics.hostAtomicStoreLong(this.address, value);
+    }
+
+    /**
+     * Performs a compare-and-set against the current long value.
+     */
+    public boolean compareAndSet(long expected, long replacement) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicCompareExchangeLong(this.address, expected, replacement) == expected;
+    }
+
+    /**
+     * Replaces the current long value and returns the previous value.
+     */
+    public long getAndSet(long value) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicExchangeLong(this.address, value);
+    }
+
+    /**
+     * Adds the requested delta and returns the previous value.
+     */
+    public long getAndAdd(long delta) {
+        this.ensureOpen();
+        return Intrinsics.hostAtomicFetchAddLong(this.address, delta);
+    }
+
+    /**
+     * Adds the requested delta and returns the updated value.
+     */
+    public long addAndGet(long delta) {
+        return this.getAndAdd(delta) + delta;
+    }
+
+    /**
+     * Increments by one and returns the updated value.
+     */
+    public long incrementAndGet() {
+        return this.addAndGet(1L);
+    }
+
+    /**
+     * Increments by one and returns the previous value.
+     */
+    public long getAndIncrement() {
+        return this.getAndAdd(1L);
+    }
+
+    /**
+     * Releases the host-backed storage for this atomic cell.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (this.address != 0L) {
+            Intrinsics.hostFreeBytes(this.address);
+        }
+        this.address = 0L;
+        this.closed = true;
+    }
+}
