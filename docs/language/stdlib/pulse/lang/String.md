@@ -11,7 +11,7 @@ Runtime-backed immutable string value.
 ## Declaration
 
 ```pulse
-public final class String implements CharSequence, Comparable
+public final class String implements CharSequence, Comparable<String>
 ```
 
 ## Members
@@ -66,7 +66,7 @@ Use this for Java-like text equality when callers are typed against `CharSequenc
 Returns a content-based hash code for this string.
 Use this when string values participate in Java-like hashed containers or equality contracts.
 
-### ``public int compareTo(Object other)``
+### ``public int compareTo(String text)``
 
 Orders this string against another string using lexicographic character comparison.
 Use this when code is typed against `Comparable` or needs deterministic text ordering.

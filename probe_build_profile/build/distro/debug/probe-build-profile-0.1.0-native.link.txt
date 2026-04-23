@@ -1,0 +1,4 @@
+status=linked
+linker=link.exe
+entry_codegen=masm-println (split failed: Unknown static call owner 'pulse.lang.IO', full-masm failed: Unknown static call owner 'pulse.lang.IO')
+exe=\\?\G:\Programming\Rust\PulseCode\probe_build_profile\build\tmp\backend\debug\main.exe

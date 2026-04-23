@@ -1,0 +1,32 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned callable bridge for `CompletableFuture.supplyAsync`.
+ */
+public final class CompletableSupplyTask<T> implements Runnable {
+    private Callable<T> task;
+    private CompletableFuture<T> target;
+
+    /**
+     * Creates a supply task that completes the target future from one callable.
+     */
+    public CompletableSupplyTask(Callable<T> task, CompletableFuture<T> target) {
+        this.task = task;
+        this.target = target;
+    }
+
+    /**
+     * Runs the callable and forwards its result or failure into the target future.
+     */
+    public void run() {
+        try {
+            T value = this.task.call();
+            this.target.complete(value);
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

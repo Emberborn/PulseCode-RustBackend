@@ -238,7 +238,7 @@ fn resolve_try_resource_type(
 
     if resource.ty == "var" {
         validate_null_deref(&resource.init, null_state)?;
-        validate_unboxing_nullability_in_expr(
+        validate_unboxing_nullability_in_expr_in_scope(
             &resource.init,
             class,
             class_info,
@@ -247,10 +247,11 @@ fn resolve_try_resource_type(
             fqcn_to_class,
             imports,
             locals,
+            visible_type_params,
             in_static_context,
             null_state,
         )?;
-        let inferred = infer_expr_type(
+        let inferred = infer_expr_type_in_scope(
             &resource.init,
             class,
             class_info,
@@ -259,6 +260,7 @@ fn resolve_try_resource_type(
             fqcn_to_class,
             imports,
             locals,
+            visible_type_params,
             in_static_context,
         )?;
         if inferred.ty == "null" {
@@ -300,7 +302,7 @@ fn resolve_try_resource_type(
     )?;
 
     validate_null_deref(&resource.init, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         &resource.init,
         class,
         class_info,
@@ -309,10 +311,11 @@ fn resolve_try_resource_type(
         fqcn_to_class,
         imports,
         locals,
+        visible_type_params,
         in_static_context,
         null_state,
     )?;
-    let actual = infer_expr_type(
+    let actual = infer_expr_type_in_scope(
         &resource.init,
         class,
         class_info,
@@ -321,6 +324,7 @@ fn resolve_try_resource_type(
         fqcn_to_class,
         imports,
         locals,
+        visible_type_params,
         in_static_context,
     )?;
     validate_assignable(

@@ -1,0 +1,261 @@
+package pulse.concurrent;
+
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.System;
+import pulse.lang.Thread;
+import pulse.lang.Throwable;
+
+/**
+ * One-shot delayed future task on the current thread/sync/atomic floor.
+ *
+ * This gives the executor baseline real delayed submission before self-hosting
+ * without claiming periodic scheduling or full timer-wheel infrastructure.
+ */
+public final class ScheduledFutureTask<T> implements RunnableFuture<T>, ScheduledFuture<T> {
+    private Callable<T> callable;
+    private Runnable runnable;
+    private boolean runnableMode;
+    private long scheduledAt;
+    private AtomicInt state;
+    private AtomicBoolean cancelRequested;
+    private AtomicReference<T> result;
+    private AtomicReference<Throwable> failure;
+    private AtomicReference<Thread> runner;
+    private Event completed;
+    private Event wakeSignal;
+    private boolean closed;
+
+    /**
+     * Creates a delayed callable task.
+     */
+    public ScheduledFutureTask(Callable<T> callable, long delayMillis) {
+        if (callable == null) {
+            throw new IllegalArgumentException("callable must not be null");
+        }
+        if (delayMillis < 0L) {
+            throw new IllegalArgumentException("delayMillis must be >= 0");
+        }
+        this.callable = callable;
+        this.runnable = null;
+        this.runnableMode = false;
+        this.scheduledAt = System.currentTimeMillis() + delayMillis;
+        this.state = AtomicInt.create(0);
+        this.cancelRequested = AtomicBoolean.create(false);
+        this.result = AtomicReference.create(null);
+        this.failure = AtomicReference.create(null);
+        this.runner = AtomicReference.create(null);
+        this.completed = Event.createManualReset(false);
+        this.wakeSignal = Event.createManualReset(false);
+        this.closed = false;
+    }
+
+    /**
+     * Creates a delayed runnable task.
+     */
+    public ScheduledFutureTask(Runnable runnable, long delayMillis) {
+        if (runnable == null) {
+            throw new IllegalArgumentException("runnable must not be null");
+        }
+        if (delayMillis < 0L) {
+            throw new IllegalArgumentException("delayMillis must be >= 0");
+        }
+        this.callable = null;
+        this.runnable = runnable;
+        this.runnableMode = true;
+        this.scheduledAt = System.currentTimeMillis() + delayMillis;
+        this.state = AtomicInt.create(0);
+        this.cancelRequested = AtomicBoolean.create(false);
+        this.result = AtomicReference.create(null);
+        this.failure = AtomicReference.create(null);
+        this.runner = AtomicReference.create(null);
+        this.completed = Event.createManualReset(false);
+        this.wakeSignal = Event.createManualReset(false);
+        this.closed = false;
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("scheduled future task is closed");
+        }
+    }
+
+    /**
+     * Binds the host thread that will own delayed execution.
+     */
+    public void bindThread(Thread thread) {
+        this.ensureOpen();
+        this.runner.set(thread);
+    }
+
+    /**
+     * Returns the target wall-clock execution time.
+     */
+    public long scheduledAtMillis() {
+        this.ensureOpen();
+        return this.scheduledAt;
+    }
+
+    /**
+     * Returns the remaining delay before execution becomes eligible.
+     */
+    public long getDelayMillis() {
+        this.ensureOpen();
+        long remaining = this.scheduledAt - System.currentTimeMillis();
+        if (remaining <= 0L) {
+            return 0L;
+        }
+        return remaining;
+    }
+
+    /**
+     * Returns whether cancellation has won for this task.
+     */
+    public boolean isCancelled() {
+        this.ensureOpen();
+        return this.state.get() == 4;
+    }
+
+    /**
+     * Returns whether this task has reached a terminal state.
+     */
+    public boolean isDone() {
+        this.ensureOpen();
+        int current = this.state.get();
+        return current == 2 || current == 3 || current == 4;
+    }
+
+    /**
+     * Requests cancellation before or during delayed execution.
+     */
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        this.ensureOpen();
+        if (this.state.compareAndSet(0, 4)) {
+            this.cancelRequested.set(true);
+            this.wakeSignal.set();
+            this.completed.set();
+            return true;
+        }
+        if (this.state.get() != 1) {
+            return false;
+        }
+        if (!mayInterruptIfRunning) {
+            return false;
+        }
+        this.cancelRequested.set(true);
+        this.wakeSignal.set();
+        Thread bound = this.runner.get();
+        if (bound != null) {
+            bound.interrupt();
+        }
+        return true;
+    }
+
+    /**
+     * Waits indefinitely for terminal completion.
+     */
+    public void await() {
+        this.ensureOpen();
+        this.completed.waitOne(-1L);
+    }
+
+    /**
+     * Waits for terminal completion or timeout.
+     */
+    public boolean await(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        return this.completed.waitOne(timeoutMillis);
+    }
+
+    /**
+     * Executes the delayed task body once its deadline is reached.
+     */
+    public void run() {
+        this.ensureOpen();
+        if (!this.state.compareAndSet(0, 1)) {
+            return;
+        }
+        try {
+            long remaining = this.getDelayMillis();
+            if (remaining > 0L) {
+                boolean awoken = this.wakeSignal.waitOne(remaining);
+                if (awoken && this.cancelRequested.get()) {
+                    this.state.set(4);
+                    return;
+                }
+            }
+            if (this.cancelRequested.get()) {
+                this.state.set(4);
+                return;
+            }
+            T value = null;
+            if (this.runnableMode) {
+                this.runnable.run();
+            } else {
+                value = this.callable.call();
+            }
+            if (this.cancelRequested.get()) {
+                this.state.set(4);
+            } else {
+                this.result.set(value);
+                this.state.set(2);
+            }
+        } catch (Throwable failure) {
+            if (this.cancelRequested.get()) {
+                this.state.set(4);
+            } else {
+                this.failure.set(failure);
+                this.state.set(3);
+            }
+        } finally {
+            this.completed.set();
+        }
+    }
+
+    /**
+     * Returns the completed result or throws the current baseline future exception.
+     */
+    public T get() {
+        this.ensureOpen();
+        this.await();
+        int current = this.state.get();
+        if (current == 2) {
+            return this.result.get();
+        }
+        if (current == 4) {
+            throw new CancellationException("scheduled future was cancelled");
+        }
+        Throwable failure = this.failure.get();
+        if (failure == null) {
+            throw new IllegalStateException("scheduled future completed without result or failure");
+        }
+        throw new ExecutionException("scheduled future task failed", failure);
+    }
+
+    /**
+     * Releases the delayed task's coordination/storage resources after completion.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (!this.isDone()) {
+            throw new IllegalStateException("cannot close scheduled future task before completion");
+        }
+        this.runner.set(null);
+        this.result.set(null);
+        this.failure.set(null);
+        this.completed.close();
+        this.wakeSignal.close();
+        this.runner.close();
+        this.result.close();
+        this.failure.close();
+        this.cancelRequested.close();
+        this.state.close();
+        this.closed = true;
+    }
+}

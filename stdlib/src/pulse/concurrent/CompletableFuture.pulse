@@ -1,0 +1,289 @@
+package pulse.concurrent;
+
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Manually completable future with async submission/composition hooks.
+ *
+ * This is a bounded pre-self-hosting baseline: manual completion, async supply/run,
+ * executor-backed accept/map/recovery/compose chaining, and explicit failed futures
+ * are real now, while the full Java completion-stage surface still remains later work.
+ */
+public final class CompletableFuture<T> implements Future<T> {
+    private AtomicInt state;
+    private AtomicReference<T> result;
+    private AtomicReference<Throwable> failure;
+    private Event completed;
+    private boolean closed;
+
+    /**
+     * Creates a new incomplete completable future.
+     */
+    public CompletableFuture() {
+        this.state = AtomicInt.create(0);
+        this.result = AtomicReference.create(null);
+        this.failure = AtomicReference.create(null);
+        this.completed = Event.createManualReset(false);
+        this.closed = false;
+    }
+
+    /**
+     * Returns a future already completed with the supplied value.
+     */
+    public static <T> CompletableFuture<T> completedFuture(T value) {
+        CompletableFuture<T> future = new CompletableFuture<T>();
+        future.complete(value);
+        return future;
+    }
+
+    /**
+     * Returns a future already completed exceptionally with the supplied failure.
+     */
+    public static <T> CompletableFuture<T> failedFuture(Throwable failure) {
+        if (failure == null) {
+            throw new IllegalArgumentException("failure must not be null");
+        }
+        CompletableFuture<T> future = new CompletableFuture<T>();
+        future.completeExceptionally(failure);
+        return future;
+    }
+
+    /**
+     * Runs one callable task asynchronously on the supplied executor.
+     */
+    public static <T> CompletableFuture<T> supplyAsync(Callable<T> task, Executor executor) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<T> future = new CompletableFuture<T>();
+        executor.execute(new CompletableSupplyTask<T>(task, future));
+        return future;
+    }
+
+    /**
+     * Runs one runnable task asynchronously on the supplied executor.
+     */
+    public static CompletableFuture<Object> runAsync(Runnable task, Executor executor) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<Object> future = new CompletableFuture<Object>();
+        executor.execute(new CompletableRunTask(task, future));
+        return future;
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("completable future is closed");
+        }
+    }
+
+    /**
+     * Completes this future successfully if it is still incomplete.
+     */
+    public boolean complete(T value) {
+        this.ensureOpen();
+        if (!this.state.compareAndSet(0, 2)) {
+            return false;
+        }
+        this.result.set(value);
+        this.completed.set();
+        return true;
+    }
+
+    /**
+     * Completes this future exceptionally if it is still incomplete.
+     */
+    public boolean completeExceptionally(Throwable failure) {
+        this.ensureOpen();
+        if (failure == null) {
+            throw new IllegalArgumentException("failure must not be null");
+        }
+        if (!this.state.compareAndSet(0, 3)) {
+            return false;
+        }
+        this.failure.set(failure);
+        this.completed.set();
+        return true;
+    }
+
+    /**
+     * Requests cancellation for this future.
+     */
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        this.ensureOpen();
+        if (!this.state.compareAndSet(0, 4)) {
+            return false;
+        }
+        this.completed.set();
+        return true;
+    }
+
+    /**
+     * Returns whether cancellation has won for this future.
+     */
+    public boolean isCancelled() {
+        this.ensureOpen();
+        return this.state.get() == 4;
+    }
+
+    /**
+     * Returns whether this future has reached a terminal state.
+     */
+    public boolean isDone() {
+        this.ensureOpen();
+        return this.state.get() != 0;
+    }
+
+    /**
+     * Waits indefinitely for terminal completion.
+     */
+    public void await() {
+        this.ensureOpen();
+        this.completed.waitOne(-1L);
+    }
+
+    /**
+     * Waits for terminal completion or timeout.
+     */
+    public boolean await(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        return this.completed.waitOne(timeoutMillis);
+    }
+
+    /**
+     * Returns the completed value or throws the current baseline future exception.
+     */
+    public T get() {
+        this.ensureOpen();
+        this.await();
+        int current = this.state.get();
+        if (current == 2) {
+            return this.result.get();
+        }
+        if (current == 4) {
+            throw new CancellationException("completable future was cancelled");
+        }
+        Throwable failure = this.failure.get();
+        if (failure == null) {
+            throw new IllegalStateException("completable future completed without result or failure");
+        }
+        throw new ExecutionException("completable future failed", failure);
+    }
+
+    /**
+     * Returns the completed value using the same baseline behavior as `get()`.
+     */
+    public T join() {
+        return this.get();
+    }
+
+    /**
+     * Chains one async runnable continuation onto this future.
+     */
+    public CompletableFuture<Object> thenRunAsync(Runnable action, Executor executor) {
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<Object> next = new CompletableFuture<Object>();
+        executor.execute(new CompletableThenRunTask<T>(this, action, next));
+        return next;
+    }
+
+    /**
+     * Chains one async consumer continuation onto this future.
+     */
+    public CompletableFuture<Object> thenAcceptAsync(CompletionConsumer<T> action, Executor executor) {
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<Object> next = new CompletableFuture<Object>();
+        executor.execute(new CompletableThenAcceptTask<T>(this, action, next));
+        return next;
+    }
+
+    /**
+     * Chains one async mapping continuation onto this future.
+     */
+    public <R> CompletableFuture<R> thenApplyAsync(CompletionFunction<T, R> mapper, Executor executor) {
+        if (mapper == null) {
+            throw new IllegalArgumentException("mapper must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<R> next = new CompletableFuture<R>();
+        executor.execute(new CompletableThenApplyTask<T, R>(this, mapper, next));
+        return next;
+    }
+
+    /**
+     * Chains one async recovery continuation that runs only if this future fails.
+     */
+    public CompletableFuture<T> exceptionallyAsync(CompletionFunction<Throwable, T> mapper, Executor executor) {
+        if (mapper == null) {
+            throw new IllegalArgumentException("mapper must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<T> next = new CompletableFuture<T>();
+        executor.execute(new CompletableExceptionallyTask<T>(this, mapper, next));
+        return next;
+    }
+
+    /**
+     * Chains one async compose continuation onto this future.
+     */
+    public <R> CompletableFuture<R> thenComposeAsync(
+        CompletionFunction<T, CompletableFuture<R>> mapper,
+        Executor executor
+    ) {
+        if (mapper == null) {
+            throw new IllegalArgumentException("mapper must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<R> next = new CompletableFuture<R>();
+        executor.execute(new CompletableThenComposeTask<T, R>(this, mapper, next));
+        return next;
+    }
+
+    /**
+     * Releases coordination/storage resources after completion.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (!this.isDone()) {
+            throw new IllegalStateException("cannot close completable future before completion");
+        }
+        this.result.set(null);
+        this.failure.set(null);
+        this.completed.close();
+        this.result.close();
+        this.failure.close();
+        this.state.close();
+        this.closed = true;
+    }
+}

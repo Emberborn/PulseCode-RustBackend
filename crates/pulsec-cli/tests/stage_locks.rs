@@ -3222,9 +3222,9 @@ fn lock_f1_47_foundational_lang_types_are_documented_and_board_locked() {
     assert!(appendable_doc.contains("public StringBuilder append(String text);"));
     assert!(sequence_doc.contains("public interface CharSequence"));
     assert!(sequence_doc.contains("public String subSequence(int beginIndex, int endIndex);"));
-    assert!(string_doc.contains("implements CharSequence, Comparable"));
+    assert!(string_doc.contains("implements CharSequence, Comparable<String>"));
     assert!(string_doc.contains("public String subSequence(int beginIndex, int endIndex)"));
-    assert!(string_doc.contains("public int compareTo(Object other)"));
+    assert!(string_doc.contains("public int compareTo(String text)"));
     assert!(builder_doc.contains("implements Appendable, CharSequence"));
     assert!(builder_doc.contains("public char charAt(int index)"));
     assert!(builder_doc.contains("public String subSequence(int beginIndex, int endIndex)"));
@@ -3742,8 +3742,10 @@ fn lock_f1_89_memory_publication_baseline_is_documented_and_volatile_remains_fen
     assert!(board.contains("`volatile` remains semantically rejected"));
     assert!(board.contains("`final` fields are compile-time immutability"));
     assert!(board.contains("`AtomicReference` now provides explicit supported reference handoff/publication"));
+    assert!(board.contains("ARC/weak/cycle runtime memory ownership is thread-safe"));
     assert!(policy.contains("## F1 Memory / Publication Baseline"));
     assert!(policy.contains("`AtomicReference` is real for explicit shared-reference handoff/publication"));
+    assert!(policy.contains("ARC/weak/cycle runtime memory ownership is now thread-safe"));
     assert!(policy.contains("ordinary unsynchronized object-field publication across threads is not part of the currently claimed F1 baseline"));
     assert!(gap.contains("| `volatile` modifier | Reserved/Fenced | Reserved, semantically rejected |"));
     assert!(gap.contains("ordinary unsynchronized object-graph publication is out of scope"));
@@ -3751,6 +3753,7 @@ fn lock_f1_89_memory_publication_baseline_is_documented_and_volatile_remains_fen
     assert!(doc.contains("`volatile` remains intentionally fenced in F1"));
     assert!(doc.contains("compile-time immutability after initialization"));
     assert!(doc.contains("use `AtomicReference` for explicit shared-reference handoff/publication"));
+    assert!(doc.contains("ARC/weak/cycle runtime memory ownership paths are now serialized"));
     assert!(doc.contains("do not treat ordinary unsynchronized field reads/writes on arbitrary objects as a supported cross-thread publication model"));
 }
 
@@ -3838,23 +3841,32 @@ fn lock_f1_90_concurrency_scope_is_documented_and_thread_stays_language_owned() 
 
     assert!(board.contains("| F1-90 |"));
     assert!(board.contains("Done (Locked)"));
-    assert!(board.contains("`Mutex`, `Event`, `Semaphore`, `CountDownLatch`, `Monitor`, `AtomicBoolean`, `AtomicInt`, `AtomicLong`, and `AtomicReference`"));
+    assert!(board.contains("`Mutex`, `Event`, `Semaphore`, `CountDownLatch`, `Monitor`, `Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `ScheduledFutureTask`, `ScheduledThreadPerTaskExecutor`, `CompletableFuture`, `CompletionFunction`, `CompletionConsumer`, `ThreadPerTaskExecutor`, `Executors`, `AtomicBoolean`, `AtomicInt`, `AtomicLong`, `AtomicReference`, `ConcurrentHashMap`, `CopyOnWriteArrayList`, `BlockingQueue`, `LinkedBlockingQueue`, `BlockingDeque`, and `LinkedBlockingDeque`"));
     assert!(board.contains("`Thread` remains `pulse.lang.Thread`"));
-    assert!(board.contains("`ConcurrentHashMap` / `CopyOnWriteArrayList` remain under `F1-92`"));
-    assert!(board.contains("higher-level executors/futures stay under `F1-103`"));
+    assert!(board.contains("periodic scheduling plus broader completion-stage/executor/concurrent-collection families continue as explicit later work"));
 
     assert!(doc.contains("## `pulse.concurrent` Scope"));
     assert!(doc.contains("Shipped in `pulse.concurrent` today:"));
     assert!(doc.contains("`Thread` remains `pulse.lang.Thread`"));
     assert!(doc.contains("`Runnable` remains `pulse.lang.Runnable`"));
     assert!(doc.contains("`AtomicReference` is supported"));
-    assert!(doc.contains("ConcurrentHashMap"));
-    assert!(doc.contains("CopyOnWriteArrayList"));
+    assert!(doc.contains("`ExecutorService`"));
+    assert!(doc.contains("`ThreadPerTaskExecutor`"));
+    assert!(doc.contains("`ScheduledFuture`"));
+    assert!(doc.contains("`CompletableFuture`"));
+    assert!(doc.contains("`CompletionConsumer`"));
+    assert!(doc.contains("`ConcurrentHashMap`"));
+    assert!(doc.contains("`CopyOnWriteArrayList`"));
+    assert!(doc.contains("`LinkedBlockingQueue`"));
+    assert!(doc.contains("`LinkedBlockingDeque`"));
     assert!(doc.contains("CompletableFuture"));
 
     assert!(roadmap.contains("locked `pulse.concurrent` scope"));
     assert!(roadmap.contains("`Thread`/`Runnable` remaining language-owned"));
-    assert!(roadmap.contains("explicit reference publication now raised while concurrent collections/executors stay later"));
+    assert!(roadmap.contains("explicit reference publication now raised"));
+    assert!(roadmap.contains("thread-per-task executor/future baseline now shipped"));
+    assert!(roadmap.contains("bounded `CompletableFuture` completion/composition now shipped"));
+    assert!(roadmap.contains("selected concurrent collections and blocking producer/consumer containers now shipped"));
 }
 
 #[test]
@@ -3876,8 +3888,87 @@ fn lock_f1_93_thread_lifecycle_floor_is_documented_on_board_and_language_surface
     assert!(board.contains("real lifecycle/start/join semantics"));
     assert!(board.contains("cooperative interruption"));
     assert!(board.contains("cross-thread monitor wakeup validation"));
+    assert!(board.contains("ARC/weak/cycle memory ownership"));
+    assert!(board.contains("thread-per-task plus one-shot delayed executor baseline"));
     assert!(doc.contains("real `Thread` lifecycle (`start`, `join`, cooperative interruption)"));
-    assert!(doc.contains("higher-level executor closure"));
+    assert!(doc.contains("first truthful executor/future baseline now exists separately under `F1-103`"));
+}
+
+#[test]
+fn lock_f1_103_executor_future_baseline_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("concurrency-and-memory-model.md"),
+    )
+    .expect("read concurrency and memory model doc");
+    let policy =
+        fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md")).expect("read F1 support policy");
+
+    assert!(board.contains("| F1-103 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("`Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `ScheduledFutureTask`, `ScheduledThreadPerTaskExecutor`, `CompletableFuture`, `CompletionFunction`, `CompletionConsumer`, `ThreadPerTaskExecutor`, and the `Executors` factories are real and executable"));
+    assert!(board.contains("one-shot delayed scheduling"));
+    assert!(board.contains("explicit failed futures"));
+    assert!(board.contains("bounded chained async accept/map/recovery/compose behavior"));
+    assert!(board.contains("Periodic scheduling"));
+
+    assert!(doc.contains("higher-level task execution baseline:"));
+    assert!(doc.contains("`ExecutorService`"));
+    assert!(doc.contains("`FutureTask`"));
+    assert!(doc.contains("`ThreadPerTaskExecutor`"));
+    assert!(doc.contains("`ScheduledThreadPerTaskExecutor`"));
+    assert!(doc.contains("`CompletableFuture`"));
+    assert!(doc.contains("`CompletionConsumer`"));
+    assert!(doc.contains("periodic scheduling"));
+    assert!(doc.contains("fuller `CompletableFuture` / completion-stage surface"));
+
+    assert!(policy.contains("`Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `CompletableFuture`, and the thread-per-task / one-shot delayed executor baseline are now real and executable"));
+}
+
+#[test]
+fn lock_f1_92_concurrent_collection_baseline_is_documented_and_board_locked() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("..");
+    let board =
+        fs::read_to_string(root.join("docs").join("F1_TASK_BOARD.md")).expect("read F1 task board");
+    let doc = fs::read_to_string(
+        root.join("docs")
+            .join("language")
+            .join("compiler-backed")
+            .join("concurrency-and-memory-model.md"),
+    )
+    .expect("read concurrency and memory model doc");
+    let policy =
+        fs::read_to_string(root.join("docs").join("F1_SUPPORT_POLICY.md")).expect("read F1 support policy");
+    let roadmap = fs::read_to_string(root.join("docs").join("STANDALONE_ROADMAP.md"))
+        .expect("read standalone roadmap");
+
+    assert!(board.contains("| F1-92 |"));
+    assert!(board.contains("Done (Locked)"));
+    assert!(board.contains("`ConcurrentHashMap`, `CopyOnWriteArrayList`, `BlockingQueue`, `LinkedBlockingQueue`, `BlockingDeque`, and `LinkedBlockingDeque` are real and executable"));
+    assert!(board.contains("blocking producer/consumer handoff"));
+    assert!(board.contains("broader concurrent collections"));
+
+    assert!(doc.contains("selected concurrent collections:"));
+    assert!(doc.contains("`ConcurrentHashMap`"));
+    assert!(doc.contains("`CopyOnWriteArrayList`"));
+    assert!(doc.contains("`BlockingQueue`"));
+    assert!(doc.contains("`LinkedBlockingQueue`"));
+    assert!(doc.contains("`BlockingDeque`"));
+    assert!(doc.contains("`LinkedBlockingDeque`"));
+    assert!(doc.contains("selected concurrent collections and blocking producer/consumer containers are in"));
+    assert!(doc.contains("broader concurrent-collection families"));
+
+    assert!(policy.contains("`ConcurrentHashMap`, `CopyOnWriteArrayList`, `LinkedBlockingQueue`, and `LinkedBlockingDeque` are now real and executable"));
+    assert!(roadmap.contains("selected concurrent collections and blocking producer/consumer containers now shipped"));
 }
 
 #[test]

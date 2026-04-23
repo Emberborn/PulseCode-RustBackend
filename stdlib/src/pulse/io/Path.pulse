@@ -70,7 +70,19 @@ public final class Path {
             index = index + 1;
         }
 
-        String out = Path.joinNormalizedParts(normalized);
+        String out = "";
+        index = 0;
+        while (index < normalized.size()) {
+            String part = normalized.getString(index);
+            if (part != null && !part.isEmpty()) {
+                if (out.isEmpty()) {
+                    out = part;
+                } else {
+                    out = out.concat("/").concat(part);
+                }
+            }
+            index = index + 1;
+        }
         if (absolute) {
             if (out.isEmpty()) {
                 return root;
@@ -313,7 +325,20 @@ public final class Path {
             }
             index = index + 1;
         }
-        return Path.joinNormalizedParts(normalizedParts);
+        String out = "";
+        index = 0;
+        while (index < normalizedParts.size()) {
+            String part = normalizedParts.getString(index);
+            if (part != null && !part.isEmpty()) {
+                if (out.isEmpty()) {
+                    out = part;
+                } else {
+                    out = out.concat("/").concat(part);
+                }
+            }
+            index = index + 1;
+        }
+        return out;
     }
 
     /**
@@ -392,23 +417,6 @@ public final class Path {
             return normalizedValue;
         }
         return normalizedValue.substring(normalizedBase.length() + 1);
-    }
-
-    private static String joinNormalizedParts(List<String> parts) {
-        String out = "";
-        int index = 0;
-        while (index < parts.size()) {
-            String part = parts.get(index);
-            if (part != null && !part.isEmpty()) {
-                if (out.isEmpty()) {
-                    out = part;
-                } else {
-                    out = out.concat("/").concat(part);
-                }
-            }
-            index = index + 1;
-        }
-        return out;
     }
 
     private static String rootPrefix(String normalized) {

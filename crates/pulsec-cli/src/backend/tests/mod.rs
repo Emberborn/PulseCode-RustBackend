@@ -1517,7 +1517,10 @@ fn e2_07_runtime_init_and_startup_bootstrap_are_locked() {
     for needle in [
         "public rt_runtime_init_state",
         "public rt_runtime_init_epoch",
+        "rt_runtime_memory_lock dq 0",
         "cmp dword ptr [rt_runtime_init_state], 1",
+        "call CreateMutexA",
+        "mov qword ptr [rt_runtime_memory_lock], rax",
         "mov dword ptr [rt_runtime_init_state], 1",
         "mov eax, dword ptr [rt_runtime_init_epoch]",
         "mov dword ptr [rt_runtime_init_epoch], eax",
@@ -1850,11 +1853,11 @@ fn c2_23_native_plan_contains_threading_contract() {
         "native plan missing threading contract section"
     );
     assert!(
-        plan.contains("\"schema\": \"pulsec.runtime.threading.v2\""),
+        plan.contains("\"schema\": \"pulsec.runtime.threading.v3\""),
         "native plan missing threading schema lock"
     );
     assert!(
-        plan.contains("\"model\": \"host-threading-plus-sync-and-atomic-publication-floor\""),
+        plan.contains("\"model\": \"host-threading-plus-sync-and-memory-ownership-floor\""),
         "native plan missing threading model lock"
     );
     assert!(
@@ -1862,7 +1865,7 @@ fn c2_23_native_plan_contains_threading_contract() {
         "native plan missing ARC atomicity lock"
     );
     assert!(
-        plan.contains("\"runtime_thread_safety\": \"not-thread-safe\""),
+        plan.contains("\"runtime_thread_safety\": \"memory-ownership-thread-safe-explicit-publication-only\""),
         "native plan missing runtime thread safety lock"
     );
     assert!(

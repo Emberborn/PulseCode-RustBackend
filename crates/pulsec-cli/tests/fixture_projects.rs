@@ -10179,8 +10179,17 @@ fn cli_build_executes_file_path_files_and_stream_flow() {
     }
 
     let exe = root.join("build").join("main.exe");
-    let run = Command::new(exe).output().expect("run exe");
-    assert!(run.status.success(), "exe failed");
+    let run = Command::new(exe)
+        .current_dir(&root)
+        .output()
+        .expect("run exe");
+    assert!(
+        run.status.success(),
+        "exe failed: status={:?}\nstdout=\n{}\nstderr=\n{}",
+        run.status,
+        String::from_utf8_lossy(&run.stdout),
+        String::from_utf8_lossy(&run.stderr)
+    );
     let out = String::from_utf8_lossy(&run.stdout).replace('\r', "");
     let expected = "tmp/a.txt
 /

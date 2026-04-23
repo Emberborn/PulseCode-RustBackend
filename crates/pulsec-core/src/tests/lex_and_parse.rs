@@ -527,14 +527,14 @@ fn check_accepts_core_bootstrap_lang_class_usage() {
             }
         }
 
-        class Ranker implements Comparable {
+        class Ranker implements Comparable<Ranker> {
             private int score;
 
             public Ranker(int score) {
                 this.score = score;
             }
 
-            public int compareTo(Object other) {
+            public int compareTo(Ranker other) {
                 return this.score;
             }
         }
@@ -555,8 +555,8 @@ fn check_accepts_core_bootstrap_lang_class_usage() {
                     it.next();
                 }
 
-                Comparable cmp = new Ranker(7);
-                cmp.compareTo(o);
+                Comparable<Ranker> cmp = new Ranker(7);
+                cmp.compareTo((Ranker) cmp);
                 sb.toString();
             }
         }

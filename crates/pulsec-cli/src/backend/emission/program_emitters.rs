@@ -1386,6 +1386,10 @@ pub(crate) fn emit_masm_split_program_objects(
     std_src.push('\n');
     emit_runtime_shutdown_proc(&mut std_src, "pulsec_rt_shutdown");
     std_src.push('\n');
+    emit_runtime_memory_lock_proc(&mut std_src, "pulsec_rt_runtimeMemoryLock");
+    std_src.push('\n');
+    emit_runtime_memory_unlock_proc(&mut std_src, "pulsec_rt_runtimeMemoryUnlock");
+    std_src.push('\n');
     emit_object_new_proc(&mut std_src, OBJECT_NEW_SYMBOL);
     std_src.push('\n');
     emit_object_class_id_proc(&mut std_src, OBJECT_CLASS_ID_SYMBOL);
@@ -1971,6 +1975,10 @@ pub(crate) fn emit_masm_full_program_object(
     emit_runtime_init_proc(&mut source, "pulsec_rt_init", WRITE_RAW_SYMBOL);
     source.push('\n');
     emit_runtime_shutdown_proc(&mut source, "pulsec_rt_shutdown");
+    source.push('\n');
+    emit_runtime_memory_lock_proc(&mut source, "pulsec_rt_runtimeMemoryLock");
+    source.push('\n');
+    emit_runtime_memory_unlock_proc(&mut source, "pulsec_rt_runtimeMemoryUnlock");
     source.push('\n');
     emit_object_new_proc(&mut source, OBJECT_NEW_SYMBOL);
     source.push('\n');

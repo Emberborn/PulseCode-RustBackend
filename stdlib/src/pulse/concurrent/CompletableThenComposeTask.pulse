@@ -1,0 +1,60 @@
+package pulse.concurrent;
+
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned continuation bridge for `CompletableFuture.thenComposeAsync`.
+ */
+public final class CompletableThenComposeTask<T, R> implements Runnable {
+    private CompletableFuture<T> source;
+    private CompletionFunction<T, CompletableFuture<R>> mapper;
+    private CompletableFuture<R> target;
+
+    /**
+     * Creates a chained compose continuation task.
+     */
+    public CompletableThenComposeTask(
+        CompletableFuture<T> source,
+        CompletionFunction<T, CompletableFuture<R>> mapper,
+        CompletableFuture<R> target
+    ) {
+        this.source = source;
+        this.mapper = mapper;
+        this.target = target;
+    }
+
+    /**
+     * Waits for the source future, maps it into a nested future, then forwards that result.
+     */
+    public void run() {
+        try {
+            T value = this.source.get();
+            CompletableFuture<R> stage = this.mapper.apply(value);
+            try {
+                this.target.complete(stage.get());
+            } catch (CancellationException cancelled) {
+                this.target.cancel(false);
+            } catch (ExecutionException failed) {
+                Throwable cause = failed.getCause();
+                if (cause == null) {
+                    this.target.completeExceptionally(failed);
+                } else {
+                    this.target.completeExceptionally(cause);
+                }
+            }
+        } catch (CancellationException cancelled) {
+            this.target.cancel(false);
+        } catch (ExecutionException failed) {
+            Throwable cause = failed.getCause();
+            if (cause == null) {
+                this.target.completeExceptionally(failed);
+            } else {
+                this.target.completeExceptionally(cause);
+            }
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

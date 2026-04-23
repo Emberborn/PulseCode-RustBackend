@@ -57,17 +57,19 @@ Required feature families:
 - practical `String` / `StringBuilder` utility hardening in support of the util baseline
 - explicit concurrency/network policy
 - explicit memory/publication policy for the shipped concurrency baseline
+- full reflection, full annotation processing, metadata creation, and the
+  two-way migration/provider interface required for pre-rewrite self-host
+  contracts under `F1-97`
 
 ## Allowed To Defer In F1
 
 Current explicit F1 deferrals:
 
-- full Java reflection/invocation
 - desktop UI families (`awt`, `swing`)
 - method references if not chosen as part of the F1 baseline
 - lambdas if not chosen as part of the F1 baseline
-- concurrent collections beyond the explicitly chosen concurrency baseline
-- higher-level executor/future depth beyond the explicitly chosen concurrency baseline
+- concurrent collections beyond the explicitly chosen shipped baseline (`ConcurrentHashMap`, `CopyOnWriteArrayList`, `LinkedBlockingQueue`, `LinkedBlockingDeque`)
+- higher-level executor/future depth beyond the explicitly chosen baseline (periodic scheduling, work-stealing, broader completion-stage composition)
 - URL/HTTP helper surface beyond the explicitly chosen networking baseline
 - external native binding/library-artifact ecosystem work (Phase F-A)
 
@@ -80,7 +82,6 @@ These remain allowed Pulse-specific differences in F1 if documented honestly:
   - docs and compatibility notes must call them out explicitly as Pulse-only surface
   - Java-close wording may describe the signed primitive/wrapper baseline, but it must not imply that unsigned types came from Java
 - current native packaging/build model
-- reflection-lite-only `Class`
 - compile-time instantiated generics with erased runtime before the deeper collection-wide generic work lands
 - any explicitly documented narrower Java-close subset chosen for exceptions
 
@@ -102,6 +103,9 @@ The current F1 memory/publication contract is intentionally narrower than full J
 - `volatile` remains reserved and semantically rejected
 - `final` fields are real as compile-time immutability after initialization, not as Java-style safe-publication guarantees
 - `AtomicReference` is real for explicit shared-reference handoff/publication
+- ARC/weak/cycle runtime memory ownership is now thread-safe for explicit handoff and maintenance paths
+- `Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `CompletableFuture`, and the thread-per-task / one-shot delayed executor baseline are now real and executable
+- `ConcurrentHashMap`, `CopyOnWriteArrayList`, `LinkedBlockingQueue`, and `LinkedBlockingDeque` are now real and executable as the selected concurrent-collection baseline
 - ordinary unsynchronized object-field publication across threads is not part of the currently claimed F1 baseline
 
 Policy rule:

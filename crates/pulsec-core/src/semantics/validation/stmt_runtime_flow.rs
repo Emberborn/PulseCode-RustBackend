@@ -24,8 +24,9 @@ pub(super) fn validate_foreach_stmt(
     protected_try_depth: usize,
     in_catch_or_finally: bool,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     validate_null_deref(iterable, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         iterable,
         class,
         class_info,
@@ -34,10 +35,11 @@ pub(super) fn validate_foreach_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
         null_state,
     )?;
-    let iterable_ty = infer_expr_type(
+    let iterable_ty = infer_expr_type_in_scope(
         iterable,
         class,
         class_info,
@@ -46,6 +48,7 @@ pub(super) fn validate_foreach_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
     )?;
 
@@ -175,8 +178,9 @@ pub(super) fn validate_switch_stmt(
     protected_try_depth: usize,
     in_catch_or_finally: bool,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     validate_null_deref(expr, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         expr,
         class,
         class_info,
@@ -185,10 +189,11 @@ pub(super) fn validate_switch_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
         null_state,
     )?;
-    let switch_ty = infer_expr_type(
+    let switch_ty = infer_expr_type_in_scope(
         expr,
         class,
         class_info,
@@ -197,6 +202,7 @@ pub(super) fn validate_switch_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
     )?;
 
@@ -212,7 +218,7 @@ pub(super) fn validate_switch_stmt(
             )));
         }
 
-        let label_ty = infer_expr_type(
+        let label_ty = infer_expr_type_in_scope(
             &case.label,
             class,
             class_info,
@@ -221,6 +227,7 @@ pub(super) fn validate_switch_stmt(
             fqcn_to_class,
             imports,
             locals,
+            &visible_type_params,
             in_static_context,
         )?;
         if label_ty.ty != switch_ty.ty {
@@ -318,8 +325,9 @@ pub(super) fn validate_assert_stmt(
     null_state: &mut HashMap<String, NullState>,
     in_static_context: bool,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     validate_null_deref(condition, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         condition,
         class,
         class_info,
@@ -328,10 +336,11 @@ pub(super) fn validate_assert_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
         null_state,
     )?;
-    let condition_ty = infer_expr_type(
+    let condition_ty = infer_expr_type_in_scope(
         condition,
         class,
         class_info,
@@ -340,6 +349,7 @@ pub(super) fn validate_assert_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
     )?;
     if condition_ty.ty != "boolean" {
@@ -351,7 +361,7 @@ pub(super) fn validate_assert_stmt(
 
     if let Some(message) = message {
         validate_null_deref(message, null_state)?;
-        validate_unboxing_nullability_in_expr(
+        validate_unboxing_nullability_in_expr_in_scope(
             message,
             class,
             class_info,
@@ -360,10 +370,11 @@ pub(super) fn validate_assert_stmt(
             fqcn_to_class,
             imports,
             locals,
+            &visible_type_params,
             in_static_context,
             null_state,
         )?;
-        let message_ty = infer_expr_type(
+        let message_ty = infer_expr_type_in_scope(
             message,
             class,
             class_info,
@@ -372,6 +383,7 @@ pub(super) fn validate_assert_stmt(
             fqcn_to_class,
             imports,
             locals,
+            &visible_type_params,
             in_static_context,
         )?;
         if !is_string_type(&message_ty.ty) {
@@ -442,6 +454,7 @@ pub(super) fn validate_throw_stmt(
     in_static_context: bool,
     in_catch_or_finally: bool,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     if in_catch_or_finally {
         return Err(semantic_error(format!(
             "'throw' from catch/finally is not supported yet in '{}.{}' for the current F1-16 baseline",
@@ -449,7 +462,7 @@ pub(super) fn validate_throw_stmt(
         )));
     }
     validate_null_deref(expr, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         expr,
         class,
         class_info,
@@ -458,11 +471,12 @@ pub(super) fn validate_throw_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
         null_state,
     )?;
 
-    let thrown = infer_expr_type(
+    let thrown = infer_expr_type_in_scope(
         expr,
         class,
         class_info,
@@ -471,6 +485,7 @@ pub(super) fn validate_throw_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
     )?;
 
@@ -508,6 +523,7 @@ pub(super) fn validate_throw_stmt(
 #[allow(clippy::too_many_arguments)]
 pub(super) fn validate_expr_stmt(
     expr: &Expr,
+    method: &MethodDecl,
     class: &ClassDecl,
     class_info: &ClassInfo,
     class_names: &HashSet<String>,
@@ -518,8 +534,9 @@ pub(super) fn validate_expr_stmt(
     null_state: &mut HashMap<String, NullState>,
     in_static_context: bool,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     validate_null_deref(expr, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         expr,
         class,
         class_info,
@@ -528,10 +545,11 @@ pub(super) fn validate_expr_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
         null_state,
     )?;
-    infer_expr_type(
+    infer_expr_type_in_scope(
         expr,
         class,
         class_info,
@@ -540,6 +558,7 @@ pub(super) fn validate_expr_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
     )?;
     Ok(false)
@@ -561,6 +580,7 @@ pub(super) fn validate_return_stmt(
     in_static_context: bool,
     _protected_try_depth: usize,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     if method.is_constructor {
         if value.is_some() {
             return Err(semantic_error(format!(
@@ -587,7 +607,7 @@ pub(super) fn validate_return_stmt(
         ))
     })?;
     validate_null_deref(expr, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         expr,
         class,
         class_info,
@@ -596,10 +616,11 @@ pub(super) fn validate_return_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
         null_state,
     )?;
-    let actual = infer_expr_type(
+    let actual = infer_expr_type_in_scope(
         expr,
         class,
         class_info,
@@ -608,6 +629,7 @@ pub(super) fn validate_return_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
     )?;
     validate_assignable(

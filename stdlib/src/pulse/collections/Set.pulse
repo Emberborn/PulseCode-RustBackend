@@ -3,7 +3,7 @@ package pulse.collections;
 /**
  * Unique-value collection contract.
  */
-interface Set<T> extends Collection<T> {
+public interface Set<T> extends Collection<T> {
     /**
      * Removes the supplied raw-object value when it is present.
      * Use this as the raw-object set removal baseline before generics are available.

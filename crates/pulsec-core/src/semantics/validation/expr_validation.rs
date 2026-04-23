@@ -51,6 +51,33 @@ pub(super) fn infer_expr_type(
     locals: &HashMap<String, String>,
     in_static_context: bool,
 ) -> Result<ExprType, SemanticError> {
+    let visible_type_params = class_info.type_params.iter().cloned().collect::<HashSet<_>>();
+    infer_expr_type_in_scope(
+        expr,
+        class,
+        class_info,
+        class_names,
+        class_index,
+        fqcn_to_class,
+        imports,
+        locals,
+        &visible_type_params,
+        in_static_context,
+    )
+}
+
+pub(super) fn infer_expr_type_in_scope(
+    expr: &Expr,
+    class: &ClassDecl,
+    class_info: &ClassInfo,
+    class_names: &HashSet<String>,
+    class_index: &HashMap<String, ClassInfo>,
+    fqcn_to_class: &HashMap<String, String>,
+    imports: &[ImportDecl],
+    locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
+    in_static_context: bool,
+) -> Result<ExprType, SemanticError> {
     match expr {
         Expr::IntLiteral(_) => Ok(value_type("int")),
         Expr::LongLiteral(_) => Ok(value_type("long")),
@@ -108,7 +135,7 @@ pub(super) fn infer_expr_type(
                 return Ok(class_ref);
             }
 
-            let receiver = infer_expr_type(
+            let receiver = infer_expr_type_in_scope(
                 object,
                 class,
                 class_info,
@@ -117,6 +144,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             if receiver.kind == ExprKind::ClassRef {
@@ -141,7 +169,7 @@ pub(super) fn infer_expr_type(
             )
         }
         Expr::ArrayAccess { array, index } => {
-            let array_ty = infer_expr_type(
+            let array_ty = infer_expr_type_in_scope(
                 array,
                 class,
                 class_info,
@@ -150,6 +178,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             if !array_ty.ty.ends_with("[]") {
@@ -158,7 +187,7 @@ pub(super) fn infer_expr_type(
                     array_ty.ty
                 )));
             }
-            let index_ty = infer_expr_type(
+            let index_ty = infer_expr_type_in_scope(
                 index,
                 class,
                 class_info,
@@ -167,6 +196,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             if index_ty.ty != "int" {
@@ -182,7 +212,7 @@ pub(super) fn infer_expr_type(
                 .to_string();
             Ok(value_type(&element_ty))
         }
-        Expr::Call { callee, args } => infer_call_type(
+        Expr::Call { callee, args } => infer_call_type_in_scope(
             callee,
             args,
             class,
@@ -192,10 +222,11 @@ pub(super) fn infer_expr_type(
             fqcn_to_class,
             imports,
             locals,
+            visible_type_params,
             in_static_context,
             None,
         ),
-        Expr::NewObject { class_name, args } => infer_new_object_type(
+        Expr::NewObject { class_name, args } => infer_new_object_type_in_scope(
             class_name,
             args,
             class,
@@ -205,11 +236,12 @@ pub(super) fn infer_expr_type(
             fqcn_to_class,
             imports,
             locals,
+            visible_type_params,
             in_static_context,
             None,
         ),
         Expr::Unary { op, expr } => {
-            let inner_ty = infer_expr_type(
+            let inner_ty = infer_expr_type_in_scope(
                 expr,
                 class,
                 class_info,
@@ -218,6 +250,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             match op {
@@ -254,18 +287,32 @@ pub(super) fn infer_expr_type(
             }
         }
         Expr::Cast { ty, expr } => {
-            let cast_ty = ty.clone();
+            let fqcn_names = collect_fqcn_names(class_index);
+            let generic_arity = collect_generic_arity(class_index);
+            let simple_to_fqcns = collect_simple_to_fqcns(class_index);
+            let cast_ty = canonicalize_type_name_in_scope(
+                ty,
+                &class_info.package_name,
+                imports,
+                &simple_to_fqcns,
+                &fqcn_names,
+                &generic_arity,
+                visible_type_params,
+            )?;
+            let cast_owner = erase_generic_type_name(&cast_ty);
             let cast_simple = class_simple_name(&cast_ty);
             if !is_builtin_type(cast_simple)
                 && !class_names.contains(&cast_ty)
+                && !class_names.contains(&cast_owner)
                 && !class_index.contains_key(&cast_ty)
+                && !class_index.contains_key(&cast_owner)
             {
                 return Err(semantic_error(format!(
                     "Unknown cast type '{}' in class '{}'",
                     cast_ty, class.name
                 )));
             }
-            let inner_ty = infer_expr_type(
+            let inner_ty = infer_expr_type_in_scope(
                 expr,
                 class,
                 class_info,
@@ -274,6 +321,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
 
@@ -311,7 +359,7 @@ pub(super) fn infer_expr_type(
                     target_ty
                 )));
             }
-            let inner_ty = infer_expr_type(
+            let inner_ty = infer_expr_type_in_scope(
                 expr,
                 class,
                 class_info,
@@ -320,6 +368,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             if inner_ty.ty == "null" {
@@ -360,7 +409,7 @@ pub(super) fn infer_expr_type(
                 false,
             )?;
 
-            let target_ty = infer_expr_type(
+            let target_ty = infer_expr_type_in_scope(
                 target,
                 class,
                 class_info,
@@ -369,6 +418,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
 
@@ -385,7 +435,7 @@ pub(super) fn infer_expr_type(
         Expr::Binary { left, op, right } => match op {
             BinaryOp::LogicalAnd | BinaryOp::LogicalOr => {
                 for operand in collect_logical_operands(expr, op) {
-                    let operand_ty = infer_expr_type(
+                    let operand_ty = infer_expr_type_in_scope(
                         operand,
                         class,
                         class_info,
@@ -394,6 +444,7 @@ pub(super) fn infer_expr_type(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?;
                     if operand_ty.ty != "boolean" {
@@ -406,7 +457,7 @@ pub(super) fn infer_expr_type(
                 Ok(value_type("boolean"))
             }
             BinaryOp::Add => {
-                let left_ty = infer_expr_type(
+                let left_ty = infer_expr_type_in_scope(
                     left,
                     class,
                     class_info,
@@ -415,9 +466,10 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
-                let right_ty = infer_expr_type(
+                let right_ty = infer_expr_type_in_scope(
                     right,
                     class,
                     class_info,
@@ -426,6 +478,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
                 if is_string_type(&left_ty.ty) || is_string_type(&right_ty.ty) {
@@ -440,7 +493,7 @@ pub(super) fn infer_expr_type(
                 }
             }
             BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div | BinaryOp::Mod => {
-                let left_ty = infer_expr_type(
+                let left_ty = infer_expr_type_in_scope(
                     left,
                     class,
                     class_info,
@@ -449,9 +502,10 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
-                let right_ty = infer_expr_type(
+                let right_ty = infer_expr_type_in_scope(
                     right,
                     class,
                     class_info,
@@ -460,6 +514,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
                 if let Some(result) = numeric_binary_result_type(&left_ty.ty, &right_ty.ty) {
@@ -472,7 +527,7 @@ pub(super) fn infer_expr_type(
                 }
             }
             BinaryOp::Eq | BinaryOp::NotEq => {
-                let left_ty = infer_expr_type(
+                let left_ty = infer_expr_type_in_scope(
                     left,
                     class,
                     class_info,
@@ -481,9 +536,10 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
-                let right_ty = infer_expr_type(
+                let right_ty = infer_expr_type_in_scope(
                     right,
                     class,
                     class_info,
@@ -492,6 +548,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
                 if types_compatible(&left_ty.ty, &right_ty.ty, class_index)
@@ -507,7 +564,7 @@ pub(super) fn infer_expr_type(
                 }
             }
             BinaryOp::Less | BinaryOp::LessEq | BinaryOp::Greater | BinaryOp::GreaterEq => {
-                let left_ty = infer_expr_type(
+                let left_ty = infer_expr_type_in_scope(
                     left,
                     class,
                     class_info,
@@ -516,9 +573,10 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
-                let right_ty = infer_expr_type(
+                let right_ty = infer_expr_type_in_scope(
                     right,
                     class,
                     class_info,
@@ -527,6 +585,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
                 if numeric_binary_result_type(&left_ty.ty, &right_ty.ty).is_some() {
@@ -539,7 +598,7 @@ pub(super) fn infer_expr_type(
                 }
             }
             BinaryOp::BitAnd | BinaryOp::BitOr | BinaryOp::BitXor => {
-                let left_ty = infer_expr_type(
+                let left_ty = infer_expr_type_in_scope(
                     left,
                     class,
                     class_info,
@@ -548,9 +607,10 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
-                let right_ty = infer_expr_type(
+                let right_ty = infer_expr_type_in_scope(
                     right,
                     class,
                     class_info,
@@ -559,6 +619,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
                 if left_ty.ty == "boolean" && right_ty.ty == "boolean" {
@@ -574,7 +635,7 @@ pub(super) fn infer_expr_type(
                 }
             }
             BinaryOp::ShiftLeft | BinaryOp::ShiftRight | BinaryOp::UnsignedShiftRight => {
-                let left_ty = infer_expr_type(
+                let left_ty = infer_expr_type_in_scope(
                     left,
                     class,
                     class_info,
@@ -583,9 +644,10 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
-                let right_ty = infer_expr_type(
+                let right_ty = infer_expr_type_in_scope(
                     right,
                     class,
                     class_info,
@@ -594,6 +656,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
                 if !is_integral_primitive(&left_ty.ty) || !is_integral_primitive(&right_ty.ty) {
@@ -615,7 +678,7 @@ pub(super) fn infer_expr_type(
             then_expr,
             else_expr,
         } => {
-            let condition_ty = infer_expr_type(
+            let condition_ty = infer_expr_type_in_scope(
                 condition,
                 class,
                 class_info,
@@ -624,6 +687,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             if condition_ty.ty != "boolean" {
@@ -633,7 +697,7 @@ pub(super) fn infer_expr_type(
                 )));
             }
 
-            let then_ty = infer_expr_type(
+            let then_ty = infer_expr_type_in_scope(
                 then_expr,
                 class,
                 class_info,
@@ -642,9 +706,10 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
-            let else_ty = infer_expr_type(
+            let else_ty = infer_expr_type_in_scope(
                 else_expr,
                 class,
                 class_info,
@@ -653,6 +718,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
 
@@ -690,7 +756,7 @@ pub(super) fn infer_expr_type(
             cases,
             default,
         } => {
-            let switch_ty = infer_expr_type(
+            let switch_ty = infer_expr_type_in_scope(
                 expr,
                 class,
                 class_info,
@@ -699,11 +765,12 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
 
             let mut seen_labels = HashSet::new();
-            let mut result_ty = infer_expr_type(
+            let mut result_ty = infer_expr_type_in_scope(
                 default,
                 class,
                 class_info,
@@ -712,6 +779,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
 
@@ -722,7 +790,7 @@ pub(super) fn infer_expr_type(
                         class.name
                     )));
                 }
-                let label_ty = infer_expr_type(
+                let label_ty = infer_expr_type_in_scope(
                     &case.label,
                     class,
                     class_info,
@@ -731,6 +799,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
                 if label_ty.ty != switch_ty.ty {
@@ -746,7 +815,7 @@ pub(super) fn infer_expr_type(
                         class.name
                     )));
                 }
-                let case_ty = infer_expr_type(
+                let case_ty = infer_expr_type_in_scope(
                     &case.value,
                     class,
                     class_info,
@@ -755,6 +824,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
 
@@ -793,7 +863,7 @@ pub(super) fn infer_expr_type(
         } => {
             validate_native_array_element_type(element_ty, class_names, class_index)?;
             for length in lengths {
-                let length_ty = infer_expr_type(
+                let length_ty = infer_expr_type_in_scope(
                     length,
                     class,
                     class_info,
@@ -802,6 +872,7 @@ pub(super) fn infer_expr_type(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?;
                 if length_ty.ty != "int" {
@@ -835,6 +906,7 @@ pub(super) fn infer_expr_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             Ok(value_type(&format!(
@@ -899,6 +971,7 @@ fn validate_native_array_initializer(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
 ) -> Result<(), SemanticError> {
     if dimensions == 0 {
@@ -917,7 +990,7 @@ fn validate_native_array_initializer(
                     ));
                 }
                 ArrayInitExpr::Expr(expr) => {
-                    let expr_ty = infer_expr_type(
+                    let expr_ty = infer_expr_type_in_scope(
                         expr,
                         class,
                         class_info,
@@ -926,6 +999,7 @@ fn validate_native_array_initializer(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?;
                     match lane {
@@ -964,10 +1038,11 @@ fn validate_native_array_initializer(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
                 ArrayInitExpr::Expr(expr) => {
-                    let expr_ty = infer_expr_type(
+                    let expr_ty = infer_expr_type_in_scope(
                         expr,
                         class,
                         class_info,
@@ -976,6 +1051,7 @@ fn validate_native_array_initializer(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?;
                     if expr_ty.ty != "null"
@@ -992,3 +1068,4 @@ fn validate_native_array_initializer(
     }
     Ok(())
 }
+

@@ -96,9 +96,38 @@ pub(super) fn validate_unboxing_nullability_in_expr(
     in_static_context: bool,
     null_state: &HashMap<String, NullState>,
 ) -> Result<(), SemanticError> {
+    let visible_type_params = class_info.type_params.iter().cloned().collect::<HashSet<_>>();
+    validate_unboxing_nullability_in_expr_in_scope(
+        expr,
+        class,
+        class_info,
+        class_names,
+        class_index,
+        fqcn_to_class,
+        imports,
+        locals,
+        &visible_type_params,
+        in_static_context,
+        null_state,
+    )
+}
+
+pub(super) fn validate_unboxing_nullability_in_expr_in_scope(
+    expr: &Expr,
+    class: &ClassDecl,
+    class_info: &ClassInfo,
+    class_names: &HashSet<String>,
+    class_index: &HashMap<String, ClassInfo>,
+    fqcn_to_class: &HashMap<String, String>,
+    imports: &[ImportDecl],
+    locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
+    in_static_context: bool,
+    null_state: &HashMap<String, NullState>,
+) -> Result<(), SemanticError> {
     match expr {
         Expr::Call { callee, args } => {
-            let _ = infer_call_type(
+            let _ = infer_call_type_in_scope(
                 callee,
                 args,
                 class,
@@ -108,10 +137,11 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
                 Some(null_state),
             )?;
-            validate_unboxing_nullability_in_expr(
+            validate_unboxing_nullability_in_expr_in_scope(
                 callee,
                 class,
                 class_info,
@@ -120,11 +150,12 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
                 null_state,
             )?;
             for arg in args {
-                validate_unboxing_nullability_in_expr(
+                validate_unboxing_nullability_in_expr_in_scope(
                     arg,
                     class,
                     class_info,
@@ -133,13 +164,14 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                     null_state,
                 )?;
             }
         }
         Expr::NewObject { class_name, args } => {
-            let _ = infer_new_object_type(
+            let _ = infer_new_object_type_in_scope(
                 class_name,
                 args,
                 class,
@@ -149,11 +181,12 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
                 Some(null_state),
             )?;
             for arg in args {
-                validate_unboxing_nullability_in_expr(
+                validate_unboxing_nullability_in_expr_in_scope(
                     arg,
                     class,
                     class_info,
@@ -162,13 +195,14 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                     null_state,
                 )?;
             }
         }
         Expr::MemberAccess { object, .. } => {
-            validate_unboxing_nullability_in_expr(
+            validate_unboxing_nullability_in_expr_in_scope(
                 object,
                 class,
                 class_info,
@@ -177,12 +211,13 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
                 null_state,
             )?;
         }
         Expr::ArrayAccess { array, index } => {
-            validate_unboxing_nullability_in_expr(
+            validate_unboxing_nullability_in_expr_in_scope(
                 array,
                 class,
                 class_info,
@@ -191,10 +226,11 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
                 null_state,
             )?;
-            validate_unboxing_nullability_in_expr(
+            validate_unboxing_nullability_in_expr_in_scope(
                 index,
                 class,
                 class_info,
@@ -203,6 +239,7 @@ pub(super) fn validate_unboxing_nullability_in_expr(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
                 null_state,
             )?;

@@ -6,7 +6,7 @@ import pulse.lang.Object;
 /**
  * Time-of-day value using the current UTC-style epoch projection.
  */
-public final class LocalTime implements Comparable {
+public final class LocalTime implements Comparable<LocalTime> {
     /**
      * Midnight constant for the current local-time model.
      * Use this when code needs the canonical start-of-day value.
@@ -327,15 +327,14 @@ public final class LocalTime implements Comparable {
      * Compares this time to another time by millisecond-of-day order.
      * Use this when code is typed against `Comparable`.
      */
-    public int compareTo(Object other) {
-        if (!(other instanceof LocalTime)) {
+    public int compareTo(LocalTime other) {
+        if (other == null) {
             pulse.rt.Intrinsics.panic("LocalTime.compareTo requires LocalTime");
         }
-        LocalTime value = (LocalTime) other;
-        if (this.toMillisOfDay() < value.toMillisOfDay()) {
+        if (this.toMillisOfDay() < other.toMillisOfDay()) {
             return -1;
         }
-        if (this.toMillisOfDay() > value.toMillisOfDay()) {
+        if (this.toMillisOfDay() > other.toMillisOfDay()) {
             return 1;
         }
         return 0;

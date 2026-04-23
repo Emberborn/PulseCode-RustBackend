@@ -1,0 +1,21 @@
+package app.core;
+import pulse.lang.IO;
+import pulse.memory.Memory;
+import pulse.rt.Intrinsics;
+
+class Main {
+    public static void main() {
+        String h = "42";
+        long w = Memory.weakNew(h);
+        String live = Memory.weakGet(w);
+        IO.println(Intrinsics.stringLength(live));
+
+        Memory.release(h);
+        String dropped = Memory.weakGet(w);
+        if (dropped == null) {
+            IO.println(0);
+        } else {
+            IO.println(dropped.length());
+        }
+    }
+}

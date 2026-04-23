@@ -20,6 +20,7 @@ pub(super) fn validate_stmt(
     protected_try_depth: usize,
     in_catch_or_finally: bool,
 ) -> Result<bool, SemanticError> {
+    let method_visible_type_params = visible_type_params(class, Some(method));
     match stmt {
         Stmt::VarDecl { ty, name, init, .. } => {
             let var_ty = if ty == "var" {
@@ -30,7 +31,7 @@ pub(super) fn validate_stmt(
                     )));
                 };
                 validate_null_deref(expr, null_state)?;
-                validate_unboxing_nullability_in_expr(
+                validate_unboxing_nullability_in_expr_in_scope(
                     expr,
                     class,
                     class_info,
@@ -39,10 +40,11 @@ pub(super) fn validate_stmt(
                     fqcn_to_class,
                     imports,
                     locals,
+                    &method_visible_type_params,
                     in_static_context,
                     null_state,
                 )?;
-                let inferred = infer_expr_type(
+                let inferred = infer_expr_type_in_scope(
                     expr,
                     class,
                     class_info,
@@ -51,6 +53,7 @@ pub(super) fn validate_stmt(
                     fqcn_to_class,
                     imports,
                     locals,
+                    &method_visible_type_params,
                     in_static_context,
                 )?;
                 if inferred.ty == "null" {
@@ -69,7 +72,6 @@ pub(super) fn validate_stmt(
             } else {
                 let fqcn_names = collect_fqcn_names(class_index);
                 let generic_arity = collect_generic_arity(class_index);
-                let visible_type_params = visible_type_params(class, Some(method));
                 validate_type_exists_in_scope(
                     ty,
                     &class_info.package_name,
@@ -77,7 +79,7 @@ pub(super) fn validate_stmt(
                     simple_to_fqcns,
                     &fqcn_names,
                     &generic_arity,
-                    &visible_type_params,
+                    &method_visible_type_params,
                     &format!("local variable '{}.{}({})'", class.name, method.name, name),
                 )?;
                 canonicalize_type_name_in_scope(
@@ -87,7 +89,7 @@ pub(super) fn validate_stmt(
                     simple_to_fqcns,
                     &fqcn_names,
                     &generic_arity,
-                    &visible_type_params,
+                    &method_visible_type_params,
                 )?
             };
 
@@ -100,7 +102,7 @@ pub(super) fn validate_stmt(
 
             if let Some(expr) = init {
                 validate_null_deref(expr, null_state)?;
-                validate_unboxing_nullability_in_expr(
+                validate_unboxing_nullability_in_expr_in_scope(
                     expr,
                     class,
                     class_info,
@@ -109,10 +111,11 @@ pub(super) fn validate_stmt(
                     fqcn_to_class,
                     imports,
                     locals,
+                    &method_visible_type_params,
                     in_static_context,
                     null_state,
                 )?;
-                let actual = infer_expr_type(
+                let actual = infer_expr_type_in_scope(
                     expr,
                     class,
                     class_info,
@@ -121,6 +124,7 @@ pub(super) fn validate_stmt(
                     fqcn_to_class,
                     imports,
                     locals,
+                    &method_visible_type_params,
                     in_static_context,
                 )?;
                 validate_assignable(
@@ -151,7 +155,7 @@ pub(super) fn validate_stmt(
         }
         Stmt::Assign { target, value, .. } => {
             validate_null_deref(value, null_state)?;
-            validate_unboxing_nullability_in_expr(
+            validate_unboxing_nullability_in_expr_in_scope(
                 value,
                 class,
                 class_info,
@@ -160,6 +164,7 @@ pub(super) fn validate_stmt(
                 fqcn_to_class,
                 imports,
                 locals,
+                &method_visible_type_params,
                 in_static_context,
                 null_state,
             )?;
@@ -175,7 +180,7 @@ pub(super) fn validate_stmt(
                 in_static_context,
                 method.is_constructor,
             )?;
-            let target_ty = infer_expr_type(
+            let target_ty = infer_expr_type_in_scope(
                 target,
                 class,
                 class_info,
@@ -184,6 +189,7 @@ pub(super) fn validate_stmt(
                 fqcn_to_class,
                 imports,
                 locals,
+                &method_visible_type_params,
                 in_static_context,
             )?;
             if target_ty.kind != ExprKind::Value {
@@ -193,7 +199,7 @@ pub(super) fn validate_stmt(
                 )));
             }
 
-            let value_ty = infer_expr_type(
+            let value_ty = infer_expr_type_in_scope(
                 value,
                 class,
                 class_info,
@@ -202,6 +208,7 @@ pub(super) fn validate_stmt(
                 fqcn_to_class,
                 imports,
                 locals,
+                &method_visible_type_params,
                 in_static_context,
             )?;
             validate_assignable(
@@ -219,7 +226,7 @@ pub(super) fn validate_stmt(
                 null_state,
                 &format!("assignment in '{}.{}'", class.name, method.name),
             )?;
-            validate_not_null_assignment_target(
+            validate_not_null_assignment_target_in_scope(
                 target,
                 value,
                 class,
@@ -229,6 +236,7 @@ pub(super) fn validate_stmt(
                 fqcn_to_class,
                 imports,
                 locals,
+                &method_visible_type_params,
                 in_static_context,
                 null_state,
                 &format!("assignment in '{}.{}'", class.name, method.name),
@@ -246,7 +254,7 @@ pub(super) fn validate_stmt(
             target, op, value, ..
         } => {
             validate_null_deref(value, null_state)?;
-            validate_unboxing_nullability_in_expr(
+            validate_unboxing_nullability_in_expr_in_scope(
                 value,
                 class,
                 class_info,
@@ -255,6 +263,7 @@ pub(super) fn validate_stmt(
                 fqcn_to_class,
                 imports,
                 locals,
+                &method_visible_type_params,
                 in_static_context,
                 null_state,
             )?;
@@ -270,7 +279,7 @@ pub(super) fn validate_stmt(
                 in_static_context,
                 false,
             )?;
-            let target_ty = infer_expr_type(
+            let target_ty = infer_expr_type_in_scope(
                 target,
                 class,
                 class_info,
@@ -279,6 +288,7 @@ pub(super) fn validate_stmt(
                 fqcn_to_class,
                 imports,
                 locals,
+                &method_visible_type_params,
                 in_static_context,
             )?;
             if target_ty.kind != ExprKind::Value {
@@ -288,7 +298,7 @@ pub(super) fn validate_stmt(
                 )));
             }
 
-            let value_ty = infer_expr_type(
+            let value_ty = infer_expr_type_in_scope(
                 value,
                 class,
                 class_info,
@@ -297,6 +307,7 @@ pub(super) fn validate_stmt(
                 fqcn_to_class,
                 imports,
                 locals,
+                &method_visible_type_params,
                 in_static_context,
             )?;
             let result_ty = infer_binary_result_type(op, &target_ty.ty, &value_ty.ty, class_names)?;
@@ -535,6 +546,7 @@ pub(super) fn validate_stmt(
         ),
         Stmt::ExprStmt(expr, ..) => validate_expr_stmt(
             expr,
+            method,
             class,
             class_info,
             class_names,

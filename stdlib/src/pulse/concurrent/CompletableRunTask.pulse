@@ -1,0 +1,32 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned runnable bridge for `CompletableFuture.runAsync`.
+ */
+public final class CompletableRunTask implements Runnable {
+    private Runnable task;
+    private CompletableFuture<Object> target;
+
+    /**
+     * Creates a run task that completes the target future after one runnable finishes.
+     */
+    public CompletableRunTask(Runnable task, CompletableFuture<Object> target) {
+        this.task = task;
+        this.target = target;
+    }
+
+    /**
+     * Runs the action and forwards completion or failure into the target future.
+     */
+    public void run() {
+        try {
+            this.task.run();
+            this.target.complete(null);
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

@@ -1,0 +1,47 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+
+/**
+ * Result-holding contract for submitted asynchronous work.
+ *
+ * This is a deliberately small future surface: completion, cancellation,
+ * waiting, and value retrieval are real, while richer composition remains
+ * later work.
+ */
+public interface Future<T> extends AutoCloseable {
+    /**
+     * Requests cancellation for this task.
+     */
+    public boolean cancel(boolean mayInterruptIfRunning);
+
+    /**
+     * Returns whether cancellation has won for this future.
+     */
+    public boolean isCancelled();
+
+    /**
+     * Returns whether the future has reached a terminal state.
+     */
+    public boolean isDone();
+
+    /**
+     * Waits indefinitely for terminal completion.
+     */
+    public void await();
+
+    /**
+     * Waits until terminal completion or timeout.
+     */
+    public boolean await(long timeoutMillis);
+
+    /**
+     * Returns the completed value or throws a baseline future exception.
+     */
+    public T get();
+
+    /**
+     * Releases the future's coordination/storage resources after completion.
+     */
+    public void close();
+}

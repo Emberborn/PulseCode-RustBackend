@@ -5,7 +5,7 @@ import pulse.lang.Iterator;
 /**
  * Mutable key/value map contract.
  */
-interface Map<K, V> {
+public interface Map<K, V> {
     /**
      * Returns the number of entries currently stored in the map.
      * Use this for sizing checks or emptiness decisions.

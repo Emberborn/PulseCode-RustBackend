@@ -1,0 +1,485 @@
+package pulse.concurrent;
+
+import pulse.collections.ArrayList;
+import pulse.collections.Collection;
+import pulse.collections.List;
+import pulse.lang.Iterator;
+
+/**
+ * Copy-on-write list baseline for read-heavy concurrent access.
+ *
+ * Reads observe immutable snapshots through atomic publication while writes
+ * clone and replace the backing snapshot under the current monitor floor.
+ */
+public final class CopyOnWriteArrayList<T> implements List<T> {
+    private Monitor gate;
+    private ArrayList<T> snapshot;
+
+    /**
+     * Creates an empty copy-on-write list.
+     */
+    public CopyOnWriteArrayList() {
+        this.gate = Monitor.create();
+        this.snapshot = new ArrayList();
+    }
+
+    private ArrayList<T> currentSnapshot() {
+        return this.snapshot;
+    }
+
+    private ArrayList<T> cloneSnapshot(ArrayList<T> source) {
+        ArrayList<T> copy = new ArrayList();
+        Iterator items = source.iterator();
+        while (items.hasNext()) {
+            copy.add(items.next());
+        }
+        return copy;
+    }
+
+    private void publish(ArrayList<T> next) {
+        this.snapshot = next;
+    }
+
+    /**
+     * Returns the number of values stored in the current snapshot.
+     */
+    public int size() {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().size();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the current snapshot is empty.
+     */
+    public boolean isEmpty() {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().isEmpty();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes all values by publishing an empty snapshot.
+     */
+    public void clear() {
+        this.gate.enter();
+        try {
+            this.publish(new ArrayList());
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns an iterator over the current immutable snapshot.
+     */
+    public Iterator iterator() {
+        this.gate.enter();
+        try {
+            return this.cloneSnapshot(this.currentSnapshot()).iterator();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Appends one raw-object value by cloning and publishing a new snapshot.
+     */
+    public boolean add(T value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            boolean changed = next.add(value);
+            this.publish(next);
+            return changed;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Appends one integer value by cloning and publishing a new snapshot.
+     */
+    public boolean add(int value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            boolean changed = next.add(value);
+            this.publish(next);
+            return changed;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Appends one string value by cloning and publishing a new snapshot.
+     */
+    public boolean add(String value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            boolean changed = next.add(value);
+            this.publish(next);
+            return changed;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied value is present in the current snapshot.
+     */
+    public boolean contains(T value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().contains(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied integer is present in the current snapshot.
+     */
+    public boolean contains(int value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().contains(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied string is present in the current snapshot.
+     */
+    public boolean contains(String value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().contains(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes the first matching value by cloning and publishing a new snapshot.
+     */
+    public boolean remove(T value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            boolean changed = next.remove(value);
+            if (changed) {
+                this.publish(next);
+            }
+            return changed;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether every value in the supplied collection is present in the current snapshot.
+     */
+    public boolean containsAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().containsAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds all values by cloning and publishing a new snapshot.
+     */
+    public boolean addAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            boolean changed = next.addAll(values);
+            if (changed) {
+                this.publish(next);
+            }
+            return changed;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes all matching values by cloning and publishing a new snapshot.
+     */
+    public boolean removeAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            boolean changed = next.removeAll(values);
+            if (changed) {
+                this.publish(next);
+            }
+            return changed;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Retains only the supplied values by cloning and publishing a new snapshot.
+     */
+    public boolean retainAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            boolean changed = next.retainAll(values);
+            if (changed) {
+                this.publish(next);
+            }
+            return changed;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Inserts one raw-object value at the supplied index.
+     */
+    public void add(int index, T value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            next.add(index, value);
+            this.publish(next);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Inserts one integer value at the supplied index.
+     */
+    public void add(int index, int value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            next.add(index, value);
+            this.publish(next);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Inserts one string value at the supplied index.
+     */
+    public void add(int index, String value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            next.add(index, value);
+            this.publish(next);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the value stored at the supplied index in the current snapshot.
+     */
+    public T get(int index) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().get(index);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the first value stored in the current snapshot.
+     */
+    public T getFirst() {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().getFirst();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the last value stored in the current snapshot.
+     */
+    public T getLast() {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().getLast();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the integer stored at the supplied index in the current snapshot.
+     */
+    public int getInt(int index) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().getInt(index);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the string stored at the supplied index in the current snapshot.
+     */
+    public String getString(int index) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().getString(index);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the value stored at the supplied index.
+     */
+    public T remove(int index) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            T removed = next.remove(index);
+            this.publish(next);
+            return removed;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Replaces the value at the supplied index and returns the prior value.
+     */
+    public T set(int index, T value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            T previous = next.set(index, value);
+            this.publish(next);
+            return previous;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Replaces the integer at the supplied index and returns the prior integer.
+     */
+    public int set(int index, int value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            int previous = next.set(index, value);
+            this.publish(next);
+            return previous;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Replaces the string at the supplied index and returns the prior string.
+     */
+    public String set(int index, String value) {
+        this.gate.enter();
+        try {
+            ArrayList<T> next = this.cloneSnapshot(this.currentSnapshot());
+            String previous = next.set(index, value);
+            this.publish(next);
+            return previous;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the first index containing the supplied value in the current snapshot.
+     */
+    public int indexOf(T value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().indexOf(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the first index containing the supplied integer in the current snapshot.
+     */
+    public int indexOf(int value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().indexOf(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the first index containing the supplied string in the current snapshot.
+     */
+    public int indexOf(String value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().indexOf(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the last index containing the supplied value in the current snapshot.
+     */
+    public int lastIndexOf(T value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().lastIndexOf(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the last index containing the supplied integer in the current snapshot.
+     */
+    public int lastIndexOf(int value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().lastIndexOf(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the last index containing the supplied string in the current snapshot.
+     */
+    public int lastIndexOf(String value) {
+        this.gate.enter();
+        try {
+            return this.currentSnapshot().lastIndexOf(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+}

@@ -143,7 +143,7 @@ pub(super) fn validate_not_null_value(
     }
 }
 
-pub(super) fn validate_not_null_assignment_target(
+pub(super) fn validate_not_null_assignment_target_in_scope(
     target: &Expr,
     value: &Expr,
     class: &ClassDecl,
@@ -153,11 +153,12 @@ pub(super) fn validate_not_null_assignment_target(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
     null_state: &HashMap<String, NullState>,
     context: &str,
 ) -> Result<(), SemanticError> {
-    if !target_requires_not_null(
+    if !target_requires_not_null_in_scope(
         target,
         class,
         class_info,
@@ -166,6 +167,7 @@ pub(super) fn validate_not_null_assignment_target(
         fqcn_to_class,
         imports,
         locals,
+        visible_type_params,
         in_static_context,
     )? {
         return Ok(());
@@ -173,7 +175,7 @@ pub(super) fn validate_not_null_assignment_target(
     validate_not_null_value(value, null_state, context)
 }
 
-pub(super) fn target_requires_not_null(
+pub(super) fn target_requires_not_null_in_scope(
     target: &Expr,
     class: &ClassDecl,
     class_info: &ClassInfo,
@@ -182,6 +184,7 @@ pub(super) fn target_requires_not_null(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
 ) -> Result<bool, SemanticError> {
     match target {
@@ -191,7 +194,7 @@ pub(super) fn target_requires_not_null(
             .map(|field| field.is_not_null)
             .unwrap_or(false)),
         Expr::MemberAccess { object, member } => {
-            let object_ty = infer_expr_type(
+            let object_ty = infer_expr_type_in_scope(
                 object,
                 class,
                 class_info,
@@ -200,6 +203,7 @@ pub(super) fn target_requires_not_null(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             let owner_name = match object_ty.kind {

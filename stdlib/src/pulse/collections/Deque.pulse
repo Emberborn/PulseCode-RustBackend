@@ -5,7 +5,7 @@ import pulse.lang.Object;
 /**
  * Double-ended queue contract for front and back operations.
  */
-interface Deque<T> extends Queue<T> {
+public interface Deque<T> extends Queue<T> {
     /**
      * Adds a value at the front of the deque.
      * Use this as the raw-object front insertion baseline before generics are available.

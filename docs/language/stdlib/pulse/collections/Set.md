@@ -11,7 +11,7 @@ Unique-value collection contract.
 ## Declaration
 
 ```pulse
-interface Set<T> extends Collection<T>
+public interface Set<T> extends Collection<T>
 ```
 
 ## Members

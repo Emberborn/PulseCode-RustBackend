@@ -1,0 +1,5 @@
+schema=pulsec.artifact.stamp.v1
+name=unnamed
+version=0.0.0
+profile=release
+stamp=unnamed-0.0.0-release

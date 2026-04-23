@@ -5,7 +5,7 @@ import pulse.lang.Iterable;
 /**
  * Minimal collection contract for sized mutable containers.
  */
-interface Collection<T> extends Iterable {
+public interface Collection<T> extends Iterable {
     /**
      * Returns the number of values currently stored in the collection.
      * Use this before indexed access or to test for emptiness.

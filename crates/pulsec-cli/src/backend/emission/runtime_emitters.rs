@@ -527,6 +527,71 @@ pub(crate) fn emit_host_atomic_exchange_reference_proc(out: &mut String, symbol:
     out.push_str(&format!("{} endp\n", symbol));
 }
 
+pub(crate) fn emit_runtime_memory_lock_proc(out: &mut String, symbol: &str) {
+    let no_handle = format!("{}_no_handle", symbol);
+    let done = format!("{}_done", symbol);
+    let fail = format!("{}_fail", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov rcx, qword ptr [rt_runtime_memory_lock]\n");
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", no_handle));
+    out.push_str("    mov edx, 0FFFFFFFFh\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call WaitForSingleObject\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    cmp eax, 0\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str("    cmp eax, 80h\n");
+    out.push_str(&format!("    je {}\n", done));
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_runtime_memory_lock_err\n");
+    out.push_str("    mov edx, rt_runtime_memory_lock_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", no_handle));
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
+pub(crate) fn emit_runtime_memory_unlock_proc(out: &mut String, symbol: &str) {
+    let no_handle = format!("{}_no_handle", symbol);
+    let done = format!("{}_done", symbol);
+    let fail = format!("{}_fail", symbol);
+    out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov rcx, qword ptr [rt_runtime_memory_lock]\n");
+    out.push_str("    test rcx, rcx\n");
+    out.push_str(&format!("    jz {}\n", no_handle));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    call ReleaseMutex\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str("    test eax, eax\n");
+    out.push_str(&format!("    jnz {}\n", done));
+    out.push_str(&format!("{}:\n", fail));
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    lea rcx, rt_runtime_memory_unlock_err\n");
+    out.push_str("    mov edx, rt_runtime_memory_unlock_err_len\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", WRITE_RAW_SYMBOL));
+    out.push_str("    mov ecx, 1\n");
+    out.push_str("    call ExitProcess\n");
+    out.push_str("    add rsp, 40\n");
+    out.push_str(&format!("{}:\n", no_handle));
+    out.push_str(&format!("{}:\n", done));
+    out.push_str("    xor eax, eax\n");
+    out.push_str("    ret\n");
+    out.push_str(&format!("{} endp\n", symbol));
+}
+
 pub(crate) fn emit_console_read_line_proc(out: &mut String, symbol: &str) {
     let l_loop = format!("{}_loop", symbol);
     let l_have_capacity = format!("{}_have_capacity", symbol);
@@ -2275,8 +2340,13 @@ pub(crate) fn emit_arc_release_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("    jne {}_retry\n", symbol));
     out.push_str("    test edx, edx\n");
     out.push_str(&format!("    jnz {}\n", done));
-    out.push_str("    mov ecx, r8d\n");
+    out.push_str("    sub rsp, 40\n");
+    out.push_str("    mov dword ptr [rsp+32], r8d\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryLock\n");
+    out.push_str("    mov ecx, dword ptr [rsp+32]\n");
     out.push_str("    call pulsec_rt_arcTeardown\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
+    out.push_str("    add rsp, 40\n");
     out.push_str(&format!("{}:\n", done));
     out.push_str("    xor eax, eax\n");
     out.push_str("    ret\n");
@@ -2628,6 +2698,7 @@ pub(crate) fn emit_arc_cycle_young_pass_proc(out: &mut String, symbol: &str) {
     let l_store = format!("{}_store", symbol);
     let l_wrap = format!("{}_wrap", symbol);
     out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    call pulsec_rt_runtimeMemoryLock\n");
     out.push_str("    xor r11d, r11d\n");
     out.push_str("    mov r8d, dword ptr [rt_arc_cycle_young_cursor]\n");
     out.push_str("    cmp r8d, 1\n");
@@ -2664,6 +2735,9 @@ pub(crate) fn emit_arc_cycle_young_pass_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("{}:\n", l_store));
     out.push_str("    mov dword ptr [rt_arc_cycle_young_cursor], r8d\n");
     out.push_str("    mov eax, r11d\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_size]\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{} endp\n", symbol));
 }
@@ -2691,6 +2765,7 @@ pub(crate) fn emit_arc_cycle_full_pass_proc(
     let l_zero_sweep_next = format!("{}_zero_sweep_next", symbol);
     let l_done = format!("{}_done", symbol);
     out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    call pulsec_rt_runtimeMemoryLock\n");
     out.push_str("    xor r11d, r11d\n");
 
     out.push_str("    mov r8d, 1\n");
@@ -2848,6 +2923,9 @@ pub(crate) fn emit_arc_cycle_full_pass_proc(
     out.push_str(&format!("    jmp {}\n", l_zero_sweep_loop));
     out.push_str(&format!("{}:\n", l_done));
     out.push_str("    mov eax, r11d\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_size]\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{} endp\n", symbol));
 }
@@ -2858,6 +2936,7 @@ pub(crate) fn emit_arc_cycle_tick_proc(out: &mut String, symbol: &str) {
     let l_update_lag = format!("{}_update_lag", symbol);
     let l_reset_lag = format!("{}_reset_lag", symbol);
     out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    call pulsec_rt_runtimeMemoryLock\n");
     out.push_str("    mov eax, dword ptr [rt_arc_cycle_epoch]\n");
     out.push_str("    add eax, 1\n");
     out.push_str("    mov dword ptr [rt_arc_cycle_epoch], eax\n");
@@ -2876,6 +2955,9 @@ pub(crate) fn emit_arc_cycle_tick_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("{}:\n", l_reset_lag));
     out.push_str("    mov dword ptr [rt_arc_cycle_zero_reclaim_streak], 0\n");
     out.push_str("    mov eax, dword ptr [rt_arc_cycle_last_reclaimed]\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_size]\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{}:\n", l_update_lag));
     out.push_str("    mov eax, dword ptr [rt_arc_cycle_zero_reclaim_streak]\n");
@@ -2886,6 +2968,9 @@ pub(crate) fn emit_arc_cycle_tick_proc(out: &mut String, symbol: &str) {
     out.push_str("@@:\n");
     out.push_str("    mov dword ptr [rt_arc_cycle_zero_reclaim_streak], eax\n");
     out.push_str("    xor eax, eax\n");
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_size]\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{} endp\n", symbol));
 }
@@ -2900,6 +2985,9 @@ pub(crate) fn emit_weak_new_proc(out: &mut String, symbol: &str) {
     let fail = format!("{}_fail", symbol);
     let exhausted = format!("{}_exhausted", symbol);
     out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov qword ptr [rt_tmp_arg_key], rcx\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryLock\n");
+    out.push_str("    mov rcx, qword ptr [rt_tmp_arg_key]\n");
     out.push_str("    cmp ecx, 0\n");
     out.push_str(&format!("    je {}\n", fail));
     out.push_str("    mov r10d, ecx\n");
@@ -2990,6 +3078,9 @@ pub(crate) fn emit_weak_new_proc(out: &mut String, symbol: &str) {
     out.push_str("    add rsp, 40\n");
     out.push_str("    xor eax, eax\n");
     out.push_str(&format!("{}:\n", done));
+    out.push_str("    mov dword ptr [rt_tmp_size], eax\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
+    out.push_str("    mov eax, dword ptr [rt_tmp_size]\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{} endp\n", symbol));
 }
@@ -3002,6 +3093,9 @@ pub(crate) fn emit_weak_get_proc(out: &mut String, symbol: &str) {
     let target_live = format!("{}_target_live", symbol);
     let target_dead = format!("{}_target_dead", symbol);
     out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov qword ptr [rt_tmp_arg_key], rcx\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryLock\n");
+    out.push_str("    mov rcx, qword ptr [rt_tmp_arg_key]\n");
     out.push_str("    cmp ecx, 0\n");
     out.push_str(&format!("    je {}\n", done));
     out.push_str("    mov r10d, ecx\n");
@@ -3039,20 +3133,27 @@ pub(crate) fn emit_weak_get_proc(out: &mut String, symbol: &str) {
     out.push_str(&format!("    jne {}\n", target_live));
     out.push_str(&format!("    jmp {}\n", target_dead));
     out.push_str(&format!("{}:\n", target_live));
-    out.push_str("    mov eax, r11d\n");
+    out.push_str("    mov ecx, r11d\n");
     out.push_str(&format!("    shl rdx, {}\n", ARC_HANDLE_GEN_SHIFT));
-    out.push_str("    or rax, rdx\n");
+    out.push_str("    or rcx, rdx\n");
+    out.push_str("    call pulsec_rt_arcRetain\n");
+    out.push_str("    mov qword ptr [rt_tmp_arg_val], rax\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
+    out.push_str("    mov rax, qword ptr [rt_tmp_arg_val]\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{}:\n", target_dead));
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
     out.push_str("    xor eax, eax\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{}:\n", stale));
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
     out.push_str("    lea rcx, rt_stale_handle_err\n");
     out.push_str("    mov edx, rt_stale_handle_err_len\n");
     out.push_str("    call pulsec_rt_stringFromBytes\n");
     out.push_str("    mov rcx, rax\n");
     out.push_str("    call pulsec_rt_panic\n");
     out.push_str(&format!("{}:\n", done));
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
     out.push_str("    xor eax, eax\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{} endp\n", symbol));
@@ -3064,6 +3165,9 @@ pub(crate) fn emit_weak_clear_proc(out: &mut String, symbol: &str) {
     let token_ok = format!("{}_token_ok", symbol);
     let recycle = format!("{}_recycle", symbol);
     out.push_str(&format!("{} proc\n", symbol));
+    out.push_str("    mov qword ptr [rt_tmp_arg_key], rcx\n");
+    out.push_str("    call pulsec_rt_runtimeMemoryLock\n");
+    out.push_str("    mov rcx, qword ptr [rt_tmp_arg_key]\n");
     out.push_str("    cmp ecx, 0\n");
     out.push_str(&format!("    je {}\n", done));
     out.push_str("    mov r10d, ecx\n");
@@ -3093,12 +3197,15 @@ pub(crate) fn emit_weak_clear_proc(out: &mut String, symbol: &str) {
     out.push_str("    mov dword ptr [rt_weak_free_head], r10d\n");
     out.push_str(&format!("    jmp {}\n", done));
     out.push_str(&format!("{}:\n", stale));
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
+    out.push_str("    mov eax, r11d\n");
     out.push_str("    lea rcx, rt_stale_handle_err\n");
     out.push_str("    mov edx, rt_stale_handle_err_len\n");
     out.push_str("    call pulsec_rt_stringFromBytes\n");
     out.push_str("    mov rcx, rax\n");
     out.push_str("    call pulsec_rt_panic\n");
     out.push_str(&format!("{}:\n", done));
+    out.push_str("    call pulsec_rt_runtimeMemoryUnlock\n");
     out.push_str("    xor eax, eax\n");
     out.push_str("    ret\n");
     out.push_str(&format!("{} endp\n", symbol));
@@ -4987,6 +5094,8 @@ pub(crate) fn emit_host_run_shell_process_proc(out: &mut String, symbol: &str) {
 pub(crate) fn emit_runtime_init_proc(out: &mut String, symbol: &str, write_raw_symbol: &str) {
     let done = format!("{}_done", symbol);
     let fail = format!("{}_fail", symbol);
+    let fail_lock_alloc = format!("{}_fail_lock_alloc", symbol);
+    let fail_free_data = format!("{}_fail_free_data", symbol);
     let fail_free_lens = format!("{}_fail_free_lens", symbol);
     let abi_mismatch = format!("{}_abi_mismatch", symbol);
     let obj_abi_mismatch = format!("{}_obj_abi_mismatch", symbol);
@@ -5071,6 +5180,13 @@ pub(crate) fn emit_runtime_init_proc(out: &mut String, symbol: &str, write_raw_s
     out.push_str("    lea r15, rt_arc_meta_tbl\n");
     out.push_str("    lea rdi, rt_arc_generation_tbl\n");
     out.push_str("    lea rsi, rt_arc_free_next_tbl\n");
+    out.push_str("    xor ecx, ecx\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    xor r8d, r8d\n");
+    out.push_str("    call CreateMutexA\n");
+    out.push_str("    test rax, rax\n");
+    out.push_str(&format!("    jz {}\n", fail_lock_alloc));
+    out.push_str("    mov qword ptr [rt_runtime_memory_lock], rax\n");
     out.push_str("    mov dword ptr [rt_runtime_init_state], 1\n");
     out.push_str("    mov eax, dword ptr [rt_runtime_init_epoch]\n");
     out.push_str("    add eax, 1\n");
@@ -5103,6 +5219,22 @@ pub(crate) fn emit_runtime_init_proc(out: &mut String, symbol: &str, write_raw_s
     out.push_str("    xor eax, eax\n");
     out.push_str("    add rsp, 40\n");
     out.push_str("    ret\n");
+    out.push_str(&format!("{}:\n", fail_lock_alloc));
+    out.push_str("    lea rcx, rt_runtime_memory_lock_alloc_err\n");
+    out.push_str("    mov edx, rt_runtime_memory_lock_alloc_err_len\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str("    lea rcx, rt_newline\n");
+    out.push_str("    mov edx, 2\n");
+    out.push_str(&format!("    call {}\n", write_raw_symbol));
+    out.push_str(&format!("    jmp {}\n", fail_free_data));
+    out.push_str(&format!("{}:\n", fail_free_data));
+    out.push_str("    mov rcx, qword ptr [rsp+32]\n");
+    out.push_str("    xor edx, edx\n");
+    out.push_str("    mov r8, qword ptr [rt_str_data_ptr]\n");
+    out.push_str("    test r8, r8\n");
+    out.push_str(&format!("    jz {}\n", fail_free_lens));
+    out.push_str("    call HeapFree\n");
+    out.push_str("    mov qword ptr [rt_str_data_ptr], 0\n");
     out.push_str(&format!("{}:\n", fail_free_lens));
     out.push_str("    mov rcx, qword ptr [rsp+32]\n");
     out.push_str("    xor edx, edx\n");
@@ -5110,6 +5242,12 @@ pub(crate) fn emit_runtime_init_proc(out: &mut String, symbol: &str, write_raw_s
     out.push_str("    call HeapFree\n");
     out.push_str("    mov qword ptr [rt_str_lens_ptr], 0\n");
     out.push_str(&format!("{}:\n", fail));
+    out.push_str("    cmp qword ptr [rt_runtime_memory_lock], 0\n");
+    out.push_str("    je @F\n");
+    out.push_str("    mov rcx, qword ptr [rt_runtime_memory_lock]\n");
+    out.push_str("    call CloseHandle\n");
+    out.push_str("    mov qword ptr [rt_runtime_memory_lock], 0\n");
+    out.push_str("@@:\n");
     out.push_str("    mov ecx, 1\n");
     out.push_str("    call ExitProcess\n");
     out.push_str("    xor eax, eax\n");
@@ -5168,6 +5306,12 @@ pub(crate) fn emit_runtime_shutdown_proc(out: &mut String, symbol: &str) {
     out.push_str("    mov qword ptr [rt_map_tags_ptr_ptr], 0\n");
     out.push_str("    mov qword ptr [rt_map_i_ptr_ptr], 0\n");
     out.push_str("    mov qword ptr [rt_map_s_ptr_ptr], 0\n");
+    out.push_str("    mov rcx, qword ptr [rt_runtime_memory_lock]\n");
+    out.push_str("    test rcx, rcx\n");
+    out.push_str("    jz @F\n");
+    out.push_str("    call CloseHandle\n");
+    out.push_str("@@:\n");
+    out.push_str("    mov qword ptr [rt_runtime_memory_lock], 0\n");
     out.push_str("    mov dword ptr [rt_runtime_init_state], 0\n");
     out.push_str("    xor eax, eax\n");
     out.push_str("    add rsp, 40\n");

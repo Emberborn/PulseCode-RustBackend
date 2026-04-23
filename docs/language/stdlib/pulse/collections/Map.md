@@ -11,7 +11,7 @@ Mutable key/value map contract.
 ## Declaration
 
 ```pulse
-interface Map<K, V>
+public interface Map<K, V>
 ```
 
 ## Members

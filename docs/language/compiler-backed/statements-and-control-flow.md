@@ -104,7 +104,7 @@ Current boundaries:
 - `return` through the lowering path is real and does not require manual user-code workarounds
 - Java-close visibility/publication guarantees are still later concurrency and memory-model work
 - real `Thread` lifecycle (`start`, `join`, cooperative interruption) now exists through `pulse.lang.Thread`
-- Java-close visibility/publication guarantees and higher-level executor closure still belong with `F1-86`, `F1-89`, and `F1-93`
+- Java-close visibility/publication guarantees still belong with `F1-86`, `F1-89`, and `F1-93`, while the first truthful executor/future baseline now exists separately under `F1-103`
 
 ## Related
 

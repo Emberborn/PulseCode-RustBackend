@@ -5,7 +5,7 @@ import pulse.lang.Object;
 /**
  * Time-span value representing a millisecond duration.
  */
-public final class Duration implements Comparable {
+public final class Duration implements Comparable<Duration> {
     /**
      * Zero-length duration constant.
      * Use this when code needs a named no-elapsed-time sentinel.
@@ -329,15 +329,14 @@ public final class Duration implements Comparable {
      * Compares this duration to another duration by millisecond magnitude.
      * Use this when code is typed against `Comparable`.
      */
-    public int compareTo(Object other) {
-        if (!(other instanceof Duration)) {
+    public int compareTo(Duration other) {
+        if (other == null) {
             pulse.rt.Intrinsics.panic("Duration.compareTo requires Duration");
         }
-        Duration value = (Duration) other;
-        if (this.millis < value.millis) {
+        if (this.millis < other.millis) {
             return -1;
         }
-        if (this.millis > value.millis) {
+        if (this.millis > other.millis) {
             return 1;
         }
         return 0;

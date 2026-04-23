@@ -19,6 +19,29 @@ What is real today:
   - `AtomicInt`
   - `AtomicLong`
   - `AtomicReference`
+- higher-level task execution baseline:
+  - `Callable`
+  - `Executor`
+  - `ExecutorService`
+  - `Future`
+  - `FutureTask`
+  - `ThreadPerTaskExecutor`
+  - `Executors.newThreadPerTaskExecutor()`
+  - `RunnableFuture`
+  - `ScheduledFuture`
+  - `ScheduledExecutorService`
+  - `ScheduledFutureTask`
+  - `ScheduledThreadPerTaskExecutor`
+  - `CompletableFuture`
+  - `CompletionConsumer`
+  - `Executors.newScheduledThreadPerTaskExecutor()`
+- selected concurrent collections:
+  - `ConcurrentHashMap`
+  - `CopyOnWriteArrayList`
+  - `BlockingQueue`
+  - `LinkedBlockingQueue`
+  - `BlockingDeque`
+  - `LinkedBlockingDeque`
 
 What is not claimed today:
 
@@ -26,7 +49,10 @@ What is not claimed today:
 - Java-style `volatile`
 - Java final-field safe-publication guarantees
 - general thread-safe mutation/publication of arbitrary Pulse object graphs
-- executor/future semantics
+- broader concurrent-collection families beyond the shipped selected baseline
+- periodic scheduling
+- work-stealing/fork-join executor families
+- fuller `CompletableFuture` / completion-stage surface beyond the shipped baseline
 
 ## `synchronized` And Monitor Semantics
 
@@ -85,6 +111,7 @@ What `AtomicReference` does mean now:
 - reference handoff through the atomic cell is supported
 - ARC retain/release for that handoff is atomic under the shipped runtime threading schema
 - loading a published reference returns a retained object for the observing thread
+- ARC/weak/cycle runtime memory ownership paths are now serialized for cross-thread maintenance and teardown
 
 What it still does not mean:
 
@@ -93,6 +120,11 @@ What it still does not mean:
 - `final` fields suddenly gain Java-close safe-publication semantics
 
 This is consistent with the current retained runtime contract, which still documents broader runtime/container/object-model thread-safety as not generally thread-safe under the current schema.
+
+More precisely:
+
+- runtime memory ownership is now thread-safe for ARC teardown, weak-reference bookkeeping, and cycle-maintenance passes
+- broader container mutation and arbitrary unsynchronized object-graph publication are still not claimed
 
 ## Practical Guidance
 
@@ -117,12 +149,13 @@ Still later work:
 - Java-close visibility/order guarantees
 - `volatile`
 - final-field publication semantics
-- broader runtime/container/object-model thread-safety
+- broader container/object-model thread-safety beyond the runtime memory-ownership floor
 - field updaters
 - array atomics
 - a full VarHandle-style memory API
 - executor/future policy
-- concurrent collections
+- periodic scheduling and fuller completion-stage policy
+- broader concurrent-collection families
 
 ## Supported Atomic Policy
 
@@ -151,10 +184,33 @@ Shipped in `pulse.concurrent` today:
 - `Semaphore`
 - `CountDownLatch`
 - `Monitor`
+- `Callable`
+- `Executor`
+- `ExecutorService`
+- `Future`
+- `FutureTask`
+- `RunnableFuture`
+- `ScheduledFuture`
+- `ScheduledExecutorService`
+- `ScheduledFutureTask`
+- `ScheduledThreadPerTaskExecutor`
+- `CompletableFuture`
+- `CompletionFunction`
+- `CompletionConsumer`
+- `ThreadPerTaskExecutor`
+- `Executors`
 - `AtomicBoolean`
 - `AtomicInt`
 - `AtomicLong`
 - `AtomicReference`
+- `ConcurrentHashMap`
+- `CopyOnWriteArrayList`
+- `BlockingQueue`
+- `LinkedBlockingQueue`
+- `BlockingDeque`
+- `LinkedBlockingDeque`
+- `CancellationException`
+- `ExecutionException`
 
 Intentionally not moved into `pulse.concurrent`:
 
@@ -167,16 +223,28 @@ That split is intentional:
 - `pulse.concurrent` owns coordination and atomic helper types around that surface
 - the F1 baseline does not rename or relocate `Thread` during the self-sustained-hosting lift
 
+Shipped selected concurrent-collection baseline:
+
+- `ConcurrentHashMap`
+- `CopyOnWriteArrayList`
+- `BlockingQueue` / `LinkedBlockingQueue`
+- `BlockingDeque` / `LinkedBlockingDeque`
+
 Still later than the current `pulse.concurrent` floor:
 
-- concurrent collections such as `ConcurrentHashMap` and `CopyOnWriteArrayList`
-- higher-level executors/futures (`Executor`, `ExecutorService`, `Future`, `CompletableFuture`)
+- broader concurrent-collection families such as transfer queues, concurrent sets, skip-list maps/sets, and fairness/bounded-capacity variants
+- periodic scheduling and timer-pool semantics
+- work-stealing / fork-join executor families
+- fuller completion-stage/composition families beyond the shipped `CompletableFuture` baseline
 
 So the current scope is:
 
 - low-level synchronization and atomic handoff primitives are in
 - explicit reference publication is in
-- concurrent collections are later
-- executor/future ergonomics are later
+- thread-per-task executor/future submission is in
+- one-shot delayed scheduling is in
+- bounded `CompletableFuture` completion, failed futures, and executor-backed accept/map/recovery/compose chaining are in
+- selected concurrent collections and blocking producer/consumer containers are in
+- periodic scheduling, richer executor families, and broader completion-stage ergonomics are later
 
 ## Related

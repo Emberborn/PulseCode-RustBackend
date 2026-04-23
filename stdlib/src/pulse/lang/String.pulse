@@ -5,7 +5,7 @@ import pulse.rt.Intrinsics;
 /**
  * Runtime-backed immutable string value.
  */
-public final class String implements CharSequence, Comparable {
+public final class String implements CharSequence, Comparable<String> {
     /**
      * Returns the number of characters in this string.
      * Use this before indexing or for empty-string checks.
@@ -138,11 +138,10 @@ public final class String implements CharSequence, Comparable {
      * Orders this string against another string using lexicographic character comparison.
      * Use this when code is typed against `Comparable` or needs deterministic text ordering.
      */
-    public int compareTo(Object other) {
-        if (!(other instanceof String)) {
+    public int compareTo(String text) {
+        if (text == null) {
             Intrinsics.panic("String.compareTo requires String");
         }
-        String text = (String) other;
         int ownLength = this.length();
         int otherLength = text.length();
         int limit = ownLength;

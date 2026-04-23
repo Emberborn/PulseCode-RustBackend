@@ -1,0 +1,4 @@
+status=linked
+linker=link.exe
+entry_codegen=masm-split-stdlib
+exe=.codex_tmp/repro_weak_probe/build\main.exe

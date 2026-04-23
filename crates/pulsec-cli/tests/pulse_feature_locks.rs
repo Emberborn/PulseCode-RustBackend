@@ -3168,3 +3168,808 @@ entry = "app/core/Main.pulse"
         stderr
     );
 }
+
+#[test]
+fn lock_pulse_feature_25_runtime_memory_floor_executes_weak_and_cycle_across_threads() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "runtime-memory-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.AtomicInt;
+        import pulse.concurrent.AtomicReference;
+        import pulse.concurrent.Event;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+        import pulse.memory.Memory;
+
+        class RuntimeMemoryWorker implements Runnable {
+            private long weak;
+            private AtomicReference<String> published;
+            private AtomicInt status;
+            private Event ready;
+
+            public RuntimeMemoryWorker(
+                long weak,
+                AtomicReference<String> published,
+                AtomicInt status,
+                Event ready
+            ) {
+                this.weak = weak;
+                this.published = published;
+                this.status = status;
+                this.ready = ready;
+            }
+
+            public void run() {
+                String observed = Memory.weakGet(this.weak);
+                int tick = Memory.cycleTick();
+                if (observed != null
+                    && "runtime_memory_floor".equals(observed)
+                    && tick >= 0) {
+                    this.published.set(observed);
+                    this.status.set(1);
+                } else {
+                    this.status.set(-1);
+                }
+                this.ready.set();
+            }
+        }
+
+        class Main {
+            public static void main() {
+                String source = "runtime_memory_floor";
+                long weak = Memory.weakNew(source);
+                AtomicReference<String> published = AtomicReference.create(null);
+                AtomicInt status = AtomicInt.create(0);
+                Event ready = Event.createManualReset(false);
+                RuntimeMemoryWorker target =
+                    new RuntimeMemoryWorker(weak, published, status, ready);
+                Thread worker = new Thread(target);
+
+                worker.start();
+                boolean signaled = ready.waitOne(2000L);
+                worker.join();
+                String observed = published.get();
+                int young = Memory.cycleYoungPass();
+                int full = Memory.cycleFullPass();
+                Memory.weakClear(weak);
+
+                if (signaled
+                    && status.get() == 1
+                    && "runtime_memory_floor".equals(observed)
+                    && young >= 0
+                    && full >= 0) {
+                    pulse.lang.IO.println("runtime_memory_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("runtime_memory_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected runtime-memory-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("runtime-memory-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected runtime-memory-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("runtime_memory_ok"),
+        "expected runtime-memory-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_26_executor_future_baseline_executes_submission_result_failure_and_shutdown() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "executor-future-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.AtomicInt;
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.ExecutionException;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.Future;
+        import pulse.concurrent.ThreadPerTaskExecutor;
+        import pulse.lang.IllegalStateException;
+        import pulse.lang.Runnable;
+
+        class GreetingCallable implements Callable<String> {
+            private String value;
+
+            public GreetingCallable(String value) {
+                this.value = value;
+            }
+
+            public String call() {
+                return this.value;
+            }
+        }
+
+        class CountingRunnable implements Runnable {
+            private AtomicInt counter;
+
+            public CountingRunnable(AtomicInt counter) {
+                this.counter = counter;
+            }
+
+            public void run() {
+                this.counter.incrementAndGet();
+            }
+        }
+
+        class FailingCallable implements Callable<Object> {
+            public Object call() {
+                throw new IllegalStateException("executor failure");
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ThreadPerTaskExecutor executor = Executors.newThreadPerTaskExecutor();
+                AtomicInt counter = AtomicInt.create(0);
+                Future<String> greeting = executor.submit(new GreetingCallable("executor_future_floor"));
+                Future<Object> completion = executor.submit(new CountingRunnable(counter));
+                Future<Object> failure = executor.submit(new FailingCallable());
+
+                String observed = (String) greeting.get();
+                completion.get();
+
+                boolean sawFailure = false;
+                try {
+                    failure.get();
+                } catch (ExecutionException ex) {
+                    sawFailure =
+                        ex.getCause() != null
+                        && ex.getCause() instanceof IllegalStateException;
+                }
+
+                executor.shutdown();
+                boolean terminated = executor.awaitTermination(2000L);
+
+                greeting.close();
+                completion.close();
+                failure.close();
+                executor.close();
+
+                if ("executor_future_floor".equals(observed)
+                    && counter.get() == 1
+                    && sawFailure
+                    && terminated) {
+                    pulse.lang.IO.println("executor_future_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("executor_future_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected executor-future-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("executor-future-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected executor-future-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("executor_future_ok"),
+        "expected executor-future-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_27_scheduled_and_completable_future_baseline_executes_delayed_and_chained_work() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "scheduled-completable-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.CompletableFuture;
+        import pulse.concurrent.CompletionFunction;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.ScheduledFuture;
+        import pulse.concurrent.ScheduledThreadPerTaskExecutor;
+        import pulse.concurrent.ThreadPerTaskExecutor;
+        import pulse.lang.Runnable;
+
+        class DelayedCallable implements Callable<String> {
+            public String call() {
+                return "delayed_future_floor";
+            }
+        }
+
+        class SeedCallable implements Callable<String> {
+            public String call() {
+                return "seed";
+            }
+        }
+
+        class AppendFunction implements CompletionFunction<String, String> {
+            public String apply(String value) {
+                return value.concat("_mapped");
+            }
+        }
+
+        class MarkerRunnable implements Runnable {
+            private StringBuilder sink;
+
+            public MarkerRunnable(StringBuilder sink) {
+                this.sink = sink;
+            }
+
+            public void run() {
+                this.sink.append("_ran");
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ScheduledThreadPerTaskExecutor scheduler =
+                    Executors.newScheduledThreadPerTaskExecutor();
+                ThreadPerTaskExecutor executor =
+                    Executors.newThreadPerTaskExecutor();
+                ScheduledFuture<String> delayed =
+                    scheduler.schedule(new DelayedCallable(), 50L);
+                String delayedValue = (String) delayed.get();
+
+                CompletableFuture<String> seed =
+                    CompletableFuture.supplyAsync(new SeedCallable(), executor);
+                CompletableFuture<String> mapped =
+                    seed.thenApplyAsync(new AppendFunction(), executor);
+                StringBuilder sink = new StringBuilder(mapped.get());
+                CompletableFuture<Object> after =
+                    mapped.thenRunAsync(new MarkerRunnable(sink), executor);
+                after.get();
+
+                scheduler.shutdown();
+                executor.shutdown();
+                boolean schedulerDone = scheduler.awaitTermination(2000L);
+                boolean executorDone = executor.awaitTermination(2000L);
+
+                delayed.close();
+                seed.close();
+                mapped.close();
+                after.close();
+                scheduler.close();
+                executor.close();
+
+                if ("delayed_future_floor".equals(delayedValue)
+                    && "seed_mapped_ran".equals(sink.toString())
+                    && schedulerDone
+                    && executorDone) {
+                    pulse.lang.IO.println("scheduled_completable_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("scheduled_completable_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected scheduled-completable-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("scheduled-completable-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected scheduled-completable-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("scheduled_completable_ok"),
+        "expected scheduled-completable-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_28_concurrent_collection_baseline_executes_map_and_copy_on_write_list() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "concurrent-collections-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.ConcurrentHashMap;
+        import pulse.concurrent.CopyOnWriteArrayList;
+        import pulse.lang.Iterator;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+
+        class MapWriter implements Runnable {
+            private ConcurrentHashMap<String, String> map;
+
+            public MapWriter(ConcurrentHashMap<String, String> map) {
+                this.map = map;
+            }
+
+            public void run() {
+                this.map.put("worker", "done");
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ConcurrentHashMap<String, String> map =
+                    new ConcurrentHashMap<String, String>();
+                CopyOnWriteArrayList<String> values =
+                    new CopyOnWriteArrayList<String>();
+                values.add("seed");
+
+                Thread writer = new Thread(new MapWriter(map));
+                writer.start();
+                writer.join(2000L);
+
+                if (!"done".equals(map.get("worker"))
+                    || !map.containsKey("worker")
+                    || map.size() != 1) {
+                    System.exit(170);
+                }
+
+                values.add(map.get("worker"));
+                Iterator snapshot = values.iterator();
+                values.add("after");
+
+                int seen = 0;
+                while (snapshot.hasNext()) {
+                    snapshot.next();
+                    seen = seen + 1;
+                }
+
+                if (seen != 2
+                    || values.size() != 3
+                    || !"seed".equals(values.getFirst())
+                    || !"after".equals(values.getLast())
+                    || !values.contains("done")
+                    || map.keySet().size() != 1
+                    || map.values().size() != 1) {
+                    System.exit(171);
+                }
+
+                pulse.lang.IO.println("concurrent_collections_ok");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected concurrent-collections-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("concurrent-collections-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected concurrent-collections-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("concurrent_collections_ok"),
+        "expected concurrent-collections-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_29_blocking_queue_and_deque_baseline_executes_cross_thread_handoff() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "blocking-collections-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.LinkedBlockingDeque;
+        import pulse.concurrent.LinkedBlockingQueue;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+
+        class QueueProducer implements Runnable {
+            private LinkedBlockingQueue<String> queue;
+
+            public QueueProducer(LinkedBlockingQueue<String> queue) {
+                this.queue = queue;
+            }
+
+            public void run() {
+                Thread.sleep(50L);
+                this.queue.put("queue_ready");
+            }
+        }
+
+        class Main {
+            public static void main() {
+                LinkedBlockingQueue<String> queue =
+                    new LinkedBlockingQueue<String>();
+                Thread producer = new Thread(new QueueProducer(queue));
+                producer.start();
+                String queueValue = queue.take();
+                producer.join(2000L);
+
+                LinkedBlockingDeque<String> deque =
+                    new LinkedBlockingDeque<String>();
+                deque.putFirst("front");
+                deque.putLast("back");
+                String first = deque.takeFirst();
+                String last = deque.takeLast();
+                String empty = deque.pollFirst(20L);
+
+                if (!"queue_ready".equals(queueValue)
+                    || !"front".equals(first)
+                    || !"back".equals(last)
+                    || empty != null
+                    || !queue.isEmpty()
+                    || !deque.isEmpty()) {
+                    System.exit(180);
+                }
+
+                pulse.lang.IO.println("blocking_collections_ok");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected blocking-collections-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("blocking-collections-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected blocking-collections-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("blocking_collections_ok"),
+        "expected blocking-collections-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_30_completable_future_recovery_accept_and_compose_baseline_executes() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "completable-future-depth-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.CompletableFuture;
+        import pulse.concurrent.CompletionConsumer;
+        import pulse.concurrent.CompletionFunction;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.ThreadPerTaskExecutor;
+        import pulse.lang.IllegalStateException;
+
+        class SeedCallable implements Callable<String> {
+            public String call() {
+                return "seed";
+            }
+        }
+
+        class FailureMapper implements CompletionFunction<IllegalStateException, String> {
+            public String apply(IllegalStateException value) {
+                return value.getMessage().concat("_recovered");
+            }
+        }
+
+        class SinkConsumer implements CompletionConsumer<String> {
+            private StringBuilder sink;
+
+            public SinkConsumer(StringBuilder sink) {
+                this.sink = sink;
+            }
+
+            public void accept(String value) {
+                this.sink.append(value);
+            }
+        }
+
+        class ComposeMapper implements CompletionFunction<String, CompletableFuture<String>> {
+            private ThreadPerTaskExecutor executor;
+
+            public ComposeMapper(ThreadPerTaskExecutor executor) {
+                this.executor = executor;
+            }
+
+            public CompletableFuture<String> apply(String value) {
+                CompletableFuture<String> next = CompletableFuture.supplyAsync(
+                    new SuffixCallable(value),
+                    this.executor
+                );
+                return next;
+            }
+        }
+
+        class SuffixCallable implements Callable<String> {
+            private String value;
+
+            public SuffixCallable(String value) {
+                this.value = value;
+            }
+
+            public String call() {
+                return this.value.concat("_composed");
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ThreadPerTaskExecutor executor =
+                    Executors.newThreadPerTaskExecutor();
+                StringBuilder sink = new StringBuilder();
+
+                CompletableFuture<String> failed =
+                    new CompletableFuture<String>();
+                failed.completeExceptionally(
+                    new IllegalStateException("boom")
+                );
+                CompletableFuture<String> recovered =
+                    failed.exceptionallyAsync(new FailureMapper(), executor);
+                CompletableFuture<Object> accepted =
+                    recovered.thenAcceptAsync(new SinkConsumer(sink), executor);
+
+                CompletableFuture<String> seeded =
+                    CompletableFuture.supplyAsync(new SeedCallable(), executor);
+                CompletableFuture<String> composed =
+                    seeded.thenComposeAsync(
+                        new ComposeMapper(executor),
+                        executor
+                    );
+
+                accepted.get();
+                String recoveredValue = recovered.get();
+                String composedValue = composed.get();
+
+                executor.shutdown();
+                boolean done = executor.awaitTermination(2000L);
+
+                failed.close();
+                recovered.close();
+                accepted.close();
+                seeded.close();
+                composed.close();
+                executor.close();
+
+                if ("boom_recovered".equals(recoveredValue)
+                    && "boom_recovered".equals(sink.toString())
+                    && "seed_composed".equals(composedValue)
+                    && done) {
+                    pulse.lang.IO.println("completable_future_depth_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("completable_future_depth_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected completable-future-depth-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("completable-future-depth-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected completable-future-depth-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("completable_future_depth_ok"),
+        "expected completable-future-depth-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}

@@ -11,7 +11,7 @@ Combined calendar date and time-of-day value using the current UTC-style epoch p
 ## Declaration
 
 ```pulse
-public final class LocalDateTime implements Comparable
+public final class LocalDateTime implements Comparable<LocalDateTime>
 ```
 
 ## Members
@@ -281,7 +281,7 @@ Use this when minute, second, and millisecond precision should be discarded dete
 Returns this date/time truncated down to the start of its calendar day.
 Use this when time-of-day precision should be discarded deterministically.
 
-### ``public int compareTo(Object other)``
+### ``public int compareTo(LocalDateTime other)``
 
 Compares this date/time to another date/time by epoch-millisecond order.
 Use this when code is typed against `Comparable`.

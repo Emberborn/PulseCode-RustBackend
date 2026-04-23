@@ -6,7 +6,8 @@ pub(crate) struct ArcFieldDispatch {
     pub(crate) scan_edges_proc: String,
     pub(crate) invalidate_edges_proc: String,
 }
-pub(crate) const RUNTIME_THREAD_SAFETY: &str = "not-thread-safe";
+pub(crate) const RUNTIME_THREAD_SAFETY: &str =
+    "memory-ownership-thread-safe-explicit-publication-only";
 pub(crate) const CONTAINER_THREAD_SAFETY: &str = "not-thread-safe";
 pub(crate) const OBJECT_MODEL_SCHEMA: &str = "pulsec.object.layout.v1";
 pub(crate) const OBJECT_LAYOUT_VERSION: u32 = 1;
@@ -190,6 +191,7 @@ pub(crate) fn emit_runtime_data_tables(out: &mut String) {
     out.push_str("rt_runtime_init_state dd 0\n");
     out.push_str("public rt_runtime_init_epoch\n");
     out.push_str("rt_runtime_init_epoch dd 0\n");
+    out.push_str("rt_runtime_memory_lock dq 0\n");
     out.push_str("rt_str_count dd 0\n");
     out.push_str("rt_str_lens_ptr dq 0\n");
     out.push_str("rt_str_data_ptr dq 0\n");
@@ -245,6 +247,14 @@ pub(crate) fn emit_runtime_data_tables(out: &mut String) {
     out.push_str("rt_debug_arc_retain_err_len equ $ - rt_debug_arc_retain_err\n");
     out.push_str("rt_debug_arc_release_err db \"Debug allocator: invalid ARC release\"\n");
     out.push_str("rt_debug_arc_release_err_len equ $ - rt_debug_arc_release_err\n\n");
+    out.push_str("rt_runtime_memory_lock_alloc_err db \"Runtime memory lock allocation failed\"\n");
+    out.push_str(
+        "rt_runtime_memory_lock_alloc_err_len equ $ - rt_runtime_memory_lock_alloc_err\n",
+    );
+    out.push_str("rt_runtime_memory_lock_err db \"Runtime memory lock acquire failed\"\n");
+    out.push_str("rt_runtime_memory_lock_err_len equ $ - rt_runtime_memory_lock_err\n");
+    out.push_str("rt_runtime_memory_unlock_err db \"Runtime memory lock release failed\"\n");
+    out.push_str("rt_runtime_memory_unlock_err_len equ $ - rt_runtime_memory_unlock_err\n\n");
     out.push_str("rt_parse_int_err db 'I','n','v','a','l','i','d',' ','i','n','t','e','g','e','r',' ','l','i','t','e','r','a','l'\n");
     out.push_str("rt_parse_long_err db 'I','n','v','a','l','i','d',' ','l','o','n','g',' ','l','i','t','e','r','a','l'\n");
     out.push_str("rt_parse_bool_err db 'I','n','v','a','l','i','d',' ','b','o','o','l','e','a','n',' ','l','i','t','e','r','a','l'\n");

@@ -114,8 +114,8 @@ const FRAME_BUDGET_WARN_BYTES: usize = 1024;
 const FRAME_BUDGET_FAIL_BYTES: usize = 4096;
 const ARC_HANDLE_SLOT_MASK: u32 = 0xFFFF_FFFF;
 const ARC_HANDLE_GEN_SHIFT: u32 = 32;
-const THREADING_MODEL_SCHEMA: &str = "pulsec.runtime.threading.v2";
-const THREADING_MODEL: &str = "host-threading-plus-sync-and-atomic-publication-floor";
+const THREADING_MODEL_SCHEMA: &str = "pulsec.runtime.threading.v3";
+const THREADING_MODEL: &str = "host-threading-plus-sync-and-memory-ownership-floor";
 const ARC_ATOMICITY: &str = "retain-release-atomic";
 
 #[derive(Clone, Debug)]

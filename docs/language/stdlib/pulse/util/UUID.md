@@ -11,7 +11,7 @@ Java-like UUID value type with deterministic non-secure random generation suppor
 ## Declaration
 
 ```pulse
-public final class UUID implements Comparable
+public final class UUID implements Comparable<UUID>
 ```
 
 ## Members
@@ -70,7 +70,7 @@ Returns the canonical lowercase UUID string form.
 
 Compares this UUID with another object by 128-bit value.
 
-### ``public int compareTo(Object other)``
+### ``public int compareTo(UUID that)``
 
 Orders UUID values lexicographically by their 128-bit value.
 

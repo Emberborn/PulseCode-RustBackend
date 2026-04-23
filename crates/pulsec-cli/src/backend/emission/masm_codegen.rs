@@ -783,6 +783,34 @@ fn value_is_raw_runtime_handle_impl(
     result
 }
 
+fn value_is_owned_arc_temporary(
+    method: &IrMethod,
+    value_id: IrValueId,
+    current_class_name: &str,
+    class_names: &[String],
+    local_types: &HashMap<String, String>,
+    field_types: &HashMap<String, String>,
+) -> bool {
+    let Some(value) = method.values.get(value_id as usize) else {
+        return false;
+    };
+    match &value.kind {
+        IrValueKind::StringLiteral(_) | IrValueKind::NewObject { .. } => true,
+        IrValueKind::Call { .. } => {
+            is_arc_managed_type_name(&normalize_type_token(&value.ty))
+                || value_is_raw_runtime_handle(
+                    method,
+                    value_id,
+                    current_class_name,
+                    class_names,
+                    local_types,
+                    field_types,
+                )
+        }
+        _ => false,
+    }
+}
+
 fn value_is_raw_runtime_handle(
     method: &IrMethod,
     value_id: IrValueId,
@@ -2093,10 +2121,14 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                         .map(|ty| is_handle_type_name(ty) || uses_qword_scalar_type_name(ty))
                 })
                 .unwrap_or(false);
-        let call_arg_needs_early_retain = is_arc_arg
-            && matches!(
-                method.values.get(arg_id as usize).map(|value| &value.kind),
-                Some(IrValueKind::Call { .. })
+        let arg_is_owned_arc_temporary = is_arc_arg
+            && value_is_owned_arc_temporary(
+                method,
+                arg_id,
+                current_class_name,
+                class_names,
+                local_types,
+                field_types,
             );
         emit_preserve_nested_arg_spills(out, method, idx);
         with_nested_arg_preserve_depth(|| {
@@ -2191,9 +2223,6 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                 )?;
             }
         }
-        if call_arg_needs_early_retain {
-            emit_arc_retain_from_eax(out);
-        }
         let spill_offset = arc_arg_spill_offset(method, idx);
         if use_64 {
             out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", spill_offset));
@@ -2201,7 +2230,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
             out.push_str("    and rax, 0FFFFFFFFh\n");
             out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", spill_offset));
         }
-        if is_arc_arg && !call_arg_needs_early_retain {
+        if is_arc_arg && !arg_is_owned_arc_temporary {
             emit_arc_retain_from_eax(out);
             if use_64 {
                 out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", spill_offset));
@@ -2384,10 +2413,14 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                             .map(|ty| is_handle_type_name(ty) || uses_qword_scalar_type_name(ty))
                     })
                     .unwrap_or(false);
-            let call_arg_needs_early_retain = is_arc_arg
-                && matches!(
-                    method.values.get(arg_id as usize).map(|value| &value.kind),
-                    Some(IrValueKind::Call { .. })
+            let arg_is_owned_arc_temporary = is_arc_arg
+                && value_is_owned_arc_temporary(
+                    method,
+                    arg_id,
+                    current_class_name,
+                    class_names,
+                    local_types,
+                    field_types,
                 );
             emit_preserve_nested_arg_spills(out, method, idx);
             with_nested_arg_preserve_depth(|| {
@@ -2484,9 +2517,6 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                     )?;
                 }
             }
-            if call_arg_needs_early_retain {
-                emit_arc_retain_from_eax(out);
-            }
             let spill_offset = arc_arg_spill_offset(method, idx);
             if use_64 {
                 out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", spill_offset));
@@ -2494,7 +2524,7 @@ pub(crate) fn emit_call_args_with_arc_boundary(
                 out.push_str("    and rax, 0FFFFFFFFh\n");
                 out.push_str(&format!("    mov qword ptr [rsp+{}], rax\n", spill_offset));
             }
-            if is_arc_arg && !call_arg_needs_early_retain {
+            if is_arc_arg && !arg_is_owned_arc_temporary {
                 emit_arc_retain_from_eax(out);
                 if use_64 {
                     out.push_str(&format!("    mov rax, qword ptr [rsp+{}]\n", spill_offset));

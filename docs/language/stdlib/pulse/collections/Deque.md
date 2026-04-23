@@ -11,7 +11,7 @@ Double-ended queue contract for front and back operations.
 ## Declaration
 
 ```pulse
-interface Deque<T> extends Queue<T>
+public interface Deque<T> extends Queue<T>
 ```
 
 ## Members

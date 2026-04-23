@@ -5,7 +5,7 @@ import pulse.lang.Object;
 /**
  * Queue contract for ordered head/tail access.
  */
-interface Queue<T> extends Collection<T> {
+public interface Queue<T> extends Collection<T> {
     /**
      * Adds a value at the tail of the queue.
      * Use this as the raw-object queue baseline before generics are available.

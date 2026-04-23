@@ -1,0 +1,19 @@
+package pulse.concurrent;
+
+/**
+ * One-shot delayed future contract for the current scheduling baseline.
+ *
+ * This is intentionally narrower than Java's fuller scheduled executor model:
+ * delayed one-shot submission is real, while periodic scheduling remains later.
+ */
+public interface ScheduledFuture<T> extends Future<T> {
+    /**
+     * Returns the target wall-clock time for this delayed task.
+     */
+    public long scheduledAtMillis();
+
+    /**
+     * Returns the remaining delay before execution becomes eligible.
+     */
+    public long getDelayMillis();
+}

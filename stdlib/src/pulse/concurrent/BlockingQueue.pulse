@@ -1,0 +1,36 @@
+package pulse.concurrent;
+
+import pulse.collections.Queue;
+
+/**
+ * Blocking queue contract for cross-thread producer/consumer coordination.
+ *
+ * This is the first owned blocking-collection floor above the current monitor
+ * and queue primitives.
+ */
+public interface BlockingQueue<T> extends Queue<T> {
+    /**
+     * Adds one value and wakes waiting consumers.
+     */
+    public void put(T value);
+
+    /**
+     * Adds one integer value and wakes waiting consumers.
+     */
+    public void put(int value);
+
+    /**
+     * Adds one string value and wakes waiting consumers.
+     */
+    public void put(String value);
+
+    /**
+     * Waits until a value becomes available and removes it.
+     */
+    public T take();
+
+    /**
+     * Waits until a value becomes available or the timeout expires.
+     */
+    public T poll(long timeoutMillis);
+}

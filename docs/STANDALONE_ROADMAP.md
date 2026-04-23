@@ -771,7 +771,7 @@ Deliverable gate for Phase E:
 - generics baseline is explicitly chosen and documented rather than implied
 - exception runtime model is explicitly chosen and documented rather than implied
 - threading/memory-model baseline including `Thread`, `Runnable`, monitor semantics, `volatile`, `final` publication policy, atomics, and selected concurrent collections
-- selected concurrency/network baselines as explicitly documented F1 policy, including a locked `pulse.concurrent` scope (`Mutex`, `Event`, `Semaphore`, `CountDownLatch`, `Monitor`, `AtomicBoolean`, `AtomicInt`, `AtomicLong`, `AtomicReference`), `Thread`/`Runnable` remaining language-owned, explicit reference publication now raised while concurrent collections/executors stay later, and explicit executor/semaphore plus networking-scope decisions
+- selected concurrency/network baselines as explicitly documented F1 policy, including a locked `pulse.concurrent` scope (`Mutex`, `Event`, `Semaphore`, `CountDownLatch`, `Monitor`, `Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `ScheduledFutureTask`, `ScheduledThreadPerTaskExecutor`, `CompletableFuture`, `CompletionFunction`, `ThreadPerTaskExecutor`, `Executors`, `AtomicBoolean`, `AtomicInt`, `AtomicLong`, `AtomicReference`, `ConcurrentHashMap`, `CopyOnWriteArrayList`, `BlockingQueue`, `LinkedBlockingQueue`, `BlockingDeque`, `LinkedBlockingDeque`), `Thread`/`Runnable` remaining language-owned, explicit reference publication now raised, thread-per-task executor/future baseline now shipped, real one-shot delayed executor/future baseline now shipped, bounded `CompletableFuture` completion/composition now shipped, selected concurrent collections and blocking producer/consumer containers now shipped, executor/semaphore baseline policy now locked, and broader concurrent-collection/periodic/completion-stage families remaining later alongside explicit networking-scope decisions
 - `Class` reflection-lite only in F1; full reflection/invocation deferred until after the self-sustained-hosting transition
 - game-oriented modules (timing, vectors, ECS helpers)
 - integrated conformance, backend/package validation, CI, and performance guardrails for the shipped F1 surface
@@ -943,11 +943,6 @@ Final gate:
 - IR design instability if language features outpace backend
 - import/package design drift without early multi-file support
 - installer pipeline complexity if build metadata format not stabilized
-
-
-
-
-
 
 
 

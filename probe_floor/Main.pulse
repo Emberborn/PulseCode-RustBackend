@@ -1,0 +1,36 @@
+package probe;
+
+import pulse.concurrent.ConcurrentHashMap;
+import pulse.concurrent.CopyOnWriteArrayList;
+import pulse.lang.Iterator;
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+
+class MapWriter implements Runnable {
+    private ConcurrentHashMap<String, String> map;
+
+    public MapWriter(ConcurrentHashMap<String, String> map) {
+        this.map = map;
+    }
+
+    public void run() {
+        this.map.put("worker", "done");
+    }
+}
+
+class Main {
+    public static void main() {
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<String, String>();
+        CopyOnWriteArrayList<String> values = new CopyOnWriteArrayList<String>();
+        values.add("seed");
+        Thread writer = new Thread(new MapWriter(map));
+        writer.start();
+        writer.join(2000L);
+        values.add(map.get("worker"));
+        Iterator snapshot = values.iterator();
+        values.add("after");
+        int seen = 0;
+        while (snapshot.hasNext()) { snapshot.next(); seen = seen + 1; }
+        pulse.lang.IO.println("ok");
+    }
+}

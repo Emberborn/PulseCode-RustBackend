@@ -39,7 +39,17 @@ The selected `F1-97` sequencing rule is:
 
 1. finish the minimum pre-port floor below
 2. define the compiler stage/promotion model below
-3. then begin major compiler/runtime subsystem porting
+3. finish the self-host contract floor for reflection/annotations/metadata and
+   migration
+4. then begin major compiler/runtime subsystem porting
+
+End-of-phase expectation:
+
+- by the end of `F1-97`, the resulting compiler/runtime/stdlib stack must be in
+  a state where Rust can be reduced to the lightest detachable bootstrap rather
+  than remaining a normal product-path authority
+- if `F1-97` closes and the Rust bootstrap still cannot be released into that
+  lighter detachable role, the lane is not in the correct place yet
 
 This is the chosen middle path between:
 
@@ -136,11 +146,22 @@ Minimum required owned floor:
 - socket-first baseline
 - TCP/UDP support
 - listen/connect/send/recv
+- WebSocket support
+- HTTP request/response baseline strong enough for real `GET` / `POST` flows
 - poll/wait model
 
 Current related board item:
 
 - `F1-87`
+
+This floor is not only about raw transport reach.
+
+It is intended to leave Pulse able to support:
+
+- daemon/server workloads
+- real service-to-service communication
+- web-server and web-client bring-up without immediately falling back to a
+  foreign host stack for ordinary HTTP/WebSocket work
 
 ### 7. IDE / Language-Service Floor
 
@@ -160,6 +181,28 @@ This is not a requirement for a polished IDE before self-host. It is a
 requirement for a language-service substrate that can support one immediately
 after self-host.
 
+### 8. Reflection / Annotation / Metadata / Migration Floor
+
+Source of truth:
+
+- [F1_97_REFLECTION_AND_MIGRATION_BAR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_REFLECTION_AND_MIGRATION_BAR.md)
+
+Minimum required owned floor:
+
+- full reflection, not only `Class` reflection-lite
+- full annotation processing, not only bootstrap-owned built-ins
+- metadata creation required for self-hosted contract discovery/codegen
+- a two-way migration/provider interface so foreign/bootstrap-backed features
+  can be attached, elevated into Pulse ownership, and later detached without
+  Rust remaining privileged
+
+Current related board items:
+
+- `F1-12`
+- `F1-30`
+- `F1-94`
+- `F1-102`
+
 ## Already Good Enough To Build On
 
 These do not need to block the floor freeze:
@@ -177,8 +220,6 @@ for clean self-sustained ownership.
 
 Examples:
 
-- reflection-lite widening
-- annotation metadata baseline
 - later toolchain/provider contract slices
 - additional runtime helper surfaces
 
@@ -194,8 +235,8 @@ Rule:
 
 These should not block compiler/runtime porting:
 
-- Lombok-style annotation processing
-- full reflection/invocation
+- convenience annotation/codegen libraries layered on top of the required
+  processor model
 - full IDE productization
 - widget/UI toolkit
 - full graphics engine

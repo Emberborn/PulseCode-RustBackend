@@ -5,7 +5,7 @@ import pulse.lang.Object;
 /**
  * Point-in-time value backed by Unix epoch milliseconds.
  */
-public final class Instant implements Comparable {
+public final class Instant implements Comparable<Instant> {
     /**
      * Unix epoch instant constant.
      * Use this when code needs a named zero-timestamp anchor.
@@ -227,15 +227,14 @@ public final class Instant implements Comparable {
      * Compares this instant to another instant by epoch millisecond order.
      * Use this when code is typed against `Comparable`.
      */
-    public int compareTo(Object other) {
-        if (!(other instanceof Instant)) {
+    public int compareTo(Instant other) {
+        if (other == null) {
             pulse.rt.Intrinsics.panic("Instant.compareTo requires Instant");
         }
-        Instant value = (Instant) other;
-        if (this.epochMillis < value.epochMillis) {
+        if (this.epochMillis < other.epochMillis) {
             return -1;
         }
-        if (this.epochMillis > value.epochMillis) {
+        if (this.epochMillis > other.epochMillis) {
             return 1;
         }
         return 0;

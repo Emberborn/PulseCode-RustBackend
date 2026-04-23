@@ -1,0 +1,349 @@
+package pulse.concurrent;
+
+import pulse.collections.ArrayList;
+import pulse.collections.Collection;
+import pulse.collections.HashMap;
+import pulse.collections.HashSet;
+import pulse.collections.Map;
+import pulse.collections.MapEntry;
+import pulse.collections.Set;
+import pulse.lang.Iterator;
+
+/**
+ * Monitor-backed concurrent map baseline.
+ *
+ * This chooses truthful thread-safety over Java-level striping complexity:
+ * all operations are serialized through the current monitor floor, and
+ * iterator/view-producing methods return snapshots rather than exposing
+ * unsynchronized live views.
+ */
+public final class ConcurrentHashMap<K, V> implements Map<K, V> {
+    private Monitor gate;
+    private HashMap<K, V> entries;
+
+    /**
+     * Creates an empty concurrent map.
+     */
+    public ConcurrentHashMap() {
+        this.gate = Monitor.create();
+        this.entries = new HashMap();
+    }
+
+    private HashSet<K> snapshotKeySetLocked() {
+        HashSet<K> keys = new HashSet();
+        Iterator items = this.entries.keyIterator();
+        while (items.hasNext()) {
+            keys.add(items.next());
+        }
+        return keys;
+    }
+
+    private ArrayList<V> snapshotValuesLocked() {
+        ArrayList<V> values = new ArrayList();
+        Iterator items = this.entries.values().iterator();
+        while (items.hasNext()) {
+            values.add(items.next());
+        }
+        return values;
+    }
+
+    /**
+     * Returns the number of entries currently stored in the map.
+     */
+    public int size() {
+        this.gate.enter();
+        try {
+            return this.entries.size();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the map currently stores any entries.
+     */
+    public boolean isEmpty() {
+        this.gate.enter();
+        try {
+            return this.entries.isEmpty();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes all entries from the map.
+     */
+    public void clear() {
+        this.gate.enter();
+        try {
+            this.entries.clear();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied key is present in the map.
+     */
+    public boolean containsKey(K key) {
+        this.gate.enter();
+        try {
+            return this.entries.containsKey(key);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied string key is present in the map.
+     */
+    public boolean containsKey(String key) {
+        this.gate.enter();
+        try {
+            return this.entries.containsKey(key);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied value is present in the map.
+     */
+    public boolean containsValue(V value) {
+        this.gate.enter();
+        try {
+            return this.entries.containsValue(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied string value is present in the map.
+     */
+    public boolean containsValue(String value) {
+        this.gate.enter();
+        try {
+            return this.entries.containsValue(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied integer value is present in the map.
+     */
+    public boolean containsValue(int value) {
+        this.gate.enter();
+        try {
+            return this.entries.containsValue(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Stores one value under the supplied key and returns the prior value.
+     */
+    public V put(K key, V value) {
+        this.gate.enter();
+        try {
+            return this.entries.put(key, value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Stores one integer value under the supplied string key.
+     */
+    public void putInt(String key, int value) {
+        this.gate.enter();
+        try {
+            this.entries.putInt(key, value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Copies all entries from the supplied map into this map.
+     */
+    public void putAll(Map<K, V> other) {
+        this.gate.enter();
+        try {
+            this.entries.putAll(other);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Stores a value only when the supplied key is not already present.
+     */
+    public V putIfAbsent(K key, V value) {
+        this.gate.enter();
+        try {
+            return this.entries.putIfAbsent(key, value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Stores a string value only when the supplied string key is not already present.
+     */
+    public String putIfAbsent(String key, String value) {
+        this.gate.enter();
+        try {
+            return this.entries.putIfAbsent(key, value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Replaces the value stored under the supplied key.
+     */
+    public V replace(K key, V value) {
+        this.gate.enter();
+        try {
+            return this.entries.replace(key, value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Replaces the string value stored under the supplied key.
+     */
+    public String replace(String key, String value) {
+        this.gate.enter();
+        try {
+            return this.entries.replace(key, value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes the entry stored for the supplied key.
+     */
+    public V remove(K key) {
+        this.gate.enter();
+        try {
+            return this.entries.remove(key);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the value stored for the supplied key.
+     */
+    public V get(K key) {
+        this.gate.enter();
+        try {
+            return this.entries.get(key);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the integer value stored for the supplied key.
+     */
+    public int getInt(String key) {
+        this.gate.enter();
+        try {
+            return this.entries.getInt(key);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the stored value for the supplied key or the fallback when absent.
+     */
+    public V getOrDefault(K key, V fallback) {
+        this.gate.enter();
+        try {
+            return this.entries.getOrDefault(key, fallback);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the stored string value for the supplied key or the fallback when absent.
+     */
+    public String getOrDefault(String key, String fallback) {
+        this.gate.enter();
+        try {
+            return this.entries.getOrDefault(key, fallback);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the stored integer value for the supplied key or the fallback when absent.
+     */
+    public int getIntOrDefault(String key, int fallback) {
+        this.gate.enter();
+        try {
+            return this.entries.getIntOrDefault(key, fallback);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns a snapshot iterator over the current keys.
+     */
+    public Iterator keyIterator() {
+        this.gate.enter();
+        try {
+            return this.snapshotKeySetLocked().iterator();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns a copy-style entry-set snapshot for the current entries.
+     */
+    public Set<MapEntry> entrySet() {
+        this.gate.enter();
+        try {
+            return this.entries.entrySet();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns a snapshot key set for the current entries.
+     */
+    public Set<K> keySet() {
+        this.gate.enter();
+        try {
+            return this.snapshotKeySetLocked();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns a snapshot values collection for the current entries.
+     */
+    public Collection<V> values() {
+        this.gate.enter();
+        try {
+            return this.snapshotValuesLocked();
+        } finally {
+            this.gate.exit();
+        }
+    }
+}

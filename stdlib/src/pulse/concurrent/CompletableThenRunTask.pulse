@@ -1,0 +1,48 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned continuation bridge for `CompletableFuture.thenRunAsync`.
+ */
+public final class CompletableThenRunTask<T> implements Runnable {
+    private CompletableFuture<T> source;
+    private Runnable action;
+    private CompletableFuture<Object> target;
+
+    /**
+     * Creates a chained runnable continuation task.
+     */
+    public CompletableThenRunTask(
+        CompletableFuture<T> source,
+        Runnable action,
+        CompletableFuture<Object> target
+    ) {
+        this.source = source;
+        this.action = action;
+        this.target = target;
+    }
+
+    /**
+     * Waits for the source future and then runs the continuation into the target future.
+     */
+    public void run() {
+        try {
+            this.source.get();
+            this.action.run();
+            this.target.complete(null);
+        } catch (CancellationException cancelled) {
+            this.target.cancel(false);
+        } catch (ExecutionException failed) {
+            Throwable cause = failed.getCause();
+            if (cause == null) {
+                this.target.completeExceptionally(failed);
+            } else {
+                this.target.completeExceptionally(cause);
+            }
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

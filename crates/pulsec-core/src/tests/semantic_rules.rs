@@ -52,6 +52,295 @@ fn check_accepts_compile_time_instantiated_generic_members_with_runtime_erasure(
 }
 
 #[test]
+fn check_accepts_generic_owner_type_params_inside_constructor_new_object_calls() {
+    let src = r#"
+        package app.generics;
+
+        import pulse.collections.ArrayList;
+        import pulse.collections.HashMap;
+
+        class Holder<T> {
+            private ArrayList<T> values;
+            private HashMap<String, T> byName;
+
+            public Holder() {
+                this.values = new ArrayList<T>();
+                this.byName = new HashMap<String, T>();
+            }
+
+            public void put(String name, T value) {
+                this.values.add(value);
+                this.byName.put(name, value);
+            }
+
+            public T get(String name) {
+                return this.byName.get(name);
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Holder<String> holder = new Holder<String>();
+                holder.put("k", "v");
+                String value = holder.get("k");
+            }
+        }
+    "#;
+
+    check(src).expect("generic owner type params should resolve inside constructor new-object calls");
+}
+
+#[test]
+fn check_accepts_generic_owner_type_params_inside_casts() {
+    let src = r#"
+        package app.generics;
+
+        import pulse.collections.ArrayList;
+        import pulse.lang.Object;
+
+        class Holder<T> {
+            public ArrayList<T> coerce(Object raw) {
+                return (ArrayList<T>) raw;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Holder<String> holder = new Holder<String>();
+                ArrayList<String> values = holder.coerce(null);
+            }
+        }
+    "#;
+
+    check(src).expect("generic owner type params should resolve inside casts");
+}
+
+#[test]
+fn check_accepts_static_generic_methods_in_generic_classes_with_shadowed_type_params() {
+    let src = r#"
+        package app.generics;
+
+        interface Source<T> {
+            public T get();
+        }
+
+        class StringSource implements Source<String> {
+            public String get() {
+                return "ok";
+            }
+        }
+
+        class Box<T> {
+            private T value;
+
+            public Box(T value) {
+                this.value = value;
+            }
+
+            public T get() {
+                return this.value;
+            }
+        }
+
+        class Factory<T> {
+            public static <T> Box<T> from(Source<T> source) {
+                Box<T> box = new Box<T>(source.get());
+                return box;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Box<String> box = Factory.from(new StringSource());
+                String value = box.get();
+            }
+        }
+    "#;
+
+    check(src).expect(
+        "static generic methods in generic classes should infer through implemented generic interfaces",
+    );
+}
+
+#[test]
+fn check_accepts_instance_generic_methods_in_generic_classes_with_shadowed_type_params() {
+    let src = r#"
+        package app.generics;
+
+        interface Mapper<T, R> {
+            public R apply(T value);
+        }
+
+        interface Runnable {
+            public void run();
+        }
+
+        class Executor {
+            public void execute(Runnable task) {
+            }
+        }
+
+        class ContainerTask<T, R> implements Runnable {
+            public ContainerTask(Container<T> source, Mapper<T, R> mapper, Container<R> target) {
+            }
+
+            public void run() {
+            }
+        }
+
+        class Container<T> {
+            public <R> Container<R> map(Mapper<T, R> mapper, Executor executor) {
+                Container<R> next = new Container<R>();
+                executor.execute(new ContainerTask<T, R>(this, mapper, next));
+                return next;
+            }
+        }
+
+        class StringIdentityMapper implements Mapper<String, String> {
+            public String apply(String value) {
+                return value;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Container<String> source = new Container<String>();
+                Executor executor = new Executor();
+                Container<String> next = source.map(new StringIdentityMapper(), executor);
+            }
+        }
+    "#;
+
+    check(src).expect(
+        "instance generic methods in generic classes should resolve local types and constructor calls with method type params",
+    );
+}
+
+#[test]
+fn check_accepts_instance_generic_methods_with_method_type_param_constructor_argument() {
+    let src = r#"
+        package app.generics;
+
+        interface Mapper<T, R> {
+            public R apply(T value);
+        }
+
+        class IdentityMapper implements Mapper<String, String> {
+            public String apply(String value) {
+                return value;
+            }
+        }
+
+        class BoxTask<T, R> {
+            public BoxTask(Box<T> source, Mapper<T, R> mapper, Box<R> target) {
+            }
+        }
+
+        class Box<T> {
+            public <R> Box<R> map(Mapper<T, R> mapper) {
+                Box<R> next = new Box<R>();
+                BoxTask<T, R> task = new BoxTask<T, R>(this, mapper, next);
+                return next;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Box<String> box = new Box<String>();
+                Box<String> mapped = box.map(new IdentityMapper());
+            }
+        }
+    "#;
+
+    check(src).expect(
+        "instance generic methods should resolve constructor arguments using class and method type params together",
+    );
+}
+
+#[test]
+fn check_accepts_generic_classes_implementing_non_generic_interfaces_with_method_type_param_constructor_argument() {
+    let src = r#"
+        package app.generics;
+
+        interface Mapper<T, R> {
+            public R apply(T value);
+        }
+
+        interface Runnable {
+            public void run();
+        }
+
+        class IdentityMapper implements Mapper<String, String> {
+            public String apply(String value) {
+                return value;
+            }
+        }
+
+        class BoxTask<T, R> implements Runnable {
+            public BoxTask(Box<T> source, Mapper<T, R> mapper, Box<R> target) {
+            }
+
+            public void run() {
+            }
+        }
+
+        class Box<T> {
+            public <R> Box<R> map(Mapper<T, R> mapper) {
+                Box<R> next = new Box<R>();
+                BoxTask<T, R> task = new BoxTask<T, R>(this, mapper, next);
+                return next;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Box<String> box = new Box<String>();
+                Box<String> mapped = box.map(new IdentityMapper());
+            }
+        }
+    "#;
+
+    check(src).expect(
+        "generic classes implementing non-generic interfaces should not lose method type params in constructor argument positions",
+    );
+}
+
+#[test]
+fn check_accepts_instance_generic_methods_with_method_type_param_local_construction() {
+    let src = r#"
+        package app.generics;
+
+        interface Mapper<T, R> {
+            public R apply(T value);
+        }
+
+        class IdentityMapper implements Mapper<String, String> {
+            public String apply(String value) {
+                return value;
+            }
+        }
+
+        class Box<T> {
+            public <R> Box<R> map(Mapper<T, R> mapper) {
+                Box<R> next = new Box<R>();
+                return next;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Box<String> box = new Box<String>();
+                Box<String> mapped = box.map(new IdentityMapper());
+            }
+        }
+    "#;
+
+    check(src).expect(
+        "instance generic methods should resolve local declaration and constructor type arguments for method type params",
+    );
+}
+
+#[test]
 fn check_rejects_mismatched_instantiated_generic_member_argument() {
     let src = r#"
         package app.generics;

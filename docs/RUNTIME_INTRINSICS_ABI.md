@@ -493,17 +493,18 @@ C2-08 heap/allocation hardening (completed and locked):
 
 C2-23 threading model lock:
 - current runtime contract is explicitly still bootstrap-centered even though it now ships a host threading/sync/publication floor:
-  - `model: "host-threading-plus-sync-and-atomic-publication-floor"`
+  - `model: "host-threading-plus-sync-and-memory-ownership-floor"`
   - `arc_atomicity: "retain-release-atomic"`
-  - `runtime_thread_safety: "not-thread-safe"`
+  - `runtime_thread_safety: "memory-ownership-thread-safe-explicit-publication-only"`
   - `container_thread_safety: "not-thread-safe"`
 - `native.plan.json` lock surface (`runtime.memory_model.threading`):
-  - `schema: "pulsec.runtime.threading.v2"`
+  - `schema: "pulsec.runtime.threading.v3"`
   - fields above are required and must remain stable for C2.
 - boundary policy at current C2 scope:
-  - ARC retain/release and explicit `AtomicReference` publication are atomic under the shipped v2 schema.
-  - runtime/container APIs are not safe for concurrent cross-thread mutation.
-  - the shipped thread/sync/atomic publication floor still does not upgrade the broader runtime/object/container publication contract silently.
+  - ARC retain/release, weak-reference bookkeeping, cycle maintenance, and explicit `AtomicReference` publication are atomic/serialized under the shipped v3 schema.
+  - runtime memory ownership is safe for explicit cross-thread handoff and maintenance paths.
+  - runtime/container APIs are not safe for concurrent cross-thread mutation in the broader sense.
+  - the shipped thread/sync/memory-ownership floor still does not upgrade the broader runtime/object/container publication contract silently.
   - future threading work must version this contract (do not silently change semantics under the same schema id).
 
 C2-24 runtime ABI compatibility lock:
@@ -716,6 +717,7 @@ C2-06 weak-reference lock:
   - `weakClear(weakHandle) -> void`
 - weak handles are generation/version validated and stale weak-token use is non-recoverable (`panic("Stale runtime handle")`).
 - `weakGet` resolves to `null` (runtime handle `0`) when the target object was released/recycled or cleared, enabling cache/listener weak-reference patterns.
+- non-null `weakGet` results are returned as retained strong references, so normal ARC ownership/lifetime semantics apply to the observed value.
 - weak allocator exhaustion (`rt_weak_next >= rt_slot_capacity` after growth reaches max `4294967295`) is deterministic fail-fast (`Weak handle table exhausted`, non-zero exit), not silent `0` return.
 - weak token slots are recycled on `weakClear` via free-list state (`rt_weak_free_head` + `rt_weak_free_next`) so long-running clear/reallocate patterns do not permanently exhaust tokens.
 

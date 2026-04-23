@@ -23,8 +23,9 @@ pub(super) fn validate_if_stmt(
     protected_try_depth: usize,
     in_catch_or_finally: bool,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     validate_null_deref(condition, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         condition,
         class,
         class_info,
@@ -33,10 +34,11 @@ pub(super) fn validate_if_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
         null_state,
     )?;
-    let cond_ty = infer_expr_type(
+    let cond_ty = infer_expr_type_in_scope(
         condition,
         class,
         class_info,
@@ -45,6 +47,7 @@ pub(super) fn validate_if_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
     )?;
     if cond_ty.ty != "boolean" {
@@ -143,8 +146,9 @@ pub(super) fn validate_while_stmt(
     protected_try_depth: usize,
     in_catch_or_finally: bool,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     validate_null_deref(condition, null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         condition,
         class,
         class_info,
@@ -153,10 +157,11 @@ pub(super) fn validate_while_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
         null_state,
     )?;
-    let cond_ty = infer_expr_type(
+    let cond_ty = infer_expr_type_in_scope(
         condition,
         class,
         class_info,
@@ -165,6 +170,7 @@ pub(super) fn validate_while_stmt(
         fqcn_to_class,
         imports,
         locals,
+        &visible_type_params,
         in_static_context,
     )?;
     if cond_ty.ty != "boolean" {
@@ -231,6 +237,7 @@ pub(super) fn validate_do_while_stmt(
     in_catch_or_finally: bool,
     expected_return: &str,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     let mut loop_locals = locals.clone();
     let mut body_null_state = null_state.clone();
     let mut saw_return = false;
@@ -259,7 +266,7 @@ pub(super) fn validate_do_while_stmt(
         }
     }
 
-    let cond_ty = infer_expr_type(
+    let cond_ty = infer_expr_type_in_scope(
         condition,
         class,
         class_info,
@@ -268,10 +275,11 @@ pub(super) fn validate_do_while_stmt(
         fqcn_to_class,
         imports,
         &loop_locals,
+        &visible_type_params,
         in_static_context,
     )?;
     validate_null_deref(condition, &body_null_state)?;
-    validate_unboxing_nullability_in_expr(
+    validate_unboxing_nullability_in_expr_in_scope(
         condition,
         class,
         class_info,
@@ -280,6 +288,7 @@ pub(super) fn validate_do_while_stmt(
         fqcn_to_class,
         imports,
         &loop_locals,
+        &visible_type_params,
         in_static_context,
         &body_null_state,
     )?;
@@ -322,6 +331,7 @@ pub(super) fn validate_for_stmt(
     protected_try_depth: usize,
     in_catch_or_finally: bool,
 ) -> Result<bool, SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     let mut loop_locals = locals.clone();
     let mut body_null_state = null_state.clone();
     let mut exit_null_state = null_state.clone();
@@ -351,7 +361,7 @@ pub(super) fn validate_for_stmt(
 
     if let Some(cond_expr) = condition {
         validate_null_deref(cond_expr, null_state)?;
-        validate_unboxing_nullability_in_expr(
+        validate_unboxing_nullability_in_expr_in_scope(
             cond_expr,
             class,
             class_info,
@@ -360,10 +370,11 @@ pub(super) fn validate_for_stmt(
             fqcn_to_class,
             imports,
             &loop_locals,
+            &visible_type_params,
             in_static_context,
             null_state,
         )?;
-        let cond_ty = infer_expr_type(
+        let cond_ty = infer_expr_type_in_scope(
             cond_expr,
             class,
             class_info,
@@ -372,6 +383,7 @@ pub(super) fn validate_for_stmt(
             fqcn_to_class,
             imports,
             &loop_locals,
+            &visible_type_params,
             in_static_context,
         )?;
         if cond_ty.ty != "boolean" {

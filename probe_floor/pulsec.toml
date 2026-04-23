@@ -1,0 +1,7 @@
+[package]
+name = "probe-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "."
+entry = "Main.pulse"

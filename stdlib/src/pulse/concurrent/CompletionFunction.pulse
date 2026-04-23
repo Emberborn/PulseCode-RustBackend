@@ -1,0 +1,14 @@
+package pulse.concurrent;
+
+/**
+ * Baseline object-to-object mapping contract for completable continuations.
+ *
+ * This avoids pretending the fuller lambda/method-reference stack is already
+ * in place while still allowing chained async composition today.
+ */
+public interface CompletionFunction<T, R> {
+    /**
+     * Maps one completed value into the next stage value.
+     */
+    public R apply(T value);
+}

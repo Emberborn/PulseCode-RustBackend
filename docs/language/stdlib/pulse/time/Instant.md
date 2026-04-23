@@ -11,7 +11,7 @@ Point-in-time value backed by Unix epoch milliseconds.
 ## Declaration
 
 ```pulse
-public final class Instant implements Comparable
+public final class Instant implements Comparable<Instant>
 ```
 
 ## Members
@@ -146,7 +146,7 @@ Use this when code wants stable hour-resolution wall-clock values.
 Returns an instant truncated down to the nearest whole day.
 Use this when code wants stable day-resolution wall-clock values in the current UTC-style model.
 
-### ``public int compareTo(Object other)``
+### ``public int compareTo(Instant other)``
 
 Compares this instant to another instant by epoch millisecond order.
 Use this when code is typed against `Comparable`.

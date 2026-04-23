@@ -1,0 +1,11 @@
+package app.core;
+import pulse.lang.IO;
+import pulse.lang.String;
+
+class Main {
+    public static void main() {
+        String h = String.valueOf(42);
+        IO.println(h.length());
+        IO.println(h);
+    }
+}

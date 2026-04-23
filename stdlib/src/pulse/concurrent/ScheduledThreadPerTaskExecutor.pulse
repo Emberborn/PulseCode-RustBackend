@@ -1,0 +1,110 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+
+/**
+ * One-shot delayed executor built on the thread-per-task baseline.
+ *
+ * This keeps scheduling honest for the current lane: delayed submission is real,
+ * but periodic/scheduled-pool semantics are still later work.
+ */
+public final class ScheduledThreadPerTaskExecutor implements ScheduledExecutorService, AutoCloseable {
+    private ThreadPerTaskExecutor delegate;
+
+    /**
+     * Creates an empty scheduled thread-per-task executor.
+     */
+    public ScheduledThreadPerTaskExecutor() {
+        this.delegate = ThreadPerTaskExecutor.create();
+    }
+
+    /**
+     * Creates a new scheduled thread-per-task executor.
+     */
+    public static ScheduledThreadPerTaskExecutor create() {
+        return new ScheduledThreadPerTaskExecutor();
+    }
+
+    /**
+     * Executes one runnable task immediately.
+     */
+    public void execute(Runnable task) {
+        this.delegate.execute(task);
+    }
+
+    /**
+     * Submits one callable task immediately.
+     */
+    public <T> Future<T> submit(Callable<T> task) {
+        return this.delegate.submit(task);
+    }
+
+    /**
+     * Submits one runnable task immediately.
+     */
+    public Future<Object> submit(Runnable task) {
+        return this.delegate.submit(task);
+    }
+
+    /**
+     * Schedules one callable task after the requested delay.
+     */
+    public <T> ScheduledFuture<T> schedule(Callable<T> task, long delayMillis) {
+        if (delayMillis < 0L) {
+            throw new IllegalArgumentException("delayMillis must be >= 0");
+        }
+        ScheduledFutureTask<T> future = new ScheduledFutureTask<T>(task, delayMillis);
+        this.delegate.execute(future);
+        return future;
+    }
+
+    /**
+     * Schedules one runnable task after the requested delay.
+     */
+    public ScheduledFuture<Object> schedule(Runnable task, long delayMillis) {
+        if (delayMillis < 0L) {
+            throw new IllegalArgumentException("delayMillis must be >= 0");
+        }
+        ScheduledFutureTask<Object> future = new ScheduledFutureTask<Object>(task, delayMillis);
+        this.delegate.execute(future);
+        return future;
+    }
+
+    /**
+     * Prevents new task submission.
+     */
+    public void shutdown() {
+        this.delegate.shutdown();
+    }
+
+    /**
+     * Returns whether shutdown has been requested.
+     */
+    public boolean isShutdown() {
+        return this.delegate.isShutdown();
+    }
+
+    /**
+     * Returns whether shutdown has completed and no tracked task remains.
+     */
+    public boolean isTerminated() {
+        return this.delegate.isTerminated();
+    }
+
+    /**
+     * Waits for termination after shutdown.
+     */
+    public boolean awaitTermination(long timeoutMillis) {
+        return this.delegate.awaitTermination(timeoutMillis);
+    }
+
+    /**
+     * Closes the scheduled executor after waiting for tracked tasks to finish.
+     */
+    public void close() {
+        this.delegate.close();
+    }
+}

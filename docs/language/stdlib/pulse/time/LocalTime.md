@@ -11,7 +11,7 @@ Time-of-day value using the current UTC-style epoch projection.
 ## Declaration
 
 ```pulse
-public final class LocalTime implements Comparable
+public final class LocalTime implements Comparable<LocalTime>
 ```
 
 ## Members
@@ -196,7 +196,7 @@ Use this when second and millisecond precision should be discarded deterministic
 Returns this time truncated down to the nearest whole hour.
 Use this when minute, second, and millisecond precision should be discarded deterministically.
 
-### ``public int compareTo(Object other)``
+### ``public int compareTo(LocalTime other)``
 
 Compares this time to another time by millisecond-of-day order.
 Use this when code is typed against `Comparable`.

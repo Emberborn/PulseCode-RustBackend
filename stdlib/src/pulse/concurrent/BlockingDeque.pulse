@@ -1,0 +1,58 @@
+package pulse.concurrent;
+
+import pulse.collections.Deque;
+
+/**
+ * Blocking deque contract for front/back producer-consumer coordination.
+ */
+public interface BlockingDeque<T> extends BlockingQueue<T>, Deque<T> {
+    /**
+     * Adds one value at the front and wakes waiting consumers.
+     */
+    public void putFirst(T value);
+
+    /**
+     * Adds one integer value at the front and wakes waiting consumers.
+     */
+    public void putFirst(int value);
+
+    /**
+     * Adds one string value at the front and wakes waiting consumers.
+     */
+    public void putFirst(String value);
+
+    /**
+     * Adds one value at the back and wakes waiting consumers.
+     */
+    public void putLast(T value);
+
+    /**
+     * Adds one integer value at the back and wakes waiting consumers.
+     */
+    public void putLast(int value);
+
+    /**
+     * Adds one string value at the back and wakes waiting consumers.
+     */
+    public void putLast(String value);
+
+    /**
+     * Waits until a front value becomes available and removes it.
+     */
+    public T takeFirst();
+
+    /**
+     * Waits until a back value becomes available and removes it.
+     */
+    public T takeLast();
+
+    /**
+     * Waits until a front value becomes available or the timeout expires.
+     */
+    public T pollFirst(long timeoutMillis);
+
+    /**
+     * Waits until a back value becomes available or the timeout expires.
+     */
+    public T pollLast(long timeoutMillis);
+}

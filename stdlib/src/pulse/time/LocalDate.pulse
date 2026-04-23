@@ -6,7 +6,7 @@ import pulse.lang.Object;
 /**
  * Calendar date value using the current UTC-style epoch projection.
  */
-public final class LocalDate implements Comparable {
+public final class LocalDate implements Comparable<LocalDate> {
     private int year;
     private int month;
     private int day;
@@ -342,15 +342,14 @@ public final class LocalDate implements Comparable {
      * Compares this date to another date by calendar order.
      * Use this when code is typed against `Comparable`.
      */
-    public int compareTo(Object other) {
-        if (!(other instanceof LocalDate)) {
+    public int compareTo(LocalDate other) {
+        if (other == null) {
             pulse.rt.Intrinsics.panic("LocalDate.compareTo requires LocalDate");
         }
-        LocalDate value = (LocalDate) other;
-        if (this.toEpochDay() < value.toEpochDay()) {
+        if (this.toEpochDay() < other.toEpochDay()) {
             return -1;
         }
-        if (this.toEpochDay() > value.toEpochDay()) {
+        if (this.toEpochDay() > other.toEpochDay()) {
             return 1;
         }
         return 0;

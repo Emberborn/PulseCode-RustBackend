@@ -30,6 +30,15 @@ Explicit `F1-97` close bar:
 - at the end of `F1-97`, you should be able to walk away from Rust completely if you want to
 - Rust may still exist as emergency bootstrap fallback for later feature lifts, but that is outside the claimed ownership state of a closed `F1-97`
 - `F1-97` is the real self-sustaining point; Phase G is the formal "Rust can leave now" cleanup step, not the first moment self-sustaining becomes true
+- before the compiler/runtime rewrite is treated as ready to proceed, Pulse must
+  also have full reflection, full annotation processing, metadata creation, and
+  the two-way migration/provider interface required for self-host contracts
+- by the end of `F1-97`, those surfaces must exist across the Pulse-owned
+  compiler, runtime, and stdlib strongly enough that Rust can be released into
+  the lightest detachable bootstrap role instead of remaining normal-path
+  authority
+- if that light-detachable-bootstrap condition is not true at `F1-97` close,
+  the lane is not complete yet
 
 ## What Is Already Done
 
@@ -219,6 +228,7 @@ layout or manifest shape.
 Policy doc:
 
 - [PULSE_TEST_MODEL.md](/G:/Programming/Rust/PulseCode/docs/PULSE_TEST_MODEL.md)
+- [F1_97_REFLECTION_AND_MIGRATION_BAR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_REFLECTION_AND_MIGRATION_BAR.md)
 
 First concrete Pulse-side feature-lock homes:
 
@@ -244,6 +254,7 @@ Before large compiler/runtime subsystem porting begins, follow:
 
 - [F1_97_PREPORT_FLOOR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_PREPORT_FLOOR.md)
 - [F1_97_COMPILER_STAGE_MODEL.md](/G:/Programming/Rust/PulseCode/docs/F1_97_COMPILER_STAGE_MODEL.md)
+- [F1_97_REFLECTION_AND_MIGRATION_BAR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_REFLECTION_AND_MIGRATION_BAR.md)
 
 This is the locked sequencing rule for the lane:
 
@@ -257,6 +268,7 @@ This is the locked sequencing rule for the lane:
   - binary/data
   - networking
   - IDE/language-service substrate
+  - full reflection / annotation processing / metadata creation / migration interface
 - after that floor is in place, port aggressively
 
 Important policy:
@@ -265,8 +277,12 @@ Important policy:
   blockers for clean self-sustained ownership
 - if one of those later board items is implemented early, update the original
   board item immediately so the board does not drift out of sync
-- convenience features such as Lombok-style annotation processing are not part
-  of this minimum pre-port floor unless they become real blockers
+- convenience codegen layers built on top of the required annotation processor
+  are not part of this minimum pre-port floor unless they become real blockers
+- the remaining compiler/runtime contract-stack work for parser/grammar,
+  semantics, IR/backend contracts, and runtime ABI should be the last pre-port
+  item where possible, or the first work completed during the opening port
+  slices, but it must not be left as a post-port-afterthought
 
 ### Immediate next implementation target
 
@@ -572,7 +588,6 @@ General-purpose surfaces stay in `pulse.*`, even if the compiler uses them:
 
 Still-relevant F1 fence reminders while doing `F1-97` work:
 
-- full reflection/invocation is not current-scope shipped surface
 - desktop UI (`awt` / `swing`) is not F1 scope
 - threading/concurrency/networking beyond the currently shipped baseline should not be implied accidentally
 - reserved-but-unsupported modifiers/features still do not count as real support until semantics/runtime are shipped

@@ -1,0 +1,14 @@
+package pulse.concurrent;
+
+/**
+ * Baseline object consumer contract for completable continuations.
+ *
+ * This keeps completion-stage side effects usable before fuller lambda and
+ * method-reference ownership exists in the language/compiler/runtime stack.
+ */
+public interface CompletionConsumer<T> {
+    /**
+     * Consumes one completed value for side-effect work.
+     */
+    public void accept(T value);
+}

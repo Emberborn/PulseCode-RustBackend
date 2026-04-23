@@ -11,7 +11,7 @@ Minimal collection contract for sized mutable containers.
 ## Declaration
 
 ```pulse
-interface Collection<T> extends Iterable
+public interface Collection<T> extends Iterable
 ```
 
 ## Members

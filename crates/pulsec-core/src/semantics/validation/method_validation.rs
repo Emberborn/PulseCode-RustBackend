@@ -55,7 +55,6 @@ pub(super) fn validate_method_body(
 
         null_state.insert(param.name.clone(), NullState::Unknown);
     }
-
     let in_static_context = method.modifiers.contains(&Modifier::Static);
 
     for stmt in &method.body {

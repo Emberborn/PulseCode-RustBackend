@@ -1,0 +1,30 @@
+package pulse.concurrent;
+
+import pulse.lang.RuntimeException;
+import pulse.lang.Throwable;
+
+/**
+ * Signals that a submitted task failed while executing.
+ */
+public class ExecutionException extends RuntimeException {
+    /**
+     * Creates an execution exception with no detail message.
+     */
+    public ExecutionException() {
+        this.initThrowableState("ExecutionException", null, null);
+    }
+
+    /**
+     * Creates an execution exception with the supplied message.
+     */
+    public ExecutionException(String message) {
+        this.initThrowableState("ExecutionException", message, null);
+    }
+
+    /**
+     * Creates an execution exception with a message and cause.
+     */
+    public ExecutionException(String message, Throwable cause) {
+        this.initThrowableState("ExecutionException", message, cause);
+    }
+}

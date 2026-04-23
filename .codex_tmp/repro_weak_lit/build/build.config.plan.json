@@ -1,0 +1,43 @@
+{
+  "schema": "pulsec.build.config.v1",
+  "profile": "release",
+  "target": "windows-x64",
+  "target_adapter": {
+    "requested": {
+      "target_id": "windows-x64",
+      "os_family": "windows",
+      "arch": "x64",
+      "support_level": "immediate",
+      "lane_name": "windows-x64-host-bootstrap",
+      "lane_kind": "host-bootstrap",
+      "bootstrap_status": "current-host-bootstrap",
+      "strategic_status": "immediate-target",
+      "adapter_status": "implemented"
+    },
+    "active": {
+      "target_id": "windows-x64",
+      "os_family": "windows",
+      "arch": "x64",
+      "support_level": "immediate",
+      "lane_name": "windows-x64-host-bootstrap",
+      "lane_kind": "host-bootstrap",
+      "bootstrap_status": "current-host-bootstrap",
+      "strategic_status": "immediate-target",
+      "adapter_status": "implemented"
+    },
+    "resolution": "selected-target-active-adapter",
+    "artifact_family": {
+      "id": "windows-pe-coff-fat-executable",
+      "status": "implemented"
+    },
+    "runtime_abi_family": {
+      "id": "pulsec-runtime-abi-v2-embedded-windows-bootstrap",
+      "status": "implemented"
+    }
+  },
+  "output": { "mode": "fat", "entry": "main" },
+  "runtime": { "debug_allocator": "off", "cycle_collector": "on" },
+  "toolchain": { "linker": "", "assembler": "" },
+  "layout": { "asm": ".codex_tmp/repro_weak_lit/build/asm", "generated": ".codex_tmp/repro_weak_lit/build/generated", "assets": ".codex_tmp/repro_weak_lit/build/assets", "sanity": ".codex_tmp/repro_weak_lit/build/sanity", "tmp": ".codex_tmp/repro_weak_lit/build/tmp", "distro": ".codex_tmp/repro_weak_lit/build" },
+  "artifacts": { "native_plan": ".codex_tmp/repro_weak_lit/build/native.plan.json", "ir": ".codex_tmp/repro_weak_lit/build/pulsec.ir.txt", "object": ".codex_tmp/repro_weak_lit/build/obj/runtime/Startup.obj" }
+}

@@ -1,0 +1,251 @@
+package pulse.concurrent;
+
+import pulse.collections.ArrayList;
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.System;
+import pulse.lang.Thread;
+
+/**
+ * Simple thread-per-task executor baseline.
+ *
+ * This is not the final high-scale executor story, but it is a truthful,
+ * owned task-execution service on top of the current thread/sync/atomic floor.
+ */
+public final class ThreadPerTaskExecutor implements ExecutorService, AutoCloseable {
+    private Monitor gate;
+    private ArrayList<Thread> activeThreads;
+    private boolean shutdown;
+    private boolean closed;
+
+    /**
+     * Creates an empty thread-per-task executor.
+     */
+    public ThreadPerTaskExecutor() {
+        this.gate = Monitor.create();
+        this.activeThreads = new ArrayList<Thread>();
+        this.shutdown = false;
+        this.closed = false;
+    }
+
+    /**
+     * Creates a new thread-per-task executor.
+     */
+    public static ThreadPerTaskExecutor create() {
+        return new ThreadPerTaskExecutor();
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("executor is closed");
+        }
+    }
+
+    private void ensureAcceptingTasks() {
+        this.ensureOpen();
+        if (this.shutdown) {
+            throw new IllegalStateException("executor has been shut down");
+        }
+    }
+
+    private void sweepCompletedThreads() {
+        this.ensureOpen();
+        this.gate.enter();
+        try {
+            int index = 0;
+            while (index < this.activeThreads.size()) {
+                Thread thread = this.activeThreads.get(index);
+                if (thread.join(0L)) {
+                    thread.close();
+                    this.activeThreads.remove(index);
+                } else {
+                    index = index + 1;
+                }
+            }
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    private Thread launchTrackedThread(Runnable task) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        this.sweepCompletedThreads();
+        this.gate.enter();
+        try {
+            this.ensureAcceptingTasks();
+            Thread thread = new Thread(task);
+            this.activeThreads.add(thread);
+            return thread;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    private void startTrackedThread(Thread thread) {
+        boolean started = false;
+        try {
+            thread.start();
+            started = true;
+        } finally {
+            if (!started) {
+                this.gate.enter();
+                try {
+                    int index = this.activeThreads.indexOf(thread);
+                    if (index >= 0) {
+                        this.activeThreads.remove(index);
+                    }
+                } finally {
+                    this.gate.exit();
+                }
+                thread.close();
+            }
+        }
+    }
+
+    /**
+     * Executes one runnable task on a dedicated host thread.
+     */
+    public void execute(Runnable task) {
+        Thread thread = this.launchTrackedThread(task);
+        if (task instanceof FutureTask) {
+            ((FutureTask<Object>) task).bindThread(thread);
+        }
+        if (task instanceof ScheduledFutureTask) {
+            ((ScheduledFutureTask<Object>) task).bindThread(thread);
+        }
+        this.startTrackedThread(thread);
+    }
+
+    /**
+     * Submits one callable task and returns its future.
+     */
+    public <T> Future<T> submit(Callable<T> task) {
+        FutureTask<T> future = new FutureTask<T>(task);
+        Thread thread = this.launchTrackedThread(future);
+        future.bindThread(thread);
+        this.startTrackedThread(thread);
+        return future;
+    }
+
+    /**
+     * Submits one runnable task and returns a completion future.
+     */
+    public Future<Object> submit(Runnable task) {
+        FutureTask<Object> future = new FutureTask<Object>(task);
+        Thread thread = this.launchTrackedThread(future);
+        future.bindThread(thread);
+        this.startTrackedThread(thread);
+        return future;
+    }
+
+    /**
+     * Returns whether shutdown has been requested.
+     */
+    public boolean isShutdown() {
+        this.ensureOpen();
+        return this.shutdown;
+    }
+
+    /**
+     * Prevents new tasks from being submitted.
+     */
+    public void shutdown() {
+        this.ensureOpen();
+        this.shutdown = true;
+    }
+
+    /**
+     * Returns whether shutdown has completed and no active tracked thread remains.
+     */
+    public boolean isTerminated() {
+        this.ensureOpen();
+        this.sweepCompletedThreads();
+        this.gate.enter();
+        try {
+            return this.shutdown && this.activeThreads.isEmpty();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Waits for tracked tasks to finish after shutdown.
+     */
+    public boolean awaitTermination(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        this.shutdown();
+        long start = System.currentTimeMillis();
+        while (true) {
+            this.sweepCompletedThreads();
+            this.gate.enter();
+            try {
+                if (this.activeThreads.isEmpty()) {
+                    return true;
+                }
+            } finally {
+                this.gate.exit();
+            }
+            if (timeoutMillis == 0L) {
+                return false;
+            }
+            long elapsed = System.currentTimeMillis() - start;
+            long remaining = timeoutMillis - elapsed;
+            if (remaining <= 0L) {
+                return false;
+            }
+            Thread thread = null;
+            this.gate.enter();
+            try {
+                if (!this.activeThreads.isEmpty()) {
+                    thread = this.activeThreads.get(0);
+                }
+            } finally {
+                this.gate.exit();
+            }
+            if (thread != null) {
+                if (!thread.join(remaining)) {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Shuts the executor down and waits indefinitely for tracked tasks to finish.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        this.shutdown = true;
+        while (true) {
+            this.sweepCompletedThreads();
+            Thread thread = null;
+            this.gate.enter();
+            try {
+                if (!this.activeThreads.isEmpty()) {
+                    thread = this.activeThreads.get(0);
+                }
+            } finally {
+                this.gate.exit();
+            }
+            if (thread == null) {
+                break;
+            }
+            if (thread != null) {
+                thread.join();
+            }
+        }
+        this.activeThreads.clear();
+        this.gate.close();
+        this.closed = true;
+    }
+}

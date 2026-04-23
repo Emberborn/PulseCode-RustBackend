@@ -41,6 +41,9 @@ The newer project rule is stronger than the older "self-host" wording:
   - [F1_97_PREPORT_FLOOR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_PREPORT_FLOOR.md)
 - the current `F1-97` lane also has one locked compiler stage/promotion model in:
   - [F1_97_COMPILER_STAGE_MODEL.md](/G:/Programming/Rust/PulseCode/docs/F1_97_COMPILER_STAGE_MODEL.md)
+- the current `F1-97` lane also has one locked raised bar for self-host
+  contract surfaces in:
+  - [F1_97_REFLECTION_AND_MIGRATION_BAR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_REFLECTION_AND_MIGRATION_BAR.md)
 - future agents should treat that doc as the sequencing rule for when to stop
   for more floor work versus when to continue compiler/runtime porting
 
@@ -237,7 +240,15 @@ The stricter current user rule is now:
 - if the later self-sustained work is real but would be disproportionate or badly sequenced in the current lane, it must be recorded in [FB_CARRY_FORWARD_TRACKER.md](/G:/Programming/Rust/PulseCode/docs/FB_CARRY_FORWARD_TRACKER.md) rather than being left as tribal knowledge
 - the target is a self-sustained Java-like language/runtime/toolchain, not a partial Java-ish subset; deviations from Java should exist only where the user has explicitly chosen them
 - after `F1` closes, the project must run a whole-codebase inward-lift audit rather than assuming older acceptable work is already self-sustained-clean; that audit is now explicitly tracked on the F1 board and must revisit stdlib, compiler, runtime, CLI, tests, and docs for older bootstrap/raw/pre-self-sustained shapes that still need to move inward into Pulse ownership or be defended as true host/bootstrap or adapter boundaries
-- reflection-lite `Class` support is part of the pre-self-host track, while full reflection/invocation and desktop UI are intentionally after self-host unless the user changes that policy later
+- the user has now raised the `F1-97` bar: full reflection, full annotation
+  processing, metadata creation, and the two-way migration/provider interface
+  are pre-rewrite requirements, while desktop UI still remains later/out of
+  scope
+- the end-of-`F1-97` expectation is correspondingly stronger too: these
+  surfaces must exist across the Pulse-owned compiler, runtime, and stdlib
+  strongly enough that Rust can be reduced to the lightest detachable bootstrap
+  rather than remaining normal-path authority; if that is not true yet, the
+  lane is not actually complete
 - the handoff must be kept current during the work: add new facts/rules when they matter, remove stale details when they stop being useful, and do not let it bloat into an unreadable dump
 - backend/runtime/codegen changes must now follow a stricter regression rule: do not land a broad ownership/lowering fix first and then discover what it broke through the full suite; add or isolate one exact reproducer first, make the narrowest fix that turns that reproducer green, then widen to neighboring exact tests, and only after that run the broader lock/full-regression lanes
 - stdlib workarounds around backend bugs are not acceptable as a resting state when Java-like source should work; if the intended source shape is valid, fix the backend/runtime path and remove the workaround instead of normalizing the detour
@@ -1090,8 +1101,10 @@ Runtime-backed docs already created for current non-stdlib runtime behavior:
 These policies were explicitly discussed with the user and are reflected in the docs/boards:
 
 - no desktop UI (`awt` / `swing`) in F1
-- full reflection is deferred until after self-hosting
-- `Class` remains reflection-lite only in F1
+- the older reflection-lite-only policy is superseded by
+  [F1_97_REFLECTION_AND_MIGRATION_BAR.md](/G:/Programming/Rust/PulseCode/docs/F1_97_REFLECTION_AND_MIGRATION_BAR.md);
+  `Class` reflection-lite is now only the starting point, not the `F1-97`
+  finish line
 - utility/concurrency/networking were made more explicit on the board
 - docs are required during implementation, not at the end
 - testing/conformance infrastructure must exist before self-hosting

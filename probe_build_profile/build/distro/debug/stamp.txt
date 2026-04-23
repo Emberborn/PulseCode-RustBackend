@@ -1,0 +1,5 @@
+schema=pulsec.artifact.stamp.v1
+name=probe-build-profile
+version=0.1.0
+profile=debug
+stamp=probe-build-profile-0.1.0-debug

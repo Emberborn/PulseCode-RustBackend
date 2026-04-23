@@ -1,0 +1,49 @@
+package pulse.concurrent;
+
+import pulse.lang.AutoCloseable;
+import pulse.lang.Runnable;
+
+/**
+ * Managed executor contract for task submission and shutdown.
+ *
+ * The current baseline is intentionally narrower than Java's full executor
+ * ecosystem, but it is real enough for compiler/runtime/tooling workflows:
+ * runnable execution, callable submission, future retrieval, shutdown, and
+ * termination waiting are all in.
+ */
+public interface ExecutorService extends Executor, AutoCloseable {
+    /**
+     * Submits one callable task and returns a future for its result.
+     */
+    public <T> Future<T> submit(Callable<T> task);
+
+    /**
+     * Submits one runnable task and returns a completion future.
+     */
+    public Future<Object> submit(Runnable task);
+
+    /**
+     * Prevents new task submission.
+     */
+    public void shutdown();
+
+    /**
+     * Returns whether shutdown has been requested.
+     */
+    public boolean isShutdown();
+
+    /**
+     * Returns whether shutdown has been requested and no tracked tasks remain.
+     */
+    public boolean isTerminated();
+
+    /**
+     * Waits for termination after shutdown.
+     */
+    public boolean awaitTermination(long timeoutMillis);
+
+    /**
+     * Shuts the executor down and waits for outstanding tasks to finish.
+     */
+    public void close();
+}

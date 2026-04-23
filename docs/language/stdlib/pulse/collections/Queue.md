@@ -11,7 +11,7 @@ Queue contract for ordered head/tail access.
 ## Declaration
 
 ```pulse
-interface Queue<T> extends Collection<T>
+public interface Queue<T> extends Collection<T>
 ```
 
 ## Members

@@ -5,7 +5,7 @@ import pulse.lang.Object;
 /**
  * Indexed collection contract for ordered values.
  */
-interface List<T> extends Collection<T> {
+public interface List<T> extends Collection<T> {
     /**
      * Appends an integer value to the list.
      * Use this as the current primitive convenience overload.

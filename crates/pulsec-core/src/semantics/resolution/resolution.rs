@@ -39,6 +39,7 @@ pub(super) fn instantiate_resolved_method_candidate(
             owner_info,
             owner_ty,
             arg_types,
+            class_index,
         ),
     })
 }
@@ -126,16 +127,36 @@ fn instantiate_method_signature(
     owner_info: &ClassInfo,
     owner_ty: &str,
     arg_types: &[String],
+    class_index: &HashMap<String, ClassInfo>,
 ) -> MethodSignature {
     let mut bindings = instantiated_class_bindings(owner_ty, owner_info);
+    for type_param in &signature.type_params {
+        bindings.remove(type_param);
+    }
+    let owner_type_params = owner_info
+        .type_params
+        .iter()
+        .filter(|type_param| !signature.type_params.contains(type_param))
+        .cloned()
+        .collect::<Vec<_>>();
     let substituted_param_types = signature
         .param_types
         .iter()
-        .map(|ty| instantiate_type_params_with_defaults(ty, &bindings, &owner_info.type_params))
+        .map(|ty| instantiate_type_params_with_defaults(ty, &bindings, &owner_type_params))
         .collect::<Vec<_>>();
 
     for (expected, actual) in substituted_param_types.iter().zip(arg_types.iter()) {
         collect_type_param_bindings(expected, actual, &signature.type_params, &mut bindings);
+        if let Some(instantiated_actual) =
+            resolve_actual_type_against_expected_generic(expected, actual, class_index)
+        {
+            collect_type_param_bindings(
+                expected,
+                &instantiated_actual,
+                &signature.type_params,
+                &mut bindings,
+            );
+        }
     }
     bind_missing_type_params(&mut bindings, &signature.type_params);
 
@@ -144,17 +165,17 @@ fn instantiate_method_signature(
         param_types: signature
             .param_types
             .iter()
-            .map(|ty| instantiate_type_params_with_defaults(ty, &bindings, &owner_info.type_params))
+            .map(|ty| instantiate_type_params_with_defaults(ty, &bindings, &owner_type_params))
             .collect(),
         return_type: instantiate_type_params_with_defaults(
             &signature.return_type,
             &bindings,
-            &owner_info.type_params,
+            &owner_type_params,
         ),
         declared_throws: signature
             .declared_throws
             .iter()
-            .map(|ty| instantiate_type_params_with_defaults(ty, &bindings, &owner_info.type_params))
+            .map(|ty| instantiate_type_params_with_defaults(ty, &bindings, &owner_type_params))
             .collect(),
         is_varargs: signature.is_varargs,
         is_static: signature.is_static,
@@ -162,6 +183,45 @@ fn instantiate_method_signature(
         is_abstract: signature.is_abstract,
         visibility: signature.visibility,
     }
+}
+
+fn resolve_actual_type_against_expected_generic(
+    expected: &str,
+    actual: &str,
+    class_index: &HashMap<String, ClassInfo>,
+) -> Option<String> {
+    let expected_erased = erase_generic_type_name(expected);
+    let actual_erased = erase_generic_type_name(actual);
+    if expected_erased == actual_erased {
+        return Some(actual.to_string());
+    }
+
+    let actual_info = class_index.get(&actual_erased)?;
+    let bindings = build_type_param_bindings(&actual_info.type_params, &generic_type_args(actual));
+
+    if let Some(parent) = actual_info.super_class.as_ref() {
+        let instantiated_parent = substitute_type_params(parent, &bindings);
+        if let Some(found) = resolve_actual_type_against_expected_generic(
+            expected,
+            &instantiated_parent,
+            class_index,
+        ) {
+            return Some(found);
+        }
+    }
+
+    for iface in &actual_info.interfaces {
+        let instantiated_iface = substitute_type_params(iface, &bindings);
+        if let Some(found) = resolve_actual_type_against_expected_generic(
+            expected,
+            &instantiated_iface,
+            class_index,
+        ) {
+            return Some(found);
+        }
+    }
+
+    None
 }
 
 fn receiver_allows_cross_package_protected_access(
@@ -177,7 +237,7 @@ fn receiver_allows_cross_package_protected_access(
     is_assignable_class(&receiver_owner, current_class_fqcn, class_index)
 }
 
-pub(super) fn infer_new_object_type(
+pub(super) fn infer_new_object_type_in_scope(
     class_name: &str,
     args: &[Expr],
     class: &ClassDecl,
@@ -187,13 +247,14 @@ pub(super) fn infer_new_object_type(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
     null_state: Option<&HashMap<String, NullState>>,
 ) -> Result<ExprType, SemanticError> {
     let mut arg_types = Vec::with_capacity(args.len());
     for arg in args {
         arg_types.push(
-            infer_expr_type(
+            infer_expr_type_in_scope(
                 arg,
                 class,
                 class_info,
@@ -202,6 +263,7 @@ pub(super) fn infer_new_object_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?
             .ty,
@@ -209,7 +271,6 @@ pub(super) fn infer_new_object_type(
     }
 
     let generic_arity = collect_generic_arity(class_index);
-    let available_type_params = HashSet::new();
     let simple_to_fqcns = collect_simple_to_fqcns(class_index);
     let canonical_class_ty = canonicalize_type_name_in_scope(
         class_name,
@@ -218,7 +279,7 @@ pub(super) fn infer_new_object_type(
         &simple_to_fqcns,
         &collect_fqcn_names(class_index),
         &generic_arity,
-        &available_type_params,
+        visible_type_params,
     )?;
     let class_fqcn = erase_generic_type_name(&canonical_class_ty);
     let target_class = class_index.get(&class_fqcn).ok_or_else(|| {
@@ -268,7 +329,7 @@ pub(super) fn infer_new_object_type(
     )))
 }
 
-pub(super) fn infer_call_type(
+pub(super) fn infer_call_type_in_scope(
     callee: &Expr,
     args: &[Expr],
     class: &ClassDecl,
@@ -278,13 +339,14 @@ pub(super) fn infer_call_type(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
     null_state: Option<&HashMap<String, NullState>>,
 ) -> Result<ExprType, SemanticError> {
     let mut arg_types = Vec::with_capacity(args.len());
     for arg in args {
         arg_types.push(
-            infer_expr_type(
+            infer_expr_type_in_scope(
                 arg,
                 class,
                 class_info,
@@ -293,6 +355,7 @@ pub(super) fn infer_call_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?
             .ty,
@@ -492,7 +555,7 @@ pub(super) fn infer_call_type(
             )))
         }
         Expr::MemberAccess { object, member } => {
-            let receiver = infer_expr_type(
+            let receiver = infer_expr_type_in_scope(
                 object,
                 class,
                 class_info,
@@ -501,6 +564,7 @@ pub(super) fn infer_call_type(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
 

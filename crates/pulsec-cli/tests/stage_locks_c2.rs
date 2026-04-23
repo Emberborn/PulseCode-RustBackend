@@ -690,8 +690,7 @@ fn lock_c2_06_weak_reference_runtime_support_is_locked() {
             public static void main() {
                 String h = String.valueOf(42);
                 long w = Memory.weakNew(h);
-                String live = Memory.weakGet(w);
-                IO.println(Intrinsics.stringLength(live));
+                IO.println(Intrinsics.stringLength(Memory.weakGet(w)));
 
                 Memory.release(h);
                 String dropped = Memory.weakGet(w);
@@ -2595,12 +2594,13 @@ fn lock_c2_23_threading_contract_is_documented_and_emitted() {
         "ABI doc missing C2-23 threading section"
     );
     assert!(
-        doc.contains("pulsec.runtime.threading.v2"),
+        doc.contains("pulsec.runtime.threading.v3"),
         "ABI doc missing threading schema id"
     );
     assert!(
-        doc.contains("host-threading-plus-sync-and-atomic-publication-floor")
+        doc.contains("host-threading-plus-sync-and-memory-ownership-floor")
             && doc.contains("retain-release-atomic")
+            && doc.contains("memory-ownership-thread-safe-explicit-publication-only")
             && doc.contains("not-thread-safe"),
         "ABI doc missing threading model field locks"
     );
@@ -2638,10 +2638,10 @@ fn lock_c2_23_threading_contract_is_documented_and_emitted() {
         fs::read_to_string(root.join("build").join("native.plan.json")).expect("read native plan");
     assert!(
         plan.contains("\"threading\"")
-            && plan.contains("\"schema\": \"pulsec.runtime.threading.v2\"")
-            && plan.contains("\"model\": \"host-threading-plus-sync-and-atomic-publication-floor\"")
+            && plan.contains("\"schema\": \"pulsec.runtime.threading.v3\"")
+            && plan.contains("\"model\": \"host-threading-plus-sync-and-memory-ownership-floor\"")
             && plan.contains("\"arc_atomicity\": \"retain-release-atomic\"")
-            && plan.contains("\"runtime_thread_safety\": \"not-thread-safe\"")
+            && plan.contains("\"runtime_thread_safety\": \"memory-ownership-thread-safe-explicit-publication-only\"")
             && plan.contains("\"container_thread_safety\": \"not-thread-safe\""),
         "native plan missing locked threading model\n{}",
         plan

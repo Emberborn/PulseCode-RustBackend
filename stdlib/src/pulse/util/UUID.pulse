@@ -10,7 +10,7 @@ import pulse.rt.Intrinsics;
 /**
  * Java-like UUID value type with deterministic non-secure random generation support.
  */
-public final class UUID implements Comparable {
+public final class UUID implements Comparable<UUID> {
     private static final Random DEFAULT_RANDOM = new Random();
 
     private long mostSigBits;
@@ -175,11 +175,10 @@ public final class UUID implements Comparable {
     /**
      * Orders UUID values lexicographically by their 128-bit value.
      */
-    public int compareTo(Object other) {
-        if (!(other instanceof UUID)) {
+    public int compareTo(UUID that) {
+        if (that == null) {
             Intrinsics.panic("UUID.compareTo requires UUID");
         }
-        UUID that = (UUID) other;
         ulong thisMost = (ulong) this.mostSigBits;
         ulong thatMost = (ulong) that.mostSigBits;
         if (thisMost < thatMost) {

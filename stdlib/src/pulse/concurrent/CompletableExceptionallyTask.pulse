@@ -1,0 +1,51 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned recovery bridge for `CompletableFuture.exceptionallyAsync`.
+ */
+public final class CompletableExceptionallyTask<T> implements Runnable {
+    private CompletableFuture<T> source;
+    private CompletionFunction<Throwable, T> mapper;
+    private CompletableFuture<T> target;
+
+    /**
+     * Creates a recovery continuation task.
+     */
+    public CompletableExceptionallyTask(
+        CompletableFuture<T> source,
+        CompletionFunction<Throwable, T> mapper,
+        CompletableFuture<T> target
+    ) {
+        this.source = source;
+        this.mapper = mapper;
+        this.target = target;
+    }
+
+    /**
+     * Passes through success or maps failure into a replacement result.
+     */
+    public void run() {
+        try {
+            T value = this.source.get();
+            this.target.complete(value);
+        } catch (CancellationException cancelled) {
+            this.target.cancel(false);
+        } catch (ExecutionException failed) {
+            Throwable cause = failed.getCause();
+            if (cause == null) {
+                cause = failed;
+            }
+            try {
+                T recovered = this.mapper.apply(cause);
+                this.target.complete(recovered);
+            } catch (Throwable recoveryFailure) {
+                this.target.completeExceptionally(recoveryFailure);
+            }
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

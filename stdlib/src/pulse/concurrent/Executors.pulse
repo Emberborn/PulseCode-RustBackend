@@ -1,0 +1,23 @@
+package pulse.concurrent;
+
+/**
+ * Factory helpers for the shipped executor baseline.
+ *
+ * This intentionally starts bounded rather than pretending the full Java
+ * executor ecosystem already exists.
+ */
+public final class Executors {
+    /**
+     * Creates a new thread-per-task executor service.
+     */
+    public static ThreadPerTaskExecutor newThreadPerTaskExecutor() {
+        return ThreadPerTaskExecutor.create();
+    }
+
+    /**
+     * Creates a new scheduled thread-per-task executor service.
+     */
+    public static ScheduledThreadPerTaskExecutor newScheduledThreadPerTaskExecutor() {
+        return ScheduledThreadPerTaskExecutor.create();
+    }
+}

@@ -55,7 +55,8 @@ Use this when observing a value without retaining strong ownership.
 ### ``public static String weakGet(long weakHandle)``
 
 Reads the current value from a weak handle.
-Use this when checking whether a weakly referenced value is still alive.
+Returns a retained strong reference when the target is still alive, or `null` when it was cleared or released.
+Use this when checking whether a weakly referenced value is still alive without exposing a dangling handle.
 
 ### ``public static void weakClear(long weakHandle)``
 

@@ -64,6 +64,7 @@ pub(super) fn validate_method_exception_contract(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
 ) -> Result<(), SemanticError> {
+    let visible_type_params = visible_type_params(class, Some(method));
     let declared_throws = canonicalize_declared_throws(
         method,
         class,
@@ -86,6 +87,7 @@ pub(super) fn validate_method_exception_contract(
         fqcn_to_class,
         imports,
         &initial_locals,
+        &visible_type_params,
         method.modifiers.contains(&Modifier::Static),
     )?;
 
@@ -184,6 +186,7 @@ fn collect_block_checked_exceptions(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
 ) -> Result<Vec<String>, SemanticError> {
     let mut escaping = Vec::new();
@@ -199,6 +202,7 @@ fn collect_block_checked_exceptions(
             fqcn_to_class,
             imports,
             &mut scoped_locals,
+            visible_type_params,
             in_static_context,
         )?;
         merge_exception_set(&mut escaping, stmt_ex);
@@ -217,6 +221,7 @@ fn collect_stmt_checked_exceptions(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &mut HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
 ) -> Result<Vec<String>, SemanticError> {
     match stmt {
@@ -234,6 +239,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -269,6 +275,7 @@ fn collect_stmt_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             merge_exception_set(
@@ -282,6 +289,7 @@ fn collect_stmt_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -302,6 +310,7 @@ fn collect_stmt_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             merge_exception_set(
@@ -316,6 +325,7 @@ fn collect_stmt_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -332,6 +342,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -353,6 +364,7 @@ fn collect_stmt_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             merge_exception_set(
@@ -367,6 +379,7 @@ fn collect_stmt_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -394,6 +407,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         &mut loop_locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -410,6 +424,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         &loop_locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -427,6 +442,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         &mut loop_locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -443,6 +459,7 @@ fn collect_stmt_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     &loop_locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -464,6 +481,7 @@ fn collect_stmt_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             let mut loop_locals = locals.clone();
@@ -501,6 +519,7 @@ fn collect_stmt_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     &loop_locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -521,6 +540,7 @@ fn collect_stmt_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             for case in cases {
@@ -535,6 +555,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -550,6 +571,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -567,6 +589,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -597,6 +620,7 @@ fn collect_stmt_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 );
             }
@@ -610,6 +634,7 @@ fn collect_stmt_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             for catch in catches {
@@ -630,6 +655,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         &catch_locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -647,6 +673,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -665,6 +692,7 @@ fn collect_stmt_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             if let Some(message) = message {
@@ -679,6 +707,7 @@ fn collect_stmt_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -695,6 +724,7 @@ fn collect_stmt_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             let thrown = infer_expr_type(
@@ -723,6 +753,7 @@ fn collect_stmt_checked_exceptions(
             fqcn_to_class,
             imports,
             locals,
+            visible_type_params,
             in_static_context,
         ),
         Stmt::Return(value, ..) => {
@@ -736,6 +767,7 @@ fn collect_stmt_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )
             } else {
@@ -756,6 +788,7 @@ fn collect_expr_checked_exceptions(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
 ) -> Result<Vec<String>, SemanticError> {
     match expr {
@@ -783,6 +816,7 @@ fn collect_expr_checked_exceptions(
             fqcn_to_class,
             imports,
             locals,
+            visible_type_params,
             in_static_context,
         ),
         Expr::ArrayAccess { array, index } => {
@@ -795,6 +829,7 @@ fn collect_expr_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             merge_exception_set(
@@ -808,6 +843,7 @@ fn collect_expr_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -823,6 +859,7 @@ fn collect_expr_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             for arg in args {
@@ -837,6 +874,7 @@ fn collect_expr_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -851,6 +889,7 @@ fn collect_expr_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )? {
                 push_exception(&mut escaping, thrown);
@@ -874,6 +913,7 @@ fn collect_expr_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -897,6 +937,7 @@ fn collect_expr_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -913,6 +954,7 @@ fn collect_expr_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             merge_exception_set(
@@ -926,6 +968,7 @@ fn collect_expr_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -945,6 +988,7 @@ fn collect_expr_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             merge_exception_set(
@@ -958,6 +1002,7 @@ fn collect_expr_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -972,6 +1017,7 @@ fn collect_expr_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -991,6 +1037,7 @@ fn collect_expr_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?;
             for case in cases {
@@ -1005,6 +1052,7 @@ fn collect_expr_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -1019,6 +1067,7 @@ fn collect_expr_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -1034,6 +1083,7 @@ fn collect_expr_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             );
@@ -1053,6 +1103,7 @@ fn collect_expr_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -1067,6 +1118,7 @@ fn collect_expr_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )? {
                 push_exception(&mut escaping, thrown);
@@ -1087,6 +1139,7 @@ fn collect_expr_checked_exceptions(
                         fqcn_to_class,
                         imports,
                         locals,
+                        visible_type_params,
                         in_static_context,
                     )?,
                 );
@@ -1104,6 +1157,7 @@ fn collect_expr_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
                 &mut escaping,
             )?;
@@ -1122,6 +1176,7 @@ fn collect_array_init_checked_exceptions(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
     out: &mut Vec<String>,
 ) -> Result<(), SemanticError> {
@@ -1138,6 +1193,7 @@ fn collect_array_init_checked_exceptions(
                     fqcn_to_class,
                     imports,
                     locals,
+                    visible_type_params,
                     in_static_context,
                 )?,
             ),
@@ -1150,6 +1206,7 @@ fn collect_array_init_checked_exceptions(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
                 out,
             )?,
@@ -1169,6 +1226,7 @@ fn resolve_call_declared_throws(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
 ) -> Result<Vec<String>, SemanticError> {
     let arg_types = infer_arg_types(
@@ -1180,6 +1238,7 @@ fn resolve_call_declared_throws(
         fqcn_to_class,
         imports,
         locals,
+        visible_type_params,
         in_static_context,
     )?;
     let current_class_fqcn = format!("{}.{}", class_info.package_name, class.name);
@@ -1347,6 +1406,7 @@ fn resolve_constructor_declared_throws(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
 ) -> Result<Vec<String>, SemanticError> {
     let arg_types = infer_arg_types(
@@ -1358,10 +1418,10 @@ fn resolve_constructor_declared_throws(
         fqcn_to_class,
         imports,
         locals,
+        visible_type_params,
         in_static_context,
     )?;
     let generic_arity = collect_generic_arity(class_index);
-    let available_type_params = HashSet::new();
     let simple_to_fqcns = collect_simple_to_fqcns(class_index);
     let canonical_class_ty = canonicalize_type_name_in_scope(
         class_name,
@@ -1370,7 +1430,7 @@ fn resolve_constructor_declared_throws(
         &simple_to_fqcns,
         &collect_fqcn_names(class_index),
         &generic_arity,
-        &available_type_params,
+        visible_type_params,
     )?;
     let class_fqcn = erase_generic_type_name(&canonical_class_ty);
     let target_class = class_index.get(&class_fqcn).ok_or_else(|| {
@@ -1407,12 +1467,13 @@ fn infer_arg_types(
     fqcn_to_class: &HashMap<String, String>,
     imports: &[ImportDecl],
     locals: &HashMap<String, String>,
+    visible_type_params: &HashSet<String>,
     in_static_context: bool,
 ) -> Result<Vec<String>, SemanticError> {
     let mut arg_types = Vec::with_capacity(args.len());
     for arg in args {
         arg_types.push(
-            infer_expr_type(
+            infer_expr_type_in_scope(
                 arg,
                 class,
                 class_info,
@@ -1421,6 +1482,7 @@ fn infer_arg_types(
                 fqcn_to_class,
                 imports,
                 locals,
+                visible_type_params,
                 in_static_context,
             )?
             .ty,
@@ -1440,3 +1502,4 @@ fn push_exception(out: &mut Vec<String>, item: String) {
         out.push(item);
     }
 }
+

@@ -11,7 +11,7 @@ Copy-style map entry value used by the current non-live map view baseline.
 ## Declaration
 
 ```pulse
-final class MapEntry<K, V>
+public final class MapEntry<K, V>
 ```
 
 ## Members

@@ -11,7 +11,7 @@ Indexed collection contract for ordered values.
 ## Declaration
 
 ```pulse
-interface List<T> extends Collection<T>
+public interface List<T> extends Collection<T>
 ```
 
 ## Members

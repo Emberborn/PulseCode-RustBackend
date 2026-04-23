@@ -11,7 +11,7 @@ Calendar date value using the current UTC-style epoch projection.
 ## Declaration
 
 ```pulse
-public final class LocalDate implements Comparable
+public final class LocalDate implements Comparable<LocalDate>
 ```
 
 ## Members
@@ -206,7 +206,7 @@ Use this for lightweight calendar predicates without a separate day-of-week enum
 Reports whether this date falls on a weekday in the selected UTC-style model.
 Use this for lightweight workday-style calendar checks.
 
-### ``public int compareTo(Object other)``
+### ``public int compareTo(LocalDate other)``
 
 Compares this date to another date by calendar order.
 Use this when code is typed against `Comparable`.

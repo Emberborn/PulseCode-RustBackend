@@ -85,9 +85,8 @@ pub(super) fn collect_interfaces_for_class(
     })?;
 
     for iface in &info.interfaces {
-        let iface_erased = erase_generic_type_name(iface);
-        if seen.insert(iface_erased.clone()) {
-            out.push(iface_erased);
+        if seen.insert(iface.clone()) {
+            out.push(iface.clone());
         }
     }
 
@@ -239,8 +238,7 @@ pub(super) fn validate_interface_implementations(
 ) -> Result<(), SemanticError> {
     let mut required: Vec<(String, MethodSignature)> = Vec::new();
     for iface in &class_info.interfaces {
-        let iface_erased = erase_generic_type_name(iface);
-        collect_interface_methods(&iface_erased, class_index, &mut required, false)?;
+        collect_interface_methods(iface, class_index, &mut required, false)?;
     }
 
     for (method_name, sig) in required {
@@ -295,12 +293,12 @@ pub(super) fn validate_interface_implementations(
 }
 
 pub(super) fn collect_interface_methods(
-    iface_fqcn: &str,
+    iface_ty: &str,
     class_index: &HashMap<String, ClassInfo>,
     out: &mut Vec<(String, MethodSignature)>,
     include_default_methods: bool,
 ) -> Result<(), SemanticError> {
-    let iface_fqcn = erase_generic_type_name(iface_fqcn);
+    let iface_fqcn = erase_generic_type_name(iface_ty);
     let iface = class_index
         .get(&iface_fqcn)
         .ok_or_else(|| semantic_error(format!("Unknown interface '{}'", iface_fqcn)))?;
@@ -311,6 +309,9 @@ pub(super) fn collect_interface_methods(
         )));
     }
 
+    let interface_args = generic_type_args(iface_ty);
+    let bindings = build_type_param_bindings(&iface.type_params, &interface_args);
+
     for (name, signatures) in &iface.methods {
         for sig in signatures {
             if sig.is_static || sig.visibility == MemberVisibility::Private {
@@ -319,23 +320,54 @@ pub(super) fn collect_interface_methods(
             if !include_default_methods && !sig.is_abstract {
                 continue;
             }
+            let instantiated = instantiate_interface_method_signature(sig, &bindings);
             if out.iter().any(|(n, existing)| {
                 n == name
-                    && existing.param_types == sig.param_types
-                    && existing.return_type == sig.return_type
+                    && existing.param_types == instantiated.param_types
+                    && existing.return_type == instantiated.return_type
             }) {
                 continue;
             }
-            out.push((name.clone(), sig.clone()));
+            out.push((name.clone(), instantiated));
         }
     }
 
     for parent in &iface.interfaces {
-        let parent_erased = erase_generic_type_name(parent);
-        collect_interface_methods(&parent_erased, class_index, out, include_default_methods)?;
+        let instantiated_parent = substitute_type_params(parent, &bindings);
+        collect_interface_methods(
+            &instantiated_parent,
+            class_index,
+            out,
+            include_default_methods,
+        )?;
     }
 
     Ok(())
+}
+
+fn instantiate_interface_method_signature(
+    sig: &MethodSignature,
+    bindings: &HashMap<String, String>,
+) -> MethodSignature {
+    MethodSignature {
+        type_params: sig.type_params.clone(),
+        param_types: sig
+            .param_types
+            .iter()
+            .map(|ty| substitute_type_params(ty, bindings))
+            .collect(),
+        return_type: substitute_type_params(&sig.return_type, bindings),
+        declared_throws: sig
+            .declared_throws
+            .iter()
+            .map(|ty| substitute_type_params(ty, bindings))
+            .collect(),
+        is_varargs: sig.is_varargs,
+        is_static: sig.is_static,
+        is_final: sig.is_final,
+        is_abstract: sig.is_abstract,
+        visibility: sig.visibility,
+    }
 }
 
 pub(super) fn find_instance_method_in_class_hierarchy(

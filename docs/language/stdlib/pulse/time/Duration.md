@@ -11,7 +11,7 @@ Time-span value representing a millisecond duration.
 ## Declaration
 
 ```pulse
-public final class Duration implements Comparable
+public final class Duration implements Comparable<Duration>
 ```
 
 ## Members
@@ -206,7 +206,7 @@ Use this for clear time-span ordering checks in ordinary code.
 Reports whether this duration is longer than the supplied duration.
 Use this for clear time-span ordering checks in ordinary code.
 
-### ``public int compareTo(Object other)``
+### ``public int compareTo(Duration other)``
 
 Compares this duration to another duration by millisecond magnitude.
 Use this when code is typed against `Comparable`.
