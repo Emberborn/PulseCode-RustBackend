@@ -25,6 +25,7 @@ public final class ScheduledFutureTask<T> implements RunnableFuture<T>, Schedule
     private AtomicReference<Thread> runner;
     private Event completed;
     private Event wakeSignal;
+    private ScheduledThreadPoolExecutor schedulerOwner;
     private boolean closed;
 
     /**
@@ -48,6 +49,7 @@ public final class ScheduledFutureTask<T> implements RunnableFuture<T>, Schedule
         this.runner = AtomicReference.create(null);
         this.completed = Event.createManualReset(false);
         this.wakeSignal = Event.createManualReset(false);
+        this.schedulerOwner = null;
         this.closed = false;
     }
 
@@ -72,6 +74,7 @@ public final class ScheduledFutureTask<T> implements RunnableFuture<T>, Schedule
         this.runner = AtomicReference.create(null);
         this.completed = Event.createManualReset(false);
         this.wakeSignal = Event.createManualReset(false);
+        this.schedulerOwner = null;
         this.closed = false;
     }
 
@@ -87,6 +90,14 @@ public final class ScheduledFutureTask<T> implements RunnableFuture<T>, Schedule
     public void bindThread(Thread thread) {
         this.ensureOpen();
         this.runner.set(thread);
+    }
+
+    /**
+     * Attaches the pooled scheduler that should be notified when cancellation changes queue order.
+     */
+    public void attachSchedulerOwner(ScheduledThreadPoolExecutor owner) {
+        this.ensureOpen();
+        this.schedulerOwner = owner;
     }
 
     /**
@@ -135,6 +146,9 @@ public final class ScheduledFutureTask<T> implements RunnableFuture<T>, Schedule
             this.cancelRequested.set(true);
             this.wakeSignal.set();
             this.completed.set();
+            if (this.schedulerOwner != null) {
+                this.schedulerOwner.signalScheduler();
+            }
             return true;
         }
         if (this.state.get() != 1) {
@@ -148,6 +162,9 @@ public final class ScheduledFutureTask<T> implements RunnableFuture<T>, Schedule
         Thread bound = this.runner.get();
         if (bound != null) {
             bound.interrupt();
+        }
+        if (this.schedulerOwner != null) {
+            this.schedulerOwner.signalScheduler();
         }
         return true;
     }
@@ -249,6 +266,7 @@ public final class ScheduledFutureTask<T> implements RunnableFuture<T>, Schedule
         this.runner.set(null);
         this.result.set(null);
         this.failure.set(null);
+        this.schedulerOwner = null;
         this.completed.close();
         this.wakeSignal.close();
         this.runner.close();

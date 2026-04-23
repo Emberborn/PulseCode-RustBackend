@@ -3505,7 +3505,7 @@ fn lock_f1_16_try_catch_finally_baseline_is_documented_and_board_locked() {
     assert!(compiler_doc.contains("across method boundaries"));
     assert!(compiler_doc.contains("runtime panics from callees are not catchable"));
     assert!(compiler_doc.contains("`return` through `try` / `catch` / `finally` is real"));
-    assert!(compiler_doc.contains("`break` and `continue` inside `try` / `catch` / `finally` are still fenced"));
+    assert!(compiler_doc.contains("`break` and `continue` through `try` / `catch` / `finally` are real"));
     assert!(runtime_doc.contains("Current `try` / `catch` / `finally` Runtime Contract"));
     assert!(runtime_doc.contains("runtime-installed handler frames"));
     assert!(board.contains("| F1-16 |"));
@@ -3841,9 +3841,12 @@ fn lock_f1_90_concurrency_scope_is_documented_and_thread_stays_language_owned() 
 
     assert!(board.contains("| F1-90 |"));
     assert!(board.contains("Done (Locked)"));
-    assert!(board.contains("`Mutex`, `Event`, `Semaphore`, `CountDownLatch`, `Monitor`, `Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `ScheduledFutureTask`, `ScheduledThreadPerTaskExecutor`, `CompletableFuture`, `CompletionFunction`, `CompletionConsumer`, `ThreadPerTaskExecutor`, `Executors`, `AtomicBoolean`, `AtomicInt`, `AtomicLong`, `AtomicReference`, `ConcurrentHashMap`, `CopyOnWriteArrayList`, `BlockingQueue`, `LinkedBlockingQueue`, `BlockingDeque`, and `LinkedBlockingDeque`"));
+    assert!(board.contains("`Mutex`, `Event`, `Semaphore`, `CountDownLatch`, `Monitor`, `Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `ScheduledFutureTask`, `ScheduledThreadPerTaskExecutor`, `ScheduledThreadPoolExecutor`, `ForkJoinTask`, `RecursiveTask`, `RecursiveAction`, `ForkJoinPool`, `CompletableFuture`, `CompletionFunction`, `CompletionConsumer`, `CompletionBiFunction`, `CompletionBiConsumer`, `ThreadPerTaskExecutor`, `FixedThreadPoolExecutor`, `Executors`, `AtomicBoolean`, `AtomicInt`, `AtomicLong`, `AtomicReference`, `ConcurrentHashMap`, `ConcurrentHashSet`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue`, `ConcurrentLinkedDeque`, `BlockingQueue`, `LinkedBlockingQueue`, `BlockingDeque`, and `LinkedBlockingDeque`"));
     assert!(board.contains("`Thread` remains `pulse.lang.Thread`"));
-    assert!(board.contains("periodic scheduling plus broader completion-stage/executor/concurrent-collection families continue as explicit later work"));
+    assert!(board.contains("fixed-rate/fixed-delay periodic scheduling are now real"));
+    assert!(board.contains("fixed-size/single-thread worker-pool executors are now real"));
+    assert!(board.contains("work-stealing fork-join execution is now real"));
+    assert!(board.contains("skip-list / transfer / fairness-specialized concurrent-collection families plus broader completion-stage/executor families continue as explicit later work"));
 
     assert!(doc.contains("## `pulse.concurrent` Scope"));
     assert!(doc.contains("Shipped in `pulse.concurrent` today:"));
@@ -3855,17 +3858,30 @@ fn lock_f1_90_concurrency_scope_is_documented_and_thread_stays_language_owned() 
     assert!(doc.contains("`ScheduledFuture`"));
     assert!(doc.contains("`CompletableFuture`"));
     assert!(doc.contains("`CompletionConsumer`"));
+    assert!(doc.contains("`CompletionBiFunction`"));
+    assert!(doc.contains("`CompletionBiConsumer`"));
+    assert!(doc.contains("`FixedThreadPoolExecutor`"));
+    assert!(doc.contains("`ScheduledThreadPoolExecutor`"));
+    assert!(doc.contains("`ForkJoinPool`"));
+    assert!(doc.contains("`ForkJoinTask`"));
+    assert!(doc.contains("`RecursiveTask`"));
+    assert!(doc.contains("`RecursiveAction`"));
     assert!(doc.contains("`ConcurrentHashMap`"));
+    assert!(doc.contains("`ConcurrentHashSet`"));
     assert!(doc.contains("`CopyOnWriteArrayList`"));
+    assert!(doc.contains("`ConcurrentLinkedQueue`"));
+    assert!(doc.contains("`ConcurrentLinkedDeque`"));
     assert!(doc.contains("`LinkedBlockingQueue`"));
     assert!(doc.contains("`LinkedBlockingDeque`"));
-    assert!(doc.contains("CompletableFuture"));
+    assert!(doc.contains("fixed-rate periodic scheduling"));
+    assert!(doc.contains("fixed-delay periodic scheduling"));
 
     assert!(roadmap.contains("locked `pulse.concurrent` scope"));
     assert!(roadmap.contains("`Thread`/`Runnable` remaining language-owned"));
     assert!(roadmap.contains("explicit reference publication now raised"));
-    assert!(roadmap.contains("thread-per-task executor/future baseline now shipped"));
-    assert!(roadmap.contains("bounded `CompletableFuture` completion/composition now shipped"));
+    assert!(roadmap.contains("thread-per-task plus fixed-worker-pool plus scheduled-worker-pool plus work-stealing fork-join executor/future baselines now shipped"));
+    assert!(roadmap.contains("fixed-rate/fixed-delay periodic executor/future baseline now shipped"));
+    assert!(roadmap.contains("broader but still bounded `CompletableFuture` completion/composition including both/either/all-of/any-of now shipped"));
     assert!(roadmap.contains("selected concurrent collections and blocking producer/consumer containers now shipped"));
 }
 
@@ -3889,7 +3905,7 @@ fn lock_f1_93_thread_lifecycle_floor_is_documented_on_board_and_language_surface
     assert!(board.contains("cooperative interruption"));
     assert!(board.contains("cross-thread monitor wakeup validation"));
     assert!(board.contains("ARC/weak/cycle memory ownership"));
-    assert!(board.contains("thread-per-task plus one-shot delayed executor baseline"));
+    assert!(board.contains("thread-per-task plus delayed/periodic executor baseline"));
     assert!(doc.contains("real `Thread` lifecycle (`start`, `join`, cooperative interruption)"));
     assert!(doc.contains("first truthful executor/future baseline now exists separately under `F1-103`"));
 }
@@ -3913,23 +3929,47 @@ fn lock_f1_103_executor_future_baseline_is_documented_and_board_locked() {
 
     assert!(board.contains("| F1-103 |"));
     assert!(board.contains("Done (Locked)"));
-    assert!(board.contains("`Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `ScheduledFutureTask`, `ScheduledThreadPerTaskExecutor`, `CompletableFuture`, `CompletionFunction`, `CompletionConsumer`, `ThreadPerTaskExecutor`, and the `Executors` factories are real and executable"));
+    assert!(board.contains("`Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `ScheduledFutureTask`, `ScheduledThreadPerTaskExecutor`, `ScheduledThreadPoolExecutor`, `ForkJoinTask`, `RecursiveTask`, `RecursiveAction`, `ForkJoinPool`, `CompletableFuture`, `CompletionFunction`, `CompletionConsumer`, `CompletionBiFunction`, `CompletionBiConsumer`, `ThreadPerTaskExecutor`, `FixedThreadPoolExecutor`, and the `Executors` factories are real and executable"));
     assert!(board.contains("one-shot delayed scheduling"));
+    assert!(board.contains("fixed-rate/fixed-delay periodic scheduling"));
+    assert!(board.contains("scheduled-thread-pool lanes"));
+    assert!(board.contains("fixed-size/single-thread worker-pool execution"));
+    assert!(board.contains("work-stealing fork/join with recursive task join semantics"));
+    assert!(board.contains("`invokeAll` / `invokeAny`"));
     assert!(board.contains("explicit failed futures"));
-    assert!(board.contains("bounded chained async accept/map/recovery/compose behavior"));
-    assert!(board.contains("Periodic scheduling"));
+    assert!(board.contains("bounded chained async accept/map/recovery/compose/combine/handle/when-complete behavior"));
+    assert!(board.contains("both/either continuation families"));
+    assert!(board.contains("async all-of/any-of aggregation"));
+    assert!(board.contains("Richer fork-join/task-specialization families"));
 
     assert!(doc.contains("higher-level task execution baseline:"));
     assert!(doc.contains("`ExecutorService`"));
     assert!(doc.contains("`FutureTask`"));
     assert!(doc.contains("`ThreadPerTaskExecutor`"));
+    assert!(doc.contains("`FixedThreadPoolExecutor`"));
+    assert!(doc.contains("`ScheduledThreadPoolExecutor`"));
+    assert!(doc.contains("`ForkJoinPool`"));
+    assert!(doc.contains("`ForkJoinTask`"));
+    assert!(doc.contains("`RecursiveTask`"));
+    assert!(doc.contains("`RecursiveAction`"));
+    assert!(doc.contains("`ExecutorService.invokeAll(...)`"));
+    assert!(doc.contains("`ExecutorService.invokeAny(...)`"));
     assert!(doc.contains("`ScheduledThreadPerTaskExecutor`"));
+    assert!(doc.contains("`Executors.newScheduledThreadPool(...)`"));
+    assert!(doc.contains("`Executors.newWorkStealingPool(...)`"));
     assert!(doc.contains("`CompletableFuture`"));
     assert!(doc.contains("`CompletionConsumer`"));
-    assert!(doc.contains("periodic scheduling"));
-    assert!(doc.contains("fuller `CompletableFuture` / completion-stage surface"));
+    assert!(doc.contains("`CompletionBiFunction`"));
+    assert!(doc.contains("`CompletionBiConsumer`"));
+    assert!(doc.contains("fixed-rate periodic scheduling"));
+    assert!(doc.contains("fixed-delay periodic scheduling"));
+    assert!(doc.contains("broader timer services"));
 
-    assert!(policy.contains("`Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `CompletableFuture`, and the thread-per-task / one-shot delayed executor baseline are now real and executable"));
+    assert!(policy.contains("`FixedThreadPoolExecutor`"));
+    assert!(policy.contains("`ScheduledThreadPoolExecutor`"));
+    assert!(policy.contains("`ForkJoinPool`"));
+    assert!(policy.contains("`invokeAll` / `invokeAny`"));
+    assert!(policy.contains("both/either/all-of/any-of completion-stage slice"));
 }
 
 #[test]
@@ -3953,21 +3993,24 @@ fn lock_f1_92_concurrent_collection_baseline_is_documented_and_board_locked() {
 
     assert!(board.contains("| F1-92 |"));
     assert!(board.contains("Done (Locked)"));
-    assert!(board.contains("`ConcurrentHashMap`, `CopyOnWriteArrayList`, `BlockingQueue`, `LinkedBlockingQueue`, `BlockingDeque`, and `LinkedBlockingDeque` are real and executable"));
+    assert!(board.contains("`ConcurrentHashMap`, `ConcurrentHashSet`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue`, `ConcurrentLinkedDeque`, `BlockingQueue`, `LinkedBlockingQueue`, `BlockingDeque`, and `LinkedBlockingDeque` are real and executable"));
     assert!(board.contains("blocking producer/consumer handoff"));
-    assert!(board.contains("broader concurrent collections"));
+    assert!(board.contains("skip-list / transfer / fairness-specialized families"));
 
     assert!(doc.contains("selected concurrent collections:"));
     assert!(doc.contains("`ConcurrentHashMap`"));
+    assert!(doc.contains("`ConcurrentHashSet`"));
     assert!(doc.contains("`CopyOnWriteArrayList`"));
+    assert!(doc.contains("`ConcurrentLinkedQueue`"));
+    assert!(doc.contains("`ConcurrentLinkedDeque`"));
     assert!(doc.contains("`BlockingQueue`"));
     assert!(doc.contains("`LinkedBlockingQueue`"));
     assert!(doc.contains("`BlockingDeque`"));
     assert!(doc.contains("`LinkedBlockingDeque`"));
     assert!(doc.contains("selected concurrent collections and blocking producer/consumer containers are in"));
-    assert!(doc.contains("broader concurrent-collection families"));
+    assert!(doc.contains("skip-list / transfer / fairness-specialized concurrent-collection families"));
 
-    assert!(policy.contains("`ConcurrentHashMap`, `CopyOnWriteArrayList`, `LinkedBlockingQueue`, and `LinkedBlockingDeque` are now real and executable"));
+    assert!(policy.contains("`ConcurrentHashMap`, `ConcurrentHashSet`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue`, `ConcurrentLinkedDeque`, `LinkedBlockingQueue`, and `LinkedBlockingDeque` are now real and executable"));
     assert!(roadmap.contains("selected concurrent collections and blocking producer/consumer containers now shipped"));
 }
 

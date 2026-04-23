@@ -1,0 +1,393 @@
+package pulse.concurrent;
+
+import pulse.collections.ArrayList;
+import pulse.collections.List;
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.System;
+import pulse.lang.Thread;
+import pulse.lang.Throwable;
+
+/**
+ * Work-stealing fork-join pool baseline.
+ *
+ * This is the first truthful owned fork-join lane: worker-local deques, theft
+ * from peer queues, recursive task fork/join semantics, and ordinary executor
+ * submission all work without claiming the entire Java fork-join framework.
+ */
+public final class ForkJoinPool implements ExecutorService, AutoCloseable {
+    private Monitor gate;
+    private ArrayList<ForkJoinWorker> workers;
+    private AtomicInt nextExternalWorker;
+    private AtomicInt outstandingTasks;
+    private Event workAvailable;
+    private boolean shutdown;
+    private boolean closed;
+
+    /**
+     * Creates a new work-stealing pool with the requested number of workers.
+     */
+    public ForkJoinPool(int workerCount) {
+        if (workerCount <= 0) {
+            throw new IllegalArgumentException("workerCount must be > 0");
+        }
+        this.gate = Monitor.create();
+        this.workers = new ArrayList<ForkJoinWorker>();
+        this.nextExternalWorker = AtomicInt.create(0);
+        this.outstandingTasks = AtomicInt.create(0);
+        this.workAvailable = Event.createManualReset(false);
+        this.shutdown = false;
+        this.closed = false;
+        this.startWorkers(workerCount);
+    }
+
+    /**
+     * Creates a new work-stealing pool with the requested number of workers.
+     */
+    public static ForkJoinPool create(int workerCount) {
+        return new ForkJoinPool(workerCount);
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("fork-join pool is closed");
+        }
+    }
+
+    private void ensureAcceptingTasks() {
+        this.ensureOpen();
+        if (this.shutdown) {
+            throw new IllegalStateException("fork-join pool has been shut down");
+        }
+    }
+
+    private void startWorkers(int workerCount) {
+        int index = 0;
+        while (index < workerCount) {
+            ForkJoinWorker worker = new ForkJoinWorker(this);
+            Thread thread = new Thread(worker);
+            worker.attachThread(thread);
+            this.workers.add(worker);
+            thread.start();
+            index = index + 1;
+        }
+    }
+
+    private ForkJoinWorker findCurrentWorkerLocked() {
+        long currentThreadId = Thread.currentThreadId();
+        int index = 0;
+        while (index < this.workers.size()) {
+            ForkJoinWorker worker = this.workers.get(index);
+            if (worker.workerThreadId() == currentThreadId) {
+                return worker;
+            }
+            index = index + 1;
+        }
+        return null;
+    }
+
+    private ForkJoinWorker pickExternalWorkerLocked() {
+        int index = this.nextExternalWorker.getAndIncrement();
+        if (index < 0) {
+            index = -index;
+        }
+        return this.workers.get(index % this.workers.size());
+    }
+
+    private void enqueueRunnable(Runnable task, boolean preferCurrentFront) {
+        this.gate.enter();
+        try {
+            this.ensureAcceptingTasks();
+            ForkJoinWorker worker = null;
+            if (preferCurrentFront) {
+                worker = this.findCurrentWorkerLocked();
+            }
+            if (worker == null) {
+                worker = this.pickExternalWorkerLocked();
+                worker.pushExternalBack(task);
+            } else {
+                worker.pushLocalFront(task);
+            }
+            this.outstandingTasks.incrementAndGet();
+            this.workAvailable.set();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    private Runnable pollTaskFor(ForkJoinWorker self) {
+        Runnable task = self.pollLocalFront();
+        if (task != null) {
+            return task;
+        }
+        this.gate.enter();
+        try {
+            int index = 0;
+            while (index < this.workers.size()) {
+                ForkJoinWorker worker = this.workers.get(index);
+                if (worker != self) {
+                    task = worker.stealFromBack();
+                    if (task != null) {
+                        return task;
+                    }
+                }
+                index = index + 1;
+            }
+            return null;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    private void taskFinished() {
+        int remaining = this.outstandingTasks.addAndGet(-1);
+        if (remaining <= 0) {
+            this.workAvailable.reset();
+        }
+    }
+
+    private boolean shouldWorkerExit() {
+        return this.shutdown && this.outstandingTasks.get() == 0;
+    }
+
+    /**
+     * Worker loop for local-pop / steal-from-peer execution.
+     */
+    public void runWorkerLoop(ForkJoinWorker self) {
+        while (true) {
+            Runnable task = this.pollTaskFor(self);
+            if (task == null) {
+                if (this.shouldWorkerExit()) {
+                    return;
+                }
+                this.workAvailable.waitOne(10L);
+                continue;
+            }
+            try {
+                if (task instanceof ForkJoinTask) {
+                    ((ForkJoinTask<Object>) task).bindThread(self.workerThread());
+                }
+                task.run();
+            } catch (Throwable failure) {
+            } finally {
+                this.taskFinished();
+            }
+        }
+    }
+
+    /**
+     * Forks one recursive task onto this pool.
+     */
+    public <T> ForkJoinTask<T> fork(ForkJoinTask<T> task) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        this.enqueueRunnable(task, true);
+        return task;
+    }
+
+    /**
+     * Executes one recursive task and waits for its result.
+     */
+    public <T> T invoke(ForkJoinTask<T> task) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        this.fork(task);
+        return task.join();
+    }
+
+    /**
+     * Executes one runnable task on the work-stealing pool.
+     */
+    public void execute(Runnable task) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        this.enqueueRunnable(task, true);
+    }
+
+    /**
+     * Submits one callable task and returns its future.
+     */
+    public <T> Future<T> submit(Callable<T> task) {
+        ForkJoinCallableTask<T> future = new ForkJoinCallableTask<T>(task);
+        this.fork(future);
+        return future;
+    }
+
+    /**
+     * Submits one runnable task and returns a completion future.
+     */
+    public Future<Object> submit(Runnable task) {
+        ForkJoinRunnableTask future = new ForkJoinRunnableTask(task);
+        this.fork(future);
+        return future;
+    }
+
+    /**
+     * Submits every callable and waits for all results to complete.
+     */
+    public <T> List<Future<T>> invokeAll(List<Callable<T>> tasks) {
+        if (tasks == null) {
+            throw new IllegalArgumentException("tasks must not be null");
+        }
+        ArrayList<Future<T>> futures = new ArrayList<Future<T>>();
+        int index = 0;
+        while (index < tasks.size()) {
+            Callable<T> task = tasks.get(index);
+            if (task == null) {
+                throw new IllegalArgumentException("tasks must not contain null");
+            }
+            futures.add(this.submit(task));
+            index = index + 1;
+        }
+        index = 0;
+        while (index < futures.size()) {
+            futures.get(index).get();
+            index = index + 1;
+        }
+        return futures;
+    }
+
+    /**
+     * Submits every callable and returns the first successful result.
+     */
+    public <T> T invokeAny(List<Callable<T>> tasks) {
+        if (tasks == null) {
+            throw new IllegalArgumentException("tasks must not be null");
+        }
+        if (tasks.isEmpty()) {
+            throw new IllegalArgumentException("tasks must not be empty");
+        }
+        ArrayList<Future<T>> futures = new ArrayList<Future<T>>();
+        int index = 0;
+        while (index < tasks.size()) {
+            Callable<T> task = tasks.get(index);
+            if (task == null) {
+                throw new IllegalArgumentException("tasks must not contain null");
+            }
+            futures.add(this.submit(task));
+            index = index + 1;
+        }
+        while (true) {
+            index = 0;
+            while (index < futures.size()) {
+                Future<T> future = futures.get(index);
+                if (future.await(0L)) {
+                    try {
+                        T value = future.get();
+                        int cancelIndex = 0;
+                        while (cancelIndex < futures.size()) {
+                            if (cancelIndex != index) {
+                                futures.get(cancelIndex).cancel(true);
+                            }
+                            cancelIndex = cancelIndex + 1;
+                        }
+                        return value;
+                    } catch (ExecutionException failure) {
+                    }
+                }
+                index = index + 1;
+            }
+            Thread.yieldNow();
+        }
+        return null;
+    }
+
+    /**
+     * Prevents new task submission and lets queued/running work drain.
+     */
+    public void shutdown() {
+        this.gate.enter();
+        try {
+            this.ensureOpen();
+            this.shutdown = true;
+            this.workAvailable.set();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns whether shutdown has been requested.
+     */
+    public boolean isShutdown() {
+        this.ensureOpen();
+        return this.shutdown;
+    }
+
+    /**
+     * Returns whether shutdown has completed and no worker remains alive.
+     */
+    public boolean isTerminated() {
+        this.ensureOpen();
+        if (!this.shutdown) {
+            return false;
+        }
+        int index = 0;
+        while (index < this.workers.size()) {
+            if (!this.workers.get(index).workerThread().join(0L)) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Waits for every worker to terminate after shutdown.
+     */
+    public boolean awaitTermination(long timeoutMillis) {
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        this.shutdown();
+        long start = System.currentTimeMillis();
+        int index = 0;
+        while (index < this.workers.size()) {
+            long remaining;
+            if (timeoutMillis == 0L) {
+                remaining = 0L;
+            } else {
+                long elapsed = System.currentTimeMillis() - start;
+                remaining = timeoutMillis - elapsed;
+                if (remaining <= 0L) {
+                    return false;
+                }
+            }
+            if (!this.workers.get(index).workerThread().join(remaining)) {
+                return false;
+            }
+            index = index + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Shuts the pool down and waits indefinitely for worker termination.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        this.shutdown();
+        int index = 0;
+        while (index < this.workers.size()) {
+            ForkJoinWorker worker = this.workers.get(index);
+            Thread thread = worker.workerThread();
+            thread.join();
+            thread.close();
+            worker.close();
+            index = index + 1;
+        }
+        this.workers.clear();
+        this.workAvailable.close();
+        this.outstandingTasks.close();
+        this.nextExternalWorker.close();
+        this.gate.close();
+        this.closed = true;
+    }
+}

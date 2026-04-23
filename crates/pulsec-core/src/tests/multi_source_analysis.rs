@@ -228,7 +228,7 @@ fn check_rejects_constructor_signature_mismatch() {
     let err = check(src).expect_err("constructor signature mismatch should fail");
     assert!(err
         .to_string()
-        .contains("No constructor 'Player' matches argument types (String)"));
+        .contains("No constructor 'Player' matches argument types (pulse.lang.String)"));
 }
 
 #[test]

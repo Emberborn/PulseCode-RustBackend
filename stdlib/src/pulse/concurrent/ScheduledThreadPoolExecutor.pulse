@@ -1,0 +1,417 @@
+package pulse.concurrent;
+
+import pulse.collections.ArrayList;
+import pulse.collections.List;
+import pulse.lang.AutoCloseable;
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.System;
+import pulse.lang.Thread;
+
+/**
+ * Scheduled worker-pool executor with one scheduler thread and a bounded worker pool.
+ *
+ * This is the first truthful timer-pool lane: scheduling time is owned by one
+ * scheduler thread while execution is owned by fixed workers, so delayed and
+ * periodic tasks no longer require one dedicated sleeping thread each.
+ */
+public final class ScheduledThreadPoolExecutor implements ScheduledExecutorService, AutoCloseable {
+    private Monitor gate;
+    private FixedThreadPoolExecutor workers;
+    private ArrayList<Object> scheduled;
+    private Thread schedulerThread;
+    private boolean shutdown;
+    private boolean closed;
+
+    /**
+     * Creates a scheduled worker-pool executor with the requested number of workers.
+     */
+    public ScheduledThreadPoolExecutor(int workerCount) {
+        if (workerCount <= 0) {
+            throw new IllegalArgumentException("workerCount must be > 0");
+        }
+        this.gate = Monitor.create();
+        this.workers = FixedThreadPoolExecutor.create(workerCount);
+        this.scheduled = new ArrayList<Object>();
+        this.schedulerThread = new Thread(new ScheduledThreadPoolScheduler(this));
+        this.shutdown = false;
+        this.closed = false;
+        this.schedulerThread.start();
+    }
+
+    /**
+     * Creates a scheduled worker-pool executor with the requested number of workers.
+     */
+    public static ScheduledThreadPoolExecutor create(int workerCount) {
+        return new ScheduledThreadPoolExecutor(workerCount);
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("scheduled thread-pool executor is closed");
+        }
+    }
+
+    private void ensureAcceptingTasks() {
+        this.ensureOpen();
+        if (this.shutdown) {
+            throw new IllegalStateException("scheduled thread-pool executor has been shut down");
+        }
+    }
+
+    private long taskScheduledAt(Object task) {
+        if (task instanceof ScheduledFutureTask) {
+            return ((ScheduledFutureTask<Object>) task).scheduledAtMillis();
+        }
+        return ((ScheduledThreadPoolPeriodicFuture) task).scheduledAtMillis();
+    }
+
+    private long taskDelayMillis(Object task) {
+        if (task instanceof ScheduledFutureTask) {
+            return ((ScheduledFutureTask<Object>) task).getDelayMillis();
+        }
+        return ((ScheduledThreadPoolPeriodicFuture) task).getDelayMillis();
+    }
+
+    private boolean taskIsCancelled(Object task) {
+        if (task instanceof ScheduledFutureTask) {
+            return ((ScheduledFutureTask<Object>) task).isCancelled();
+        }
+        return ((ScheduledThreadPoolPeriodicFuture) task).isCancelled();
+    }
+
+    private void pruneCancelledLocked() {
+        int index = 0;
+        while (index < this.scheduled.size()) {
+            if (this.taskIsCancelled(this.scheduled.get(index))) {
+                this.scheduled.remove(index);
+            } else {
+                index = index + 1;
+            }
+        }
+    }
+
+    private void enqueueScheduledLocked(Object task) {
+        long dueMillis = this.taskScheduledAt(task);
+        int index = 0;
+        while (index < this.scheduled.size()) {
+            if (this.taskScheduledAt(this.scheduled.get(index)) > dueMillis) {
+                break;
+            }
+            index = index + 1;
+        }
+        this.scheduled.add(index, task);
+        this.gate.notifyAll();
+    }
+
+    private Object awaitNextScheduledTask() {
+        this.gate.enter();
+        try {
+            while (true) {
+                this.pruneCancelledLocked();
+                if (this.scheduled.isEmpty()) {
+                    if (this.shutdown) {
+                        return null;
+                    }
+                    this.gate.wait();
+                    continue;
+                }
+                Object next = this.scheduled.get(0);
+                long delayMillis = this.taskDelayMillis(next);
+                if (delayMillis > 0L) {
+                    this.gate.wait(delayMillis);
+                    continue;
+                }
+                this.scheduled.remove(0);
+                return next;
+            }
+        } finally {
+            this.gate.exit();
+        }
+        return null;
+    }
+
+    private void dispatchScheduledTask(Object task) {
+        if (task instanceof ScheduledFutureTask) {
+            this.workers.execute((ScheduledFutureTask<Object>) task);
+            return;
+        }
+        this.workers.execute(
+            new ScheduledThreadPoolPeriodicDispatch((ScheduledThreadPoolPeriodicFuture) task)
+        );
+    }
+
+    /**
+     * Wakes the scheduler thread to re-evaluate the head of the delayed queue.
+     */
+    public void signalScheduler() {
+        this.gate.enter();
+        try {
+            if (this.closed) {
+                return;
+            }
+            this.gate.notifyAll();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Requeues one periodic future after a completed iteration.
+     */
+    public void reschedulePeriodic(ScheduledThreadPoolPeriodicFuture future) {
+        this.gate.enter();
+        try {
+            if (this.closed || future.isCancelled() || future.isDone()) {
+                return;
+            }
+            this.enqueueScheduledLocked(future);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Owns delayed-task waiting and dispatch for this scheduled worker pool.
+     */
+    public void runSchedulerLoop() {
+        while (true) {
+            Object next = this.awaitNextScheduledTask();
+            if (next == null) {
+                break;
+            }
+            this.dispatchScheduledTask(next);
+        }
+        this.workers.shutdown();
+    }
+
+    /**
+     * Executes one runnable task immediately on the worker pool.
+     */
+    public void execute(Runnable task) {
+        this.ensureAcceptingTasks();
+        this.workers.execute(task);
+    }
+
+    /**
+     * Submits one callable task immediately on the worker pool.
+     */
+    public <T> Future<T> submit(Callable<T> task) {
+        this.ensureAcceptingTasks();
+        return this.workers.submit(task);
+    }
+
+    /**
+     * Submits one runnable task immediately on the worker pool.
+     */
+    public Future<Object> submit(Runnable task) {
+        this.ensureAcceptingTasks();
+        return this.workers.submit(task);
+    }
+
+    /**
+     * Submits every callable immediately and waits for all results to complete.
+     */
+    public <T> List<Future<T>> invokeAll(List<Callable<T>> tasks) {
+        this.ensureAcceptingTasks();
+        return this.workers.invokeAll(tasks);
+    }
+
+    /**
+     * Submits every callable immediately and returns the first successful result.
+     */
+    public <T> T invokeAny(List<Callable<T>> tasks) {
+        this.ensureAcceptingTasks();
+        return this.workers.invokeAny(tasks);
+    }
+
+    /**
+     * Schedules one callable task after the requested delay.
+     */
+    public <T> ScheduledFuture<T> schedule(Callable<T> task, long delayMillis) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        if (delayMillis < 0L) {
+            throw new IllegalArgumentException("delayMillis must be >= 0");
+        }
+        this.gate.enter();
+        try {
+            this.ensureAcceptingTasks();
+            ScheduledFutureTask<T> future = new ScheduledFutureTask<T>(task, delayMillis);
+            future.attachSchedulerOwner(this);
+            this.enqueueScheduledLocked(future);
+            return future;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Schedules one runnable task after the requested delay.
+     */
+    public ScheduledFuture<Object> schedule(Runnable task, long delayMillis) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        if (delayMillis < 0L) {
+            throw new IllegalArgumentException("delayMillis must be >= 0");
+        }
+        this.gate.enter();
+        try {
+            this.ensureAcceptingTasks();
+            ScheduledFutureTask<Object> future = new ScheduledFutureTask<Object>(task, delayMillis);
+            future.attachSchedulerOwner(this);
+            this.enqueueScheduledLocked(future);
+            return future;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Schedules one runnable task at a fixed rate after the initial delay.
+     */
+    public ScheduledFuture<Object> scheduleAtFixedRate(
+        Runnable task,
+        long initialDelayMillis,
+        long periodMillis
+    ) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        if (initialDelayMillis < 0L) {
+            throw new IllegalArgumentException("initialDelayMillis must be >= 0");
+        }
+        if (periodMillis <= 0L) {
+            throw new IllegalArgumentException("periodMillis must be > 0");
+        }
+        this.gate.enter();
+        try {
+            this.ensureAcceptingTasks();
+            ScheduledThreadPoolPeriodicFuture future = new ScheduledThreadPoolPeriodicFuture(
+                task,
+                initialDelayMillis,
+                periodMillis,
+                true,
+                this
+            );
+            this.enqueueScheduledLocked(future);
+            return future;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Schedules one runnable task with a fixed delay between completions.
+     */
+    public ScheduledFuture<Object> scheduleWithFixedDelay(
+        Runnable task,
+        long initialDelayMillis,
+        long delayMillis
+    ) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        if (initialDelayMillis < 0L) {
+            throw new IllegalArgumentException("initialDelayMillis must be >= 0");
+        }
+        if (delayMillis <= 0L) {
+            throw new IllegalArgumentException("delayMillis must be > 0");
+        }
+        this.gate.enter();
+        try {
+            this.ensureAcceptingTasks();
+            ScheduledThreadPoolPeriodicFuture future = new ScheduledThreadPoolPeriodicFuture(
+                task,
+                initialDelayMillis,
+                delayMillis,
+                false,
+                this
+            );
+            this.enqueueScheduledLocked(future);
+            return future;
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Prevents new task submission and lets already scheduled work drain.
+     */
+    public void shutdown() {
+        this.gate.enter();
+        try {
+            this.ensureOpen();
+            if (this.shutdown) {
+                return;
+            }
+            this.shutdown = true;
+            this.gate.notifyAll();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns whether shutdown has been requested.
+     */
+    public boolean isShutdown() {
+        this.ensureOpen();
+        return this.shutdown;
+    }
+
+    /**
+     * Returns whether the scheduler thread and worker pool have both terminated.
+     */
+    public boolean isTerminated() {
+        this.ensureOpen();
+        if (!this.shutdown) {
+            return false;
+        }
+        if (!this.schedulerThread.join(0L)) {
+            return false;
+        }
+        return this.workers.isTerminated();
+    }
+
+    /**
+     * Waits for the scheduler thread and worker pool to terminate after shutdown.
+     */
+    public boolean awaitTermination(long timeoutMillis) {
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        this.shutdown();
+        long start = System.currentTimeMillis();
+        long remaining = timeoutMillis;
+        if (!this.schedulerThread.join(remaining)) {
+            return false;
+        }
+        if (timeoutMillis != 0L) {
+            long elapsed = System.currentTimeMillis() - start;
+            remaining = timeoutMillis - elapsed;
+            if (remaining <= 0L) {
+                return false;
+            }
+        }
+        return this.workers.awaitTermination(remaining);
+    }
+
+    /**
+     * Shuts the scheduled worker pool down and waits indefinitely for termination.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        this.shutdown();
+        this.schedulerThread.join();
+        this.schedulerThread.close();
+        this.workers.close();
+        this.gate.close();
+        this.closed = true;
+    }
+}

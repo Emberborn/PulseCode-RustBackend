@@ -1,0 +1,91 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+
+/**
+ * Internal worker for the fork-join pool baseline.
+ *
+ * Each worker owns one local deque so tasks can be pushed locally and stolen
+ * from the opposite end by peer workers.
+ */
+final class ForkJoinWorker implements Runnable {
+    private ForkJoinPool owner;
+    private LinkedBlockingDeque<Runnable> localQueue;
+    private Thread thread;
+    private AtomicLong threadId;
+
+    /**
+     * Creates one worker bound to the supplied owning pool.
+     */
+    public ForkJoinWorker(ForkJoinPool owner) {
+        this.owner = owner;
+        this.localQueue = new LinkedBlockingDeque<Runnable>();
+        this.thread = null;
+        this.threadId = AtomicLong.create(0L);
+    }
+
+    /**
+     * Records the backing thread after pool startup.
+     */
+    public void attachThread(Thread thread) {
+        this.thread = thread;
+    }
+
+    /**
+     * Returns the backing worker thread.
+     */
+    public Thread workerThread() {
+        return this.thread;
+    }
+
+    /**
+     * Returns the current worker thread identifier once running.
+     */
+    public long workerThreadId() {
+        return this.threadId.get();
+    }
+
+    /**
+     * Pushes one task onto the local front for fork-style execution.
+     */
+    public void pushLocalFront(Runnable task) {
+        this.localQueue.putFirst(task);
+    }
+
+    /**
+     * Pushes one externally submitted task onto the local back.
+     */
+    public void pushExternalBack(Runnable task) {
+        this.localQueue.putLast(task);
+    }
+
+    /**
+     * Polls one locally queued task from the front without waiting.
+     */
+    public Runnable pollLocalFront() {
+        return this.localQueue.pollFirst(0L);
+    }
+
+    /**
+     * Steals one task from the back without waiting.
+     */
+    public Runnable stealFromBack() {
+        return this.localQueue.pollLast(0L);
+    }
+
+    /**
+     * Enters the owner's worker loop on the current thread.
+     */
+    public void run() {
+        this.threadId.set(Thread.currentThreadId());
+        this.owner.runWorkerLoop(this);
+    }
+
+    /**
+     * Releases worker-local bookkeeping resources.
+     */
+    public void close() {
+        this.threadId.close();
+    }
+}

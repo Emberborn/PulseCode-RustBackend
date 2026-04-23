@@ -1,0 +1,205 @@
+package pulse.concurrent;
+
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+import pulse.lang.Throwable;
+
+/**
+ * Base fork-join task with future-style completion and join semantics.
+ *
+ * This is the owned recursive-task floor for the work-stealing baseline:
+ * tasks can be forked onto a `ForkJoinPool`, joined later, and executed under
+ * worker-local deques without pretending the fuller Java fork-join universe is
+ * already complete.
+ */
+public abstract class ForkJoinTask<T> implements Future<T>, Runnable {
+    private AtomicInt state;
+    private AtomicBoolean cancelRequested;
+    private AtomicReference<T> result;
+    private AtomicReference<Throwable> failure;
+    private AtomicReference<Thread> runner;
+    private Event completed;
+    private boolean closed;
+
+    /**
+     * Creates one incomplete fork-join task.
+     */
+    public ForkJoinTask() {
+        this.state = AtomicInt.create(0);
+        this.cancelRequested = AtomicBoolean.create(false);
+        this.result = AtomicReference.create(null);
+        this.failure = AtomicReference.create(null);
+        this.runner = AtomicReference.create(null);
+        this.completed = Event.createManualReset(false);
+        this.closed = false;
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("fork-join task is closed");
+        }
+    }
+
+    /**
+     * Computes this task's result when it is executed by a worker thread.
+     */
+    protected abstract T compute();
+
+    /**
+     * Binds the worker thread that will execute this task.
+     */
+    public void bindThread(Thread thread) {
+        this.ensureOpen();
+        this.runner.set(thread);
+    }
+
+    /**
+     * Forks this task onto the supplied pool.
+     */
+    public ForkJoinTask<T> fork(ForkJoinPool pool) {
+        if (pool == null) {
+            throw new IllegalArgumentException("pool must not be null");
+        }
+        this.ensureOpen();
+        pool.fork(this);
+        return this;
+    }
+
+    /**
+     * Waits for completion and returns the computed result.
+     */
+    public T join() {
+        return this.get();
+    }
+
+    /**
+     * Executes the task body once.
+     */
+    public void run() {
+        this.ensureOpen();
+        if (!this.state.compareAndSet(0, 1)) {
+            return;
+        }
+        try {
+            T value = this.compute();
+            if (this.cancelRequested.get()) {
+                this.state.set(4);
+            } else {
+                this.result.set(value);
+                this.state.set(2);
+            }
+        } catch (Throwable failure) {
+            if (this.cancelRequested.get()) {
+                this.state.set(4);
+            } else {
+                this.failure.set(failure);
+                this.state.set(3);
+            }
+        } finally {
+            this.completed.set();
+        }
+    }
+
+    /**
+     * Requests cancellation before start or cooperative interruption while running.
+     */
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        this.ensureOpen();
+        if (this.state.compareAndSet(0, 4)) {
+            this.completed.set();
+            return true;
+        }
+        if (this.state.get() != 1) {
+            return false;
+        }
+        if (!mayInterruptIfRunning) {
+            return false;
+        }
+        this.cancelRequested.set(true);
+        Thread bound = this.runner.get();
+        if (bound != null) {
+            bound.interrupt();
+        }
+        return true;
+    }
+
+    /**
+     * Returns whether cancellation has won for this task.
+     */
+    public boolean isCancelled() {
+        this.ensureOpen();
+        return this.state.get() == 4;
+    }
+
+    /**
+     * Returns whether this task has reached a terminal state.
+     */
+    public boolean isDone() {
+        this.ensureOpen();
+        int current = this.state.get();
+        return current == 2 || current == 3 || current == 4;
+    }
+
+    /**
+     * Waits indefinitely for completion.
+     */
+    public void await() {
+        this.ensureOpen();
+        this.completed.waitOne(-1L);
+    }
+
+    /**
+     * Waits for completion or the timeout to expire.
+     */
+    public boolean await(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        return this.completed.waitOne(timeoutMillis);
+    }
+
+    /**
+     * Returns the completed result or throws the current baseline future exception.
+     */
+    public T get() {
+        this.ensureOpen();
+        this.await();
+        int current = this.state.get();
+        if (current == 2) {
+            return this.result.get();
+        }
+        if (current == 4) {
+            throw new CancellationException("fork-join task was cancelled");
+        }
+        Throwable failure = this.failure.get();
+        if (failure == null) {
+            throw new IllegalStateException("fork-join task completed without result or failure");
+        }
+        throw new ExecutionException("fork-join task failed", failure);
+    }
+
+    /**
+     * Releases the task's coordination/storage resources after completion.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (!this.isDone()) {
+            throw new IllegalStateException("cannot close fork-join task before completion");
+        }
+        this.runner.set(null);
+        this.result.set(null);
+        this.failure.set(null);
+        this.completed.close();
+        this.runner.close();
+        this.result.close();
+        this.failure.close();
+        this.cancelRequested.close();
+        this.state.close();
+        this.closed = true;
+    }
+}

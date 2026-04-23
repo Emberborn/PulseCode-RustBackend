@@ -84,7 +84,7 @@ pub(super) fn infer_expr_type_in_scope(
         Expr::FloatLiteral(_) => Ok(value_type("float")),
         Expr::DoubleLiteral(_) => Ok(value_type("double")),
         Expr::CharLiteral(_) => Ok(value_type("char")),
-        Expr::StringLiteral(_) => Ok(value_type("String")),
+        Expr::StringLiteral(_) => Ok(value_type("pulse.lang.String")),
         Expr::BoolLiteral(_) => Ok(value_type("boolean")),
         Expr::NullLiteral => Ok(value_type("null")),
         Expr::This => {

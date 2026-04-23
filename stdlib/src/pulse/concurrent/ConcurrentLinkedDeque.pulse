@@ -1,0 +1,558 @@
+package pulse.concurrent;
+
+import pulse.collections.Collection;
+import pulse.collections.Deque;
+import pulse.collections.LinkedList;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Iterator;
+
+/**
+ * Monitor-backed concurrent deque baseline.
+ *
+ * This gives the current self-hosting floor a non-blocking double-ended queue
+ * that stays truthful about synchronization and snapshot iteration.
+ */
+public final class ConcurrentLinkedDeque<T> implements Deque<T> {
+    private Monitor gate;
+    private LinkedList<T> values;
+
+    /**
+     * Creates an empty concurrent deque.
+     */
+    public ConcurrentLinkedDeque() {
+        this.gate = Monitor.create();
+        this.values = new LinkedList();
+    }
+
+    private LinkedList<T> snapshotLocked() {
+        LinkedList<T> snapshot = new LinkedList();
+        snapshot.addAll(this.values);
+        return snapshot;
+    }
+
+    /**
+     * Returns the current number of values stored in the deque.
+     */
+    public int size() {
+        this.gate.enter();
+        try {
+            return this.values.size();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the deque is currently empty.
+     */
+    public boolean isEmpty() {
+        this.gate.enter();
+        try {
+            return this.values.isEmpty();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes all values from the deque.
+     */
+    public void clear() {
+        this.gate.enter();
+        try {
+            this.values.clear();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one raw-object value at the tail of the deque.
+     */
+    public boolean add(T value) {
+        this.gate.enter();
+        try {
+            return this.values.add(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied value is present.
+     */
+    public boolean contains(T value) {
+        this.gate.enter();
+        try {
+            return this.values.contains(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes the first matching value when present.
+     */
+    public boolean remove(T value) {
+        this.gate.enter();
+        try {
+            return this.values.remove(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether every supplied value is present.
+     */
+    public boolean containsAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.containsAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds all supplied values into the deque.
+     */
+    public boolean addAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.addAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes every supplied value from the deque.
+     */
+    public boolean removeAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.removeAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Retains only the supplied values in the deque.
+     */
+    public boolean retainAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.retainAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns a snapshot iterator over the current deque contents.
+     */
+    public Iterator iterator() {
+        this.gate.enter();
+        try {
+            return this.snapshotLocked().iterator();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one raw-object value at the tail.
+     */
+    public boolean offer(T value) {
+        this.gate.enter();
+        try {
+            return this.values.offer(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one integer value at the tail.
+     */
+    public boolean offer(int value) {
+        this.gate.enter();
+        try {
+            return this.values.offer(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one string value at the tail.
+     */
+    public boolean offer(String value) {
+        this.gate.enter();
+        try {
+            return this.values.offer(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the head value when one is present.
+     */
+    public T poll() {
+        this.gate.enter();
+        try {
+            return this.values.poll();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the head value and throws when empty.
+     */
+    public T remove() {
+        this.gate.enter();
+        try {
+            if (this.values.isEmpty()) {
+                throw new IllegalStateException("concurrent deque is empty");
+            }
+            return this.values.remove();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the head value without removing it.
+     */
+    public T peek() {
+        this.gate.enter();
+        try {
+            return this.values.peek();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the head value without removing it and throws when empty.
+     */
+    public T element() {
+        this.gate.enter();
+        try {
+            if (this.values.isEmpty()) {
+                throw new IllegalStateException("concurrent deque is empty");
+            }
+            return this.values.element();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one raw-object value at the front.
+     */
+    public void addFirst(T value) {
+        this.gate.enter();
+        try {
+            this.values.addFirst(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one raw-object value at the front.
+     */
+    public boolean offerFirst(T value) {
+        this.gate.enter();
+        try {
+            return this.values.offerFirst(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one integer value at the front.
+     */
+    public void addFirst(int value) {
+        this.gate.enter();
+        try {
+            this.values.addFirst(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one string value at the front.
+     */
+    public void addFirst(String value) {
+        this.gate.enter();
+        try {
+            this.values.addFirst(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one integer value at the front.
+     */
+    public boolean offerFirst(int value) {
+        this.gate.enter();
+        try {
+            return this.values.offerFirst(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one string value at the front.
+     */
+    public boolean offerFirst(String value) {
+        this.gate.enter();
+        try {
+            return this.values.offerFirst(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one raw-object value at the back.
+     */
+    public void addLast(T value) {
+        this.gate.enter();
+        try {
+            this.values.addLast(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one raw-object value at the back.
+     */
+    public boolean offerLast(T value) {
+        this.gate.enter();
+        try {
+            return this.values.offerLast(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one integer value at the back.
+     */
+    public void addLast(int value) {
+        this.gate.enter();
+        try {
+            this.values.addLast(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one string value at the back.
+     */
+    public void addLast(String value) {
+        this.gate.enter();
+        try {
+            this.values.addLast(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one integer value at the back.
+     */
+    public boolean offerLast(int value) {
+        this.gate.enter();
+        try {
+            return this.values.offerLast(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one string value at the back.
+     */
+    public boolean offerLast(String value) {
+        this.gate.enter();
+        try {
+            return this.values.offerLast(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the front value without removing it and throws when empty.
+     */
+    public T getFirst() {
+        this.gate.enter();
+        try {
+            if (this.values.isEmpty()) {
+                throw new IllegalStateException("concurrent deque is empty");
+            }
+            return this.values.getFirst();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the front value and throws when empty.
+     */
+    public T removeFirst() {
+        this.gate.enter();
+        try {
+            if (this.values.isEmpty()) {
+                throw new IllegalStateException("concurrent deque is empty");
+            }
+            return this.values.removeFirst();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the front value without removing it.
+     */
+    public T peekFirst() {
+        this.gate.enter();
+        try {
+            return this.values.peekFirst();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the front value when one is present.
+     */
+    public T pollFirst() {
+        this.gate.enter();
+        try {
+            return this.values.pollFirst();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the back value and throws when empty.
+     */
+    public T removeLast() {
+        this.gate.enter();
+        try {
+            if (this.values.isEmpty()) {
+                throw new IllegalStateException("concurrent deque is empty");
+            }
+            return this.values.removeLast();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the back value without removing it and throws when empty.
+     */
+    public T getLast() {
+        this.gate.enter();
+        try {
+            if (this.values.isEmpty()) {
+                throw new IllegalStateException("concurrent deque is empty");
+            }
+            return this.values.getLast();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the back value without removing it.
+     */
+    public T peekLast() {
+        this.gate.enter();
+        try {
+            return this.values.peekLast();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the back value when one is present.
+     */
+    public T pollLast() {
+        this.gate.enter();
+        try {
+            return this.values.pollLast();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes the first matching value when present.
+     */
+    public boolean removeFirstOccurrence(T value) {
+        this.gate.enter();
+        try {
+            return this.values.removeFirstOccurrence(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes the last matching value when present.
+     */
+    public boolean removeLastOccurrence(T value) {
+        this.gate.enter();
+        try {
+            return this.values.removeLastOccurrence(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Pushes one raw-object value onto the front.
+     */
+    public void push(T value) {
+        this.addFirst(value);
+    }
+
+    /**
+     * Pushes one integer value onto the front.
+     */
+    public void push(int value) {
+        this.addFirst(value);
+    }
+
+    /**
+     * Pushes one string value onto the front.
+     */
+    public void push(String value) {
+        this.addFirst(value);
+    }
+
+    /**
+     * Removes and returns the front value in stack order.
+     */
+    public T pop() {
+        return this.removeFirst();
+    }
+}

@@ -1,0 +1,43 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned combination bridge for `CompletableFuture.thenCombineAsync`.
+ */
+public final class CompletableThenCombineTask<T, U, R> implements Runnable {
+    private CompletableFuture<T> left;
+    private CompletableFuture<U> right;
+    private CompletionBiFunction<T, U, R> combiner;
+    private CompletableFuture<R> target;
+
+    /**
+     * Creates one combine bridge between two completion stages and a target stage.
+     */
+    public CompletableThenCombineTask(
+        CompletableFuture<T> left,
+        CompletableFuture<U> right,
+        CompletionBiFunction<T, U, R> combiner,
+        CompletableFuture<R> target
+    ) {
+        this.left = left;
+        this.right = right;
+        this.combiner = combiner;
+        this.target = target;
+    }
+
+    /**
+     * Awaits both source futures, combines their values, and completes the target.
+     */
+    public void run() {
+        try {
+            T leftValue = this.left.get();
+            U rightValue = this.right.get();
+            R combined = this.combiner.apply(leftValue, rightValue);
+            this.target.complete(combined);
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

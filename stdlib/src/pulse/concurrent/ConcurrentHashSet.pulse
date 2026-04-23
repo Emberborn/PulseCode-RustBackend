@@ -1,0 +1,200 @@
+package pulse.concurrent;
+
+import pulse.collections.Collection;
+import pulse.collections.HashSet;
+import pulse.collections.Set;
+import pulse.lang.Iterator;
+
+/**
+ * Monitor-backed concurrent set baseline.
+ *
+ * This keeps the current ownership model truthful: operations are serialized
+ * through the shipped monitor floor, and iterator-producing calls return
+ * snapshots rather than exposing a live mutable view across threads.
+ */
+public final class ConcurrentHashSet<T> implements Set<T> {
+    private Monitor gate;
+    private HashSet<T> values;
+
+    /**
+     * Creates an empty concurrent set.
+     */
+    public ConcurrentHashSet() {
+        this.gate = Monitor.create();
+        this.values = new HashSet();
+    }
+
+    private HashSet<T> snapshotLocked() {
+        HashSet<T> snapshot = new HashSet();
+        snapshot.addAll(this.values);
+        return snapshot;
+    }
+
+    /**
+     * Returns the number of unique values currently stored in the set.
+     */
+    public int size() {
+        this.gate.enter();
+        try {
+            return this.values.size();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the set currently stores any values.
+     */
+    public boolean isEmpty() {
+        this.gate.enter();
+        try {
+            return this.values.isEmpty();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes all values from the set.
+     */
+    public void clear() {
+        this.gate.enter();
+        try {
+            this.values.clear();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one raw-object value when it is not already present.
+     */
+    public boolean add(T value) {
+        this.gate.enter();
+        try {
+            return this.values.add(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one string value when it is not already present.
+     */
+    public boolean add(String value) {
+        this.gate.enter();
+        try {
+            return this.values.add(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied raw-object value is present.
+     */
+    public boolean contains(T value) {
+        this.gate.enter();
+        try {
+            return this.values.contains(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied string value is present.
+     */
+    public boolean contains(String value) {
+        this.gate.enter();
+        try {
+            return this.values.contains(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes the supplied raw-object value when it is present.
+     */
+    public boolean remove(T value) {
+        this.gate.enter();
+        try {
+            return this.values.remove(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes the supplied string value when it is present.
+     */
+    public boolean remove(String value) {
+        this.gate.enter();
+        try {
+            return this.values.remove(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether every supplied value is present.
+     */
+    public boolean containsAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.containsAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds all supplied values into the set.
+     */
+    public boolean addAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.addAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes every supplied value from the set.
+     */
+    public boolean removeAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.removeAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Retains only the supplied values in the set.
+     */
+    public boolean retainAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.retainAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns a snapshot iterator over the current set contents.
+     */
+    public Iterator iterator() {
+        this.gate.enter();
+        try {
+            return this.snapshotLocked().iterator();
+        } finally {
+            this.gate.exit();
+        }
+    }
+}

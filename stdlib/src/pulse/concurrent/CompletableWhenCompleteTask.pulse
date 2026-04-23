@@ -1,0 +1,52 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned observation bridge for `CompletableFuture.whenCompleteAsync`.
+ */
+public final class CompletableWhenCompleteTask<T> implements Runnable {
+    private CompletableFuture<T> source;
+    private CompletionBiConsumer<T, Throwable> action;
+    private CompletableFuture<T> target;
+
+    /**
+     * Creates one completion-observation bridge.
+     */
+    public CompletableWhenCompleteTask(
+        CompletableFuture<T> source,
+        CompletionBiConsumer<T, Throwable> action,
+        CompletableFuture<T> target
+    ) {
+        this.source = source;
+        this.action = action;
+        this.target = target;
+    }
+
+    /**
+     * Observes source completion, runs side effects, and mirrors the source outcome.
+     */
+    public void run() {
+        T value = null;
+        Throwable failure = null;
+        try {
+            value = this.source.get();
+        } catch (Throwable observed) {
+            failure = observed;
+        }
+
+        try {
+            this.action.accept(value, failure);
+        } catch (Throwable actionFailure) {
+            this.target.completeExceptionally(actionFailure);
+            return;
+        }
+
+        if (failure != null) {
+            this.target.completeExceptionally(failure);
+            return;
+        }
+        this.target.complete(value);
+    }
+}

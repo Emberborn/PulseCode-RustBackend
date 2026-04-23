@@ -1,0 +1,11 @@
+package pulse.concurrent;
+
+/**
+ * Two-input completion side-effect contract for the wider completion-stage baseline.
+ */
+public interface CompletionBiConsumer<T, U> {
+    /**
+     * Consumes the supplied pair for side effects.
+     */
+    public void accept(T first, U second);
+}

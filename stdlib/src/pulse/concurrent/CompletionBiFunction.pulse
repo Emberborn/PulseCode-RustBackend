@@ -1,0 +1,11 @@
+package pulse.concurrent;
+
+/**
+ * Two-input completion mapping contract for the wider completion-stage baseline.
+ */
+public interface CompletionBiFunction<T, U, R> {
+    /**
+     * Produces one mapped value from the supplied pair.
+     */
+    public R apply(T first, U second);
+}

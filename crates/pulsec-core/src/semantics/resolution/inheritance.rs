@@ -26,21 +26,27 @@ pub(super) fn overrides_super_method(
         return false;
     };
     let mut current = class_info.super_class.clone();
-    while let Some(parent) = current {
-        let parent_erased = erase_generic_type_name(&parent);
+    while let Some(parent_ty) = current {
+        let parent_erased = erase_generic_type_name(&parent_ty);
         let Some(parent_info) = class_index.get(parent_erased.as_str()) else {
             return false;
         };
+        let bindings =
+            build_type_param_bindings(&parent_info.type_params, &generic_type_args(&parent_ty));
         if let Some(parent_methods) = parent_info.methods.get(requirement.method_name.as_str()) {
             if parent_methods.iter().any(|parent_sig| {
-                parent_sig.param_types == requirement.param_types
-                    && parent_sig.return_type == requirement.return_type
+                let instantiated = instantiate_method_signature(parent_sig, &bindings);
+                instantiated.param_types == requirement.param_types
+                    && instantiated.return_type == requirement.return_type
                     && !parent_sig.is_static
             }) {
                 return true;
             }
         }
-        current = parent_info.super_class.clone();
+        current = parent_info
+            .super_class
+            .as_ref()
+            .map(|parent| substitute_type_params(parent, &bindings));
     }
     false
 }
@@ -184,10 +190,16 @@ pub(super) fn validate_override_rules(
     super_info: &ClassInfo,
     class_index: &HashMap<String, ClassInfo>,
 ) -> Result<(), SemanticError> {
+    let super_bindings = class_info
+        .super_class
+        .as_ref()
+        .map(|parent| build_type_param_bindings(&super_info.type_params, &generic_type_args(parent)))
+        .unwrap_or_default();
     for (method_name, methods) in &class_info.methods {
         if let Some(parent_methods) = super_info.methods.get(method_name) {
             for method in methods {
                 for parent in parent_methods {
+                    let parent = instantiate_method_signature(parent, &super_bindings);
                     if method.param_types != parent.param_types {
                         continue;
                     }
@@ -349,6 +361,13 @@ fn instantiate_interface_method_signature(
     sig: &MethodSignature,
     bindings: &HashMap<String, String>,
 ) -> MethodSignature {
+    instantiate_method_signature(sig, bindings)
+}
+
+fn instantiate_method_signature(
+    sig: &MethodSignature,
+    bindings: &HashMap<String, String>,
+) -> MethodSignature {
     MethodSignature {
         type_params: sig.type_params.clone(),
         param_types: sig
@@ -370,6 +389,18 @@ fn instantiate_interface_method_signature(
     }
 }
 
+fn owner_type_param_bindings(info: &ClassInfo, owner_ty: &str) -> HashMap<String, String> {
+    let args = generic_type_args(owner_ty);
+    if args.is_empty() && !info.type_params.is_empty() {
+        return info
+            .type_params
+            .iter()
+            .map(|param| (param.clone(), param.clone()))
+            .collect();
+    }
+    build_type_param_bindings(&info.type_params, &args)
+}
+
 pub(super) fn find_instance_method_in_class_hierarchy(
     class_info: &ClassInfo,
     method_name: &str,
@@ -377,12 +408,18 @@ pub(super) fn find_instance_method_in_class_hierarchy(
     class_index: &HashMap<String, ClassInfo>,
 ) -> Option<MethodSignature> {
     let mut current = format!("{}.{}", class_info.package_name, class_info.simple_name);
+    let mut current_ty = current.clone();
     loop {
         let info = class_index.get(current.as_str())?;
         if let Some(methods) = info.methods.get(method_name) {
+            let bindings = owner_type_param_bindings(info, &current_ty);
             for sig in methods {
-                if sig.param_types == target.param_types && !sig.is_static && !sig.is_abstract {
-                    return Some(sig.clone());
+                let instantiated = instantiate_method_signature(sig, &bindings);
+                if instantiated.param_types == target.param_types
+                    && !sig.is_static
+                    && !sig.is_abstract
+                {
+                    return Some(instantiated);
                 }
             }
         }
@@ -399,7 +436,11 @@ pub(super) fn find_instance_method_in_class_hierarchy(
         }
 
         if let Some(parent) = info.super_class.as_deref() {
-            current = erase_generic_type_name(parent);
+            current_ty = substitute_type_params(
+                parent,
+                &owner_type_param_bindings(info, &current_ty),
+            );
+            current = erase_generic_type_name(&current_ty);
         } else {
             return None;
         }

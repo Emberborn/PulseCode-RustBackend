@@ -1,0 +1,247 @@
+package pulse.concurrent;
+
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.System;
+import pulse.lang.Thread;
+import pulse.lang.Throwable;
+
+/**
+ * Periodic scheduled task on the current thread/sync/atomic floor.
+ *
+ * This makes fixed-rate and fixed-delay scheduling real without claiming a fuller
+ * timer-pool or work-stealing scheduler underneath.
+ */
+public final class PeriodicScheduledTask implements Runnable, ScheduledFuture<Object> {
+    private Runnable task;
+    private long scheduledAt;
+    private long intervalMillis;
+    private boolean fixedRate;
+    private AtomicInt state;
+    private AtomicBoolean cancelRequested;
+    private AtomicReference<Throwable> failure;
+    private AtomicReference<Thread> runner;
+    private Event completed;
+    private Event wakeSignal;
+    private boolean closed;
+
+    /**
+     * Creates one periodic scheduled task.
+     */
+    public PeriodicScheduledTask(
+        Runnable task,
+        long initialDelayMillis,
+        long intervalMillis,
+        boolean fixedRate
+    ) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        if (initialDelayMillis < 0L) {
+            throw new IllegalArgumentException("initialDelayMillis must be >= 0");
+        }
+        if (intervalMillis <= 0L) {
+            throw new IllegalArgumentException("intervalMillis must be > 0");
+        }
+        this.task = task;
+        this.scheduledAt = System.currentTimeMillis() + initialDelayMillis;
+        this.intervalMillis = intervalMillis;
+        this.fixedRate = fixedRate;
+        this.state = AtomicInt.create(0);
+        this.cancelRequested = AtomicBoolean.create(false);
+        this.failure = AtomicReference.create(null);
+        this.runner = AtomicReference.create(null);
+        this.completed = Event.createManualReset(false);
+        this.wakeSignal = Event.createManualReset(false);
+        this.closed = false;
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("periodic scheduled task is closed");
+        }
+    }
+
+    /**
+     * Binds the host thread that owns periodic execution.
+     */
+    public void bindThread(Thread thread) {
+        this.ensureOpen();
+        this.runner.set(thread);
+    }
+
+    /**
+     * Returns the next target wall-clock execution time.
+     */
+    public long scheduledAtMillis() {
+        this.ensureOpen();
+        return this.scheduledAt;
+    }
+
+    /**
+     * Returns the remaining delay before the next execution becomes eligible.
+     */
+    public long getDelayMillis() {
+        this.ensureOpen();
+        long remaining = this.scheduledAt - System.currentTimeMillis();
+        if (remaining <= 0L) {
+            return 0L;
+        }
+        return remaining;
+    }
+
+    /**
+     * Returns whether cancellation has won for this periodic task.
+     */
+    public boolean isCancelled() {
+        this.ensureOpen();
+        return this.state.get() == 2;
+    }
+
+    /**
+     * Returns whether this periodic task has reached terminal cancellation/failure.
+     */
+    public boolean isDone() {
+        this.ensureOpen();
+        int current = this.state.get();
+        return current == 2 || current == 3;
+    }
+
+    /**
+     * Requests cancellation and optional cooperative interruption of the running owner thread.
+     */
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        this.ensureOpen();
+        int current = this.state.get();
+        if (current == 2 || current == 3) {
+            return false;
+        }
+        this.cancelRequested.set(true);
+        this.wakeSignal.set();
+        if (current == 0) {
+            this.state.set(2);
+            this.completed.set();
+            return true;
+        }
+        if (mayInterruptIfRunning) {
+            Thread bound = this.runner.get();
+            if (bound != null) {
+                bound.interrupt();
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Waits indefinitely for cancellation or terminal failure.
+     */
+    public void await() {
+        this.ensureOpen();
+        this.completed.waitOne(-1L);
+    }
+
+    /**
+     * Waits for cancellation or terminal failure, or the timeout to expire.
+     */
+    public boolean await(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        return this.completed.waitOne(timeoutMillis);
+    }
+
+    /**
+     * Executes the periodic task until cancellation or failure.
+     */
+    public void run() {
+        this.ensureOpen();
+        if (!this.state.compareAndSet(0, 1)) {
+            return;
+        }
+        try {
+            while (true) {
+                long remaining = this.getDelayMillis();
+                if (remaining > 0L) {
+                    if (this.cancelRequested.get()) {
+                        this.state.set(2);
+                        break;
+                    }
+                    this.wakeSignal.waitOne(remaining);
+                    this.wakeSignal.reset();
+                    if (this.cancelRequested.get()) {
+                        this.state.set(2);
+                        break;
+                    }
+                } else {
+                    this.wakeSignal.reset();
+                }
+
+                try {
+                    this.task.run();
+                } catch (Throwable failure) {
+                    this.failure.set(failure);
+                    this.state.set(3);
+                    break;
+                }
+
+                if (this.cancelRequested.get()) {
+                    this.state.set(2);
+                    break;
+                }
+
+                long now = System.currentTimeMillis();
+                if (this.fixedRate) {
+                    long next = this.scheduledAt + this.intervalMillis;
+                    if (next <= now) {
+                        next = now + this.intervalMillis;
+                    }
+                    this.scheduledAt = next;
+                } else {
+                    this.scheduledAt = now + this.intervalMillis;
+                }
+            }
+        } finally {
+            this.completed.set();
+        }
+    }
+
+    /**
+     * Waits for terminal completion and then reports cancellation or failure.
+     */
+    public Object get() {
+        this.ensureOpen();
+        this.await();
+        int current = this.state.get();
+        if (current == 2) {
+            throw new CancellationException("periodic scheduled future was cancelled");
+        }
+        Throwable failure = this.failure.get();
+        if (failure == null) {
+            throw new IllegalStateException("periodic scheduled future completed without cancellation or failure");
+        }
+        throw new ExecutionException("periodic scheduled future failed", failure);
+    }
+
+    /**
+     * Releases the periodic task's coordination/storage resources after terminal completion.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (!this.isDone()) {
+            throw new IllegalStateException("cannot close periodic scheduled task before completion");
+        }
+        this.runner.set(null);
+        this.failure.set(null);
+        this.completed.close();
+        this.wakeSignal.close();
+        this.runner.close();
+        this.failure.close();
+        this.cancelRequested.close();
+        this.state.close();
+        this.closed = true;
+    }
+}

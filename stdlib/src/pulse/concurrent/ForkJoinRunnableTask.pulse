@@ -1,0 +1,26 @@
+package pulse.concurrent;
+
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.Runnable;
+
+/**
+ * Runnable adapter for the fork-join pool's `submit(...)` baseline.
+ */
+public final class ForkJoinRunnableTask extends ForkJoinTask<Object> {
+    private Runnable runnable;
+
+    /**
+     * Creates one runnable-backed fork-join task adapter.
+     */
+    public ForkJoinRunnableTask(Runnable runnable) {
+        if (runnable == null) {
+            throw new IllegalArgumentException("runnable must not be null");
+        }
+        this.runnable = runnable;
+    }
+
+    protected Object compute() {
+        this.runnable.run();
+        return null;
+    }
+}

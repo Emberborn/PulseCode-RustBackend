@@ -401,14 +401,8 @@ pub(super) fn validate_break_stmt(
     method: &MethodDecl,
     class: &ClassDecl,
     breakable_depth: usize,
-    protected_try_depth: usize,
+    _protected_try_depth: usize,
 ) -> Result<bool, SemanticError> {
-    if protected_try_depth > 0 {
-        return Err(semantic_error(format!(
-            "'break' is not supported inside try/catch/finally in '{}.{}' for the current F1-16 baseline",
-            class.name, method.name
-        )));
-    }
     if breakable_depth == 0 {
         return Err(semantic_error(format!(
             "'break' is only valid inside loops or switch blocks in '{}.{}'",
@@ -422,14 +416,8 @@ pub(super) fn validate_continue_stmt(
     method: &MethodDecl,
     class: &ClassDecl,
     loop_depth: usize,
-    protected_try_depth: usize,
+    _protected_try_depth: usize,
 ) -> Result<bool, SemanticError> {
-    if protected_try_depth > 0 {
-        return Err(semantic_error(format!(
-            "'continue' is not supported inside try/catch/finally in '{}.{}' for the current F1-16 baseline",
-            class.name, method.name
-        )));
-    }
     if loop_depth == 0 {
         return Err(semantic_error(format!(
             "'continue' is only valid inside loops in '{}.{}'",

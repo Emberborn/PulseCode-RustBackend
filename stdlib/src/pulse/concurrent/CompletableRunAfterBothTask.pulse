@@ -1,0 +1,43 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned bridge for `CompletableFuture.runAfterBothAsync`.
+ */
+public final class CompletableRunAfterBothTask<T, U> implements Runnable {
+    private CompletableFuture<T> left;
+    private CompletableFuture<U> right;
+    private Runnable action;
+    private CompletableFuture<Object> target;
+
+    /**
+     * Creates one completion-after-both bridge.
+     */
+    public CompletableRunAfterBothTask(
+        CompletableFuture<T> left,
+        CompletableFuture<U> right,
+        Runnable action,
+        CompletableFuture<Object> target
+    ) {
+        this.left = left;
+        this.right = right;
+        this.action = action;
+        this.target = target;
+    }
+
+    /**
+     * Waits for both source stages, runs the action, and completes the target.
+     */
+    public void run() {
+        try {
+            this.left.get();
+            this.right.get();
+            this.action.run();
+            this.target.complete(null);
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

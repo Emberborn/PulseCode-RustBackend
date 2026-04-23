@@ -1,0 +1,239 @@
+package pulse.concurrent;
+
+import pulse.lang.IllegalArgumentException;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Runnable;
+import pulse.lang.System;
+import pulse.lang.Thread;
+import pulse.lang.Throwable;
+
+/**
+ * Scheduler-thread-managed periodic future for pooled scheduled executors.
+ *
+ * This keeps time ownership on the scheduler thread and execution ownership on
+ * worker threads so periodic work no longer burns one dedicated sleeping thread
+ * per task.
+ */
+public final class ScheduledThreadPoolPeriodicFuture implements ScheduledFuture<Object> {
+    private Runnable task;
+    private long scheduledAt;
+    private long intervalMillis;
+    private boolean fixedRate;
+    private AtomicInt state;
+    private AtomicBoolean cancelRequested;
+    private AtomicReference<Throwable> failure;
+    private AtomicReference<Thread> runner;
+    private Event completed;
+    private ScheduledThreadPoolExecutor owner;
+    private boolean closed;
+
+    /**
+     * Creates one pooled periodic scheduled future.
+     */
+    public ScheduledThreadPoolPeriodicFuture(
+        Runnable task,
+        long initialDelayMillis,
+        long intervalMillis,
+        boolean fixedRate,
+        ScheduledThreadPoolExecutor owner
+    ) {
+        if (task == null) {
+            throw new IllegalArgumentException("task must not be null");
+        }
+        if (initialDelayMillis < 0L) {
+            throw new IllegalArgumentException("initialDelayMillis must be >= 0");
+        }
+        if (intervalMillis <= 0L) {
+            throw new IllegalArgumentException("intervalMillis must be > 0");
+        }
+        if (owner == null) {
+            throw new IllegalArgumentException("owner must not be null");
+        }
+        this.task = task;
+        this.scheduledAt = System.currentTimeMillis() + initialDelayMillis;
+        this.intervalMillis = intervalMillis;
+        this.fixedRate = fixedRate;
+        this.state = AtomicInt.create(0);
+        this.cancelRequested = AtomicBoolean.create(false);
+        this.failure = AtomicReference.create(null);
+        this.runner = AtomicReference.create(null);
+        this.completed = Event.createManualReset(false);
+        this.owner = owner;
+        this.closed = false;
+    }
+
+    private void ensureOpen() {
+        if (this.closed) {
+            throw new IllegalStateException("scheduled thread-pool periodic future is closed");
+        }
+    }
+
+    /**
+     * Binds the worker thread that is currently executing this periodic body.
+     */
+    public void bindThread(Thread thread) {
+        this.ensureOpen();
+        this.runner.set(thread);
+    }
+
+    /**
+     * Returns the next target wall-clock execution time.
+     */
+    public long scheduledAtMillis() {
+        this.ensureOpen();
+        return this.scheduledAt;
+    }
+
+    /**
+     * Returns the remaining delay before the next execution becomes eligible.
+     */
+    public long getDelayMillis() {
+        this.ensureOpen();
+        long remaining = this.scheduledAt - System.currentTimeMillis();
+        if (remaining <= 0L) {
+            return 0L;
+        }
+        return remaining;
+    }
+
+    /**
+     * Returns whether cancellation has won for this periodic future.
+     */
+    public boolean isCancelled() {
+        this.ensureOpen();
+        return this.state.get() == 2;
+    }
+
+    /**
+     * Returns whether this periodic future has reached terminal cancellation/failure.
+     */
+    public boolean isDone() {
+        this.ensureOpen();
+        int current = this.state.get();
+        return current == 2 || current == 3;
+    }
+
+    /**
+     * Requests cancellation and optional cooperative interruption of the current worker thread.
+     */
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        this.ensureOpen();
+        if (this.state.compareAndSet(0, 2)) {
+            this.completed.set();
+            this.owner.signalScheduler();
+            return true;
+        }
+        int current = this.state.get();
+        if (current == 2 || current == 3) {
+            return false;
+        }
+        if (!mayInterruptIfRunning) {
+            return false;
+        }
+        this.cancelRequested.set(true);
+        Thread bound = this.runner.get();
+        if (bound != null) {
+            bound.interrupt();
+        }
+        this.owner.signalScheduler();
+        return true;
+    }
+
+    /**
+     * Waits indefinitely for cancellation or terminal failure.
+     */
+    public void await() {
+        this.ensureOpen();
+        this.completed.waitOne(-1L);
+    }
+
+    /**
+     * Waits for cancellation or terminal failure, or the timeout to expire.
+     */
+    public boolean await(long timeoutMillis) {
+        this.ensureOpen();
+        if (timeoutMillis < 0L) {
+            throw new IllegalArgumentException("timeoutMillis must be >= 0");
+        }
+        return this.completed.waitOne(timeoutMillis);
+    }
+
+    /**
+     * Executes one scheduled iteration and requeues the next run when appropriate.
+     */
+    public void runDispatched() {
+        this.ensureOpen();
+        if (!this.state.compareAndSet(0, 1)) {
+            return;
+        }
+        try {
+            this.task.run();
+        } catch (Throwable failure) {
+            this.failure.set(failure);
+            this.state.set(3);
+            this.completed.set();
+            return;
+        }
+
+        if (this.cancelRequested.get()) {
+            this.state.set(2);
+            this.completed.set();
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (this.fixedRate) {
+            long next = this.scheduledAt + this.intervalMillis;
+            if (next <= now) {
+                next = now + this.intervalMillis;
+            }
+            this.scheduledAt = next;
+        } else {
+            this.scheduledAt = now + this.intervalMillis;
+        }
+        this.state.set(0);
+        this.owner.reschedulePeriodic(this);
+    }
+
+    /**
+     * Waits for terminal completion and then reports cancellation or failure.
+     */
+    public Object get() {
+        this.ensureOpen();
+        this.await();
+        int current = this.state.get();
+        if (current == 2) {
+            throw new CancellationException("scheduled thread-pool periodic future was cancelled");
+        }
+        Throwable failure = this.failure.get();
+        if (failure == null) {
+            throw new IllegalStateException(
+                "scheduled thread-pool periodic future completed without cancellation or failure"
+            );
+        }
+        throw new ExecutionException("scheduled thread-pool periodic future failed", failure);
+    }
+
+    /**
+     * Releases the periodic future's coordination/storage resources after terminal completion.
+     */
+    public void close() {
+        if (this.closed) {
+            return;
+        }
+        if (!this.isDone()) {
+            throw new IllegalStateException(
+                "cannot close scheduled thread-pool periodic future before completion"
+            );
+        }
+        this.runner.set(null);
+        this.failure.set(null);
+        this.owner = null;
+        this.completed.close();
+        this.runner.close();
+        this.failure.close();
+        this.cancelRequested.close();
+        this.state.close();
+        this.closed = true;
+    }
+}

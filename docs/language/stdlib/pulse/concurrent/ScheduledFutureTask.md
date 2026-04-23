@@ -30,6 +30,10 @@ Creates a delayed runnable task.
 
 Binds the host thread that will own delayed execution.
 
+### ``public void attachSchedulerOwner(ScheduledThreadPoolExecutor owner)``
+
+Attaches the pooled scheduler that should be notified when cancellation changes queue order.
+
 ### ``public long scheduledAtMillis()``
 
 Returns the target wall-clock execution time.

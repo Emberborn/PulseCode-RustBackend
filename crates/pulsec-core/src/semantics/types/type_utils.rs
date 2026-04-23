@@ -248,17 +248,13 @@ pub(super) fn conversion_score(
     }
     let expected_erased = erase_generic_type_name(expected);
     let actual_erased = erase_generic_type_name(actual);
-    if class_simple_name(&expected_erased) == "Object"
-        && (actual.ends_with("[]")
-            || is_string_type(actual)
-            || (!is_primitive_non_void(&actual_erased)
-                && class_simple_name(&actual_erased) != "void")
-            || class_index.contains_key(&actual_erased)
-            || class_index
-                .keys()
-                .any(|fqcn| class_simple_name(fqcn) == class_simple_name(&actual_erased)))
-    {
-        return Some(2);
+    if class_simple_name(&expected_erased) == "Object" {
+        if primitive_boxes_to_object(&actual_erased) {
+            return Some(1);
+        }
+        if object_accepts_actual(actual, class_index) {
+            return Some(2);
+        }
     }
     if class_simple_name(&actual_erased) == "Object"
         && is_erased_type_param_slot(expected, class_index)
@@ -368,11 +364,7 @@ pub(super) fn types_compatible(
     let expected_erased = erase_generic_type_name(expected);
     let actual_erased = erase_generic_type_name(actual);
     if class_simple_name(&expected_erased) == "Object"
-        && (actual.ends_with("[]")
-            || is_string_type(actual)
-            || (!is_primitive_non_void(&actual_erased)
-                && class_simple_name(&actual_erased) != "void")
-            || class_index.contains_key(&actual_erased))
+        && (primitive_boxes_to_object(&actual_erased) || object_accepts_actual(actual, class_index))
     {
         return true;
     }
@@ -408,6 +400,21 @@ pub(super) fn types_compatible(
     }
 
     is_assignable_class(actual, expected, class_index)
+}
+
+fn object_accepts_actual(actual: &str, class_index: &HashMap<String, ClassInfo>) -> bool {
+    let actual_erased = erase_generic_type_name(actual);
+    actual.ends_with("[]")
+        || is_string_type(actual)
+        || (!is_primitive_non_void(&actual_erased) && class_simple_name(&actual_erased) != "void")
+        || class_index.contains_key(&actual_erased)
+        || class_index
+            .keys()
+            .any(|fqcn| class_simple_name(fqcn) == class_simple_name(&actual_erased))
+}
+
+fn primitive_boxes_to_object(actual_erased: &str) -> bool {
+    primitive_wrapper_type(actual_erased).is_some_and(|wrapper| wrapper != "pulse.lang.Void")
 }
 
 pub(super) fn validate_assignable(

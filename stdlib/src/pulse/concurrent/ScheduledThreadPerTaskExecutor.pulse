@@ -1,5 +1,7 @@
 package pulse.concurrent;
 
+import pulse.collections.ArrayList;
+import pulse.collections.List;
 import pulse.lang.AutoCloseable;
 import pulse.lang.IllegalArgumentException;
 import pulse.lang.Runnable;
@@ -8,8 +10,9 @@ import pulse.lang.Thread;
 /**
  * One-shot delayed executor built on the thread-per-task baseline.
  *
- * This keeps scheduling honest for the current lane: delayed submission is real,
- * but periodic/scheduled-pool semantics are still later work.
+ * This keeps scheduling honest for the current lane: one-shot delayed submission
+ * and dedicated-thread periodic scheduling are real, while fuller timer-pool and
+ * work-stealing scheduler semantics still remain later work.
  */
 public final class ScheduledThreadPerTaskExecutor implements ScheduledExecutorService, AutoCloseable {
     private ThreadPerTaskExecutor delegate;
@@ -50,6 +53,20 @@ public final class ScheduledThreadPerTaskExecutor implements ScheduledExecutorSe
     }
 
     /**
+     * Submits every callable immediately and waits for all results to complete.
+     */
+    public <T> List<Future<T>> invokeAll(List<Callable<T>> tasks) {
+        return this.delegate.invokeAll(tasks);
+    }
+
+    /**
+     * Submits every callable immediately and returns the first successful result.
+     */
+    public <T> T invokeAny(List<Callable<T>> tasks) {
+        return this.delegate.invokeAny(tasks);
+    }
+
+    /**
      * Schedules one callable task after the requested delay.
      */
     public <T> ScheduledFuture<T> schedule(Callable<T> task, long delayMillis) {
@@ -69,6 +86,46 @@ public final class ScheduledThreadPerTaskExecutor implements ScheduledExecutorSe
             throw new IllegalArgumentException("delayMillis must be >= 0");
         }
         ScheduledFutureTask<Object> future = new ScheduledFutureTask<Object>(task, delayMillis);
+        this.delegate.execute(future);
+        return future;
+    }
+
+    /**
+     * Schedules one runnable task at a fixed rate after the initial delay.
+     */
+    public ScheduledFuture<Object> scheduleAtFixedRate(
+        Runnable task,
+        long initialDelayMillis,
+        long periodMillis
+    ) {
+        if (initialDelayMillis < 0L) {
+            throw new IllegalArgumentException("initialDelayMillis must be >= 0");
+        }
+        if (periodMillis <= 0L) {
+            throw new IllegalArgumentException("periodMillis must be > 0");
+        }
+        PeriodicScheduledTask future =
+            new PeriodicScheduledTask(task, initialDelayMillis, periodMillis, true);
+        this.delegate.execute(future);
+        return future;
+    }
+
+    /**
+     * Schedules one runnable task with a fixed delay between completions.
+     */
+    public ScheduledFuture<Object> scheduleWithFixedDelay(
+        Runnable task,
+        long initialDelayMillis,
+        long delayMillis
+    ) {
+        if (initialDelayMillis < 0L) {
+            throw new IllegalArgumentException("initialDelayMillis must be >= 0");
+        }
+        if (delayMillis <= 0L) {
+            throw new IllegalArgumentException("delayMillis must be > 0");
+        }
+        PeriodicScheduledTask future =
+            new PeriodicScheduledTask(task, initialDelayMillis, delayMillis, false);
         this.delegate.execute(future);
         return future;
     }

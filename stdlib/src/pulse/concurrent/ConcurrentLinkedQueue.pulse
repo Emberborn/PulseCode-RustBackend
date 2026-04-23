@@ -1,0 +1,254 @@
+package pulse.concurrent;
+
+import pulse.collections.Collection;
+import pulse.collections.LinkedList;
+import pulse.collections.Queue;
+import pulse.lang.IllegalStateException;
+import pulse.lang.Iterator;
+
+/**
+ * Monitor-backed concurrent queue baseline.
+ *
+ * This is the non-blocking sibling of `LinkedBlockingQueue`: operations are
+ * synchronized, but queue reads return immediately instead of waiting.
+ */
+public final class ConcurrentLinkedQueue<T> implements Queue<T> {
+    private Monitor gate;
+    private LinkedList<T> values;
+
+    /**
+     * Creates an empty concurrent queue.
+     */
+    public ConcurrentLinkedQueue() {
+        this.gate = Monitor.create();
+        this.values = new LinkedList();
+    }
+
+    private LinkedList<T> snapshotLocked() {
+        LinkedList<T> snapshot = new LinkedList();
+        snapshot.addAll(this.values);
+        return snapshot;
+    }
+
+    /**
+     * Returns the current number of queued values.
+     */
+    public int size() {
+        this.gate.enter();
+        try {
+            return this.values.size();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the queue is currently empty.
+     */
+    public boolean isEmpty() {
+        this.gate.enter();
+        try {
+            return this.values.isEmpty();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes all queued values.
+     */
+    public void clear() {
+        this.gate.enter();
+        try {
+            this.values.clear();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds one raw-object value at the tail of the queue.
+     */
+    public boolean add(T value) {
+        this.gate.enter();
+        try {
+            return this.values.add(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether the supplied value is present.
+     */
+    public boolean contains(T value) {
+        this.gate.enter();
+        try {
+            return this.values.contains(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes the first matching value when present.
+     */
+    public boolean remove(T value) {
+        this.gate.enter();
+        try {
+            return this.values.remove(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Reports whether every supplied value is present.
+     */
+    public boolean containsAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.containsAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Adds all supplied values at the tail of the queue.
+     */
+    public boolean addAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.addAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes every supplied value from the queue.
+     */
+    public boolean removeAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.removeAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Retains only the supplied values in the queue.
+     */
+    public boolean retainAll(Collection<T> values) {
+        this.gate.enter();
+        try {
+            return this.values.retainAll(values);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns a snapshot iterator over the current queue contents.
+     */
+    public Iterator iterator() {
+        this.gate.enter();
+        try {
+            return this.snapshotLocked().iterator();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one raw-object value at the tail.
+     */
+    public boolean offer(T value) {
+        this.gate.enter();
+        try {
+            return this.values.offer(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one integer value at the tail.
+     */
+    public boolean offer(int value) {
+        this.gate.enter();
+        try {
+            return this.values.offer(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Offers one string value at the tail.
+     */
+    public boolean offer(String value) {
+        this.gate.enter();
+        try {
+            return this.values.offer(value);
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the head value when one is present.
+     */
+    public T poll() {
+        this.gate.enter();
+        try {
+            return this.values.poll();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Removes and returns the head value and throws when empty.
+     */
+    public T remove() {
+        this.gate.enter();
+        try {
+            if (this.values.isEmpty()) {
+                throw new IllegalStateException("concurrent queue is empty");
+            }
+            return this.values.remove();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the head value without removing it.
+     */
+    public T peek() {
+        this.gate.enter();
+        try {
+            return this.values.peek();
+        } finally {
+            this.gate.exit();
+        }
+    }
+
+    /**
+     * Returns the head value without removing it and throws when empty.
+     */
+    public T element() {
+        this.gate.enter();
+        try {
+            if (this.values.isEmpty()) {
+                throw new IllegalStateException("concurrent queue is empty");
+            }
+            return this.values.element();
+        } finally {
+            this.gate.exit();
+        }
+    }
+}

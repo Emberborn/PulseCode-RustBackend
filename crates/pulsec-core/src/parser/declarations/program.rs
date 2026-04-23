@@ -279,7 +279,7 @@ impl Parser {
             if is_interface {
                 None
             } else {
-                Some(self.expect_path()?)
+                Some(self.expect_type_name("Expected superclass name after 'extends'")?)
             }
         } else {
             None

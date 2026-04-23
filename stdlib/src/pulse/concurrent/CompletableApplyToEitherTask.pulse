@@ -1,0 +1,56 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned race bridge for `CompletableFuture.applyToEitherAsync`.
+ */
+public final class CompletableApplyToEitherTask<T, R> implements Runnable {
+    private CompletableFuture<T> left;
+    private CompletableFuture<T> right;
+    private CompletionFunction<T, R> mapper;
+    private CompletableFuture<R> target;
+
+    /**
+     * Creates one race mapping bridge.
+     */
+    public CompletableApplyToEitherTask(
+        CompletableFuture<T> left,
+        CompletableFuture<T> right,
+        CompletionFunction<T, R> mapper,
+        CompletableFuture<R> target
+    ) {
+        this.left = left;
+        this.right = right;
+        this.mapper = mapper;
+        this.target = target;
+    }
+
+    private CompletableFuture<T> awaitWinner() {
+        while (true) {
+            if (this.left.await(0L)) {
+                return this.left;
+            }
+            if (this.right.await(0L)) {
+                return this.right;
+            }
+            Thread.yieldNow();
+        }
+        return this.left;
+    }
+
+    /**
+     * Waits for either source stage, maps its value, and completes the target.
+     */
+    public void run() {
+        try {
+            T value = this.awaitWinner().get();
+            R mapped = this.mapper.apply(value);
+            this.target.complete(mapped);
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

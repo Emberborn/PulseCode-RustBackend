@@ -68,8 +68,8 @@ Current explicit F1 deferrals:
 - desktop UI families (`awt`, `swing`)
 - method references if not chosen as part of the F1 baseline
 - lambdas if not chosen as part of the F1 baseline
-- concurrent collections beyond the explicitly chosen shipped baseline (`ConcurrentHashMap`, `CopyOnWriteArrayList`, `LinkedBlockingQueue`, `LinkedBlockingDeque`)
-- higher-level executor/future depth beyond the explicitly chosen baseline (periodic scheduling, work-stealing, broader completion-stage composition)
+- concurrent collections beyond the explicitly chosen shipped baseline (`ConcurrentHashMap`, `ConcurrentHashSet`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue`, `ConcurrentLinkedDeque`, `LinkedBlockingQueue`, `LinkedBlockingDeque`)
+- higher-level executor/future depth beyond the explicitly chosen baseline (broader fork-join/task-specialization families, richer scheduled-executor/timer-service families, broader completion-stage composition)
 - URL/HTTP helper surface beyond the explicitly chosen networking baseline
 - external native binding/library-artifact ecosystem work (Phase F-A)
 
@@ -104,8 +104,8 @@ The current F1 memory/publication contract is intentionally narrower than full J
 - `final` fields are real as compile-time immutability after initialization, not as Java-style safe-publication guarantees
 - `AtomicReference` is real for explicit shared-reference handoff/publication
 - ARC/weak/cycle runtime memory ownership is now thread-safe for explicit handoff and maintenance paths
-- `Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `CompletableFuture`, and the thread-per-task / one-shot delayed executor baseline are now real and executable
-- `ConcurrentHashMap`, `CopyOnWriteArrayList`, `LinkedBlockingQueue`, and `LinkedBlockingDeque` are now real and executable as the selected concurrent-collection baseline
+- `Callable`, `Executor`, `ExecutorService`, `Future`, `FutureTask`, `RunnableFuture`, `ScheduledFuture`, `ScheduledExecutorService`, `CompletableFuture`, `FixedThreadPoolExecutor`, `ScheduledThreadPoolExecutor`, `ForkJoinTask`, `RecursiveTask`, `RecursiveAction`, `ForkJoinPool`, `CompletionBiFunction`, `CompletionBiConsumer`, and the thread-per-task / fixed-pool / scheduled-pool / work-stealing / delayed / periodic executor baseline are now real and executable, including `invokeAll` / `invokeAny` and the current both/either/all-of/any-of completion-stage slice
+- `ConcurrentHashMap`, `ConcurrentHashSet`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue`, `ConcurrentLinkedDeque`, `LinkedBlockingQueue`, and `LinkedBlockingDeque` are now real and executable as the selected concurrent-collection baseline
 - ordinary unsynchronized object-field publication across threads is not part of the currently claimed F1 baseline
 
 Policy rule:

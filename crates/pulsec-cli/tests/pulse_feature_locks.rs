@@ -3973,3 +3973,1252 @@ entry = "app/core/Main.pulse"
         stderr
     );
 }
+
+#[test]
+fn lock_pulse_feature_31_periodic_scheduling_and_extended_completion_stage_execute() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "periodic-completion-stage-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.AtomicInt;
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.CompletableFuture;
+        import pulse.concurrent.CompletionBiConsumer;
+        import pulse.concurrent.CompletionBiFunction;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.ScheduledFuture;
+        import pulse.concurrent.ScheduledThreadPerTaskExecutor;
+        import pulse.concurrent.ThreadPerTaskExecutor;
+        import pulse.concurrent.Event;
+        import pulse.concurrent.ExecutionException;
+        import pulse.lang.IllegalStateException;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+        import pulse.lang.Throwable;
+
+        class PeriodicCounter implements Runnable {
+            private AtomicInt counter;
+            private Event reached;
+            private int stopAt;
+            private long pauseMillis;
+
+            public PeriodicCounter(
+                AtomicInt counter,
+                Event reached,
+                int stopAt,
+                long pauseMillis
+            ) {
+                this.counter = counter;
+                this.reached = reached;
+                this.stopAt = stopAt;
+                this.pauseMillis = pauseMillis;
+            }
+
+            public void run() {
+                int value = this.counter.incrementAndGet();
+                if (this.pauseMillis > 0L) {
+                    Thread.sleep(this.pauseMillis);
+                }
+                if (value >= this.stopAt) {
+                    this.reached.set();
+                }
+            }
+        }
+
+        class Joiner implements CompletionBiFunction<String, String, String> {
+            public String apply(String left, String right) {
+                return left.concat("_").concat(right);
+            }
+        }
+
+        class OutcomeHandler implements CompletionBiFunction<String, Throwable, String> {
+            public String apply(String value, Throwable failure) {
+                if (failure == null) {
+                    return value.concat("_handled");
+                }
+                if (failure instanceof ExecutionException) {
+                    Throwable cause = ((ExecutionException) failure).getCause();
+                    if (cause != null) {
+                        return "handled_".concat(cause.getMessage());
+                    }
+                }
+                return "handled_failure";
+            }
+        }
+
+        class Observer implements CompletionBiConsumer<String, Throwable> {
+            private StringBuilder sink;
+
+            public Observer(StringBuilder sink) {
+                this.sink = sink;
+            }
+
+            public void accept(String value, Throwable failure) {
+                if (failure != null) {
+                    this.sink.append("failed");
+                    return;
+                }
+                this.sink.append(value);
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ScheduledThreadPerTaskExecutor scheduler =
+                    Executors.newScheduledThreadPerTaskExecutor();
+                ThreadPerTaskExecutor executor =
+                    Executors.newThreadPerTaskExecutor();
+
+                AtomicInt fixedRateCount = AtomicInt.create(0);
+                Event fixedRateReached = Event.createManualReset(false);
+                ScheduledFuture<Object> fixedRate =
+                    scheduler.scheduleAtFixedRate(
+                        new PeriodicCounter(fixedRateCount, fixedRateReached, 3, 0L),
+                        10L,
+                        20L
+                    );
+
+                AtomicInt fixedDelayCount = AtomicInt.create(0);
+                Event fixedDelayReached = Event.createManualReset(false);
+                ScheduledFuture<Object> fixedDelay =
+                    scheduler.scheduleWithFixedDelay(
+                        new PeriodicCounter(fixedDelayCount, fixedDelayReached, 2, 15L),
+                        10L,
+                        20L
+                    );
+
+                boolean fixedRateReady = fixedRateReached.waitOne(2000L);
+                boolean fixedDelayReady = fixedDelayReached.waitOne(2000L);
+                boolean fixedRateCancelled = fixedRate.cancel(false);
+                boolean fixedDelayCancelled = fixedDelay.cancel(false);
+                boolean fixedRateDone = fixedRate.await(2000L);
+                boolean fixedDelayDone = fixedDelay.await(2000L);
+
+                CompletableFuture<String> left =
+                    CompletableFuture.completedFuture("left");
+                CompletableFuture<String> right =
+                    CompletableFuture.completedFuture("right");
+                CompletableFuture<String> combined =
+                    left.thenCombineAsync(right, new Joiner(), executor);
+                StringBuilder observed = new StringBuilder();
+                CompletableFuture<String> mirrored =
+                    combined.whenCompleteAsync(new Observer(observed), executor);
+
+                CompletableFuture<String> failed =
+                    new CompletableFuture<String>();
+                failed.completeExceptionally(
+                    new IllegalStateException("boom")
+                );
+                CompletableFuture<String> handled =
+                    failed.handleAsync(new OutcomeHandler(), executor);
+
+                String combinedValue = combined.get();
+                String mirroredValue = mirrored.get();
+                String handledValue = handled.get();
+
+                scheduler.shutdown();
+                executor.shutdown();
+                boolean schedulerDone = scheduler.awaitTermination(2000L);
+                boolean executorDone = executor.awaitTermination(2000L);
+
+                fixedRate.close();
+                fixedDelay.close();
+                left.close();
+                right.close();
+                combined.close();
+                mirrored.close();
+                failed.close();
+                handled.close();
+                scheduler.close();
+                executor.close();
+
+                if (fixedRateReady
+                    && fixedDelayReady
+                    && fixedRateCancelled
+                    && fixedDelayCancelled
+                    && fixedRateDone
+                    && fixedDelayDone
+                    && fixedRateCount.get() >= 3
+                    && fixedDelayCount.get() >= 2
+                    && "left_right".equals(combinedValue)
+                    && "left_right".equals(mirroredValue)
+                    && "left_right".equals(observed.toString())
+                    && "handled_boom".equals(handledValue)
+                    && schedulerDone
+                    && executorDone) {
+                    pulse.lang.IO.println("periodic_completion_stage_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("periodic_completion_stage_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected periodic-completion-stage-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("periodic-completion-stage-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected periodic-completion-stage-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("periodic_completion_stage_ok"),
+        "expected periodic-completion-stage-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_32_completion_stage_both_either_and_aggregate_baseline_executes() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "completion-stage-breadth-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.collections.ArrayList;
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.CompletableFuture;
+        import pulse.concurrent.CompletionConsumer;
+        import pulse.concurrent.CompletionFunction;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.ThreadPerTaskExecutor;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+
+        class SlowCallable implements Callable<String> {
+            private String value;
+            private long delayMillis;
+
+            public SlowCallable(String value, long delayMillis) {
+                this.value = value;
+                this.delayMillis = delayMillis;
+            }
+
+            public String call() {
+                Thread.sleep(this.delayMillis);
+                return this.value;
+            }
+        }
+
+        class JoinMapper implements CompletionFunction<String, String> {
+            public String apply(String value) {
+                return value.concat("_winner");
+            }
+        }
+
+        class WinnerConsumer implements CompletionConsumer<String> {
+            private StringBuilder sink;
+
+            public WinnerConsumer(StringBuilder sink) {
+                this.sink = sink;
+            }
+
+            public void accept(String value) {
+                this.sink.append(value);
+            }
+        }
+
+        class MarkerRunnable implements Runnable {
+            private StringBuilder sink;
+            private String marker;
+
+            public MarkerRunnable(StringBuilder sink, String marker) {
+                this.sink = sink;
+                this.marker = marker;
+            }
+
+            public void run() {
+                this.sink.append(this.marker);
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ThreadPerTaskExecutor executor =
+                    Executors.newThreadPerTaskExecutor();
+
+                CompletableFuture<String> left =
+                    CompletableFuture.supplyAsync(new SlowCallable("left", 60L), executor);
+                CompletableFuture<String> right =
+                    CompletableFuture.supplyAsync(new SlowCallable("right", 10L), executor);
+
+                StringBuilder afterBothSink = new StringBuilder();
+                CompletableFuture<Object> afterBoth =
+                    left.runAfterBothAsync(
+                        right,
+                        new MarkerRunnable(afterBothSink, "_both"),
+                        executor
+                    );
+
+                CompletableFuture<String> eitherApplied =
+                    left.applyToEitherAsync(right, new JoinMapper(), executor);
+
+                StringBuilder eitherAcceptedSink = new StringBuilder();
+                CompletableFuture<Object> eitherAccepted =
+                    left.acceptEitherAsync(
+                        right,
+                        new WinnerConsumer(eitherAcceptedSink),
+                        executor
+                    );
+
+                StringBuilder afterEitherSink = new StringBuilder();
+                CompletableFuture<Object> afterEither =
+                    left.runAfterEitherAsync(
+                        right,
+                        new MarkerRunnable(afterEitherSink, "_either"),
+                        executor
+                    );
+
+                ArrayList<CompletableFuture> allInputs =
+                    new ArrayList<CompletableFuture>();
+                allInputs.add(
+                    CompletableFuture.supplyAsync(
+                        new SlowCallable("all_one", 20L),
+                        executor
+                    )
+                );
+                allInputs.add(
+                    CompletableFuture.supplyAsync(
+                        new SlowCallable("all_two", 30L),
+                        executor
+                    )
+                );
+                CompletableFuture<Object> all =
+                    CompletableFuture.allOfAsync(allInputs, executor);
+
+                ArrayList<CompletableFuture> anyInputs =
+                    new ArrayList<CompletableFuture>();
+                anyInputs.add(
+                    CompletableFuture.supplyAsync(
+                        new SlowCallable("slow_any", 60L),
+                        executor
+                    )
+                );
+                anyInputs.add(
+                    CompletableFuture.supplyAsync(
+                        new SlowCallable("fast_any", 10L),
+                        executor
+                    )
+                );
+                CompletableFuture<Object> any =
+                    CompletableFuture.anyOfAsync(anyInputs, executor);
+
+                afterBoth.get();
+                String eitherAppliedValue = eitherApplied.get();
+                eitherAccepted.get();
+                afterEither.get();
+                all.get();
+                String anyValue = (String) any.get();
+
+                executor.shutdown();
+                boolean done = executor.awaitTermination(2000L);
+
+                left.close();
+                right.close();
+                afterBoth.close();
+                eitherApplied.close();
+                eitherAccepted.close();
+                afterEither.close();
+                allInputs.get(0).close();
+                allInputs.get(1).close();
+                anyInputs.get(0).close();
+                anyInputs.get(1).close();
+                all.close();
+                any.close();
+                executor.close();
+
+                if ("right_winner".equals(eitherAppliedValue)
+                    && "right".equals(eitherAcceptedSink.toString())
+                    && "_either".equals(afterEitherSink.toString())
+                    && "_both".equals(afterBothSink.toString())
+                    && "fast_any".equals(anyValue)
+                    && done) {
+                    pulse.lang.IO.println("completion_stage_breadth_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("completion_stage_breadth_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected completion-stage-breadth-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("completion-stage-breadth-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected completion-stage-breadth-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("completion_stage_breadth_ok"),
+        "expected completion-stage-breadth-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_33_fixed_and_single_thread_executor_baseline_executes() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "fixed-single-executor-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.AtomicInt;
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.FixedThreadPoolExecutor;
+        import pulse.concurrent.Future;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+
+        class WorkCallable implements Callable<String> {
+            private AtomicInt counter;
+            private String value;
+
+            public WorkCallable(AtomicInt counter, String value) {
+                this.counter = counter;
+                this.value = value;
+            }
+
+            public String call() {
+                int seen = this.counter.incrementAndGet();
+                Thread.sleep(20L);
+                return this.value.concat("_").concat(String.valueOf(seen));
+            }
+        }
+
+        class AppendRunnable implements Runnable {
+            private StringBuilder sink;
+            private String value;
+
+            public AppendRunnable(StringBuilder sink, String value) {
+                this.sink = sink;
+                this.value = value;
+            }
+
+            public void run() {
+                this.sink.append(this.value);
+            }
+        }
+
+        class Main {
+            public static void main() {
+                FixedThreadPoolExecutor fixed =
+                    Executors.newFixedThreadPool(2);
+                AtomicInt counter = AtomicInt.create(0);
+
+                Future<String> first =
+                    fixed.submit(new WorkCallable(counter, "a"));
+                Future<String> second =
+                    fixed.submit(new WorkCallable(counter, "b"));
+                Future<String> third =
+                    fixed.submit(new WorkCallable(counter, "c"));
+
+                String one = first.get();
+                String two = second.get();
+                String three = third.get();
+
+                fixed.shutdown();
+                boolean fixedDone = fixed.awaitTermination(2000L);
+
+                FixedThreadPoolExecutor single =
+                    Executors.newSingleThreadExecutor();
+                StringBuilder ordered = new StringBuilder();
+                Future<Object> r1 = single.submit(new AppendRunnable(ordered, "x"));
+                Future<Object> r2 = single.submit(new AppendRunnable(ordered, "y"));
+                Future<Object> r3 = single.submit(new AppendRunnable(ordered, "z"));
+
+                r1.get();
+                r2.get();
+                r3.get();
+
+                single.shutdown();
+                boolean singleDone = single.awaitTermination(2000L);
+
+                first.close();
+                second.close();
+                third.close();
+                r1.close();
+                r2.close();
+                r3.close();
+                fixed.close();
+                single.close();
+
+                if (counter.get() == 3
+                    && one.startsWith("a_")
+                    && two.startsWith("b_")
+                    && three.startsWith("c_")
+                    && fixedDone
+                    && singleDone
+                    && "xyz".equals(ordered.toString())) {
+                    pulse.lang.IO.println("fixed_single_executor_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("fixed_single_executor_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected fixed-single-executor-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("fixed-single-executor-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected fixed-single-executor-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("fixed_single_executor_ok"),
+        "expected fixed-single-executor-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_34_executor_bulk_submission_baseline_executes() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "executor-bulk-submission-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.collections.ArrayList;
+        import pulse.collections.List;
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.FixedThreadPoolExecutor;
+        import pulse.concurrent.Future;
+        import pulse.lang.IllegalStateException;
+        import pulse.lang.Thread;
+
+        class DelayedCallable implements Callable<String> {
+            private String value;
+            private long delayMillis;
+            private boolean fail;
+
+            public DelayedCallable(String value, long delayMillis, boolean fail) {
+                this.value = value;
+                this.delayMillis = delayMillis;
+                this.fail = fail;
+            }
+
+            public String call() {
+                Thread.sleep(this.delayMillis);
+                if (this.fail) {
+                    throw new IllegalStateException(this.value);
+                }
+                return this.value;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                FixedThreadPoolExecutor executor =
+                    Executors.newFixedThreadPool(3);
+
+                ArrayList<Callable<String>> allTasks =
+                    new ArrayList<Callable<String>>();
+                allTasks.add(new DelayedCallable("one", 10L, false));
+                allTasks.add(new DelayedCallable("two", 20L, false));
+                allTasks.add(new DelayedCallable("three", 30L, false));
+
+                List<Future<String>> futures = executor.invokeAll(allTasks);
+                String joined =
+                    futures.get(0).get()
+                        .concat("_")
+                        .concat(futures.get(1).get())
+                        .concat("_")
+                        .concat(futures.get(2).get());
+
+                ArrayList<Callable<String>> anyTasks =
+                    new ArrayList<Callable<String>>();
+                anyTasks.add(new DelayedCallable("slow", 50L, false));
+                anyTasks.add(new DelayedCallable("boom", 10L, true));
+                anyTasks.add(new DelayedCallable("winner", 20L, false));
+
+                String any = executor.invokeAny(anyTasks);
+
+                executor.shutdown();
+                boolean done = executor.awaitTermination(2000L);
+
+                futures.get(0).close();
+                futures.get(1).close();
+                futures.get(2).close();
+                executor.close();
+
+                if ("one_two_three".equals(joined)
+                    && "winner".equals(any)
+                    && done) {
+                    pulse.lang.IO.println("executor_bulk_submission_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("executor_bulk_submission_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected executor-bulk-submission-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("executor-bulk-submission-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected executor-bulk-submission-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("executor_bulk_submission_ok"),
+        "expected executor-bulk-submission-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_35_scheduled_thread_pool_baseline_executes_without_dedicated_timer_threads() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "scheduled-thread-pool-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.AtomicInt;
+        import pulse.concurrent.AtomicReference;
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.ScheduledFuture;
+        import pulse.concurrent.ScheduledThreadPoolExecutor;
+        import pulse.lang.Runnable;
+        import pulse.lang.StringBuilder;
+
+        class DelayedCallable implements Callable<String> {
+            private String value;
+
+            public DelayedCallable(String value) {
+                this.value = value;
+            }
+
+            public String call() {
+                return this.value;
+            }
+        }
+
+        class CountingRunnable implements Runnable {
+            private AtomicInt counter;
+            private int target;
+            private StringBuilder sink;
+            private String token;
+            private AtomicReference<ScheduledFuture<Object>> handle;
+
+            public CountingRunnable(
+                AtomicInt counter,
+                int target,
+                StringBuilder sink,
+                String token,
+                AtomicReference<ScheduledFuture<Object>> handle
+            ) {
+                this.counter = counter;
+                this.target = target;
+                this.sink = sink;
+                this.token = token;
+                this.handle = handle;
+            }
+
+            public void run() {
+                int seen = this.counter.incrementAndGet();
+                this.sink.append(this.token);
+                if (seen >= this.target) {
+                    this.handle.get().cancel(false);
+                }
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ScheduledThreadPoolExecutor scheduler =
+                    Executors.newScheduledThreadPool(2);
+
+                ScheduledFuture<String> first =
+                    scheduler.schedule(new DelayedCallable("first"), 40L);
+                ScheduledFuture<String> second =
+                    scheduler.schedule(new DelayedCallable("second"), 10L);
+
+                AtomicInt fixedRateCount = AtomicInt.create(0);
+                AtomicInt fixedDelayCount = AtomicInt.create(0);
+                StringBuilder sink = new StringBuilder();
+
+                AtomicReference<ScheduledFuture<Object>> fixedRateHandle =
+                    AtomicReference.create(null);
+                AtomicReference<ScheduledFuture<Object>> fixedDelayHandle =
+                    AtomicReference.create(null);
+
+                ScheduledFuture<Object> fixedRate =
+                    scheduler.scheduleAtFixedRate(
+                        new CountingRunnable(
+                            fixedRateCount,
+                            3,
+                            sink,
+                            "R",
+                            fixedRateHandle
+                        ),
+                        5L,
+                        15L
+                    );
+                fixedRateHandle.set(fixedRate);
+
+                ScheduledFuture<Object> fixedDelay =
+                    scheduler.scheduleWithFixedDelay(
+                        new CountingRunnable(
+                            fixedDelayCount,
+                            2,
+                            sink,
+                            "D",
+                            fixedDelayHandle
+                        ),
+                        5L,
+                        20L
+                    );
+                fixedDelayHandle.set(fixedDelay);
+
+                String firstValue = first.get();
+                String secondValue = second.get();
+                boolean fixedRateDone = fixedRate.await(2000L);
+                boolean fixedDelayDone = fixedDelay.await(2000L);
+
+                scheduler.shutdown();
+                boolean schedulerDone = scheduler.awaitTermination(2000L);
+
+                first.close();
+                second.close();
+                fixedRate.close();
+                fixedDelay.close();
+                fixedRateHandle.close();
+                fixedDelayHandle.close();
+                scheduler.close();
+
+                if ("first".equals(firstValue)
+                    && "second".equals(secondValue)
+                    && fixedRateDone
+                    && fixedDelayDone
+                    && fixedRateCount.get() >= 3
+                    && fixedDelayCount.get() >= 2
+                    && sink.toString().contains("R")
+                    && sink.toString().contains("D")
+                    && schedulerDone) {
+                    pulse.lang.IO.println("scheduled_thread_pool_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("scheduled_thread_pool_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected scheduled-thread-pool-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("scheduled-thread-pool-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected scheduled-thread-pool-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("scheduled_thread_pool_ok"),
+        "expected scheduled-thread-pool-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_36_fork_join_work_stealing_baseline_executes_recursive_tasks() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "fork-join-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.AtomicInt;
+        import pulse.concurrent.Callable;
+        import pulse.concurrent.Executors;
+        import pulse.concurrent.ForkJoinPool;
+        import pulse.concurrent.Future;
+        import pulse.concurrent.RecursiveAction;
+        import pulse.concurrent.RecursiveTask;
+        import pulse.lang.Thread;
+
+        class TokenTask extends RecursiveTask<String> {
+            private ForkJoinPool pool;
+            private String token;
+            private int depth;
+
+            public TokenTask(ForkJoinPool pool, String token, int depth) {
+                this.pool = pool;
+                this.token = token;
+                this.depth = depth;
+            }
+
+            protected String compute() {
+                if (this.depth <= 0) {
+                    Thread.sleep(5L);
+                    return this.token;
+                }
+
+                TokenTask left =
+                    new TokenTask(this.pool, this.token.concat("L"), this.depth - 1);
+                TokenTask right =
+                    new TokenTask(this.pool, this.token.concat("R"), this.depth - 1);
+
+                left.fork(this.pool);
+                String rightValue = right.compute();
+                String leftValue = left.join();
+                left.close();
+
+                return leftValue.concat("|").concat(rightValue);
+            }
+        }
+
+        class LeafAction extends RecursiveAction {
+            private ForkJoinPool pool;
+            private AtomicInt counter;
+            private int depth;
+
+            public LeafAction(ForkJoinPool pool, AtomicInt counter, int depth) {
+                this.pool = pool;
+                this.counter = counter;
+                this.depth = depth;
+            }
+
+            protected void computeAction() {
+                if (this.depth <= 0) {
+                    this.counter.incrementAndGet();
+                    return;
+                }
+
+                LeafAction left =
+                    new LeafAction(this.pool, this.counter, this.depth - 1);
+                LeafAction right =
+                    new LeafAction(this.pool, this.counter, this.depth - 1);
+
+                left.fork(this.pool);
+                right.computeAction();
+                left.join();
+                left.close();
+            }
+        }
+
+        class SubmittedCallable implements Callable<String> {
+            public String call() {
+                return "submitted";
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ForkJoinPool pool = Executors.newWorkStealingPool(4);
+
+                TokenTask root = new TokenTask(pool, "R", 3);
+                String joined = pool.invoke(root);
+
+                AtomicInt leaves = AtomicInt.create(0);
+                LeafAction action = new LeafAction(pool, leaves, 4);
+                pool.invoke(action);
+
+                Future<String> submitted = pool.submit(new SubmittedCallable());
+                String submittedValue = submitted.get();
+
+                pool.shutdown();
+                boolean done = pool.awaitTermination(2000L);
+
+                root.close();
+                action.close();
+                submitted.close();
+                pool.close();
+
+                if (joined.contains("RLLL")
+                    && joined.contains("RRRR")
+                    && leaves.get() == 16
+                    && "submitted".equals(submittedValue)
+                    && done) {
+                    pulse.lang.IO.println("fork_join_ok");
+                    return;
+                }
+
+                pulse.lang.IO.println("fork_join_broken");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected fork-join-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("fork-join-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected fork-join-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("fork_join_ok"),
+        "expected fork-join-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}
+
+#[test]
+fn lock_pulse_feature_37_broader_concurrent_collection_family_executes() {
+    let root = unique_temp_root();
+    let src_root = root.join("src").join("main").join("pulse");
+    let entry = src_root.join("app/core/Main.pulse");
+    write_file(
+        &root.join("pulsec.toml"),
+        r#"
+[package]
+name = "broader-concurrent-collections-floor"
+version = "0.1.0"
+
+[sources]
+main_pulse = "src/main/pulse"
+entry = "app/core/Main.pulse"
+"#,
+    );
+    write_file(
+        &entry,
+        r#"
+        package app.core;
+
+        import pulse.concurrent.ConcurrentHashSet;
+        import pulse.concurrent.ConcurrentLinkedDeque;
+        import pulse.concurrent.ConcurrentLinkedQueue;
+        import pulse.lang.Iterator;
+        import pulse.lang.Runnable;
+        import pulse.lang.Thread;
+
+        class CollectionWriter implements Runnable {
+            private ConcurrentHashSet<String> set;
+            private ConcurrentLinkedQueue<String> queue;
+            private ConcurrentLinkedDeque<String> deque;
+
+            public CollectionWriter(
+                ConcurrentHashSet<String> set,
+                ConcurrentLinkedQueue<String> queue,
+                ConcurrentLinkedDeque<String> deque
+            ) {
+                this.set = set;
+                this.queue = queue;
+                this.deque = deque;
+            }
+
+            public void run() {
+                this.set.add("worker");
+                this.queue.offer("tail");
+                this.deque.addFirst("front");
+            }
+        }
+
+        class Main {
+            public static void main() {
+                ConcurrentHashSet<String> set =
+                    new ConcurrentHashSet<String>();
+                ConcurrentLinkedQueue<String> queue =
+                    new ConcurrentLinkedQueue<String>();
+                ConcurrentLinkedDeque<String> deque =
+                    new ConcurrentLinkedDeque<String>();
+
+                set.add("seed");
+                queue.offer("head");
+                deque.addLast("back");
+
+                Thread writer = new Thread(
+                    new CollectionWriter(set, queue, deque)
+                );
+                writer.start();
+                writer.join(2000L);
+
+                Iterator setSnapshot = set.iterator();
+                set.add("after");
+                int seen = 0;
+                while (setSnapshot.hasNext()) {
+                    setSnapshot.next();
+                    seen = seen + 1;
+                }
+
+                String firstQueue = queue.poll();
+                String secondQueue = queue.remove();
+                String emptyQueue = queue.peek();
+
+                String firstDeque = deque.removeFirst();
+                String lastDeque = deque.removeLast();
+                String emptyDeque = deque.peekFirst();
+
+                if (seen != 2
+                    || set.size() != 3
+                    || !set.contains("seed")
+                    || !set.contains("worker")
+                    || !set.contains("after")
+                    || !"head".equals(firstQueue)
+                    || !"tail".equals(secondQueue)
+                    || emptyQueue != null
+                    || !"front".equals(firstDeque)
+                    || !"back".equals(lastDeque)
+                    || emptyDeque != null
+                    || !queue.isEmpty()
+                    || !deque.isEmpty()) {
+                    System.exit(260);
+                }
+
+                pulse.lang.IO.println("broader_concurrent_collections_ok");
+            }
+        }
+    "#,
+    );
+
+    let build = run_pulsec(&[
+        "build",
+        "--project-root",
+        root.to_str().expect("root utf8"),
+        "--strict-package",
+    ]);
+    assert!(
+        build.status.success(),
+        "expected broader-concurrent-collections-floor build success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let exe = root
+        .join("build")
+        .join("distro")
+        .join("release")
+        .join("broader-concurrent-collections-floor-0.1.0.exe");
+    let output = run_exe(&exe);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        output.status.success(),
+        "expected broader-concurrent-collections-floor exe success\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+    assert!(
+        stdout.contains("broader_concurrent_collections_ok"),
+        "expected broader-concurrent-collections-floor success output\nstdout:\n{}\nstderr:\n{}",
+        stdout,
+        stderr
+    );
+}

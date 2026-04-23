@@ -1,0 +1,52 @@
+package pulse.concurrent;
+
+import pulse.collections.List;
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned aggregate race bridge for `CompletableFuture.anyOfAsync`.
+ */
+public final class CompletableAnyOfTask implements Runnable {
+    private List<CompletableFuture> futures;
+    private CompletableFuture<Object> target;
+
+    /**
+     * Creates one aggregate race bridge.
+     */
+    public CompletableAnyOfTask(
+        List<CompletableFuture> futures,
+        CompletableFuture<Object> target
+    ) {
+        this.futures = futures;
+        this.target = target;
+    }
+
+    private CompletableFuture awaitWinner() {
+        while (true) {
+            int index = 0;
+            while (index < this.futures.size()) {
+                CompletableFuture future = this.futures.get(index);
+                if (future.await(0L)) {
+                    return future;
+                }
+                index = index + 1;
+            }
+            Thread.yieldNow();
+        }
+        return this.futures.get(0);
+    }
+
+    /**
+     * Waits for any supplied future and completes the target with its outcome.
+     */
+    public void run() {
+        try {
+            Object value = this.awaitWinner().get();
+            this.target.complete(value);
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

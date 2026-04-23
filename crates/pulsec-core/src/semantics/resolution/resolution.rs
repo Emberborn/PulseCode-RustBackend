@@ -28,7 +28,14 @@ pub(super) fn instantiate_resolved_method_candidate(
     owner_ty: &str,
     arg_types: &[String],
 ) -> Result<ResolvedMethodCandidate, SemanticError> {
-    let owner_fqcn = erase_generic_type_name(&candidate.owner_fqcn);
+    let candidate_owner_ty = if generic_type_args(&candidate.owner_fqcn).is_empty()
+        && erase_generic_type_name(&candidate.owner_fqcn) == erase_generic_type_name(owner_ty)
+    {
+        owner_ty.to_string()
+    } else {
+        candidate.owner_fqcn.clone()
+    };
+    let owner_fqcn = erase_generic_type_name(&candidate_owner_ty);
     let owner_info = class_index
         .get(owner_fqcn.as_str())
         .ok_or_else(|| semantic_error(format!("Unknown class '{}'", candidate.owner_fqcn)))?;
@@ -37,7 +44,7 @@ pub(super) fn instantiate_resolved_method_candidate(
         signature: instantiate_method_signature(
             &candidate.signature,
             owner_info,
-            owner_ty,
+            &candidate_owner_ty,
             arg_types,
             class_index,
         ),
@@ -421,7 +428,9 @@ pub(super) fn infer_call_type_in_scope(
                     class.name
                 ))
             })?;
-            let target_class = class_index.get(super_class).ok_or_else(|| {
+            let target_class = class_index
+                .get(&erase_generic_type_name(super_class))
+                .ok_or_else(|| {
                 semantic_error(format!(
                     "Unknown superclass '{}' in constructor chain",
                     super_class
@@ -607,7 +616,7 @@ pub(super) fn resolve_field_access(
 
     let owner = owner_class(receiver, class_names)?;
     let class_info = class_index
-        .get(owner.as_str())
+        .get(erase_generic_type_name(&owner).as_str())
         .ok_or_else(|| semantic_error(format!("Unknown class '{}'", owner)))?;
     let current_info = class_index
         .get(current_class_fqcn)
@@ -735,7 +744,7 @@ pub(super) fn resolve_method_call(
 ) -> Result<ExprType, SemanticError> {
     let owner = owner_class(receiver, class_names)?;
     let class_info = class_index
-        .get(owner.as_str())
+        .get(erase_generic_type_name(&owner).as_str())
         .ok_or_else(|| semantic_error(format!("Unknown class '{}'", owner)))?;
     let current_info = class_index
         .get(current_class_fqcn)
@@ -785,7 +794,7 @@ pub(super) fn resolve_method_call(
     let method_owner = &candidate.owner_fqcn;
     let signature = &candidate.signature;
     let method_owner_info = class_index
-        .get(method_owner.as_str())
+        .get(erase_generic_type_name(method_owner).as_str())
         .ok_or_else(|| semantic_error(format!("Unknown class '{}'", method_owner)))?;
     let method_owner_display = method_owner_info.simple_name.as_str();
 
@@ -857,7 +866,7 @@ pub(super) fn owner_class(
 
     let erased = erase_generic_type_name(&receiver.ty);
     if class_names.contains(&erased) {
-        return Ok(erased);
+        return Ok(receiver.ty.clone());
     }
 
     Err(semantic_error(format!(
@@ -904,6 +913,7 @@ pub(super) fn lookup_method_candidates(
     method_name: &str,
     class_index: &HashMap<String, ClassInfo>,
 ) -> Option<Vec<ResolvedMethodCandidate>> {
+    let owner_ty = owner_fqcn.to_string();
     let owner_fqcn = erase_generic_type_name(owner_fqcn);
     let info = class_index.get(&owner_fqcn)?;
     let mut out = Vec::new();
@@ -911,7 +921,7 @@ pub(super) fn lookup_method_candidates(
 
     if info.is_interface {
         collect_method_candidates_in_interface_hierarchy(
-            &owner_fqcn,
+            &owner_ty,
             method_name,
             class_index,
             &mut out,
@@ -927,14 +937,14 @@ pub(super) fn lookup_method_candidates(
         )?;
     } else {
         collect_method_candidates_in_class_hierarchy(
-            &owner_fqcn,
+            &owner_ty,
             method_name,
             class_index,
             &mut out,
             &mut seen,
         )?;
         collect_method_candidates_from_class_interfaces(
-            &owner_fqcn,
+            &owner_ty,
             method_name,
             class_index,
             &mut out,
@@ -951,29 +961,32 @@ pub(super) fn lookup_method_candidates(
 }
 
 fn collect_method_candidates_in_class_hierarchy(
-    owner_fqcn: &str,
+    owner_ty: &str,
     method_name: &str,
     class_index: &HashMap<String, ClassInfo>,
     out: &mut Vec<ResolvedMethodCandidate>,
     seen: &mut HashSet<String>,
 ) -> Option<()> {
-    let owner_fqcn = erase_generic_type_name(owner_fqcn);
+    let owner_fqcn = erase_generic_type_name(owner_ty);
     let info = class_index.get(&owner_fqcn)?;
     if let Some(methods) = info.methods.get(method_name) {
         for signature in methods {
             let key = resolved_method_signature_key(signature);
             if seen.insert(key) {
                 out.push(ResolvedMethodCandidate {
-                    owner_fqcn: owner_fqcn.clone(),
+                    owner_fqcn: owner_ty.to_string(),
                     signature: signature.clone(),
                 });
             }
         }
     }
     if let Some(parent) = info.super_class.as_deref() {
-        let parent_erased = erase_generic_type_name(parent);
+        let parent_ty = substitute_type_params(
+            parent,
+            &build_type_param_bindings(&info.type_params, &generic_type_args(owner_ty)),
+        );
         collect_method_candidates_in_class_hierarchy(
-            &parent_erased,
+            &parent_ty,
             method_name,
             class_index,
             out,
@@ -984,19 +997,19 @@ fn collect_method_candidates_in_class_hierarchy(
 }
 
 fn collect_method_candidates_from_class_interfaces(
-    owner_fqcn: &str,
+    owner_ty: &str,
     method_name: &str,
     class_index: &HashMap<String, ClassInfo>,
     out: &mut Vec<ResolvedMethodCandidate>,
     seen: &mut HashSet<String>,
     visited_ifaces: &mut HashSet<String>,
 ) -> Option<()> {
-    let owner_fqcn = erase_generic_type_name(owner_fqcn);
+    let owner_fqcn = erase_generic_type_name(owner_ty);
     let info = class_index.get(&owner_fqcn)?;
+    let bindings = build_type_param_bindings(&info.type_params, &generic_type_args(owner_ty));
     for iface in &info.interfaces {
-        let iface_erased = erase_generic_type_name(iface);
         collect_method_candidates_in_interface_hierarchy(
-            &iface_erased,
+            &substitute_type_params(iface, &bindings),
             method_name,
             class_index,
             out,
@@ -1005,9 +1018,9 @@ fn collect_method_candidates_from_class_interfaces(
         )?;
     }
     if let Some(parent) = info.super_class.as_deref() {
-        let parent_erased = erase_generic_type_name(parent);
+        let parent_ty = substitute_type_params(parent, &bindings);
         collect_method_candidates_from_class_interfaces(
-            &parent_erased,
+            &parent_ty,
             method_name,
             class_index,
             out,
@@ -1019,33 +1032,33 @@ fn collect_method_candidates_from_class_interfaces(
 }
 
 fn collect_method_candidates_in_interface_hierarchy(
-    iface_fqcn: &str,
+    iface_ty: &str,
     method_name: &str,
     class_index: &HashMap<String, ClassInfo>,
     out: &mut Vec<ResolvedMethodCandidate>,
     seen: &mut HashSet<String>,
     visited_ifaces: &mut HashSet<String>,
 ) -> Option<()> {
-    let iface_fqcn = erase_generic_type_name(iface_fqcn);
+    let iface_fqcn = erase_generic_type_name(iface_ty);
     if !visited_ifaces.insert(iface_fqcn.clone()) {
         return Some(());
     }
     let info = class_index.get(&iface_fqcn)?;
+    let bindings = build_type_param_bindings(&info.type_params, &generic_type_args(iface_ty));
     if let Some(methods) = info.methods.get(method_name) {
         for signature in methods {
             let key = resolved_method_signature_key(signature);
             if seen.insert(key) {
                 out.push(ResolvedMethodCandidate {
-                    owner_fqcn: iface_fqcn.clone(),
+                    owner_fqcn: iface_ty.to_string(),
                     signature: signature.clone(),
                 });
             }
         }
     }
     for parent in &info.interfaces {
-        let parent_erased = erase_generic_type_name(parent);
         collect_method_candidates_in_interface_hierarchy(
-            &parent_erased,
+            &substitute_type_params(parent, &bindings),
             method_name,
             class_index,
             out,

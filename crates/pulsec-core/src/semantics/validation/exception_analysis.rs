@@ -1274,7 +1274,7 @@ fn resolve_call_declared_throws(
             let Some(super_class) = class_info.super_class.as_deref() else {
                 return Ok(Vec::new());
             };
-            let Some(target_class) = class_index.get(super_class) else {
+            let Some(target_class) = class_index.get(&erase_generic_type_name(super_class)) else {
                 return Ok(Vec::new());
             };
             let instantiated_ctors = target_class

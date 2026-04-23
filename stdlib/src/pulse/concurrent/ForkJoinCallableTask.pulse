@@ -1,0 +1,24 @@
+package pulse.concurrent;
+
+import pulse.lang.IllegalArgumentException;
+
+/**
+ * Callable adapter for the fork-join pool's `submit(...)` baseline.
+ */
+public final class ForkJoinCallableTask<T> extends ForkJoinTask<T> {
+    private Callable<T> callable;
+
+    /**
+     * Creates one callable-backed fork-join task adapter.
+     */
+    public ForkJoinCallableTask(Callable<T> callable) {
+        if (callable == null) {
+            throw new IllegalArgumentException("callable must not be null");
+        }
+        this.callable = callable;
+    }
+
+    protected T compute() {
+        return this.callable.call();
+    }
+}

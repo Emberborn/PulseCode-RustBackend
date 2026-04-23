@@ -1,6 +1,7 @@
 package pulse.concurrent;
 
 import pulse.collections.ArrayList;
+import pulse.collections.List;
 import pulse.lang.AutoCloseable;
 import pulse.lang.IllegalArgumentException;
 import pulse.lang.IllegalStateException;
@@ -117,6 +118,9 @@ public final class ThreadPerTaskExecutor implements ExecutorService, AutoCloseab
         if (task instanceof ScheduledFutureTask) {
             ((ScheduledFutureTask<Object>) task).bindThread(thread);
         }
+        if (task instanceof PeriodicScheduledTask) {
+            ((PeriodicScheduledTask) task).bindThread(thread);
+        }
         this.startTrackedThread(thread);
     }
 
@@ -140,6 +144,76 @@ public final class ThreadPerTaskExecutor implements ExecutorService, AutoCloseab
         future.bindThread(thread);
         this.startTrackedThread(thread);
         return future;
+    }
+
+    /**
+     * Submits every callable and waits for all results to complete.
+     */
+    public <T> List<Future<T>> invokeAll(List<Callable<T>> tasks) {
+        if (tasks == null) {
+            throw new IllegalArgumentException("tasks must not be null");
+        }
+        ArrayList<Future<T>> futures = new ArrayList<Future<T>>();
+        int index = 0;
+        while (index < tasks.size()) {
+            Callable<T> task = tasks.get(index);
+            if (task == null) {
+                throw new IllegalArgumentException("tasks must not contain null");
+            }
+            futures.add(this.submit(task));
+            index = index + 1;
+        }
+        index = 0;
+        while (index < futures.size()) {
+            futures.get(index).get();
+            index = index + 1;
+        }
+        return futures;
+    }
+
+    /**
+     * Submits every callable and returns the first successful result.
+     */
+    public <T> T invokeAny(List<Callable<T>> tasks) {
+        if (tasks == null) {
+            throw new IllegalArgumentException("tasks must not be null");
+        }
+        if (tasks.isEmpty()) {
+            throw new IllegalArgumentException("tasks must not be empty");
+        }
+        ArrayList<Future<T>> futures = new ArrayList<Future<T>>();
+        int index = 0;
+        while (index < tasks.size()) {
+            Callable<T> task = tasks.get(index);
+            if (task == null) {
+                throw new IllegalArgumentException("tasks must not contain null");
+            }
+            futures.add(this.submit(task));
+            index = index + 1;
+        }
+        while (true) {
+            index = 0;
+            while (index < futures.size()) {
+                Future<T> future = futures.get(index);
+                if (future.await(0L)) {
+                    try {
+                        T value = future.get();
+                        int cancelIndex = 0;
+                        while (cancelIndex < futures.size()) {
+                            if (cancelIndex != index) {
+                                futures.get(cancelIndex).cancel(true);
+                            }
+                            cancelIndex = cancelIndex + 1;
+                        }
+                        return value;
+                    } catch (ExecutionException failure) {
+                    }
+                }
+                index = index + 1;
+            }
+            Thread.yieldNow();
+        }
+        return null;
     }
 
     /**

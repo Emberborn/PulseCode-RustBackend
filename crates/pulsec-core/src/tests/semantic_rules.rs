@@ -163,6 +163,29 @@ fn check_accepts_static_generic_methods_in_generic_classes_with_shadowed_type_pa
 }
 
 #[test]
+fn check_accepts_static_generic_methods_returning_owner_generic_types_from_string_literals() {
+    let src = r#"
+        package app.generics;
+
+        class Future<T> {
+            public static <T> Future<T> completed(T value) {
+                return null;
+            }
+        }
+
+        class Main {
+            public static void main() {
+                Future<String> future = Future.completed("ok");
+            }
+        }
+    "#;
+
+    check(src).expect(
+        "static generic methods returning owner generic types should canonicalize inferred string literal types",
+    );
+}
+
+#[test]
 fn check_accepts_instance_generic_methods_in_generic_classes_with_shadowed_type_params() {
     let src = r#"
         package app.generics;
@@ -796,7 +819,7 @@ fn check_rejects_assignment_type_mismatch() {
     let err = check(src).expect_err("assignment type mismatch should fail");
     assert!(err
         .to_string()
-        .contains("Cannot assign type 'String' to 'int'"));
+        .contains("Cannot assign type 'pulse.lang.String' to 'int'"));
 }
 
 #[test]
@@ -1377,7 +1400,7 @@ fn check_rejects_method_call_signature_mismatch() {
     let err = check(src).expect_err("method call type mismatch should fail");
     assert!(err
         .to_string()
-        .contains("No method 'tick' matches argument types (String)"));
+        .contains("No method 'tick' matches argument types (pulse.lang.String)"));
     assert!(err.to_string().contains("Available overloads"));
 }
 

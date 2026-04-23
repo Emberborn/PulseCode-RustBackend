@@ -20,4 +20,39 @@ public final class Executors {
     public static ScheduledThreadPerTaskExecutor newScheduledThreadPerTaskExecutor() {
         return ScheduledThreadPerTaskExecutor.create();
     }
+
+    /**
+     * Creates a new scheduled worker-pool executor service.
+     */
+    public static ScheduledThreadPoolExecutor newScheduledThreadPool(int workerCount) {
+        return ScheduledThreadPoolExecutor.create(workerCount);
+    }
+
+    /**
+     * Creates a new single-thread scheduled executor service.
+     */
+    public static ScheduledThreadPoolExecutor newSingleThreadScheduledExecutor() {
+        return ScheduledThreadPoolExecutor.create(1);
+    }
+
+    /**
+     * Creates a new fixed-size worker-pool executor service.
+     */
+    public static FixedThreadPoolExecutor newFixedThreadPool(int workerCount) {
+        return FixedThreadPoolExecutor.create(workerCount);
+    }
+
+    /**
+     * Creates a new single-thread executor service.
+     */
+    public static FixedThreadPoolExecutor newSingleThreadExecutor() {
+        return FixedThreadPoolExecutor.create(1);
+    }
+
+    /**
+     * Creates a new work-stealing fork-join pool.
+     */
+    public static ForkJoinPool newWorkStealingPool(int workerCount) {
+        return ForkJoinPool.create(workerCount);
+    }
 }

@@ -1,0 +1,56 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned race bridge for `CompletableFuture.acceptEitherAsync`.
+ */
+public final class CompletableAcceptEitherTask<T> implements Runnable {
+    private CompletableFuture<T> left;
+    private CompletableFuture<T> right;
+    private CompletionConsumer<T> action;
+    private CompletableFuture<Object> target;
+
+    /**
+     * Creates one race consumer bridge.
+     */
+    public CompletableAcceptEitherTask(
+        CompletableFuture<T> left,
+        CompletableFuture<T> right,
+        CompletionConsumer<T> action,
+        CompletableFuture<Object> target
+    ) {
+        this.left = left;
+        this.right = right;
+        this.action = action;
+        this.target = target;
+    }
+
+    private CompletableFuture<T> awaitWinner() {
+        while (true) {
+            if (this.left.await(0L)) {
+                return this.left;
+            }
+            if (this.right.await(0L)) {
+                return this.right;
+            }
+            Thread.yieldNow();
+        }
+        return this.left;
+    }
+
+    /**
+     * Waits for either source stage, runs the consumer, and completes the target.
+     */
+    public void run() {
+        try {
+            T value = this.awaitWinner().get();
+            this.action.accept(value);
+            this.target.complete(null);
+        } catch (Throwable failure) {
+            this.target.completeExceptionally(failure);
+        }
+    }
+}

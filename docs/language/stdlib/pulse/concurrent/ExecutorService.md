@@ -28,6 +28,14 @@ Submits one callable task and returns a future for its result.
 
 Submits one runnable task and returns a completion future.
 
+### ``public <T> List<Future<T>> invokeAll(List<Callable<T>> tasks);``
+
+Submits all supplied callables and waits for every result to complete.
+
+### ``public <T> T invokeAny(List<Callable<T>> tasks);``
+
+Submits all supplied callables and returns the first successful result.
+
 ### ``public void shutdown();``
 
 Prevents new task submission.

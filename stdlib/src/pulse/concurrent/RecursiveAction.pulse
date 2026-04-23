@@ -1,0 +1,23 @@
+package pulse.concurrent;
+
+/**
+ * Recursive fork-join task base for side-effect work without a result value.
+ */
+public abstract class RecursiveAction extends ForkJoinTask<Object> {
+    /**
+     * Creates one recursive action task.
+     */
+    public RecursiveAction() {
+        super();
+    }
+
+    /**
+     * Computes this action's side effects when executed by a worker thread.
+     */
+    protected abstract void computeAction();
+
+    protected Object compute() {
+        this.computeAction();
+        return null;
+    }
+}

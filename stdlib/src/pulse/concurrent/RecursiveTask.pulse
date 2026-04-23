@@ -1,0 +1,13 @@
+package pulse.concurrent;
+
+/**
+ * Recursive fork-join task base with a typed computed result.
+ */
+public abstract class RecursiveTask<T> extends ForkJoinTask<T> {
+    /**
+     * Creates one recursive result-producing task.
+     */
+    public RecursiveTask() {
+        super();
+    }
+}

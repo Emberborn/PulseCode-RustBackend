@@ -7,8 +7,9 @@ Source: ``stdlib/src/pulse/concurrent/ScheduledThreadPerTaskExecutor.pulse``
 ## Summary
 
 One-shot delayed executor built on the thread-per-task baseline.
-This keeps scheduling honest for the current lane: delayed submission is real,
-but periodic/scheduled-pool semantics are still later work.
+This keeps scheduling honest for the current lane: one-shot delayed submission
+and dedicated-thread periodic scheduling are real, while fuller timer-pool and
+work-stealing scheduler semantics still remain later work.
 
 ## Declaration
 
@@ -38,6 +39,14 @@ Submits one callable task immediately.
 
 Submits one runnable task immediately.
 
+### ``public <T> List<Future<T>> invokeAll(List<Callable<T>> tasks)``
+
+Submits every callable immediately and waits for all results to complete.
+
+### ``public <T> T invokeAny(List<Callable<T>> tasks)``
+
+Submits every callable immediately and returns the first successful result.
+
 ### ``public <T> ScheduledFuture<T> schedule(Callable<T> task, long delayMillis)``
 
 Schedules one callable task after the requested delay.
@@ -45,6 +54,14 @@ Schedules one callable task after the requested delay.
 ### ``public ScheduledFuture<Object> schedule(Runnable task, long delayMillis)``
 
 Schedules one runnable task after the requested delay.
+
+### ``public ScheduledFuture<Object> scheduleAtFixedRate(``
+
+Schedules one runnable task at a fixed rate after the initial delay.
+
+### ``public ScheduledFuture<Object> scheduleWithFixedDelay(``
+
+Schedules one runnable task with a fixed delay between completions.
 
 ### ``public void shutdown()``
 

@@ -1,0 +1,34 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+
+/**
+ * Internal worker loop for `FixedThreadPoolExecutor`.
+ */
+public final class FixedThreadPoolWorker implements Runnable {
+    private FixedThreadPoolExecutor owner;
+    private Thread workerThread;
+
+    /**
+     * Creates one worker loop bound to the owning fixed-size executor.
+     */
+    public FixedThreadPoolWorker(FixedThreadPoolExecutor owner) {
+        this.owner = owner;
+        this.workerThread = null;
+    }
+
+    /**
+     * Attaches the owning worker thread wrapper after construction.
+     */
+    public void attachThread(Thread workerThread) {
+        this.workerThread = workerThread;
+    }
+
+    /**
+     * Runs the fixed executor's worker loop until shutdown reaches this worker.
+     */
+    public void run() {
+        this.owner.runWorkerLoop(this.workerThread);
+    }
+}

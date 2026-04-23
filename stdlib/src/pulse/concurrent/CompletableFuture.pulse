@@ -1,5 +1,6 @@
 package pulse.concurrent;
 
+import pulse.collections.List;
 import pulse.lang.IllegalArgumentException;
 import pulse.lang.IllegalStateException;
 import pulse.lang.Runnable;
@@ -78,6 +79,64 @@ public final class CompletableFuture<T> implements Future<T> {
         }
         CompletableFuture<Object> future = new CompletableFuture<Object>();
         executor.execute(new CompletableRunTask(task, future));
+        return future;
+    }
+
+    /**
+     * Returns one future that completes when every supplied future completes.
+     */
+    public static CompletableFuture<Object> allOfAsync(
+        List<CompletableFuture> futures,
+        Executor executor
+    ) {
+        if (futures == null) {
+            throw new IllegalArgumentException("futures must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        if (futures.isEmpty()) {
+            CompletableFuture<Object> completed = new CompletableFuture<Object>();
+            completed.complete(null);
+            return completed;
+        }
+        int index = 0;
+        while (index < futures.size()) {
+            if (futures.get(index) == null) {
+                throw new IllegalArgumentException("futures must not contain null");
+            }
+            index = index + 1;
+        }
+        CompletableFuture<Object> future = new CompletableFuture<Object>();
+        executor.execute(new CompletableAllOfTask(futures, future));
+        return future;
+    }
+
+    /**
+     * Returns one future that completes with the first supplied future to finish.
+     */
+    public static CompletableFuture<Object> anyOfAsync(
+        List<CompletableFuture> futures,
+        Executor executor
+    ) {
+        if (futures == null) {
+            throw new IllegalArgumentException("futures must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        if (futures.isEmpty()) {
+            throw new IllegalArgumentException("futures must not be empty");
+        }
+        int index = 0;
+        while (index < futures.size()) {
+            if (futures.get(index) == null) {
+                throw new IllegalArgumentException("futures must not contain null");
+            }
+            index = index + 1;
+        }
+        CompletableFuture<Object> future = new CompletableFuture<Object>();
+        executor.execute(new CompletableAnyOfTask(futures, future));
         return future;
     }
 
@@ -265,6 +324,154 @@ public final class CompletableFuture<T> implements Future<T> {
         }
         CompletableFuture<R> next = new CompletableFuture<R>();
         executor.execute(new CompletableThenComposeTask<T, R>(this, mapper, next));
+        return next;
+    }
+
+    /**
+     * Chains one async two-stage combination continuation onto this future.
+     */
+    public <U, R> CompletableFuture<R> thenCombineAsync(
+        CompletableFuture<U> other,
+        CompletionBiFunction<T, U, R> combiner,
+        Executor executor
+    ) {
+        if (other == null) {
+            throw new IllegalArgumentException("other must not be null");
+        }
+        if (combiner == null) {
+            throw new IllegalArgumentException("combiner must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<R> next = new CompletableFuture<R>();
+        executor.execute(
+            new CompletableThenCombineTask<T, U, R>(this, other, combiner, next)
+        );
+        return next;
+    }
+
+    /**
+     * Runs one async action after this future and another future both complete.
+     */
+    public <U> CompletableFuture<Object> runAfterBothAsync(
+        CompletableFuture<U> other,
+        Runnable action,
+        Executor executor
+    ) {
+        if (other == null) {
+            throw new IllegalArgumentException("other must not be null");
+        }
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<Object> next = new CompletableFuture<Object>();
+        executor.execute(new CompletableRunAfterBothTask<T, U>(this, other, action, next));
+        return next;
+    }
+
+    /**
+     * Applies one async mapper to whichever of this future or the other future completes first.
+     */
+    public <R> CompletableFuture<R> applyToEitherAsync(
+        CompletableFuture<T> other,
+        CompletionFunction<T, R> mapper,
+        Executor executor
+    ) {
+        if (other == null) {
+            throw new IllegalArgumentException("other must not be null");
+        }
+        if (mapper == null) {
+            throw new IllegalArgumentException("mapper must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<R> next = new CompletableFuture<R>();
+        executor.execute(new CompletableApplyToEitherTask<T, R>(this, other, mapper, next));
+        return next;
+    }
+
+    /**
+     * Runs one async consumer on whichever of this future or the other future completes first.
+     */
+    public CompletableFuture<Object> acceptEitherAsync(
+        CompletableFuture<T> other,
+        CompletionConsumer<T> action,
+        Executor executor
+    ) {
+        if (other == null) {
+            throw new IllegalArgumentException("other must not be null");
+        }
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<Object> next = new CompletableFuture<Object>();
+        executor.execute(new CompletableAcceptEitherTask<T>(this, other, action, next));
+        return next;
+    }
+
+    /**
+     * Runs one async action after whichever of this future or the other future completes first.
+     */
+    public CompletableFuture<Object> runAfterEitherAsync(
+        CompletableFuture<T> other,
+        Runnable action,
+        Executor executor
+    ) {
+        if (other == null) {
+            throw new IllegalArgumentException("other must not be null");
+        }
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<Object> next = new CompletableFuture<Object>();
+        executor.execute(new CompletableRunAfterEitherTask<T>(this, other, action, next));
+        return next;
+    }
+
+    /**
+     * Chains one async completion handler that sees either the value or failure.
+     */
+    public <R> CompletableFuture<R> handleAsync(
+        CompletionBiFunction<T, Throwable, R> handler,
+        Executor executor
+    ) {
+        if (handler == null) {
+            throw new IllegalArgumentException("handler must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<R> next = new CompletableFuture<R>();
+        executor.execute(new CompletableHandleTask<T, R>(this, handler, next));
+        return next;
+    }
+
+    /**
+     * Chains one async completion observer that sees either the value or failure.
+     */
+    public CompletableFuture<T> whenCompleteAsync(
+        CompletionBiConsumer<T, Throwable> action,
+        Executor executor
+    ) {
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null");
+        }
+        if (executor == null) {
+            throw new IllegalArgumentException("executor must not be null");
+        }
+        CompletableFuture<T> next = new CompletableFuture<T>();
+        executor.execute(new CompletableWhenCompleteTask<T>(this, action, next));
         return next;
     }
 

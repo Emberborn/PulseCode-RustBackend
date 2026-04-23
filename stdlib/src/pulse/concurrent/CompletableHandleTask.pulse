@@ -1,0 +1,46 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Throwable;
+
+/**
+ * Executor-owned completion/recovery bridge for `CompletableFuture.handleAsync`.
+ */
+public final class CompletableHandleTask<T, R> implements Runnable {
+    private CompletableFuture<T> source;
+    private CompletionBiFunction<T, Throwable, R> handler;
+    private CompletableFuture<R> target;
+
+    /**
+     * Creates one completion/recovery bridge.
+     */
+    public CompletableHandleTask(
+        CompletableFuture<T> source,
+        CompletionBiFunction<T, Throwable, R> handler,
+        CompletableFuture<R> target
+    ) {
+        this.source = source;
+        this.handler = handler;
+        this.target = target;
+    }
+
+    /**
+     * Observes source completion, maps the outcome, and completes the target.
+     */
+    public void run() {
+        T value = null;
+        Throwable failure = null;
+        try {
+            value = this.source.get();
+        } catch (Throwable observed) {
+            failure = observed;
+        }
+
+        try {
+            R mapped = this.handler.apply(value, failure);
+            this.target.complete(mapped);
+        } catch (Throwable handlerFailure) {
+            this.target.completeExceptionally(handlerFailure);
+        }
+    }
+}

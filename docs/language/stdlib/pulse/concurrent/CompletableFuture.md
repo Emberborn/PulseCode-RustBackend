@@ -39,6 +39,14 @@ Runs one callable task asynchronously on the supplied executor.
 
 Runs one runnable task asynchronously on the supplied executor.
 
+### ``public static CompletableFuture<Object> allOfAsync(``
+
+Returns one future that completes when every supplied future completes.
+
+### ``public static CompletableFuture<Object> anyOfAsync(``
+
+Returns one future that completes with the first supplied future to finish.
+
 ### ``public boolean complete(T value)``
 
 Completes this future successfully if it is still incomplete.
@@ -94,6 +102,34 @@ Chains one async recovery continuation that runs only if this future fails.
 ### ``public <R> CompletableFuture<R> thenComposeAsync(``
 
 Chains one async compose continuation onto this future.
+
+### ``public <U, R> CompletableFuture<R> thenCombineAsync(``
+
+Chains one async two-stage combination continuation onto this future.
+
+### ``public <U> CompletableFuture<Object> runAfterBothAsync(``
+
+Runs one async action after this future and another future both complete.
+
+### ``public <R> CompletableFuture<R> applyToEitherAsync(``
+
+Applies one async mapper to whichever of this future or the other future completes first.
+
+### ``public CompletableFuture<Object> acceptEitherAsync(``
+
+Runs one async consumer on whichever of this future or the other future completes first.
+
+### ``public CompletableFuture<Object> runAfterEitherAsync(``
+
+Runs one async action after whichever of this future or the other future completes first.
+
+### ``public <R> CompletableFuture<R> handleAsync(``
+
+Chains one async completion handler that sees either the value or failure.
+
+### ``public CompletableFuture<T> whenCompleteAsync(``
+
+Chains one async completion observer that sees either the value or failure.
 
 ### ``public void close()``
 

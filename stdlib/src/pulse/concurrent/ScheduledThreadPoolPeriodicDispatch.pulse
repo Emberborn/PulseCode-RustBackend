@@ -1,0 +1,37 @@
+package pulse.concurrent;
+
+import pulse.lang.Runnable;
+import pulse.lang.Thread;
+
+/**
+ * Worker-pool dispatch wrapper for one periodic scheduled iteration.
+ */
+final class ScheduledThreadPoolPeriodicDispatch implements Runnable {
+    private ScheduledThreadPoolPeriodicFuture future;
+    private Thread worker;
+
+    /**
+     * Creates one worker-pool dispatch wrapper for a periodic future.
+     */
+    public ScheduledThreadPoolPeriodicDispatch(ScheduledThreadPoolPeriodicFuture future) {
+        this.future = future;
+        this.worker = null;
+    }
+
+    /**
+     * Records the worker thread that will execute the dispatched iteration.
+     */
+    public void attachThread(Thread worker) {
+        this.worker = worker;
+    }
+
+    /**
+     * Binds the worker thread and runs one dispatched periodic iteration.
+     */
+    public void run() {
+        if (this.worker != null) {
+            this.future.bindThread(this.worker);
+        }
+        this.future.runDispatched();
+    }
+}

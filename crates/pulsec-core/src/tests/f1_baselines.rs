@@ -153,7 +153,7 @@ fn check_rejects_throw_for_non_throwable_values() {
     let err = check(src).expect_err("non-throwable throw operand should fail");
     assert!(err
         .to_string()
-        .contains("Cannot assign type 'String' to 'pulse.lang.Throwable'"));
+        .contains("Cannot assign type 'pulse.lang.String' to 'pulse.lang.Throwable'"));
 }
 
 #[test]
@@ -1155,6 +1155,48 @@ fn check_accepts_return_inside_try_finally_baseline() {
 }
 
 #[test]
+fn check_accepts_break_inside_try_finally_baseline() {
+    let src = r#"
+        package app.core;
+
+        class Main {
+            public static void main() {
+                while (true) {
+                    try {
+                        break;
+                    } finally {
+                    }
+                }
+            }
+        }
+    "#;
+
+    check(src).expect("break in try/finally should typecheck");
+}
+
+#[test]
+fn check_accepts_continue_inside_try_finally_baseline() {
+    let src = r#"
+        package app.core;
+
+        class Main {
+            public static void main() {
+                int i = 0;
+                while (i < 2) {
+                    i = i + 1;
+                    try {
+                        continue;
+                    } finally {
+                    }
+                }
+            }
+        }
+    "#;
+
+    check(src).expect("continue in try/finally should typecheck");
+}
+
+#[test]
 fn check_rejects_throw_inside_catch_for_current_f1_16_baseline() {
     let src = r#"
         package app.core;
@@ -1431,6 +1473,30 @@ fn check_accepts_abstract_class_with_abstract_method() {
     "#;
 
     check(src).expect("abstract class with override should pass");
+}
+
+#[test]
+fn check_accepts_generic_superclass_extends_and_override() {
+    let src = r#"
+        package app.core;
+
+        abstract class Base<T> {
+            public abstract T value();
+        }
+
+        class Main extends Base<String> {
+            public String value() {
+                return "ok";
+            }
+
+            public static void main() {
+                Main main = new Main();
+                String value = main.value();
+            }
+        }
+    "#;
+
+    check(src).expect("generic superclass extends/override should pass");
 }
 
 #[test]

@@ -27,17 +27,37 @@ What is real today:
   - `FutureTask`
   - `ThreadPerTaskExecutor`
   - `Executors.newThreadPerTaskExecutor()`
+  - `FixedThreadPoolExecutor`
+  - `Executors.newFixedThreadPool(...)`
+  - `Executors.newSingleThreadExecutor()`
+  - `ExecutorService.invokeAll(...)`
+  - `ExecutorService.invokeAny(...)`
   - `RunnableFuture`
   - `ScheduledFuture`
   - `ScheduledExecutorService`
   - `ScheduledFutureTask`
   - `ScheduledThreadPerTaskExecutor`
+  - `ScheduledThreadPoolExecutor`
+  - `ForkJoinTask`
+  - `RecursiveTask`
+  - `RecursiveAction`
+  - `ForkJoinPool`
+  - `CompletionBiFunction`
+  - `CompletionBiConsumer`
   - `CompletableFuture`
   - `CompletionConsumer`
   - `Executors.newScheduledThreadPerTaskExecutor()`
+  - `Executors.newScheduledThreadPool(...)`
+  - `Executors.newSingleThreadScheduledExecutor()`
+  - `Executors.newWorkStealingPool(...)`
+  - fixed-rate periodic scheduling
+  - fixed-delay periodic scheduling
 - selected concurrent collections:
   - `ConcurrentHashMap`
+  - `ConcurrentHashSet`
   - `CopyOnWriteArrayList`
+  - `ConcurrentLinkedQueue`
+  - `ConcurrentLinkedDeque`
   - `BlockingQueue`
   - `LinkedBlockingQueue`
   - `BlockingDeque`
@@ -49,10 +69,9 @@ What is not claimed today:
 - Java-style `volatile`
 - Java final-field safe-publication guarantees
 - general thread-safe mutation/publication of arbitrary Pulse object graphs
-- broader concurrent-collection families beyond the shipped selected baseline
-- periodic scheduling
-- work-stealing/fork-join executor families
-- fuller `CompletableFuture` / completion-stage surface beyond the shipped baseline
+- skip-list / transfer / fairness-specialized concurrent-collection families beyond the shipped selected baseline
+- richer fork-join/task-specialization families
+- fuller `CompletableFuture` / completion-stage surface beyond the shipped baseline (still-broader fan-in/fan-out composition ergonomics beyond the current shipped both/either/aggregate baseline)
 
 ## `synchronized` And Monitor Semantics
 
@@ -154,7 +173,7 @@ Still later work:
 - array atomics
 - a full VarHandle-style memory API
 - executor/future policy
-- periodic scheduling and fuller completion-stage policy
+- fuller completion-stage policy beyond the current shipped baseline
 - broader concurrent-collection families
 
 ## Supported Atomic Policy
@@ -194,6 +213,13 @@ Shipped in `pulse.concurrent` today:
 - `ScheduledExecutorService`
 - `ScheduledFutureTask`
 - `ScheduledThreadPerTaskExecutor`
+- `ScheduledThreadPoolExecutor`
+- `ForkJoinTask`
+- `RecursiveTask`
+- `RecursiveAction`
+- `ForkJoinPool`
+- `CompletionBiFunction`
+- `CompletionBiConsumer`
 - `CompletableFuture`
 - `CompletionFunction`
 - `CompletionConsumer`
@@ -204,7 +230,10 @@ Shipped in `pulse.concurrent` today:
 - `AtomicLong`
 - `AtomicReference`
 - `ConcurrentHashMap`
+- `ConcurrentHashSet`
 - `CopyOnWriteArrayList`
+- `ConcurrentLinkedQueue`
+- `ConcurrentLinkedDeque`
 - `BlockingQueue`
 - `LinkedBlockingQueue`
 - `BlockingDeque`
@@ -226,15 +255,18 @@ That split is intentional:
 Shipped selected concurrent-collection baseline:
 
 - `ConcurrentHashMap`
+- `ConcurrentHashSet`
 - `CopyOnWriteArrayList`
+- `ConcurrentLinkedQueue`
+- `ConcurrentLinkedDeque`
 - `BlockingQueue` / `LinkedBlockingQueue`
 - `BlockingDeque` / `LinkedBlockingDeque`
 
 Still later than the current `pulse.concurrent` floor:
 
-- broader concurrent-collection families such as transfer queues, concurrent sets, skip-list maps/sets, and fairness/bounded-capacity variants
-- periodic scheduling and timer-pool semantics
-- work-stealing / fork-join executor families
+- skip-list / transfer / fairness-specialized concurrent-collection families such as transfer queues, skip-list maps/sets, and fairness/bounded-capacity variants
+- richer scheduled-executor families beyond the current dedicated-thread and scheduled-pool baseline
+- broader fork-join/task-specialization families beyond the shipped baseline
 - fuller completion-stage/composition families beyond the shipped `CompletableFuture` baseline
 
 So the current scope is:
@@ -243,8 +275,13 @@ So the current scope is:
 - explicit reference publication is in
 - thread-per-task executor/future submission is in
 - one-shot delayed scheduling is in
-- bounded `CompletableFuture` completion, failed futures, and executor-backed accept/map/recovery/compose chaining are in
+- fixed-rate and fixed-delay periodic scheduling are in on both the dedicated-thread and scheduled-pool lanes
+- bounded `CompletableFuture` completion, failed futures, executor-backed accept/map/recovery/compose chaining, plus combine/handle/when-complete/both/either/all-of/any-of chaining are in
+- fixed-size and single-thread worker-pool executor ownership are in
+- scheduled worker-pool timer ownership is in
+- work-stealing fork-join execution is in
+- bulk callable submission plus first-success coordination (`invokeAll` / `invokeAny`) are in
 - selected concurrent collections and blocking producer/consumer containers are in
-- periodic scheduling, richer executor families, and broader completion-stage ergonomics are later
+- richer executor families, broader timer services, and broader completion-stage ergonomics are later
 
 ## Related
